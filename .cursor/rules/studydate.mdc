@@ -1,0 +1,77 @@
+---
+description: StudyDate product architecture, branding, and coding rules
+alwaysApply: true
+---
+
+# StudyDate Product
+
+StudyDate is a study-partner matching platform for university students.
+
+Core features:
+- Student learning profiles
+- Study-partner recommendations
+- Structured Study Requests
+- Anonymous chat
+- Study session scheduling
+- Telegram Bot integration
+- Mutual contact reveal
+- Report, block, and safety controls
+
+# Technology
+
+- Next.js App Router
+- TypeScript with strict mode
+- Tailwind CSS
+- Supabase Auth, PostgreSQL, Storage, and Realtime
+- Server Components by default
+- Client Components only when interactivity is required
+
+# Brand
+
+Core colors:
+- Fusion Blue: #1565D8
+- Deep Navy: #0F1B33
+- White: #FFFFFF
+
+Supporting UI colors:
+- Background: #F7F9FC
+- Muted text: #667085
+- Border: #D0D5DD
+- Success: #12B76A
+- Warning: #F79009
+- Error: #F04438
+
+Typography:
+- Poppins for headings
+- Inter for body and UI
+
+Design style:
+- Clean
+- Friendly
+- Modern
+- Student-focused
+- Rounded cards
+- Generous whitespace
+- No excessive gradients
+- No dating-app visual language
+
+# Coding Rules
+
+- Do not use `any`.
+- Validate user input.
+- Keep secrets server-side.
+- Never expose service-role keys.
+- Use semantic HTML.
+- Maintain responsive mobile-first layouts.
+- Use reusable components.
+- Include loading, empty, and error states.
+- Do not create placeholder features that pretend to work.
+- Do not modify brand logo artwork.
+- Do not implement all features in one task.
+
+# Safety
+
+- Anonymous does not mean unaccountable.
+- Report, block, and end-room controls must remain accessible.
+- Contact reveal requires consent from both users.
+- Do not expose email, Telegram ID, phone, or social handles publicly.
