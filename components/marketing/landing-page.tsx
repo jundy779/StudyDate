@@ -267,16 +267,16 @@ function Hero() {
           <p className="mb-6 border-l-2 border-brand-blue pl-4 text-sm font-semibold leading-6 text-brand-navy">
             Mulai dari belajar. Kenal perlahan. Biarkan koneksi menemukan arahnya.
           </p>
-          <h1 className="text-balance font-heading max-w-[15.5rem] text-[2rem] font-semibold leading-[1.08] tracking-[-0.04em] text-brand-navy sm:max-w-none sm:text-[3.35rem] lg:text-[3.65rem] xl:text-[3.9rem]">
+          <h1 className="text-balance font-heading max-w-none text-[1.9rem] font-semibold leading-[1.03] tracking-[-0.035em] text-brand-navy sm:text-[3.35rem] sm:leading-[1.08] sm:tracking-[-0.04em] lg:text-[3.65rem] xl:text-[3.9rem]">
             Temukan seseorang untuk belajar, ngobrol, dan membangun{" "}
             <span className="text-brand-blue">koneksi yang berarti.</span>
           </h1>
-          <p className="mt-7 max-w-xl text-lg leading-8 text-brand-muted">
+          <p className="mt-6 max-w-xl text-lg leading-[1.6] text-brand-muted sm:mt-7 sm:leading-8">
             Kenalan secara privat, bergabung dalam kelompok, dan temukan kegiatan
             kampus—untuk teman belajar, relasi, networking, atau seseorang yang
             ingin kamu kenal lebih jauh.
           </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row">
             <EarlyAccessTrigger
               source="hero"
               className="focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-[12px] bg-brand-blue px-6 py-4 font-semibold text-white transition-colors hover:bg-[#013FC7]"
