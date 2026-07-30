@@ -1,0 +1,38 @@
+import "server-only";
+
+import { createClient } from "@/lib/supabase/server";
+import type { User } from "@supabase/supabase-js";
+
+export type PrivateProfile = {
+  public_alias: string;
+  first_name: string;
+  verification_status: "unverified" | "pending" | "verified" | "rejected";
+  onboarding_completed_at: string | null;
+};
+
+export async function getAuthenticatedUser(): Promise<User | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user;
+}
+export async function getPrivateProfile(
+  userId: string,
+): Promise<PrivateProfile | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      "public_alias, first_name, verification_status, onboarding_completed_at",
+    )
+    .eq("user_id", userId)
+    .maybeSingle<PrivateProfile>();
+
+  if (error) {
+    return null;
+  }
+
+  return data;
+}

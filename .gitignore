@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# supabase local cache
+/supabase/.temp/
+
 # production
 /build
 
