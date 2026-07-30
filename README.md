@@ -3,6 +3,23 @@
 StudyDate ID is a privacy-first student connection platform for discovering people, small groups, and campus events.
 Connections begin through private introductions and can develop gradually with mutual consent.
 
+## Agent context
+
+Any coding agent must read the project context in this order before changing code, migrations, dependencies, or UI:
+
+1. [`context/RULES.md`](context/RULES.md)
+2. [`context/PRD.md`](context/PRD.md)
+3. [`context/ARCHITECTURE.md`](context/ARCHITECTURE.md)
+4. [`context/SCHEMA.md`](context/SCHEMA.md)
+5. [`context/DESIGN.md`](context/DESIGN.md)
+
+These documents are the primary product and engineering context, but agents must still inspect the actual repository
+before editing. When code and documentation conflict, stop, inspect the implementation, and report the conflict instead
+of guessing. New product decisions should update the relevant context in the same commit.
+
+The approved landing page, Early Access waitlist, and auth/onboarding foundation must not be redesigned without explicit
+instruction.
+
 ## Developer guide
 
 ### Product overview
