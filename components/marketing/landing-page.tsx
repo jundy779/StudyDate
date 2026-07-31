@@ -188,73 +188,122 @@ function Navbar() {
 }
 
 function ConnectionPreview() {
+  const connectionGoals = [
+    "Belajar bersama",
+    "Obrolan kampus",
+    "Networking",
+  ];
+
   return (
     <div
-      className="product-window animate-enter-delay min-h-[380px]"
-      aria-label="Pratinjau statis koneksi di StudyDate"
+      className="product-window animate-enter-delay"
+      aria-label="Pratinjau profil anonim mahasiswa di StudyDate"
     >
-      <div className="flex items-center justify-between border-b border-brand-border px-5 py-4 sm:px-7">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.15em] text-brand-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-brand-border px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <BrandAsset
+            src="/brand/symbol-blue.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-7 w-7 object-contain"
+            priority
+          />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
             People · profil anonim
           </p>
-          <p className="mt-1 font-heading font-semibold text-brand-navy">
-            Mahasiswa #184
-          </p>
         </div>
-        <span className="hidden text-xs text-brand-muted sm:block">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-brand-muted">
+          <LockKeyhole className="h-3.5 w-3.5 text-brand-blue" aria-hidden="true" />
           Belum ada kontak dibuka
         </span>
       </div>
 
-      <div className="grid min-w-0 sm:grid-cols-[0.72fr_1.28fr]">
-        <div className="min-w-0 border-b border-brand-border bg-brand-surface p-5 sm:border-b-0 sm:border-r sm:p-7">
-          <p className="text-xs font-medium text-brand-muted">Ingin terhubung lewat</p>
-          <div className="mt-6 space-y-3 text-sm text-brand-navy">
-            {["Belajar bersama", "Obrolan kampus", "Networking"].map((item) => (
-              <p key={item} className="flex items-center gap-2 border-t border-brand-border pt-3">
-                <Check className="h-4 w-4 text-brand-blue" />
+      <div className="grid min-w-0 grid-cols-[86px_minmax(0,1fr)] gap-4 p-5 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-5 sm:px-6">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-[18px] border border-brand-border bg-[radial-gradient(circle_at_50%_20%,#ffffff_0%,#edf4ff_70%,#e6effd_100%)]">
+          <BrandAsset
+            src="/brand/mascot/front.png"
+            alt="Mascot StudyDate membawa buku"
+            width={1024}
+            height={1024}
+            sizes="(max-width: 639px) 86px, 112px"
+            className="h-full w-full object-contain object-bottom p-1.5 pt-2"
+            priority
+          />
+        </div>
+
+        <div className="min-w-0 self-center">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-heading text-xl font-semibold tracking-[-0.025em] text-brand-navy sm:text-2xl">
+              Mahasiswa #184
+            </h2>
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-2.5 py-1 text-[10px] font-semibold text-brand-blue">
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              Terverifikasi
+            </span>
+          </div>
+          <div className="mt-4 border-t border-brand-border pt-4">
+            <p className="font-heading text-lg font-semibold text-brand-navy sm:text-xl">
+              Teknik Informatika
+            </p>
+            <p className="mt-1 text-sm text-brand-muted">
+              Semester 3 · satu kampus
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid min-w-0 border-t border-brand-border sm:grid-cols-[0.88fr_1.12fr]">
+        <div className="min-w-0 border-b border-brand-border bg-brand-surface/70 p-5 sm:border-b-0 sm:border-r sm:px-6">
+          <p className="text-xs font-semibold text-brand-muted">
+            Ingin terhubung lewat
+          </p>
+          <div className="mt-4 space-y-2.5 text-sm text-brand-navy">
+            {connectionGoals.map((item) => (
+              <p
+                key={item}
+                className="flex items-center gap-2.5 border-t border-brand-border pt-2.5"
+              >
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-brand-blue shadow-sm">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
                 {item}
               </p>
             ))}
           </div>
         </div>
 
-        <div className="min-w-0 p-5 sm:p-7">
-          <div className="flex items-start justify-between gap-5">
-            <div>
-              <p className="font-heading text-xl font-semibold text-brand-navy">
-                Teknik Informatika
-              </p>
-              <p className="mt-1 text-sm text-brand-muted">
-                Semester 3 · satu kampus
-              </p>
-            </div>
-            <span className="border-l-2 border-brand-blue pl-3 text-xs font-semibold text-brand-blue">
-              Terverifikasi
-            </span>
-          </div>
-
-          <dl className="mt-8 divide-y divide-brand-border border-y border-brand-border text-sm">
-            <div className="grid grid-cols-[96px_1fr] gap-4 py-4">
+        <div className="min-w-0 px-5 sm:px-6">
+          <dl className="divide-y divide-brand-border text-sm">
+            <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3 py-3.5">
               <dt className="text-brand-muted">Minat</dt>
-              <dd className="font-medium text-brand-navy">Teknologi, desain, kopi</dd>
+              <dd className="font-medium leading-5 text-brand-navy">
+                Teknologi, desain, kopi
+              </dd>
             </div>
-            <div className="grid grid-cols-[96px_1fr] gap-4 py-4">
+            <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3 py-3.5">
               <dt className="text-brand-muted">Mencari</dt>
-              <dd className="font-medium text-brand-navy">Teman diskusi &amp; kolaborasi</dd>
+              <dd className="font-medium leading-5 text-brand-navy">
+                Teman diskusi &amp; kolaborasi
+              </dd>
             </div>
-            <div className="grid grid-cols-[96px_1fr] gap-4 py-4">
+            <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-3 py-3.5">
               <dt className="text-brand-muted">Aktivitas</dt>
-              <dd className="font-medium text-brand-navy">Workshop UI kampus</dd>
+              <dd className="font-medium leading-5 text-brand-navy">
+                Workshop UI kampus
+              </dd>
             </div>
           </dl>
-
-          <p className="mt-6 border-l-2 border-brand-border pl-4 text-sm leading-6 text-brand-muted">
-            Kirim perkenalan terlebih dahulu. Chat terbuka setelah perkenalan dibalas.
-          </p>
         </div>
       </div>
+
+      <p className="flex items-start gap-2.5 border-t border-brand-border bg-brand-surface/70 px-5 py-4 text-xs leading-5 text-brand-muted sm:px-6">
+        <LockKeyhole
+          className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue"
+          aria-hidden="true"
+        />
+        Nama asli &amp; foto jelas terbuka setelah mutual interest.
+      </p>
     </div>
   );
 }
