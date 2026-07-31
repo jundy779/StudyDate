@@ -16,7 +16,7 @@ async function VerificationContent() {
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
-  const verificationAllowed = isVerificationRequestAllowed(user.id);
+  const verificationAllowed = await isVerificationRequestAllowed(user.id);
   const request = await getLatestVerificationStatus(user.id);
   const active = request && !["cancelled", "expired", "rejected"].includes(request.status);
 

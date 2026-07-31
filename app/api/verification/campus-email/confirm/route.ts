@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ message: "Sesi telah berakhir." }, { status: 401 });
-  if (!isVerificationRequestAllowed(user.id)) {
+  if (!(await isVerificationRequestAllowed(user.id))) {
     return NextResponse.json({ message: ERROR }, { status: 503 });
   }
   if (!takeVerificationRateLimit(`email-confirm:${user.id}`, 10, 15 * 60_000)) {

@@ -65,7 +65,7 @@ export async function submitVerificationRequest(
   studentCardEvidence: File | null,
   pddiktiEvidence: File | null,
 ) {
-  if (!isVerificationRequestAllowed(userId)) {
+  if (!(await isVerificationRequestAllowed(userId))) {
     throw new VerificationServiceError("configuration");
   }
   const admin = createServerAdminClient();
@@ -172,7 +172,7 @@ export async function sendCampusEmailCode(
   email: string,
   sender: CampusVerificationEmailSender = campusVerificationEmailSender,
 ) {
-  if (!isVerificationRequestAllowed(userId)) {
+  if (!(await isVerificationRequestAllowed(userId))) {
     throw new VerificationServiceError("configuration");
   }
   const admin = createServerAdminClient();
@@ -262,7 +262,7 @@ export async function confirmCampusEmailCode(
   requestId: string,
   code: string,
 ) {
-  if (!isVerificationRequestAllowed(userId)) {
+  if (!(await isVerificationRequestAllowed(userId))) {
     throw new VerificationServiceError("configuration");
   }
   const admin = createServerAdminClient();

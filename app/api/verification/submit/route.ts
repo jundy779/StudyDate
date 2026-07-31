@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return NextResponse.json({ message: "Sesi telah berakhir." }, { status: 401 });
   }
-  if (!isVerificationRequestAllowed(user.id)) {
+  if (!(await isVerificationRequestAllowed(user.id))) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 503 });
   }
   if (!takeVerificationRateLimit(`submit:${user.id}`, 3, 24 * 60 * 60_000)) {

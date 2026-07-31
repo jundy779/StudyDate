@@ -22,6 +22,13 @@ const refinementMigration = readFileSync(
   ),
   "utf8",
 );
+const cleanupMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202607310003_harden_verification_cleanup.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const service = readFileSync(
   new URL("../lib/verification/service.ts", import.meta.url),
   "utf8",
@@ -234,6 +241,31 @@ test("student-card evidence is private, limited, and scheduled for deletion", ()
   assert.doesNotMatch(service, /\/public/);
 });
 
+test("cleanup is terminal-only, atomic, audited, and service-role controlled", () => {
+  assert.match(
+    review,
+    /\.in\("status", \["verified", "rejected", "expired", "cancelled"\]\)/,
+  );
+  assert.match(review, /record_student_verification_evidence_cleanup/);
+  assert.match(cleanupMigration, /'evidence_deleted'/);
+  assert.match(
+    cleanupMigration,
+    /status not in \('verified', 'rejected', 'expired', 'cancelled'\)/,
+  );
+  assert.match(cleanupMigration, /security definer/);
+  assert.match(cleanupMigration, /set search_path = ''/);
+  assert.match(cleanupMigration, /auth\.role\(\) <> 'service_role'/);
+  assert.match(
+    cleanupMigration,
+    /revoke execute[\s\S]*from public, anon, authenticated/,
+  );
+  assert.match(cleanupMigration, /grant execute[\s\S]*to service_role/);
+  assert.match(cleanupMigration, /raw_app_meta_data[\s\S]*verification_reviewer/);
+  assert.match(cleanupMigration, /raw_user_meta_data[\s\S]*is distinct from/);
+  assert.match(cleanupMigration, /new\.actor_id = new\.user_id/);
+  assert.match(cleanupMigration, /verification_events_require_reviewer/);
+});
+
 test("PDDikti screenshot has a separate private lifecycle", () => {
   assert.match(refinementMigration, /pddikti_evidence_path text null/);
   assert.match(
@@ -250,7 +282,7 @@ test("PDDikti screenshot has a separate private lifecycle", () => {
   );
   assert.match(service, /p_pddikti_evidence_path: pddiktiEvidencePath/);
   assert.match(review, /createPddiktiEvidenceReviewUrl/);
-  assert.match(review, /pddikti_evidence_deleted_at/);
+  assert.match(cleanupMigration, /pddikti_evidence_deleted_at/);
 });
 
 test("audit events are append-only and contain controlled sanitized types", () => {
@@ -281,4 +313,12 @@ test("verification code, email, NIM, legal name, URLs, and tokens are never logg
   for (const source of [service, review, ...routes]) {
     assert.doesNotMatch(source, /console\.(log|error|warn|info)/);
   }
+});
+
+test("campus email delivery has a bounded server-side timeout", () => {
+  const sender = readFileSync(
+    new URL("../lib/verification/email-sender.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(sender, /AbortSignal\.timeout\(10_000\)/);
 });

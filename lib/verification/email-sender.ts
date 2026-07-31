@@ -28,6 +28,7 @@ class WebhookCampusVerificationEmailSender
       },
       body: JSON.stringify(message),
       cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
       throw new Error("Campus verification email delivery is unavailable.");

@@ -6,6 +6,7 @@ export type VerificationReadiness = {
   emailDeliveryConfigured: boolean;
   evidenceStorageConfigured: boolean;
   cleanupConfigured: boolean;
+  reviewerConfigured: boolean;
   controlledTestUsersConfigured: boolean;
   readyForControlledTesting: boolean;
 };
@@ -27,6 +28,7 @@ export function buildVerificationReadiness(
       flags.emailDeliveryConfigured &&
       flags.evidenceStorageConfigured &&
       flags.cleanupConfigured &&
+      flags.reviewerConfigured &&
       flags.controlledTestUsersConfigured,
   };
 }

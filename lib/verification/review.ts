@@ -36,7 +36,8 @@ export class StudentVerificationReviewService {
     const { data, error } = await admin.auth.admin.getUserById(reviewerId);
     if (
       error ||
-      data.user?.app_metadata?.verification_reviewer !== true
+      data.user?.app_metadata?.verification_reviewer !== true ||
+      data.user?.user_metadata?.verification_reviewer === true
     ) {
       throw new Error("Reviewer authorization is required.");
     }
@@ -143,6 +144,7 @@ export async function deleteExpiredVerificationEvidence(nowIso: string) {
     .select(
       "id, evidence_path, evidence_deletion_at, pddikti_evidence_path, pddikti_evidence_deletion_at",
     )
+    .in("status", ["verified", "rejected", "expired", "cancelled"])
     .or(
       `evidence_deletion_at.lte.${nowIso},pddikti_evidence_deletion_at.lte.${nowIso}`,
     )
@@ -167,21 +169,16 @@ export async function deleteExpiredVerificationEvidence(nowIso: string) {
     const { error: removalError } = await admin.storage
       .from(VERIFICATION_BUCKET)
       .remove(paths);
-    if (!removalError) {
-      await admin
-        .from("student_verification_requests")
-        .update({
-          ...(dueStudentCard
-            ? { evidence_path: null, evidence_deleted_at: nowIso }
-            : {}),
-          ...(duePddikti
-            ? {
-                pddikti_evidence_path: null,
-                pddikti_evidence_deleted_at: nowIso,
-              }
-            : {}),
-        })
-        .eq("id", request.id);
-    }
+    if (removalError) throw new Error("Evidence deletion is unavailable.");
+
+    const { error: recordError } = await admin.rpc(
+      "record_student_verification_evidence_cleanup",
+      {
+        p_request_id: request.id,
+        p_student_card_deleted: Boolean(dueStudentCard),
+        p_pddikti_deleted: Boolean(duePddikti),
+      },
+    );
+    if (recordError) throw new Error("Evidence deletion is unavailable.");
   }
 }

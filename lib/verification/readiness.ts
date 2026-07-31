@@ -2,6 +2,10 @@ import "server-only";
 
 import { createServerAdminClient } from "@/lib/supabase/admin";
 import {
+  MAX_EVIDENCE_BYTES,
+  VERIFICATION_BUCKET,
+} from "./constants";
+import {
   areVerificationKeysSeparated,
   isVerificationKeyConfigured,
 } from "./crypto";
@@ -35,14 +39,50 @@ function getControlledTestUserIds() {
   );
 }
 
-export function getVerificationReadiness(): VerificationReadiness {
+async function inspectEvidenceStorage() {
+  const admin = createServerAdminClient();
+  if (!admin) return false;
+
+  try {
+    const { data, error } = await admin.storage.getBucket(VERIFICATION_BUCKET);
+    if (error || !data || data.public) return false;
+
+    const allowedTypes = new Set(data.allowed_mime_types ?? []);
+    return (
+      data.file_size_limit === MAX_EVIDENCE_BYTES &&
+      ["image/jpeg", "image/png", "image/webp"].every((type) =>
+        allowedTypes.has(type),
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function inspectReviewerConfiguration() {
+  const reviewerId = process.env.STUDENT_VERIFICATION_REVIEWER_USER_ID;
+  const admin = createServerAdminClient();
+  if (!reviewerId || !UUID_PATTERN.test(reviewerId) || !admin) return false;
+
+  try {
+    const { data, error } = await admin.auth.admin.getUserById(reviewerId);
+    return Boolean(
+      !error &&
+        data.user?.app_metadata?.verification_reviewer === true &&
+        data.user?.user_metadata?.verification_reviewer !== true,
+    );
+  } catch {
+    return false;
+  }
+}
+
+export async function getVerificationReadiness(): Promise<VerificationReadiness> {
   const encryptionConfigured = isVerificationKeyConfigured(
     "STUDENT_VERIFICATION_ENCRYPTION_KEY",
   );
   const hmacConfigured = isVerificationKeyConfigured(
     "STUDENT_VERIFICATION_HMAC_KEY",
   );
-  const evidenceStorageConfigured = Boolean(createServerAdminClient());
   const emailDeliveryConfigured = hasValidWebhookConfiguration();
   const cleanupConfigured = Boolean(
     process.env.STUDENT_VERIFICATION_CLEANUP_SECRET &&
@@ -51,6 +91,10 @@ export function getVerificationReadiness(): VerificationReadiness {
   );
   const enabled = process.env.STUDENT_VERIFICATION_ENABLED === "true";
   const controlledTestUserIds = getControlledTestUserIds();
+  const [evidenceStorageConfigured, reviewerConfigured] = await Promise.all([
+    inspectEvidenceStorage(),
+    inspectReviewerConfiguration(),
+  ]);
 
   return buildVerificationReadiness({
     enabled,
@@ -60,12 +104,21 @@ export function getVerificationReadiness(): VerificationReadiness {
     emailDeliveryConfigured,
     evidenceStorageConfigured,
     cleanupConfigured,
+    reviewerConfigured,
     controlledTestUsersConfigured: controlledTestUserIds.size > 0,
   });
 }
 
-export function isVerificationRequestAllowed(userId: string) {
-  const readiness = getVerificationReadiness();
+export async function isVerificationRequestAllowed(userId: string) {
+  const controlledTestUserIds = getControlledTestUserIds();
+  if (
+    process.env.STUDENT_VERIFICATION_ENABLED !== "true" &&
+    !controlledTestUserIds.has(userId)
+  ) {
+    return false;
+  }
+
+  const readiness = await getVerificationReadiness();
   if (readiness.enabled) {
     return (
       readiness.encryptionConfigured &&
@@ -73,11 +126,12 @@ export function isVerificationRequestAllowed(userId: string) {
       readiness.keysSeparated &&
       readiness.emailDeliveryConfigured &&
       readiness.evidenceStorageConfigured &&
-      readiness.cleanupConfigured
+      readiness.cleanupConfigured &&
+      readiness.reviewerConfigured
     );
   }
   return (
     readiness.readyForControlledTesting &&
-    getControlledTestUserIds().has(userId)
+    controlledTestUserIds.has(userId)
   );
 }
