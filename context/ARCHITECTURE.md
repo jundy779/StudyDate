@@ -16,7 +16,7 @@ Browser
        -> Public UI: landing page + Early Access dialog
        -> Public handler: /api/early-access
        -> Auth: /login, /auth/callback
-       -> Protected: /onboarding, /app
+       -> Protected: /onboarding, /app, /app/people, /app/people/[alias]
        -> Server handlers/actions
   -> Supabase Auth + PostgreSQL + RLS + RPC
 ```
@@ -145,11 +145,20 @@ Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewe
 `approved`, delivery webhook email server-to-server, dan job terjadwal yang memanggil evidence cleanup service. Tidak
 ada public admin route atau dashboard pada fase ini.
 
-## 11. Future People architecture
+## 11. People Discovery v1 architecture
 
-People discovery tidak boleh melakukan broad select pada `profiles`.
+People discovery tidak melakukan broad select pada `profiles`. Server Component memvalidasi query parameter dengan
+Zod lalu memanggil authenticated Supabase server client.
 
-Gunakan dedicated privacy-safe view, RPC, atau server projection yang hanya mengeluarkan field publik yang disetujui.
+`list_people_discovery_profiles` dan `get_people_discovery_profile` adalah `SECURITY DEFINER` RPC dengan explicit
+projection, fixed `search_path`, session/onboarding guard, discovery eligibility, self-exclusion, bounded result, serta
+execute grant hanya untuk `authenticated`. Detail memakai public alias dan tidak mengembalikan internal user ID.
+
+`set_people_discovery_visibility` mengambil target hanya dari `auth.uid()` dan mengubah satu protected field milik
+sendiri. Direct column update atas `is_discoverable` tetap tidak diberikan kepada client.
+
+Belum ada block model pada repository saat ini; cross-user block exclusion menjadi syarat sebelum fitur block atau
+Introduction ditambahkan.
 
 ## 12. Future conversations
 

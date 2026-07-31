@@ -16,6 +16,8 @@ Sumber migration:
 2. `supabase/migrations/202607300002_create_auth_onboarding_foundation.sql`
 3. `supabase/migrations/202607310001_create_student_verification_center.sql`
 4. `supabase/migrations/202607310002_refine_academic_verification.sql`
+5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
+6. `supabase/migrations/202607310004_create_people_discovery.sql` — local-only sampai preflight dan approval terpisah
 
 ### `early_access_waitlist`
 
@@ -157,6 +159,16 @@ Requirements:
 - `cancel_student_verification_request`: authenticated owner only; target berasal dari `auth.uid()` dan hanya request
   pending/needs_action yang dapat dibatalkan.
 
+### People Discovery RPC
+
+- `list_people_discovery_profiles`: authenticated/onboarded only; explicit safe projection, filter tervalidasi,
+  self-exclusion, opt-in eligibility, urutan alias stabil, dan page limit maksimum 13 row untuk pagination 12 item.
+- `get_people_discovery_profile`: mengambil satu eligible profile berdasarkan `public_alias`, bukan UUID.
+- `set_people_discovery_visibility`: mengubah hanya `is_discoverable` milik `auth.uid()` setelah onboarding selesai.
+
+Ketiga RPC memakai `SECURITY DEFINER`, fixed empty `search_path`, revoke dari `public`/`anon`, dan execute grant hanya
+untuk `authenticated`. Migration menambahkan partial alias index dan GIN indexes untuk interest serta connection goal.
+
 ## 4. Approved values
 
 Verification:
@@ -193,22 +205,24 @@ research
 volunteering
 ```
 
-## 5. Planned privacy-safe People output
+## 5. Implemented privacy-safe People output
 
 Jangan expose full `profiles`. Gunakan dedicated view/RPC yang hanya mengembalikan:
 ```text
 public_alias
-blurred_avatar
 campus
 study_program
 semester
+city_region
 short_intro
 interests
 connection_goals
-verification_status
+is_verified
 ```
 
-Jangan return first_name, email, auth metadata, contact, precise location, atau internal user ID bila tidak diperlukan.
+Avatar identifier diturunkan secara deterministik dari public alias pada server/UI untuk memilih mascot lokal dan tidak
+disimpan sebagai identitas baru. Jangan return first_name, email, auth metadata, contact, precise location, raw
+verification status, atau internal user ID.
 
 ## 6. Planned introductions
 

@@ -76,7 +76,9 @@ Diimplementasikan pada code dan migration repository saat ini:
 - privacy preferences;
 - consent records;
 - minimal authenticated `/app`;
-- server-side sign-out.
+- server-side sign-out;
+- People Discovery v1 untuk browse profil anonim, filter, detail berbasis alias, pagination, dan kontrol visibilitas
+  milik sendiri.
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
   status nyata, dan workflow review manual;
 - fondasi manual PDDikti review tanpa scraping atau klaim integrasi API resmi.
@@ -90,8 +92,6 @@ Jangan menganggap fitur berikut tersedia:
 
 **Planned:**
 
-- People discovery;
-- privacy-safe public profile query;
 - introductions;
 - anonymous chat;
 - mutual interest;
@@ -170,14 +170,20 @@ Consent terpisah: Terms, Privacy, dan Community Guidelines.
 
 Onboarding selesai hanya setelah transaksi database berhasil.
 
-## 8. Planned — People MVP berikutnya
+## 8. Implemented — People Discovery v1
 
-Privacy-safe discovery hanya boleh menampilkan alias anonim, blurred/approved avatar, campus, program studi, semester,
-minat, connection goals, short intro, dan verification badge.
+Privacy-safe discovery menampilkan alias anonim, mascot/avatar lokal anonim, campus, program studi, semester, wilayah
+umum, minat, connection goals, short intro, dan genuine verification badge melalui projection RPC khusus.
+
+Profil hanya muncul bila onboarding selesai dan user memilih `is_discoverable = true`. Current user dikecualikan. Browse
+dan detail membutuhkan session authenticated serta onboarding lengkap. Route detail memakai public alias, bukan UUID.
+
+Filter v1: kampus, program studi, semester, kota/kabupaten, connection goal, dan interest. Hasil diurutkan deterministik
+berdasarkan public alias dan memakai pagination berbatas.
 
 Jangan tampilkan full name, clear photo sebelum reveal, contact, precise location, auth email, atau internal ID.
 
-Primary action: `Kirim Perkenalan`.
+Introduction belum diimplementasikan; detail hanya memberi penjelasan langkah berikutnya tanpa action palsu.
 
 ## 9. Planned — Introduction MVP
 

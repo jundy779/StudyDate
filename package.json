@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "test:auth": "node --experimental-strip-types --experimental-default-type=module --test tests/auth-onboarding.test.ts tests/migration-security.test.ts",
     "test:verification": "node --experimental-strip-types --experimental-default-type=module --test tests/verification.test.ts tests/verification-readiness.test.ts",
+    "test:people": "node --experimental-strip-types --experimental-default-type=module --test tests/people-discovery.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "check": "npm run lint && npm run typecheck && npm run build"
   },

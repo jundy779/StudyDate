@@ -1,9 +1,8 @@
-import { signOut } from "@/app/app/actions";
+import { AppHeader } from "@/components/app/app-header";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { VERIFICATION_STATUS_LABELS } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
 import { CalendarDays, CheckCircle2, Network, ShieldCheck, Users } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -43,26 +42,7 @@ async function PrivateAppHome() {
 
   return (
     <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <header className="border-b border-brand-border bg-white">
-        <div className="page-shell flex min-h-20 items-center justify-between gap-4">
-          <Image
-            src="/brand/logo-horizontal-color.png"
-            alt="StudyDate ID"
-            width={176}
-            height={42}
-            className="h-auto w-[150px] sm:w-[176px]"
-            priority
-          />
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy hover:border-brand-blue"
-            >
-              Keluar
-            </button>
-          </form>
-        </div>
-      </header>
+      <AppHeader current="home" />
 
       <div className="page-shell py-10 sm:py-14 lg:py-20">
         <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
@@ -76,7 +56,7 @@ async function PrivateAppHome() {
               <strong className="font-semibold text-brand-navy">
                 {profile.public_alias}
               </strong>
-              . Fitur discovery belum diaktifkan pada tahap ini.
+              . Kamu memegang kendali kapan profil anonim ini dapat ditemukan.
             </p>
           </div>
 
@@ -117,7 +97,7 @@ async function PrivateAppHome() {
         <section className="mt-12 sm:mt-16" aria-labelledby="product-areas">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="section-label">Berikutnya di StudyDate</p>
+              <p className="section-label">Jelajahi StudyDate</p>
               <h2
                 id="product-areas"
                 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.025em]"
@@ -126,7 +106,7 @@ async function PrivateAppHome() {
               </h2>
             </div>
             <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">
-              Segera hadir
+              People tersedia
             </span>
           </div>
 
@@ -134,7 +114,9 @@ async function PrivateAppHome() {
             {productAreas.map(({ title, description, icon: Icon }) => (
               <article
                 key={title}
-                className="rounded-[22px] border border-brand-border bg-white p-6 opacity-75"
+                className={`rounded-[22px] border border-brand-border bg-white p-6 ${
+                  title === "People" ? "" : "opacity-75"
+                }`}
               >
                 <Icon
                   aria-hidden="true"
@@ -146,9 +128,18 @@ async function PrivateAppHome() {
                 <p className="mt-3 text-sm leading-6 text-brand-muted">
                   {description}
                 </p>
-                <p className="mt-6 text-sm font-semibold text-brand-blue">
-                  Segera hadir
-                </p>
+                {title === "People" ? (
+                  <Link
+                    href="/app/people"
+                    className="focus-ring mt-6 inline-flex min-h-11 items-center rounded-xl text-sm font-semibold text-brand-blue"
+                  >
+                    Jelajahi People
+                  </Link>
+                ) : (
+                  <p className="mt-6 text-sm font-semibold text-brand-blue">
+                    Segera hadir
+                  </p>
+                )}
               </article>
             ))}
           </div>

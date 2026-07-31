@@ -98,10 +98,17 @@ manual fallback. Helper text harus ringkas dan tidak diulang di setiap combobox.
 
 ## 11. Authenticated app
 
-`/app` saat ini minimal. Boleh menampilkan private greeting, anonymous alias, real verification status, onboarding
-state, Student Verification status/action, dan People/Groups/Events sebagai “Segera hadir”.
+`/app` tetap minimal. Boleh menampilkan private greeting, anonymous alias, real verification status, onboarding state,
+Student Verification status/action, People yang sudah tersedia, serta Groups/Events sebagai “Segera hadir”.
 
 Jangan tampilkan fake feed, profile, message, event, group, badge, atau metrics.
+
+### People Discovery
+
+People memakai editorial campus directory: heading kuat, filter tenang, whitespace lega, dan profile card yang hanya
+merangkum konteks sosial-akademik. Mascot resmi menjadi anonymous avatar; jangan memakai clear human photo, swipe
+deck, compatibility score, atau decorative dating language. Empty/loading/error state harus jujur dan tidak membuat
+fake user. Detail profile berakhir pada informational next step karena Introduction belum diimplementasikan.
 
 ### Student Verification Center
 

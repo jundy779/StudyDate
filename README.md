@@ -58,11 +58,11 @@ Implemented:
 - Privacy preferences
 - Versioned consent records
 - Minimal authenticated `/app` page
+- Privacy-safe People Discovery v1 at `/app/people`
 - Server-side sign-out
 
 Not implemented yet:
 
-- People discovery
 - Introductions
 - Chat
 - Groups
@@ -146,6 +146,10 @@ StudyDate migrations must be applied in this order:
 
 1. `supabase/migrations/202607300001_create_early_access_waitlist.sql`
 2. `supabase/migrations/202607300002_create_auth_onboarding_foundation.sql`
+3. `supabase/migrations/202607310001_create_student_verification_center.sql`
+4. `supabase/migrations/202607310002_refine_academic_verification.sql`
+5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
+6. `supabase/migrations/202607310004_create_people_discovery.sql` (local-only until a separate approved preflight)
 
 Only after the linked project has been manually verified:
 
@@ -204,8 +208,9 @@ persisted through an atomic database RPC.
 - Profile, preferences, and required consents are created through a controlled RPC.
 - Service-role access is server-only.
 
-Future discovery must use a dedicated privacy-safe query, view, or RPC rather than exposing the complete `profiles`
-table.
+People Discovery uses dedicated authenticated RPCs with an explicit safe projection rather than exposing the complete
+`profiles` table. Eligible rows require completed onboarding and user opt-in, exclude the current user, and expose
+neither private names, auth email, contacts, NIM, nor internal user IDs.
 
 ### Early Access waitlist
 
@@ -232,6 +237,8 @@ serving large or horizontally scaled production traffic.
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run TypeScript without emitting files |
 | `npm run test:auth` | Run auth, onboarding, migration, and security unit/static tests |
+| `npm run test:verification` | Run Student Verification security and readiness tests |
+| `npm run test:people` | Run People Discovery validation, projection, and authorization tests |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
 
@@ -245,6 +252,8 @@ Run:
 npm run lint
 npm run typecheck
 npm run test:auth
+npm run test:verification
+npm run test:people
 npm run test:browser
 npm run build
 git status --short

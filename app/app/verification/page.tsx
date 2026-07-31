@@ -1,13 +1,12 @@
 import { VerificationForm } from "@/components/verification/verification-form";
+import { AppHeader } from "@/components/app/app-header";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   VERIFICATION_STATUS_LABELS,
 } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
 import { isVerificationRequestAllowed } from "@/lib/verification/readiness";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
@@ -22,14 +21,7 @@ async function VerificationContent() {
 
   return (
     <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <header className="border-b border-brand-border bg-white">
-        <div className="page-shell flex min-h-20 items-center justify-between gap-4">
-          <Image src="/brand/logo-horizontal-color.png" alt="StudyDate ID" width={176} height={42} className="h-auto w-[150px] sm:w-[176px]" priority />
-          <Link href="/app" className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-border px-4 text-sm font-semibold">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Kembali
-          </Link>
-        </div>
-      </header>
+      <AppHeader current="verification" />
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <div className="max-w-3xl">
           <p className="section-label">Student Verification Center</p>
