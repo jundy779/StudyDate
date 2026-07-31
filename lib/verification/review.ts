@@ -34,8 +34,23 @@ export class StudentVerificationReviewService {
       throw new Error("Verification review is unavailable.");
     }
     const { data, error } = await admin.auth.admin.getUserById(reviewerId);
+    const { data: membership, error: membershipError } = await admin
+      .from("staff_members")
+      .select("role, status, verification_reviewer")
+      .eq("user_id", reviewerId)
+      .maybeSingle<{
+        role: "owner" | "admin";
+        status: "active" | "inactive";
+        verification_reviewer: boolean;
+      }>();
     if (
       error ||
+      membershipError ||
+      !membership ||
+      membership.status !== "active" ||
+      !membership.verification_reviewer ||
+      !["owner", "admin"].includes(membership.role) ||
+      data.user?.app_metadata?.role !== membership.role ||
       data.user?.app_metadata?.verification_reviewer !== true ||
       data.user?.user_metadata?.verification_reviewer === true
     ) {

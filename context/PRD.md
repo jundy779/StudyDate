@@ -78,13 +78,25 @@ Diimplementasikan pada code dan migration repository saat ini:
 - minimal authenticated `/app`;
 - server-side sign-out;
 - People Discovery v1 untuk browse profil anonim, filter, detail berbasis alias, pagination, dan kontrol visibilitas
-  milik sendiri.
+  milik sendiri;
+- Staff Roles and Admin Shell v1 dengan satu Supabase Auth, role Owner/Admin/Student, staff login terpisah, owner-only
+  staff management, verification review shell, dan audit role tersanitasi.
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
   status nyata, dan workflow review manual;
 - fondasi manual PDDikti review tanpa scraping atau klaim integrasi API resmi.
 
 Live Supabase verification tetap merupakan gate terpisah dan tidak boleh dianggap lulus hanya karena implementasi
 lokal ada.
+
+### Staff authorization
+
+Student adalah default bila tidak ada active trusted staff membership. Admin v1 hanya untuk verification review. Owner
+mengelola staff dan dapat membuka verification administration. Role dipercaya hanya bila `app_metadata` cocok dengan
+row `staff_members` aktif; `user_metadata`, form mahasiswa, URL, dan client storage tidak pernah menjadi sumber role.
+
+Staff dianjurkan memakai akun khusus dan active staff tidak dapat ditemukan di People. Owner pertama hanya dapat
+di-bootstrap melalui operasi service/admin manual setelah akun Auth existing ditemukan secara unik; tidak ada public
+owner registration.
 
 ## 6. Belum diimplementasikan
 

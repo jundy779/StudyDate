@@ -11,12 +11,21 @@ export async function updateSession(request: NextRequest) {
     pathname === "/app" ||
     pathname.startsWith("/app/") ||
     pathname === "/onboarding" ||
-    pathname.startsWith("/onboarding/");
+    pathname.startsWith("/onboarding/") ||
+    pathname === "/owner" ||
+    pathname.startsWith("/owner/") ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/");
+  const isStaffRoute =
+    pathname === "/owner" ||
+    pathname.startsWith("/owner/") ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/");
 
   if (!hasEnvVars) {
     if (isProtectedRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = "/login";
+      url.pathname = isStaffRoute ? "/staff/login" : "/login";
       url.search = "";
       return NextResponse.redirect(url);
     }
@@ -59,7 +68,7 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = isStaffRoute ? "/staff/login" : "/login";
     url.search = "";
     return NextResponse.redirect(url);
   }

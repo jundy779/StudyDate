@@ -18,6 +18,7 @@ Sumber migration:
 4. `supabase/migrations/202607310002_refine_academic_verification.sql`
 5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
 6. `supabase/migrations/202607310004_create_people_discovery.sql` — local-only sampai preflight dan approval terpisah
+7. `supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql` — local-only; belum diterapkan remote
 
 ### `early_access_waitlist`
 
@@ -95,6 +96,17 @@ revoked_at timestamptz null
 
 Consent types: terms, privacy, community_guidelines. Normal client tidak boleh menulis ulang consent timestamp.
 
+### `staff_members`
+
+Protected staff membership keyed by existing `auth.users.id`. Role dibatasi `owner` atau `admin`; status dibatasi
+`active` atau `inactive`; reviewer permission tersimpan terpisah. Email/password tidak diduplikasi. Satu unique partial
+index mencegah lebih dari satu owner. Direct access dicabut dari anon dan authenticated; operasi lewat controlled RPC.
+
+### `staff_role_events`
+
+Append-only sanitized audit untuk owner bootstrap, admin grant/deactivate/reactivate, serta reviewer grant/removal.
+Tidak menyimpan email, token, payload, verification claim, atau evidence path. Owner UI hanya menerima UUID suffix.
+
 ### `student_verification_requests`
 
 Menyimpan claim verifikasi, status review, consent version, dan lifecycle evidence. NIM serta nama legal memakai
@@ -168,6 +180,21 @@ Requirements:
 
 Ketiga RPC memakai `SECURITY DEFINER`, fixed empty `search_path`, revoke dari `public`/`anon`, dan execute grant hanya
 untuk `authenticated`. Migration menambahkan partial alias index dan GIN indexes untuk interest serta connection goal.
+
+Migration Staff v1 mengganti projection RPC secara kompatibel untuk mengecualikan `staff_members.status = 'active'`
+dan menolak active staff mengaktifkan discoverability. Grant/reactivation juga memaksa profile yang sudah ada menjadi
+tidak discoverable. Inactive staff tidak otomatis muncul kembali; user harus opt-in ulang bila kembali menjadi student.
+
+### Staff RPC
+
+- `get_current_staff_membership`: hanya mengembalikan active membership bila app metadata claim cocok.
+- `bootstrap_initial_owner`: service-role-only, UUID-based, exactly-one existing Auth user, single-owner, idempotent,
+  memperbarui trusted metadata, staff row, People visibility, dan audit dalam satu transaksi.
+- `manage_staff_member`: owner-only; action enum tetap, tidak menerima role bebas, tidak dapat mengubah owner sendiri.
+- `list_staff_members` dan `list_staff_role_events`: owner-only controlled projections.
+- `list_staff_verification_requests`: active owner/admin reviewer only, sanitized queue projection.
+- `finalize_staff_verification_review`: active reviewer only, actor dari `auth.uid()`, menolak self-review, mempertahankan
+  combined academic-match plus ownership requirement, dan menulis verification audit atomik.
 
 ## 4. Approved values
 

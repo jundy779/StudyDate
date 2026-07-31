@@ -66,8 +66,21 @@ async function inspectReviewerConfiguration() {
 
   try {
     const { data, error } = await admin.auth.admin.getUserById(reviewerId);
+    const { data: membership, error: membershipError } = await admin
+      .from("staff_members")
+      .select("role, status, verification_reviewer")
+      .eq("user_id", reviewerId)
+      .maybeSingle<{
+        role: "owner" | "admin";
+        status: "active" | "inactive";
+        verification_reviewer: boolean;
+      }>();
     return Boolean(
       !error &&
+        !membershipError &&
+        membership?.status === "active" &&
+        membership.verification_reviewer === true &&
+        membership.role === data.user?.app_metadata?.role &&
         data.user?.app_metadata?.verification_reviewer === true &&
         data.user?.user_metadata?.verification_reviewer !== true,
     );

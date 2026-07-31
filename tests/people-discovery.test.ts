@@ -17,6 +17,13 @@ const service = readFileSync(
   new URL("../lib/people/service.ts", import.meta.url),
   "utf8",
 );
+const staffMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const listPage = readFileSync(
   new URL("../app/app/people/page.tsx", import.meta.url),
   "utf8",
@@ -139,4 +146,19 @@ test("verification badge comes only from the database-safe boolean", () => {
   assert.match(migration, /profile\.verification_status = 'verified'/);
   assert.match(detailPage, /profile\.is_verified/);
   assert.doesNotMatch(detailPage, /Math\.random|fake|mock/i);
+});
+
+test("active staff is excluded by both People database projections", () => {
+  const exclusions = staffMigration.match(
+    /not exists \(\s*select 1 from public\.staff_members staff[\s\S]*?staff\.status = 'active'\s*\)/g,
+  );
+  assert.equal(exclusions?.length, 2);
+  assert.match(
+    staffMigration,
+    /staff profiles are not discoverable/,
+  );
+  assert.match(
+    staffMigration,
+    /update public\.profiles\s+set is_discoverable = false/,
+  );
 });

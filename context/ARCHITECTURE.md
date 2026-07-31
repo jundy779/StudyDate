@@ -15,8 +15,9 @@ Browser
   -> Next.js App Router
        -> Public UI: landing page + Early Access dialog
        -> Public handler: /api/early-access
-       -> Auth: /login, /auth/callback
-       -> Protected: /onboarding, /app, /app/people, /app/people/[alias]
+       -> Auth: /login, /staff/login, /auth/callback
+       -> Protected student: /onboarding, /app, /app/people, /app/people/[alias]
+       -> Protected staff: /owner/**, /admin/**
        -> Server handlers/actions
   -> Supabase Auth + PostgreSQL + RLS + RPC
 ```
@@ -160,13 +161,43 @@ sendiri. Direct column update atas `is_discoverable` tetap tidak diberikan kepad
 Belum ada block model pada repository saat ini; cross-user block exclusion menjadi syarat sebelum fitur block atau
 Introduction ditambahkan.
 
-## 12. Future conversations
+## 12. Staff authorization v1
+
+StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted
+claim, sedangkan `staff_members` menjadi authoritative active membership. Server dan database gagal tertutup bila role,
+reviewer flag, atau active state tidak sama. `user_metadata` tidak pernah memberi staff access.
+
+```text
+/staff/login
+ -> passwordless PKCE, shouldCreateUser=false
+ -> /auth/callback?next=/staff
+ -> server resolves app_metadata + staff_members
+ -> Owner: /owner
+ -> Admin reviewer: /admin/verifications
+ -> Non-staff: /app
+```
+
+Setiap `/owner/**` memakai `requireOwner`; setiap verification admin page/action/API memakai
+`requireVerificationReviewer`. Middleware hanya memberi redirect awal dan bukan authorization utama. Student navigation
+dan staff navigation dirender terpisah dari server-derived role.
+
+Role management menggunakan controlled RPC yang mengecek owner pada claim dan database, memvalidasi target Auth UUID,
+memperbarui `auth.users.raw_app_meta_data`, `staff_members`, People visibility, serta audit event dalam satu transaksi.
+Inactive row segera menggagalkan access meski browser masih memegang token lama. Promosi/reactivation membutuhkan
+refresh session atau login ulang agar claim baru tersedia.
+
+Owner pertama disiapkan melalui `npm run staff:bootstrap-owner`. Trusted operator memasukkan email secara interaktif;
+script mencari tepat satu existing Auth user, menampilkan hanya masked email dan UUID suffix, meminta confirmation, lalu
+memanggil service-role-only UUID RPC. Email tidak disimpan pada source atau authorization check. Jalankan hanya setelah
+migration diterapkan dan jangan gunakan endpoint publik.
+
+## 13. Future conversations
 
 Entities yang direncanakan: introductions, conversations, messages, reveal requests, blocks, reports.
 
 Anonymous messages memakai internal StudyDate identity, bukan metadata Telegram atau email.
 
-## 13. Future Telegram architecture
+## 14. Future Telegram architecture
 
 Bot adalah companion untuk notification, short reply, reminder, check-in, safety action, dan Mini App deep link.
 Website/Mini App tetap source of truth untuk discovery, full profile, group/event management, privacy settings, dan
@@ -174,13 +205,13 @@ report detail.
 
 Bot harus mengirim message baru dari server, bukan forward message user.
 
-## 14. Logging
+## 15. Logging
 
 Jangan log email, PII body, token, OTP, magic link, cookie, service-role key, atau private profile content.
 
 Gunakan request ID, sanitized result category, status code, duration, dan non-identifying metrics.
 
-## 15. Failure handling
+## 16. Failure handling
 
 - Jangan tampilkan raw Supabase error.
 - Jangan fake success saat database gagal.
@@ -188,7 +219,7 @@ Gunakan request ID, sanitized result category, status code, duration, dan non-id
 - Auth failure memakai generic message.
 - Missing environment menghasilkan generic unavailable response.
 
-## 16. Production gates
+## 17. Production gates
 
 Sebelum production:
 - dedicated Supabase project verified;

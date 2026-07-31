@@ -59,6 +59,7 @@ Implemented:
 - Versioned consent records
 - Minimal authenticated `/app` page
 - Privacy-safe People Discovery v1 at `/app/people`
+- Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
@@ -150,6 +151,7 @@ StudyDate migrations must be applied in this order:
 4. `supabase/migrations/202607310002_refine_academic_verification.sql`
 5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
 6. `supabase/migrations/202607310004_create_people_discovery.sql` (local-only until a separate approved preflight)
+7. `supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql` (local-only; do not apply without approval)
 
 Only after the linked project has been manually verified:
 
@@ -183,6 +185,16 @@ Set the same production origin in `NEXT_PUBLIC_SITE_URL`. The production applica
 Callback redirects accept only trusted internal destinations. Authentication errors shown to users are generic and do
 not expose Supabase error details.
 
+Staff use the same Supabase Auth system through `/staff/login`, with account creation disabled. After PKCE callback,
+the server requires matching trusted `app_metadata` and an active `staff_members` row. Owner goes to `/owner`, active
+admin reviewer goes to `/admin/verifications`, and non-staff goes safely to `/app`. Staff should use dedicated accounts.
+
+The first owner has no public registration flow. After the staff migration is explicitly approved and applied, a
+trusted operator may export the required server environment variables and run `npm run staff:bootstrap-owner`. The
+script asks for the existing Auth email interactively, requires exactly one match, prints only a masked email and UUID
+suffix, and pauses for explicit confirmation before calling the service-role-only UUID bootstrap RPC. Never commit the
+email or use it in authorization checks. This repository task does not execute that bootstrap.
+
 ### Onboarding flow
 
 The onboarding form has four steps:
@@ -207,6 +219,9 @@ persisted through an atomic database RPC.
 - Consent timestamps cannot be rewritten through a normal client.
 - Profile, preferences, and required consents are created through a controlled RPC.
 - Service-role access is server-only.
+- Staff role checks require matching Auth `app_metadata` and active protected `staff_members` state.
+- `user_metadata`, client bodies, URLs, local storage, and UI visibility never grant staff access.
+- Active staff are excluded from People at the database RPC and cannot enable discoverability.
 
 People Discovery uses dedicated authenticated RPCs with an explicit safe projection rather than exposing the complete
 `profiles` table. Eligible rows require completed onboarding and user opt-in, exclude the current user, and expose
@@ -239,6 +254,8 @@ serving large or horizontally scaled production traffic.
 | `npm run test:auth` | Run auth, onboarding, migration, and security unit/static tests |
 | `npm run test:verification` | Run Student Verification security and readiness tests |
 | `npm run test:people` | Run People Discovery validation, projection, and authorization tests |
+| `npm run test:staff` | Run staff-role, bootstrap, route-guard, audit, and reviewer authorization tests |
+| `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
 
@@ -254,6 +271,7 @@ npm run typecheck
 npm run test:auth
 npm run test:verification
 npm run test:people
+npm run test:staff
 npm run test:browser
 npm run build
 git status --short

@@ -124,6 +124,17 @@ Academic step memakai urutan Nama lengkap sesuai PDDikti, NIM, Kampus/Universita
 dan optional Semester. Tampilkan blok “Upload bukti PDDikti” yang tenang dengan selected-file state, format/size hint,
 serta privacy note. Bukti PDDikti dan kartu mahasiswa harus terlihat sebagai dua evidence dengan tujuan berbeda.
 
+### Staff shell
+
+`/staff/login` memakai AuthShell StudyDate tetapi jelas sebagai restricted access tanpa self-registration. Owner dan
+Admin memakai navigasi terpisah dari student app, dengan role-derived initial render tanpa flash. Owner shell berisi
+Overview, Staff, Verification, Moderation placeholder, Audit, dan real System Readiness. Jangan menampilkan fake
+analytics, raw SQL, secrets, atau general database controls.
+
+Verification admin memakai utility-first review layout, identifier suffix pada list, full sensitive claim hanya pada
+explicit reviewer detail, generic errors, dan evidence link lima menit. Owner-only staff UI menampilkan UUID suffix dan
+status, sementara penambahan akun membutuhkan existing Auth UUID.
+
 ## 12. Components
 
 Gunakan primitive yang sudah ada di `components/ui/`: button, input, card, checkbox, dropdown menu, dan label.

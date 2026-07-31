@@ -2,6 +2,7 @@ import { getSafeAuthenticatedDestination } from "@/lib/auth/redirect";
 import { getPrivateProfile } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { hasEnvVars } from "@/lib/utils";
+import { getPostAuthenticationDestination } from "@/lib/staff/authorization";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
@@ -49,6 +50,10 @@ export async function GET(request: NextRequest) {
 
   if (!user) {
     redirect("/auth/error");
+  }
+
+  if (requestedDestination === "/staff") {
+    redirect(await getPostAuthenticationDestination(user));
   }
 
   const profile = await getPrivateProfile(user.id);
