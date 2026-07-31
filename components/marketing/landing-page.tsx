@@ -196,7 +196,7 @@ function ConnectionPreview() {
 
   return (
     <div
-      className="product-window animate-enter-delay"
+      className="product-window animate-enter-delay shadow-[0_24px_60px_rgba(15,27,51,0.11)]"
       aria-label="Pratinjau profil anonim mahasiswa di StudyDate"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-brand-border px-5 py-4 sm:px-6">
@@ -210,7 +210,7 @@ function ConnectionPreview() {
             priority
           />
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
-            People · profil anonim
+            PEOPLE • PROFIL ANONIM
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-muted">
@@ -241,7 +241,7 @@ function ConnectionPreview() {
             <h2 className="font-heading text-xl font-semibold tracking-[-0.025em] text-brand-navy sm:text-2xl">
               Mahasiswa #184
             </h2>
-            <span className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-2.5 py-1 text-[10px] font-semibold text-brand-blue">
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-2.5 py-1 text-xs font-semibold text-brand-blue">
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
               Terverifikasi
             </span>
@@ -251,7 +251,7 @@ function ConnectionPreview() {
             Teknik Informatika
           </p>
           <p className="mt-1.5 text-sm text-brand-muted">
-            Semester 3 · satu kampus
+            Semester 3 • satu kampus
           </p>
 
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
