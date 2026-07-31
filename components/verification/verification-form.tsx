@@ -1,6 +1,20 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
+import {
+  SearchableCreatableCombobox,
+  type ComboboxEntryMode,
+} from "@/components/onboarding/searchable-creatable-combobox";
+import { CAMPUS_OPTIONS } from "@/lib/onboarding/options/campuses";
+import { STUDY_PROGRAM_OPTIONS } from "@/lib/onboarding/options/study-programs";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  FileImage,
+  LockKeyhole,
+  ShieldCheck,
+  UploadCloud,
+} from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 type AcademicData = {
@@ -9,6 +23,7 @@ type AcademicData = {
   campus: string;
   studyProgram: string;
   degreeLevel: string;
+  semester: string;
 };
 
 const initialAcademicData: AcademicData = {
@@ -17,7 +32,15 @@ const initialAcademicData: AcademicData = {
   campus: "",
   studyProgram: "",
   degreeLevel: "",
+  semester: "",
 };
+
+const MAX_EVIDENCE_BYTES = 5_242_880;
+const SUPPORTED_EVIDENCE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
 
 export function VerificationForm() {
   const [step, setStep] = useState(0);
@@ -26,7 +49,13 @@ export function VerificationForm() {
     "campus_email",
   );
   const [campusEmail, setCampusEmail] = useState("");
-  const [evidence, setEvidence] = useState<File | null>(null);
+  const [studentCardEvidence, setStudentCardEvidence] = useState<File | null>(
+    null,
+  );
+  const [pddiktiEvidence, setPddiktiEvidence] = useState<File | null>(null);
+  const [campusMode, setCampusMode] = useState<ComboboxEntryMode>("list");
+  const [studyProgramMode, setStudyProgramMode] =
+    useState<ComboboxEntryMode>("list");
   const [consent, setConsent] = useState(false);
   const [requestId, setRequestId] = useState("");
   const [code, setCode] = useState("");
@@ -47,9 +76,21 @@ export function VerificationForm() {
         !academic.legalName.trim() ||
         !academic.campus.trim() ||
         !academic.studyProgram.trim() ||
-        !academic.degreeLevel)
+        !academic.degreeLevel ||
+        !pddiktiEvidence)
     ) {
-      setMessage("Lengkapi seluruh data akademik sebelum melanjutkan.");
+      setMessage(
+        "Lengkapi data akademik dan unggah bukti PDDikti sebelum melanjutkan.",
+      );
+      return;
+    }
+    if (
+      step === 0 &&
+      pddiktiEvidence &&
+      (pddiktiEvidence.size > MAX_EVIDENCE_BYTES ||
+        !SUPPORTED_EVIDENCE_TYPES.includes(pddiktiEvidence.type))
+    ) {
+      setMessage("Bukti PDDikti harus berupa JPG, PNG, atau WebP maksimal 5 MB.");
       return;
     }
     if (step === 1) {
@@ -57,8 +98,17 @@ export function VerificationForm() {
         setMessage("Masukkan email kampus sebelum melanjutkan.");
         return;
       }
-      if (method === "student_card" && !evidence) {
+      if (method === "student_card" && !studentCardEvidence) {
         setMessage("Pilih foto kartu mahasiswa sebelum melanjutkan.");
+        return;
+      }
+      if (
+        method === "student_card" &&
+        studentCardEvidence &&
+        (studentCardEvidence.size > MAX_EVIDENCE_BYTES ||
+          !SUPPORTED_EVIDENCE_TYPES.includes(studentCardEvidence.type))
+      ) {
+        setMessage("Foto kartu mahasiswa harus berupa JPG, PNG, atau WebP maksimal 5 MB.");
         return;
       }
     }
@@ -71,13 +121,20 @@ export function VerificationForm() {
       setMessage("Persetujuan verifikasi harus diberikan secara terpisah.");
       return;
     }
+    if (!pddiktiEvidence) {
+      setMessage("Bukti PDDikti perlu diunggah sebelum permintaan dikirim.");
+      return;
+    }
     setIsBusy(true);
     setMessage("");
     const body = new FormData();
     Object.entries(academic).forEach(([key, value]) => body.set(key, value));
     body.set("method", method);
     body.set("consent", "true");
-    if (evidence) body.set("evidence", evidence);
+    body.set("pddiktiEvidence", pddiktiEvidence);
+    if (studentCardEvidence) {
+      body.set("studentCardEvidence", studentCardEvidence);
+    }
 
     try {
       const response = await fetch("/api/verification/submit", {
@@ -265,19 +322,68 @@ export function VerificationForm() {
             Data akademik
           </legend>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
-            Nama lengkap dan NIM hanya digunakan untuk verifikasi. Keduanya
-            tidak ditampilkan pada profil publik.
+            Cocokkan isian dengan data PDDikti. Nama lengkap dan NIM tetap
+            privat dan tidak ditampilkan pada profil publik.
           </p>
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
-            <Field id="nim" label="NIM" value={academic.nim} maxLength={32} onChange={(value) => updateAcademic("nim", value)} />
-            <Field id="legal-name" label="Nama lengkap sesuai data akademik" value={academic.legalName} maxLength={160} autoComplete="name" onChange={(value) => updateAcademic("legalName", value)} />
-            <Field id="verification-campus" label="Kampus" value={academic.campus} maxLength={120} onChange={(value) => updateAcademic("campus", value)} />
-            <Field id="verification-program" label="Program studi" value={academic.studyProgram} maxLength={120} onChange={(value) => updateAcademic("studyProgram", value)} />
-            <label className="block sm:col-span-2">
+            <Field
+              id="legal-name"
+              label="Nama lengkap sesuai PDDikti"
+              value={academic.legalName}
+              maxLength={160}
+              autoComplete="name"
+              onChange={(value) => updateAcademic("legalName", value)}
+            />
+            <Field
+              id="verification-nim"
+              label="NIM"
+              value={academic.nim}
+              maxLength={32}
+              autoComplete="off"
+              helperText="Digunakan hanya untuk pencocokan data mahasiswa."
+              onChange={(value) => updateAcademic("nim", value)}
+            />
+            <SearchableCreatableCombobox
+              id="verification-campus"
+              label="Kampus / Universitas"
+              value={academic.campus}
+              options={CAMPUS_OPTIONS}
+              placeholder="Cari kampus atau universitas..."
+              noResultsPrompt="Kampusmu belum ada di daftar?"
+              manualButtonLabel="Tambahkan kampus secara manual"
+              manualLabel="Nama kampus / universitas"
+              manualPlaceholder="Tulis nama kampusmu"
+              mode={campusMode}
+              helperText="Pilih dari daftar atau masukkan nama kampus secara manual."
+              autoComplete="organization"
+              maxLength={120}
+              onChange={(value) => updateAcademic("campus", value)}
+              onModeChange={setCampusMode}
+            />
+            <SearchableCreatableCombobox
+              id="verification-program"
+              label="Program studi / jurusan"
+              value={academic.studyProgram}
+              options={STUDY_PROGRAM_OPTIONS}
+              placeholder="Cari program studi..."
+              noResultsPrompt="Program studimu belum ada di daftar?"
+              manualButtonLabel="Tambahkan program studi secara manual"
+              manualLabel="Nama program studi / jurusan"
+              manualPlaceholder="Tulis program studimu"
+              mode={studyProgramMode}
+              maxLength={120}
+              onChange={(value) => updateAcademic("studyProgram", value)}
+              onModeChange={setStudyProgramMode}
+            />
+            <label className="block min-w-0">
               <span className="text-sm font-semibold">Jenjang</span>
               <select
+                id="verification-degree-level"
                 value={academic.degreeLevel}
-                onChange={(event) => updateAcademic("degreeLevel", event.target.value)}
+                required
+                onChange={(event) =>
+                  updateAcademic("degreeLevel", event.target.value)
+                }
                 className="focus-ring mt-2 h-12 w-full rounded-xl border border-brand-border bg-white px-4"
               >
                 <option value="">Pilih jenjang</option>
@@ -289,6 +395,100 @@ export function VerificationForm() {
                 <option value="spesialis">Spesialis</option>
               </select>
             </label>
+            <label className="block min-w-0">
+              <span className="text-sm font-semibold">
+                Semester{" "}
+                <span className="font-normal text-brand-muted">(opsional)</span>
+              </span>
+              <select
+                id="verification-semester"
+                value={academic.semester}
+                onChange={(event) =>
+                  updateAcademic("semester", event.target.value)
+                }
+                className="focus-ring mt-2 h-12 w-full rounded-xl border border-brand-border bg-white px-4"
+              >
+                <option value="">Pilih semester</option>
+                {Array.from({ length: 16 }, (_, index) => index + 1).map(
+                  (semester) => (
+                    <option key={semester} value={semester}>
+                      Semester {semester}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+          </div>
+          <div className="mt-7 rounded-[20px] border border-brand-border bg-brand-surface/60 p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue shadow-sm">
+                <UploadCloud className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 className="font-heading text-lg font-semibold">
+                  Upload bukti PDDikti
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-brand-muted">
+                  Unggah screenshot halaman PDDikti yang memperlihatkan data
+                  akademikmu dengan jelas.
+                </p>
+              </div>
+            </div>
+            <label
+              htmlFor="pddikti-evidence"
+              className="focus-within:outline-brand-blue mt-5 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-brand-blue/45 bg-white px-5 py-6 text-center focus-within:outline focus-within:outline-2 focus-within:outline-offset-4"
+            >
+              {pddiktiEvidence ? (
+                <>
+                  <FileImage
+                    className="h-7 w-7 text-brand-blue"
+                    aria-hidden="true"
+                  />
+                  <span className="mt-3 max-w-full truncate text-sm font-semibold text-brand-navy">
+                    {pddiktiEvidence.name}
+                  </span>
+                  <span className="mt-1 text-xs text-brand-muted">
+                    Klik untuk mengganti file
+                  </span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud
+                    className="h-7 w-7 text-brand-blue"
+                    aria-hidden="true"
+                  />
+                  <span className="mt-3 text-sm font-semibold text-brand-navy">
+                    Pilih screenshot PDDikti
+                  </span>
+                  <span className="mt-1 text-xs text-brand-muted">
+                    JPG, PNG, atau WebP · maksimal 5 MB
+                  </span>
+                </>
+              )}
+              <input
+                id="pddikti-evidence"
+                type="file"
+                required
+                accept="image/jpeg,image/png,image/webp"
+                aria-describedby="pddikti-evidence-privacy"
+                onChange={(event) => {
+                  setPddiktiEvidence(event.target.files?.[0] ?? null);
+                  setMessage("");
+                }}
+                className="sr-only"
+              />
+            </label>
+            <p
+              id="pddikti-evidence-privacy"
+              className="mt-4 flex items-start gap-2 text-xs leading-5 text-brand-muted"
+            >
+              <LockKeyhole
+                className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue"
+                aria-hidden="true"
+              />
+              Bukti disimpan secara privat, hanya digunakan untuk review
+              verifikasi, dan dijadwalkan untuk dihapus.
+            </p>
           </div>
         </fieldset>
       ) : null}
@@ -318,7 +518,7 @@ export function VerificationForm() {
           ) : (
             <label className="mt-6 block max-w-xl">
               <span className="text-sm font-semibold">Foto kartu mahasiswa</span>
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setEvidence(event.target.files?.[0] ?? null)} className="focus-ring mt-2 block w-full rounded-xl border border-brand-border p-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-brand-surface file:px-4 file:py-2 file:font-semibold" />
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setStudentCardEvidence(event.target.files?.[0] ?? null)} className="focus-ring mt-2 block w-full rounded-xl border border-brand-border p-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-brand-surface file:px-4 file:py-2 file:font-semibold" />
               <span className="mt-2 block text-xs leading-5 text-brand-muted">JPG, PNG, atau WebP. Maksimal 5 MB. File tidak tersedia secara publik.</span>
             </label>
           )}
@@ -372,25 +572,38 @@ export function VerificationForm() {
 function Field({
   id,
   label,
+  helperText,
   onChange,
   className = "",
   ...props
 }: {
   id: string;
   label: string;
+  helperText?: string;
   onChange: (value: string) => void;
   className?: string;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "onChange">) {
   return (
-    <label className={`block min-w-0 ${className}`}>
-      <span className="text-sm font-semibold">{label}</span>
+    <div className={`block min-w-0 ${className}`}>
+      <label htmlFor={id} className="text-sm font-semibold">
+        {label}
+      </label>
       <input
         id={id}
         required
+        aria-describedby={helperText ? `${id}-helper` : undefined}
         onChange={(event) => onChange(event.target.value)}
         className="focus-ring mt-2 h-12 w-full rounded-xl border border-brand-border px-4"
         {...props}
       />
-    </label>
+      {helperText ? (
+        <p
+          id={`${id}-helper`}
+          className="mt-2 text-xs leading-5 text-brand-muted"
+        >
+          {helperText}
+        </p>
+      ) : null}
+    </div>
   );
 }

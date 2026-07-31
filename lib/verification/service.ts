@@ -39,6 +39,7 @@ export type SubmissionInput = {
     | "doktor"
     | "profesi"
     | "spesialis";
+  semester: number | null;
   method: "campus_email" | "student_card";
 };
 
@@ -60,47 +61,80 @@ export class VerificationServiceError extends Error {
 export async function submitVerificationRequest(
   userId: string,
   input: SubmissionInput,
-  evidence: File | null,
+  studentCardEvidence: File | null,
+  pddiktiEvidence: File | null,
 ) {
   const admin = createServerAdminClient();
   if (!admin) throw new VerificationServiceError("configuration");
+  const verificationAdmin = admin;
 
   let evidencePath: string | null = null;
+  let pddiktiEvidencePath: string | null = null;
   const requestId = randomUUID();
   const normalizedNim = normalizeNim(input.nim);
   const encryptedNim = encryptVerificationValue(normalizedNim);
   const encryptedName = encryptVerificationValue(input.legalName);
 
-  if (input.method === "student_card") {
-    if (
-      !evidence ||
-      evidence.size < 1 ||
-      evidence.size > MAX_EVIDENCE_BYTES ||
-      !SUPPORTED_FILES.has(evidence.type)
-    ) {
-      throw new VerificationServiceError("evidence");
-    }
-    const extension = SUPPORTED_FILES.get(evidence.type);
-    evidencePath = `${userId}/${requestId}/${randomUUID()}.${extension}`;
-    const { error } = await admin.storage
+  function isSupportedEvidence(file: File | null): file is File {
+    return Boolean(
+      file &&
+        file.size >= 1 &&
+        file.size <= MAX_EVIDENCE_BYTES &&
+        SUPPORTED_FILES.has(file.type),
+    );
+  }
+
+  if (!isSupportedEvidence(pddiktiEvidence)) {
+    throw new VerificationServiceError("evidence");
+  }
+  if (
+    (input.method === "student_card" &&
+      !isSupportedEvidence(studentCardEvidence)) ||
+    (input.method === "campus_email" && studentCardEvidence)
+  ) {
+    throw new VerificationServiceError("evidence");
+  }
+
+  async function uploadEvidence(file: File, category: string) {
+    const extension = SUPPORTED_FILES.get(file.type);
+    const path = `${userId}/${requestId}/${category}/${randomUUID()}.${extension}`;
+    const { error } = await verificationAdmin.storage
       .from(VERIFICATION_BUCKET)
-      .upload(evidencePath, await evidence.arrayBuffer(), {
-        contentType: evidence.type,
+      .upload(path, await file.arrayBuffer(), {
+        contentType: file.type,
         cacheControl: "private, max-age=0",
         upsert: false,
       });
     if (error) throw new VerificationServiceError("evidence");
-  } else if (evidence) {
-    throw new VerificationServiceError("evidence");
+    return path;
   }
 
-  const { error } = await admin.rpc("create_student_verification_request", {
+  try {
+    pddiktiEvidencePath = await uploadEvidence(
+      pddiktiEvidence,
+      "pddikti",
+    );
+    if (input.method === "student_card" && studentCardEvidence) {
+      evidencePath = await uploadEvidence(studentCardEvidence, "student-card");
+    }
+  } catch (error) {
+    const uploadedPaths = [pddiktiEvidencePath, evidencePath].filter(
+      (path): path is string => Boolean(path),
+    );
+    if (uploadedPaths.length) {
+      await admin.storage.from(VERIFICATION_BUCKET).remove(uploadedPaths);
+    }
+    throw error;
+  }
+
+  const { error } = await admin.rpc("create_student_verification_request_v2", {
     p_user_id: userId,
     p_request_id: requestId,
     p_method: input.method,
     p_campus_claim: input.campus,
     p_study_program_claim: input.studyProgram,
     p_degree_level_claim: input.degreeLevel,
+    p_semester_claim: input.semester,
     p_nim_ciphertext: encryptedNim.ciphertext,
     p_nim_iv: encryptedNim.iv,
     p_nim_auth_tag: encryptedNim.authTag,
@@ -111,11 +145,15 @@ export async function submitVerificationRequest(
     p_legal_name_auth_tag: encryptedName.authTag,
     p_consent_version: VERIFICATION_CONSENT_VERSION,
     p_evidence_path: evidencePath,
+    p_pddikti_evidence_path: pddiktiEvidencePath,
   });
 
   if (error) {
-    if (evidencePath) {
-      await admin.storage.from(VERIFICATION_BUCKET).remove([evidencePath]);
+    const uploadedPaths = [pddiktiEvidencePath, evidencePath].filter(
+      (path): path is string => Boolean(path),
+    );
+    if (uploadedPaths.length) {
+      await admin.storage.from(VERIFICATION_BUCKET).remove(uploadedPaths);
     }
     throw new VerificationServiceError(
       error.code === "23505" ? "duplicate" : "database",

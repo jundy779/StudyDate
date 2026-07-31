@@ -29,6 +29,7 @@ type SearchableCreatableComboboxProps = {
   manualPlaceholder: string;
   mode: ComboboxEntryMode;
   error?: string;
+  helperText?: string;
   autoComplete?: string;
   maxLength: number;
   onChange: (value: string) => void;
@@ -48,6 +49,7 @@ export function SearchableCreatableCombobox({
   manualPlaceholder,
   mode,
   error,
+  helperText,
   autoComplete = "off",
   maxLength,
   onChange,
@@ -74,7 +76,7 @@ export function SearchableCreatableCombobox({
     ? Math.min(activeIndex, filteredOptions.length - 1)
     : -1;
   const activeOption = filteredOptions[safeActiveIndex];
-  const describedBy = [descriptionId, error ? errorId : null]
+  const describedBy = [helperText ? descriptionId : null, error ? errorId : null]
     .filter(Boolean)
     .join(" ");
 
@@ -207,9 +209,14 @@ export function SearchableCreatableCombobox({
           }}
           className="focus-ring h-12 w-full rounded-xl border border-brand-border px-4 placeholder:text-brand-muted"
         />
-        <p id={descriptionId} className="mt-2 text-xs leading-5 text-brand-muted">
-          Nilai manual tetap mengikuti validasi StudyDate.
-        </p>
+        {helperText ? (
+          <p
+            id={descriptionId}
+            className="mt-2 text-xs leading-5 text-brand-muted"
+          >
+            {helperText}
+          </p>
+        ) : null}
         {error ? (
           <p id={errorId} className="mt-2 text-sm text-brand-error">
             {error}
@@ -336,9 +343,14 @@ export function SearchableCreatableCombobox({
           />
         </button>
       </div>
-      <p id={descriptionId} className="mt-2 text-xs leading-5 text-brand-muted">
-        Daftar saran awal; pilihan manual selalu tersedia.
-      </p>
+      {helperText ? (
+        <p
+          id={descriptionId}
+          className="mt-2 text-xs leading-5 text-brand-muted"
+        >
+          {helperText}
+        </p>
+      ) : null}
       {error ? (
         <p id={errorId} className="mt-2 text-sm text-brand-error">
           {error}

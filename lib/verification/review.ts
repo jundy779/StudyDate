@@ -81,12 +81,34 @@ export class StudentVerificationReviewService {
     return data.signedUrl;
   }
 
+  async createPddiktiEvidenceReviewUrl(
+    requestId: string,
+    reviewerId: string,
+  ) {
+    const admin = await this.authorizeReviewer(reviewerId);
+    const { data: request, error } = await admin
+      .from("student_verification_requests")
+      .select("pddikti_evidence_path")
+      .eq("id", requestId)
+      .maybeSingle<{ pddikti_evidence_path: string | null }>();
+    if (error || !request?.pddikti_evidence_path) {
+      throw new Error("PDDikti evidence is unavailable.");
+    }
+    const { data, error: signedUrlError } = await admin.storage
+      .from(VERIFICATION_BUCKET)
+      .createSignedUrl(request.pddikti_evidence_path, 300);
+    if (signedUrlError || !data.signedUrl) {
+      throw new Error("PDDikti evidence is unavailable.");
+    }
+    return data.signedUrl;
+  }
+
   async getManualReviewClaim(requestId: string, reviewerId: string) {
     const admin = await this.authorizeReviewer(reviewerId);
     const { data, error } = await admin
       .from("student_verification_requests")
       .select(
-        "id, campus_claim, study_program_claim, degree_level_claim, nim_ciphertext, nim_iv, nim_auth_tag, legal_name_ciphertext, legal_name_iv, legal_name_auth_tag",
+        "id, campus_claim, study_program_claim, degree_level_claim, semester_claim, nim_ciphertext, nim_iv, nim_auth_tag, legal_name_ciphertext, legal_name_iv, legal_name_auth_tag",
       )
       .eq("id", requestId)
       .in("status", ["pending", "under_review", "needs_action"])
@@ -98,6 +120,7 @@ export class StudentVerificationReviewService {
       campus: data.campus_claim,
       studyProgram: data.study_program_claim,
       degreeLevel: data.degree_level_claim,
+      semester: data.semester_claim,
       nim: decryptVerificationValue({
         ciphertext: data.nim_ciphertext,
         iv: data.nim_iv,
@@ -117,21 +140,47 @@ export async function deleteExpiredVerificationEvidence(nowIso: string) {
   if (!admin) throw new Error("Evidence deletion is unavailable.");
   const { data, error } = await admin
     .from("student_verification_requests")
-    .select("id, evidence_path")
-    .not("evidence_path", "is", null)
-    .lte("evidence_deletion_at", nowIso)
+    .select(
+      "id, evidence_path, evidence_deletion_at, pddikti_evidence_path, pddikti_evidence_deletion_at",
+    )
+    .or(
+      `evidence_deletion_at.lte.${nowIso},pddikti_evidence_deletion_at.lte.${nowIso}`,
+    )
     .limit(100);
   if (error) throw new Error("Evidence deletion is unavailable.");
 
   for (const request of data ?? []) {
-    if (!request.evidence_path) continue;
+    const dueStudentCard =
+      request.evidence_path &&
+      request.evidence_deletion_at &&
+      request.evidence_deletion_at <= nowIso;
+    const duePddikti =
+      request.pddikti_evidence_path &&
+      request.pddikti_evidence_deletion_at &&
+      request.pddikti_evidence_deletion_at <= nowIso;
+    const paths = [
+      dueStudentCard ? request.evidence_path : null,
+      duePddikti ? request.pddikti_evidence_path : null,
+    ].filter((path): path is string => Boolean(path));
+    if (!paths.length) continue;
+
     const { error: removalError } = await admin.storage
       .from(VERIFICATION_BUCKET)
-      .remove([request.evidence_path]);
+      .remove(paths);
     if (!removalError) {
       await admin
         .from("student_verification_requests")
-        .update({ evidence_path: null, evidence_deleted_at: nowIso })
+        .update({
+          ...(dueStudentCard
+            ? { evidence_path: null, evidence_deleted_at: nowIso }
+            : {}),
+          ...(duePddikti
+            ? {
+                pddikti_evidence_path: null,
+                pddikti_evidence_deleted_at: nowIso,
+              }
+            : {}),
+        })
         .eq("id", request.id);
     }
   }

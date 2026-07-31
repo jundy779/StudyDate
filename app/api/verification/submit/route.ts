@@ -35,18 +35,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 400 });
   }
   const raw = Object.fromEntries(
-    ["nim", "legalName", "campus", "studyProgram", "degreeLevel", "method", "consent"]
+    ["nim", "legalName", "campus", "studyProgram", "degreeLevel", "semester", "method", "consent"]
       .map((key) => [key, formData.get(key)]),
   );
   const parsed = verificationSubmissionSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 400 });
   }
-  const evidenceValue = formData.get("evidence");
-  const evidence = evidenceValue instanceof File ? evidenceValue : null;
+  const studentCardValue = formData.get("studentCardEvidence");
+  const studentCardEvidence =
+    studentCardValue instanceof File ? studentCardValue : null;
+  const pddiktiValue = formData.get("pddiktiEvidence");
+  const pddiktiEvidence =
+    pddiktiValue instanceof File ? pddiktiValue : null;
 
   try {
-    const result = await submitVerificationRequest(user.id, parsed.data, evidence);
+    const result = await submitVerificationRequest(
+      user.id,
+      parsed.data,
+      studentCardEvidence,
+      pddiktiEvidence,
+    );
     return NextResponse.json({ ok: true, requestId: result.requestId });
   } catch (error) {
     const status =

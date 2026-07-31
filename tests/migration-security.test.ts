@@ -9,6 +9,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const academicRefinementMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202607310002_refine_academic_verification.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 test("migration creates all private onboarding objects with RLS enabled", () => {
   for (const table of ["profiles", "privacy_preferences", "user_consents"]) {
@@ -122,4 +129,47 @@ test("atomic onboarding RPC has SECURITY DEFINER hardening", () => {
     assert.doesNotMatch(rpc, new RegExp(protectedParameter));
   }
   assert.match(rpc, /'unverified',\s+false,\s+now\(\)/);
+});
+
+test("academic onboarding refinement stores optional NIM outside profiles", () => {
+  assert.match(
+    academicRefinementMigration,
+    /create table public\.onboarding_academic_claims/,
+  );
+  assert.match(academicRefinementMigration, /nim_ciphertext bytea not null/);
+  assert.match(academicRefinementMigration, /nim_fingerprint text not null/);
+  assert.match(
+    academicRefinementMigration,
+    /alter table public\.onboarding_academic_claims enable row level security/,
+  );
+  assert.match(
+    academicRefinementMigration,
+    /revoke all on table public\.onboarding_academic_claims[\s\S]*from public, anon, authenticated/,
+  );
+  assert.doesNotMatch(
+    academicRefinementMigration,
+    /alter table public\.profiles[\s\S]{0,200}add column nim/,
+  );
+});
+
+test("onboarding v2 keeps one atomic RPC with protected academic data", () => {
+  const rpc = academicRefinementMigration.slice(
+    academicRefinementMigration.indexOf(
+      "public.complete_student_onboarding_v2",
+    ),
+    academicRefinementMigration.indexOf(
+      "alter table public.student_verification_requests",
+    ),
+  );
+  assert.match(rpc, /security definer/);
+  assert.match(rpc, /set search_path = ''/);
+  assert.match(rpc, /current_user_id uuid := auth\.uid\(\)/);
+  assert.match(rpc, /insert into public\.profiles/);
+  assert.match(rpc, /insert into public\.onboarding_academic_claims/);
+  assert.match(rpc, /insert into public\.privacy_preferences/);
+  assert.match(rpc, /insert into public\.user_consents/);
+  assert.match(
+    academicRefinementMigration,
+    /revoke execute on function public\.complete_student_onboarding\([\s\S]*from authenticated/,
+  );
 });

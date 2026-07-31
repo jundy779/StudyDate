@@ -82,8 +82,9 @@ Server mengautentikasi, melakukan strict validation, menolak protected fields, m
 setelah commit.
 
 `lib/onboarding/service.ts` membuat alias secara server-side dengan `crypto.randomInt()` dan collision retry.
-RPC menerima alias tersebut, mengambil target user dari `auth.uid()`, menyimpan profile, preferences, dan tiga consent
-secara atomik, lalu rollback bila gagal.
+RPC v2 menerima alias tersebut, mengambil target user dari `auth.uid()`, menyimpan profile, optional encrypted NIM
+claim, preferences, dan tiga consent secara atomik, lalu rollback bila gagal. NIM tidak masuk `profiles`; Route Handler
+lebih dulu mengenkripsinya dengan AES-256-GCM dan membuat keyed HMAC fingerprint.
 
 ## 8. Early Access architecture
 
@@ -132,6 +133,7 @@ Trust boundaries:
 - email kampus harus cocok dengan domain berstatus `approved`, bukan sekadar suffix `.ac.id`;
 - kode email disimpan sebagai keyed hash dengan expiry, attempt limit, dan resend cooldown;
 - kartu mahasiswa berada di bucket privat, diakses reviewer melalui signed URL lima menit, dan dijadwalkan dihapus;
+- screenshot PDDikti memakai object path dan deletion lifecycle terpisah dari kartu mahasiswa;
 - keputusan review dan update `profiles.verification_status` dilakukan dalam satu RPC service-role dengan audit event
   tersanitasi.
 

@@ -1,4 +1,8 @@
 import { CONNECTION_GOALS, INTERESTS } from "./constants.ts";
+import {
+  degreeLevels,
+  nimInputSchema,
+} from "../verification/validation.ts";
 import { z } from "zod";
 
 const goalValues = CONNECTION_GOALS.map((goal) => goal.value) as [
@@ -21,8 +25,16 @@ const optionalTrimmedString = (maximum: number) =>
 export const onboardingSchema = z
   .object({
     firstName: z.string().trim().min(1).max(80),
+    nim: z
+      .union([
+        nimInputSchema,
+        z.literal("").transform(() => null),
+        z.null(),
+      ])
+      .default(null),
     campus: z.string().trim().min(2).max(120),
     studyProgram: z.string().trim().min(2).max(120),
+    degreeLevel: z.enum(degreeLevels),
     semester: z
       .union([z.number().int().min(1).max(16), z.null()])
       .default(null),

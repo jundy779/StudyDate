@@ -61,6 +61,9 @@ akun. Badge hanya boleh diberikan bila data akademik cocok dan kepemilikan dibuk
 terverifikasi atau review kartu mahasiswa yang disetujui. NIM, nama legal, kode, dan dokumen tidak boleh disimpan atau
 ditampilkan sebagai plaintext.
 
+Jika NIM ditawarkan saat onboarding, field harus opsional, disimpan terenkripsi di luar `profiles`, dan tidak boleh
+mengaktifkan verification atau discoverability secara otomatis.
+
 ## 6. Safety rules
 
 Pertemuan offline hanya di tempat umum yang ramai, terang, mudah diakses, dan masih beroperasi. Lokasi pribadi tidak

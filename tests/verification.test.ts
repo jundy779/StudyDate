@@ -15,6 +15,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const refinementMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202607310002_refine_academic_verification.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const service = readFileSync(
   new URL("../lib/verification/service.ts", import.meta.url),
   "utf8",
@@ -35,6 +42,7 @@ const validSubmission = {
   campus: "Universitas Contoh",
   studyProgram: "Sistem Informasi",
   degreeLevel: "sarjana",
+  semester: "6",
   method: "campus_email",
   consent: "true",
 };
@@ -43,6 +51,7 @@ test("submission validation normalizes acceptable academic data", () => {
   const result = verificationSubmissionSchema.parse(validSubmission);
   assert.equal(normalizeNim(result.nim), "12345678");
   assert.equal(result.legalName, "Nadia Putri");
+  assert.equal(result.semester, 6);
 });
 
 test("invalid NIM, unknown enums, extra fields, and missing consent fail", () => {
@@ -223,6 +232,25 @@ test("student-card evidence is private, limited, and scheduled for deletion", ()
   assert.match(review, /deleteExpiredVerificationEvidence/);
   assert.match(review, /app_metadata\?\.verification_reviewer !== true/);
   assert.doesNotMatch(service, /\/public/);
+});
+
+test("PDDikti screenshot has a separate private lifecycle", () => {
+  assert.match(refinementMigration, /pddikti_evidence_path text null/);
+  assert.match(
+    refinementMigration,
+    /pddikti_evidence_deletion_at timestamptz null/,
+  );
+  assert.match(
+    refinementMigration,
+    /create_student_verification_request_v2/,
+  );
+  assert.match(
+    refinementMigration,
+    /if p_pddikti_evidence_path is null then/,
+  );
+  assert.match(service, /p_pddikti_evidence_path: pddiktiEvidencePath/);
+  assert.match(review, /createPddiktiEvidenceReviewUrl/);
+  assert.match(review, /pddikti_evidence_deleted_at/);
 });
 
 test("audit events are append-only and contain controlled sanitized types", () => {

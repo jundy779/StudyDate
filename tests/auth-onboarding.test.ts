@@ -20,8 +20,10 @@ import { STUDY_PROGRAM_OPTIONS } from "../lib/onboarding/options/study-programs.
 
 const validOnboarding = {
   firstName: "  Naya  ",
+  nim: " 12.34-5678 ",
   campus: "  Universitas Indonesia  ",
   studyProgram: "  Ilmu Komputer  ",
+  degreeLevel: "sarjana",
   semester: 4,
   cityRegion: "Depok",
   shortIntro: null,
@@ -66,8 +68,10 @@ test("authenticated redirects allow only known internal destinations", () => {
 test("onboarding trims profile fields and accepts approved values", () => {
   const parsed = onboardingSchema.parse(validOnboarding);
   assert.equal(parsed.firstName, "Naya");
+  assert.equal(parsed.nim, "12.34-5678");
   assert.equal(parsed.campus, "Universitas Indonesia");
   assert.equal(parsed.studyProgram, "Ilmu Komputer");
+  assert.equal(parsed.degreeLevel, "sarjana");
 });
 
 test("onboarding suggestions are normalized, unique, sorted, and searchable", () => {
@@ -120,12 +124,15 @@ test("onboarding suggestions are normalized, unique, sorted, and searchable", ()
 test("onboarding rejects every protected or invalid input class", async (t) => {
   const cases: Array<[string, unknown]> = [
     ["empty first name", { ...validOnboarding, firstName: " " }],
+    ["invalid NIM", { ...validOnboarding, nim: "1---2" }],
+    ["long NIM", { ...validOnboarding, nim: "1".repeat(33) }],
     ["short campus", { ...validOnboarding, campus: "A" }],
     ["long campus", { ...validOnboarding, campus: "A".repeat(121) }],
     [
       "long study program",
       { ...validOnboarding, studyProgram: "A".repeat(121) },
     ],
+    ["unknown degree level", { ...validOnboarding, degreeLevel: "sma" }],
     ["semester below range", { ...validOnboarding, semester: 0 }],
     ["semester above range", { ...validOnboarding, semester: 17 }],
     ["long city", { ...validOnboarding, cityRegion: "A".repeat(121) }],

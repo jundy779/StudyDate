@@ -15,6 +15,7 @@ Sumber migration:
 1. `supabase/migrations/202607300001_create_early_access_waitlist.sql`
 2. `supabase/migrations/202607300002_create_auth_onboarding_foundation.sql`
 3. `supabase/migrations/202607310001_create_student_verification_center.sql`
+4. `supabase/migrations/202607310002_refine_academic_verification.sql`
 
 ### `early_access_waitlist`
 
@@ -44,6 +45,7 @@ public_alias text not null unique
 first_name text not null
 campus text not null
 study_program text not null
+degree_level text null
 semester smallint null
 city_region text null
 short_intro text null
@@ -57,6 +59,11 @@ updated_at timestamptz not null
 ```
 
 Protected: user_id, public_alias, verification_status, is_discoverable, onboarding_completed_at, timestamps.
+
+### `onboarding_academic_claims`
+
+Optional private NIM claim dari onboarding. Menyimpan AES-256-GCM ciphertext/IV/auth tag, NIM last four, dan keyed HMAC
+fingerprint. Tidak ada direct grant untuk anon atau authenticated dan NIM tidak disimpan di `profiles`.
 
 ### `privacy_preferences`
 
@@ -98,6 +105,10 @@ Ownership result: not_checked, campus_email_verified, document_verified, failed.
 
 Constraint database menolak status `verified` kecuali PDDikti `matched` dan ownership telah diverifikasi.
 
+Academic refinement menambahkan optional `semester_claim` serta `pddikti_evidence_path`,
+`pddikti_evidence_deletion_at`, dan `pddikti_evidence_deleted_at`. Screenshot PDDikti merupakan evidence akademik,
+bukan pengganti ownership proof.
+
 ### `campus_email_domains`
 
 Registry domain email kampus dengan status pending_review, approved, atau rejected. Tidak ada asumsi bahwa semua
@@ -137,6 +148,8 @@ Requirements:
 
 - `create_student_verification_request`: service-role only; membuat request, mengubah profile menjadi pending, dan
   menulis audit event dalam satu transaksi.
+- `create_student_verification_request_v2`: mewajibkan private PDDikti evidence path dan menyimpan optional semester
+  claim tanpa mengubah combined verification rule.
 - `confirm_student_campus_email_code`: service-role only; mengecek hash/expiry/attempt secara atomik dan mengubah
   ownership status.
 - `finalize_student_verification_review`: service-role only; menegakkan combined verification rule, memperbarui

@@ -21,11 +21,21 @@ const STEP_TITLES = [
 ] as const;
 
 const SEMESTER_OPTIONS = Array.from({ length: 16 }, (_, index) => index + 1);
+const DEGREE_OPTIONS = [
+  ["diploma", "Diploma"],
+  ["sarjana", "Sarjana"],
+  ["magister", "Magister"],
+  ["doktor", "Doktor"],
+  ["profesi", "Profesi"],
+  ["spesialis", "Spesialis"],
+] as const;
 
 type FormState = {
   firstName: string;
+  nim: string;
   campus: string;
   studyProgram: string;
+  degreeLevel: (typeof DEGREE_OPTIONS)[number][0] | "";
   semester: number | null;
   cityRegion: string | null;
   shortIntro: null;
@@ -47,8 +57,10 @@ type FormState = {
 
 type StepOneField =
   | "firstName"
+  | "nim"
   | "campus"
   | "studyProgram"
+  | "degreeLevel"
   | "semester"
   | "cityRegion";
 
@@ -62,8 +74,10 @@ type StepOneEntryModes = {
 
 const initialState: FormState = {
   firstName: "",
+  nim: "",
   campus: "",
   studyProgram: "",
+  degreeLevel: "",
   semester: null,
   cityRegion: null,
   shortIntro: null,
@@ -194,6 +208,7 @@ export function OnboardingForm() {
     if (step === 0) {
       const fieldErrors: StepOneErrors = {};
       const firstName = form.firstName.trim();
+      const nim = form.nim.trim();
       const campus = form.campus.trim();
       const studyProgram = form.studyProgram.trim();
       const cityRegion = form.cityRegion?.trim() ?? "";
@@ -202,6 +217,16 @@ export function OnboardingForm() {
         fieldErrors.firstName = "Nama depan wajib diisi.";
       } else if (firstName.length > 80) {
         fieldErrors.firstName = "Nama depan maksimal 80 karakter.";
+      }
+
+      if (
+        nim &&
+        (nim.length < 4 ||
+          nim.length > 32 ||
+          !/^[A-Za-z0-9./-]+$/.test(nim) ||
+          nim.replace(/[\s./-]+/g, "").length < 4)
+      ) {
+        fieldErrors.nim = "Periksa kembali format NIM.";
       }
 
       if (campus.length < 2) {
@@ -215,6 +240,10 @@ export function OnboardingForm() {
           "Pilih atau tulis program studi minimal 2 karakter.";
       } else if (studyProgram.length > 120) {
         fieldErrors.studyProgram = "Program studi maksimal 120 karakter.";
+      }
+
+      if (!form.degreeLevel) {
+        fieldErrors.degreeLevel = "Pilih jenjang pendidikan.";
       }
 
       if (
@@ -232,7 +261,7 @@ export function OnboardingForm() {
 
       if (Object.keys(fieldErrors).length) {
         setError(
-          "Lengkapi nama depan, kampus, dan program studi. Periksa kembali batas karakter dan semester.",
+          "Lengkapi data akademik yang wajib dan periksa kembali isianmu.",
         );
         return false;
       }
@@ -317,7 +346,7 @@ export function OnboardingForm() {
           aria-hidden="true"
         >
           <div
-            className="h-full rounded-full bg-brand-blue transition-[width]"
+            className="h-full rounded-full bg-brand-blue transition-[width] motion-reduce:transition-none"
             style={{ width: `${(step + 1) * 25}%` }}
           />
         </div>
@@ -339,6 +368,18 @@ export function OnboardingForm() {
             error={stepOneErrors.firstName}
             onChange={(value) => updateStepOneField("firstName", value)}
           />
+          <TextField
+            id="nim"
+            label="NIM"
+            optional
+            value={form.nim}
+            maxLength={32}
+            inputMode="text"
+            autoComplete="off"
+            helperText="Disimpan privat dan hanya digunakan untuk verifikasi mahasiswa."
+            error={stepOneErrors.nim}
+            onChange={(value) => updateStepOneField("nim", value)}
+          />
           <SearchableCreatableCombobox
             id="campus"
             label="Kampus"
@@ -351,6 +392,7 @@ export function OnboardingForm() {
             manualPlaceholder="Tulis nama kampusmu"
             mode={stepOneEntryModes.campus}
             error={stepOneErrors.campus}
+            helperText="Pilih dari daftar atau tambahkan nama kampusmu."
             autoComplete="organization"
             maxLength={120}
             onChange={(value) => updateStepOneField("campus", value)}
@@ -374,6 +416,44 @@ export function OnboardingForm() {
               updateStepOneEntryMode("studyProgram", mode)
             }
           />
+          <div className="min-w-0">
+            <label
+              htmlFor="degree-level"
+              className="mb-2 block text-sm font-semibold"
+            >
+              Jenjang
+            </label>
+            <select
+              id="degree-level"
+              value={form.degreeLevel}
+              onChange={(event) =>
+                updateStepOneField(
+                  "degreeLevel",
+                  event.target.value as FormState["degreeLevel"],
+                )
+              }
+              aria-invalid={Boolean(stepOneErrors.degreeLevel)}
+              aria-describedby={
+                stepOneErrors.degreeLevel ? "degree-level-error" : undefined
+              }
+              className="focus-ring h-12 w-full rounded-xl border border-brand-border bg-white px-4"
+            >
+              <option value="">Pilih jenjang</option>
+              {DEGREE_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            {stepOneErrors.degreeLevel ? (
+              <p
+                id="degree-level-error"
+                className="mt-2 text-sm text-brand-error"
+              >
+                {stepOneErrors.degreeLevel}
+              </p>
+            ) : null}
+          </div>
           <div className="min-w-0">
             <label
               htmlFor="semester"
@@ -666,6 +746,7 @@ function TextField({
   label,
   optional = false,
   error,
+  helperText,
   onChange,
   ...inputProps
 }: {
@@ -673,9 +754,17 @@ function TextField({
   label: string;
   optional?: boolean;
   error?: string;
+  helperText?: string;
   onChange: (value: string) => void;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   const errorId = `${id}-error`;
+  const helperId = `${id}-helper`;
+  const describedBy = [
+    helperText ? helperId : null,
+    error ? errorId : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="block min-w-0">
@@ -689,11 +778,16 @@ function TextField({
         id={id}
         type="text"
         aria-invalid={Boolean(error)}
-        aria-describedby={error ? errorId : undefined}
+        aria-describedby={describedBy || undefined}
         onChange={(event) => onChange(event.target.value)}
         className="focus-ring h-12 w-full rounded-xl border border-brand-border px-4"
         {...inputProps}
       />
+      {helperText ? (
+        <p id={helperId} className="mt-2 text-xs leading-5 text-brand-muted">
+          {helperText}
+        </p>
+      ) : null}
       {error ? (
         <p id={errorId} className="mt-2 text-sm text-brand-error">
           {error}

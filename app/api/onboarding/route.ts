@@ -1,6 +1,11 @@
 import { completeOnboardingWithAliasRetry } from "@/lib/onboarding/service";
 import { onboardingSchema } from "@/lib/onboarding/validation";
 import { createClient } from "@/lib/supabase/server";
+import {
+  encryptVerificationValue,
+  fingerprintNim,
+} from "@/lib/verification/crypto";
+import { normalizeNim } from "@/lib/verification/validation";
 import { NextResponse, type NextRequest } from "next/server";
 
 const MAX_REQUEST_BYTES = 12_288;
@@ -42,14 +47,29 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const normalizedNim = parsed.data.nim
+      ? normalizeNim(parsed.data.nim)
+      : null;
+    const encryptedNim = normalizedNim
+      ? encryptVerificationValue(normalizedNim)
+      : null;
+
     await completeOnboardingWithAliasRetry(
       parsed.data,
       async (alias, input, policyVersion) => {
-        const { error } = await supabase.rpc("complete_student_onboarding", {
+        const { error } = await supabase.rpc("complete_student_onboarding_v2", {
           p_public_alias: alias,
           p_first_name: input.firstName,
+          p_nim_ciphertext: encryptedNim?.ciphertext ?? null,
+          p_nim_iv: encryptedNim?.iv ?? null,
+          p_nim_auth_tag: encryptedNim?.authTag ?? null,
+          p_nim_last_four: normalizedNim?.slice(-4) ?? null,
+          p_nim_fingerprint: normalizedNim
+            ? fingerprintNim(normalizedNim)
+            : null,
           p_campus: input.campus,
           p_study_program: input.studyProgram,
+          p_degree_level: input.degreeLevel,
           p_semester: input.semester,
           p_city_region: input.cityRegion,
           p_short_intro: input.shortIntro,

@@ -119,11 +119,16 @@ Badge mahasiswa hanya diberikan bila dua syarat terpenuhi:
 Status UI: Belum terverifikasi, Sedang diperiksa, Perlu tindakan, Terverifikasi, Data belum dapat diverifikasi, dan
 Kedaluwarsa. Verifikasi bersifat opsional dan tidak menjamin perilaku atau keamanan pengguna.
 
+Pengajuan verification mencakup screenshot PDDikti sebagai bukti akademik terpisah dari bukti ownership. Screenshot
+disimpan privat, hanya tersedia melalui review access yang terotorisasi, dan mengikuti jadwal penghapusan.
+
 ## 7. Onboarding
 
 ### Step 1 — Perkenalan dasar
 
-Data: nama depan, kampus, program studi, semester opsional, kota/wilayah opsional.
+Data berurutan: nama depan, NIM opsional, kampus, program studi, jenjang, semester opsional, dan kota/wilayah
+opsional. NIM hanya diproses bila user memilih mengisinya, disimpan terenkripsi di area privat terpisah, dan digunakan
+untuk student verification.
 
 Tidak meminta nama lengkap, nomor telepon, alamat, lokasi presisi, social media, atau student ID document.
 

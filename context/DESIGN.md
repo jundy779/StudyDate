@@ -92,6 +92,10 @@ Empat langkah: basic introduction, interests/goals, comfort preferences, consent
 Gunakan progress yang jelas, no romantic pressure, no rigid compatibility scoring, privacy helper dekat sensitive input,
 dan jangan meminta data tidak perlu.
 
+Step 1 memakai hierarchy: Nama depan + NIM, Kampus + Program studi, Jenjang + Semester, lalu Kota/Kabupaten. Desktop
+dan tablet memakai dua kolom; mobile satu kolom. Kampus, program studi, dan kota memakai searchable combobox dengan
+manual fallback. Helper text harus ringkas dan tidak diulang di setiap combobox.
+
 ## 11. Authenticated app
 
 `/app` saat ini minimal. Boleh menampilkan private greeting, anonymous alias, real verification status, onboarding
@@ -108,6 +112,10 @@ Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan
 Selalu jelaskan bahwa nama legal dan NIM tidak tampil pada profil publik, verifikasi bersifat opsional, PDDikti match
 saja tidak membuktikan kepemilikan, dan badge tidak menjamin perilaku. Gunakan existing app tokens, visible focus,
 single-column mobile flow, dan status announcement; jangan membuat admin dashboard publik.
+
+Academic step memakai urutan Nama lengkap sesuai PDDikti, NIM, Kampus/Universitas, Program studi/jurusan, Jenjang,
+dan optional Semester. Tampilkan blok “Upload bukti PDDikti” yang tenang dengan selected-file state, format/size hint,
+serta privacy note. Bukti PDDikti dan kartu mahasiswa harus terlihat sebagai dua evidence dengan tujuan berbeda.
 
 ## 12. Components
 

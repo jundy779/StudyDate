@@ -1,6 +1,6 @@
 export const VERIFICATION_CONSENT_VERSION = "student-verification-v1";
 export const VERIFICATION_BUCKET = "student-verification-evidence";
-export const MAX_VERIFICATION_REQUEST_BYTES = 5_400_000;
+export const MAX_VERIFICATION_REQUEST_BYTES = 10_800_000;
 export const MAX_EVIDENCE_BYTES = 5_242_880;
 export const MAX_CODE_ATTEMPTS = 5;
 export const CODE_EXPIRY_MINUTES = 10;
