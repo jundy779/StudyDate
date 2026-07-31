@@ -4,6 +4,7 @@ import {
   VERIFICATION_STATUS_LABELS,
 } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
+import { isVerificationRequestAllowed } from "@/lib/verification/readiness";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,6 +16,7 @@ async function VerificationContent() {
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
+  const verificationAllowed = isVerificationRequestAllowed(user.id);
   const request = await getLatestVerificationStatus(user.id);
   const active = request && !["cancelled", "expired", "rejected"].includes(request.status);
 
@@ -53,7 +55,22 @@ async function VerificationContent() {
             </div>
           </section>
         ) : <div className="h-8 sm:h-10" />}
-        {active ? (
+        {!verificationAllowed ? (
+          <section
+            className="rounded-[20px] border border-brand-border bg-white p-6 sm:p-8"
+            aria-labelledby="verification-unavailable"
+          >
+            <ShieldCheck className="h-7 w-7 text-brand-blue" aria-hidden="true" />
+            <h2 id="verification-unavailable" className="mt-4 font-heading text-2xl font-semibold">
+              Verifikasi mahasiswa belum tersedia
+            </h2>
+            <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
+              Student Verification Center sedang dipersiapkan untuk pengujian
+              terkontrol. Data akademik dan bukti kepemilikan belum dapat
+              dikirim saat ini.
+            </p>
+          </section>
+        ) : active ? (
           <p className="rounded-[20px] border border-brand-border bg-white p-6 leading-7 text-brand-muted">
             Permintaan aktif sedang diproses. Jika diperlukan tindakan
             tambahan, status akan diperbarui tanpa membuka data sensitifmu.

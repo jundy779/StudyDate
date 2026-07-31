@@ -270,6 +270,13 @@ test("all routes authenticate, cap payloads, and return generic errors", () => {
   }
 });
 
+test("verification APIs enforce the server readiness gate", () => {
+  for (const route of routes) {
+    assert.match(route, /isVerificationRequestAllowed/);
+    assert.match(route, /status: 503/);
+  }
+});
+
 test("verification code, email, NIM, legal name, URLs, and tokens are never logged", () => {
   for (const source of [service, review, ...routes]) {
     assert.doesNotMatch(source, /console\.(log|error|warn|info)/);

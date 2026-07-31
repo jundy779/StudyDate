@@ -20,6 +20,7 @@ import {
   type CampusVerificationEmailSender,
 } from "./email-sender";
 import { normalizeNim } from "./validation";
+import { isVerificationRequestAllowed } from "./readiness";
 
 const SUPPORTED_FILES = new Map([
   ["image/jpeg", "jpg"],
@@ -64,6 +65,9 @@ export async function submitVerificationRequest(
   studentCardEvidence: File | null,
   pddiktiEvidence: File | null,
 ) {
+  if (!isVerificationRequestAllowed(userId)) {
+    throw new VerificationServiceError("configuration");
+  }
   const admin = createServerAdminClient();
   if (!admin) throw new VerificationServiceError("configuration");
   const verificationAdmin = admin;
@@ -168,6 +172,9 @@ export async function sendCampusEmailCode(
   email: string,
   sender: CampusVerificationEmailSender = campusVerificationEmailSender,
 ) {
+  if (!isVerificationRequestAllowed(userId)) {
+    throw new VerificationServiceError("configuration");
+  }
   const admin = createServerAdminClient();
   if (!admin) throw new VerificationServiceError("configuration");
 
@@ -255,6 +262,9 @@ export async function confirmCampusEmailCode(
   requestId: string,
   code: string,
 ) {
+  if (!isVerificationRequestAllowed(userId)) {
+    throw new VerificationServiceError("configuration");
+  }
   const admin = createServerAdminClient();
   if (!admin) throw new VerificationServiceError("configuration");
 

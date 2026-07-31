@@ -3,6 +3,7 @@ import { takeVerificationRateLimit } from "@/lib/verification/rate-limit";
 import { sendCampusEmailCode } from "@/lib/verification/service";
 import { campusEmailSchema } from "@/lib/verification/validation";
 import { NextResponse, type NextRequest } from "next/server";
+import { isVerificationRequestAllowed } from "@/lib/verification/readiness";
 
 const ERROR = "Kode belum dapat dikirim. Periksa data dan coba lagi.";
 
@@ -13,6 +14,9 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ message: "Sesi telah berakhir." }, { status: 401 });
+  if (!isVerificationRequestAllowed(user.id)) {
+    return NextResponse.json({ message: ERROR }, { status: 503 });
+  }
   if (!takeVerificationRateLimit(`email-send:${user.id}`, 5, 15 * 60_000)) {
     return NextResponse.json({ message: ERROR }, { status: 429 });
   }

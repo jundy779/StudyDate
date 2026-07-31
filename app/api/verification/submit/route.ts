@@ -8,6 +8,7 @@ import {
 import { takeVerificationRateLimit } from "@/lib/verification/rate-limit";
 import { verificationSubmissionSchema } from "@/lib/verification/validation";
 import { createClient } from "@/lib/supabase/server";
+import { isVerificationRequestAllowed } from "@/lib/verification/readiness";
 import { NextResponse, type NextRequest } from "next/server";
 
 const GENERIC_ERROR =
@@ -23,6 +24,9 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ message: "Sesi telah berakhir." }, { status: 401 });
+  }
+  if (!isVerificationRequestAllowed(user.id)) {
+    return NextResponse.json({ message: GENERIC_ERROR }, { status: 503 });
   }
   if (!takeVerificationRateLimit(`submit:${user.id}`, 3, 24 * 60 * 60_000)) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 429 });

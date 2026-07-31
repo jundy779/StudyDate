@@ -15,6 +15,10 @@ type EncryptedValue = {
   authTag: string;
 };
 
+type VerificationKeyName =
+  | "STUDENT_VERIFICATION_ENCRYPTION_KEY"
+  | "STUDENT_VERIFICATION_HMAC_KEY";
+
 function fromBytea(value: string) {
   if (!value.startsWith("\\x")) {
     throw new Error("Verification data is unavailable.");
@@ -22,17 +26,55 @@ function fromBytea(value: string) {
   return Buffer.from(value.slice(2), "hex");
 }
 
-function readKey(name: string) {
+function decodeKey(value: string) {
+  if (/^[a-f0-9]{64}$/i.test(value)) {
+    return Buffer.from(value, "hex");
+  }
+
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value)) {
+    return null;
+  }
+
+  const decoded = Buffer.from(value, "base64");
+  const canonical = decoded.toString("base64").replace(/=+$/, "");
+  if (canonical !== value.replace(/=+$/, "")) {
+    return null;
+  }
+  return decoded;
+}
+
+export function isVerificationKeyConfigured(name: VerificationKeyName) {
+  const value = process.env[name];
+  if (!value) return false;
+  const decoded = decodeKey(value);
+  return decoded?.length === 32;
+}
+
+export function areVerificationKeysSeparated() {
+  const encryptionValue = process.env.STUDENT_VERIFICATION_ENCRYPTION_KEY;
+  const hmacValue = process.env.STUDENT_VERIFICATION_HMAC_KEY;
+  if (!encryptionValue || !hmacValue) return false;
+  const encryptionKey = decodeKey(encryptionValue);
+  const hmacKey = decodeKey(hmacValue);
+  if (
+    !encryptionKey ||
+    !hmacKey ||
+    encryptionKey.length !== 32 ||
+    hmacKey.length !== 32
+  ) {
+    return false;
+  }
+  return !timingSafeEqual(encryptionKey, hmacKey);
+}
+
+function readKey(name: VerificationKeyName) {
   const value = process.env[name];
   if (!value) {
     throw new Error("Verification cryptography is unavailable.");
   }
 
-  const decoded = /^[a-f0-9]{64}$/i.test(value)
-    ? Buffer.from(value, "hex")
-    : Buffer.from(value, "base64");
-
-  if (decoded.length !== 32) {
+  const decoded = decodeKey(value);
+  if (!decoded || decoded.length !== 32) {
     throw new Error("Verification cryptography is unavailable.");
   }
   return decoded;
