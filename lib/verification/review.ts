@@ -1,0 +1,138 @@
+import "server-only";
+
+import { createServerAdminClient } from "@/lib/supabase/admin";
+import { VERIFICATION_BUCKET } from "./constants";
+import { decryptVerificationValue } from "./crypto";
+import type { RegistryResult, StudentRegistryVerifier } from "./registry";
+
+export type OwnershipReview =
+  | "not_checked"
+  | "campus_email_verified"
+  | "document_verified"
+  | "failed";
+
+export type ManualReviewDecision = {
+  requestId: string;
+  reviewerId: string;
+  requestStatus:
+    | "under_review"
+    | "needs_action"
+    | "verified"
+    | "rejected"
+    | "expired";
+  academicResult: RegistryResult;
+  ownershipResult: OwnershipReview;
+  rejectionReasonCode?: string;
+};
+
+export class StudentVerificationReviewService {
+  constructor(private readonly registry: StudentRegistryVerifier) {}
+
+  private async authorizeReviewer(reviewerId: string) {
+    const admin = createServerAdminClient();
+    if (!admin || !reviewerId) {
+      throw new Error("Verification review is unavailable.");
+    }
+    const { data, error } = await admin.auth.admin.getUserById(reviewerId);
+    if (
+      error ||
+      data.user?.app_metadata?.verification_reviewer !== true
+    ) {
+      throw new Error("Reviewer authorization is required.");
+    }
+    return admin;
+  }
+
+  async beginManualReview(requestId: string, reviewerId: string) {
+    await this.authorizeReviewer(reviewerId);
+    return this.registry.verify({ requestId });
+  }
+
+  async finalize(decision: ManualReviewDecision) {
+    const admin = await this.authorizeReviewer(decision.reviewerId);
+    const { error } = await admin.rpc("finalize_student_verification_review", {
+      p_request_id: decision.requestId,
+      p_actor_id: decision.reviewerId,
+      p_request_status: decision.requestStatus,
+      p_pddikti_match_status: decision.academicResult,
+      p_ownership_status: decision.ownershipResult,
+      p_rejection_reason_code: decision.rejectionReasonCode ?? null,
+    });
+    if (error) throw new Error("Verification review could not be completed.");
+  }
+
+  async createEvidenceReviewUrl(requestId: string, reviewerId: string) {
+    const admin = await this.authorizeReviewer(reviewerId);
+    const { data: request, error } = await admin
+      .from("student_verification_requests")
+      .select("evidence_path")
+      .eq("id", requestId)
+      .eq("method", "student_card")
+      .maybeSingle<{ evidence_path: string | null }>();
+    if (error || !request?.evidence_path) {
+      throw new Error("Evidence is unavailable.");
+    }
+    const { data, error: signedUrlError } = await admin.storage
+      .from(VERIFICATION_BUCKET)
+      .createSignedUrl(request.evidence_path, 300);
+    if (signedUrlError || !data.signedUrl) {
+      throw new Error("Evidence is unavailable.");
+    }
+    return data.signedUrl;
+  }
+
+  async getManualReviewClaim(requestId: string, reviewerId: string) {
+    const admin = await this.authorizeReviewer(reviewerId);
+    const { data, error } = await admin
+      .from("student_verification_requests")
+      .select(
+        "id, campus_claim, study_program_claim, degree_level_claim, nim_ciphertext, nim_iv, nim_auth_tag, legal_name_ciphertext, legal_name_iv, legal_name_auth_tag",
+      )
+      .eq("id", requestId)
+      .in("status", ["pending", "under_review", "needs_action"])
+      .maybeSingle();
+    if (error || !data) throw new Error("Verification claim is unavailable.");
+
+    return {
+      requestId: data.id,
+      campus: data.campus_claim,
+      studyProgram: data.study_program_claim,
+      degreeLevel: data.degree_level_claim,
+      nim: decryptVerificationValue({
+        ciphertext: data.nim_ciphertext,
+        iv: data.nim_iv,
+        authTag: data.nim_auth_tag,
+      }),
+      legalName: decryptVerificationValue({
+        ciphertext: data.legal_name_ciphertext,
+        iv: data.legal_name_iv,
+        authTag: data.legal_name_auth_tag,
+      }),
+    };
+  }
+}
+
+export async function deleteExpiredVerificationEvidence(nowIso: string) {
+  const admin = createServerAdminClient();
+  if (!admin) throw new Error("Evidence deletion is unavailable.");
+  const { data, error } = await admin
+    .from("student_verification_requests")
+    .select("id, evidence_path")
+    .not("evidence_path", "is", null)
+    .lte("evidence_deletion_at", nowIso)
+    .limit(100);
+  if (error) throw new Error("Evidence deletion is unavailable.");
+
+  for (const request of data ?? []) {
+    if (!request.evidence_path) continue;
+    const { error: removalError } = await admin.storage
+      .from(VERIFICATION_BUCKET)
+      .remove([request.evidence_path]);
+    if (!removalError) {
+      await admin
+        .from("student_verification_requests")
+        .update({ evidence_path: null, evidence_deleted_at: nowIso })
+        .eq("id", request.id);
+    }
+  }
+}

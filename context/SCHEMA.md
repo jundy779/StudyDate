@@ -14,6 +14,7 @@ Sumber migration:
 
 1. `supabase/migrations/202607300001_create_early_access_waitlist.sql`
 2. `supabase/migrations/202607300002_create_auth_onboarding_foundation.sql`
+3. `supabase/migrations/202607310001_create_student_verification_center.sql`
 
 ### `early_access_waitlist`
 
@@ -85,6 +86,38 @@ revoked_at timestamptz null
 
 Consent types: terms, privacy, community_guidelines. Normal client tidak boleh menulis ulang consent timestamp.
 
+### `student_verification_requests`
+
+Menyimpan claim verifikasi, status review, consent version, dan lifecycle evidence. NIM serta nama legal memakai
+AES-256-GCM application encryption; duplicate detection memakai keyed HMAC fingerprint. Authenticated user hanya
+mendapat projection status yang tersanitasi melalui column grants dan owner-scoped RLS.
+
+Request status: pending, under_review, needs_action, verified, rejected, expired, cancelled.
+PDDikti result: not_checked, matched, not_found, mismatch, unavailable.
+Ownership result: not_checked, campus_email_verified, document_verified, failed.
+
+Constraint database menolak status `verified` kecuali PDDikti `matched` dan ownership telah diverifikasi.
+
+### `campus_email_domains`
+
+Registry domain email kampus dengan status pending_review, approved, atau rejected. Tidak ada asumsi bahwa semua
+alamat `.ac.id` otomatis valid.
+
+### `campus_email_verifications`
+
+Challenge email privat dengan normalized email, keyed code hash, expiry, attempt count, resend cooldown, dan
+verified timestamp. Kode plaintext tidak disimpan.
+
+### `verification_events`
+
+Audit trail append-only berisi event type yang dikontrol serta actor ID. Tidak menyimpan NIM, nama legal, email,
+document path, reviewer note, atau respons mentah PDDikti.
+
+### Private Storage
+
+Bucket `student-verification-evidence` bersifat private, membatasi JPG/PNG/WebP sampai 5 MB, memakai path milik user,
+signed URL review lima menit, serta lifecycle `evidence_deletion_at` dan `evidence_deleted_at`.
+
 ## 3. Implemented RPC
 
 ### `complete_student_onboarding`
@@ -99,6 +132,17 @@ Requirements:
   lalu dikirim sebagai `p_public_alias`;
 - profile/preferences/consents atomik;
 - execute dicabut dari public/anon dan diberikan hanya kepada role yang dimaksud.
+
+### Verification RPC
+
+- `create_student_verification_request`: service-role only; membuat request, mengubah profile menjadi pending, dan
+  menulis audit event dalam satu transaksi.
+- `confirm_student_campus_email_code`: service-role only; mengecek hash/expiry/attempt secara atomik dan mengubah
+  ownership status.
+- `finalize_student_verification_review`: service-role only; menegakkan combined verification rule, memperbarui
+  request dan profile, menjadwalkan penghapusan evidence, serta menulis audit event dalam satu transaksi.
+- `cancel_student_verification_request`: authenticated owner only; target berasal dari `auth.uid()` dan hanya request
+  pending/needs_action yang dapat dibatalkan.
 
 ## 4. Approved values
 

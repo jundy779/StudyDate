@@ -1,16 +1,12 @@
 import { signOut } from "@/app/app/actions";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
-import { CalendarDays, CheckCircle2, Network, Users } from "lucide-react";
+import { VERIFICATION_STATUS_LABELS } from "@/lib/verification/constants";
+import { getLatestVerificationStatus } from "@/lib/verification/status";
+import { CalendarDays, CheckCircle2, Network, ShieldCheck, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-
-const verificationLabels = {
-  unverified: "Belum terverifikasi",
-  pending: "Verifikasi sedang ditinjau",
-  verified: "Terverifikasi",
-  rejected: "Verifikasi perlu diulang",
-} as const;
 
 const productAreas = [
   {
@@ -40,6 +36,10 @@ async function PrivateAppHome() {
   if (!profile?.onboarding_completed_at) {
     redirect("/onboarding");
   }
+  const verification = await getLatestVerificationStatus(user.id);
+  const verificationLabel = verification
+    ? VERIFICATION_STATUS_LABELS[verification.status]
+    : "Belum terverifikasi";
 
   return (
     <main className="min-h-svh overflow-x-clip bg-brand-surface">
@@ -100,10 +100,17 @@ async function PrivateAppHome() {
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-sm text-brand-muted">Status verifikasi</dt>
                 <dd className="text-right text-sm font-semibold text-brand-navy">
-                  {verificationLabels[profile.verification_status]}
+                  {verificationLabel}
                 </dd>
               </div>
             </dl>
+            <Link
+              href="/app/verification"
+              className="focus-ring mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              Verifikasi Mahasiswa
+            </Link>
           </aside>
         </section>
 

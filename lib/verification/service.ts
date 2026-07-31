@@ -1,0 +1,247 @@
+import "server-only";
+
+import { createServerAdminClient } from "@/lib/supabase/admin";
+import { randomInt, randomUUID } from "node:crypto";
+import {
+  CODE_EXPIRY_MINUTES,
+  CODE_RESEND_SECONDS,
+  MAX_CODE_ATTEMPTS,
+  MAX_EVIDENCE_BYTES,
+  VERIFICATION_BUCKET,
+  VERIFICATION_CONSENT_VERSION,
+} from "./constants";
+import {
+  encryptVerificationValue,
+  fingerprintNim,
+  hashCampusEmailCode,
+} from "./crypto";
+import {
+  campusVerificationEmailSender,
+  type CampusVerificationEmailSender,
+} from "./email-sender";
+import { normalizeNim } from "./validation";
+
+const SUPPORTED_FILES = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+]);
+
+export type SubmissionInput = {
+  nim: string;
+  legalName: string;
+  campus: string;
+  studyProgram: string;
+  degreeLevel:
+    | "diploma"
+    | "sarjana"
+    | "magister"
+    | "doktor"
+    | "profesi"
+    | "spesialis";
+  method: "campus_email" | "student_card";
+};
+
+export class VerificationServiceError extends Error {
+  constructor(
+    public readonly category:
+      | "configuration"
+      | "duplicate"
+      | "evidence"
+      | "database"
+      | "email_domain"
+      | "cooldown"
+      | "challenge",
+  ) {
+    super("Student verification request could not be completed.");
+  }
+}
+
+export async function submitVerificationRequest(
+  userId: string,
+  input: SubmissionInput,
+  evidence: File | null,
+) {
+  const admin = createServerAdminClient();
+  if (!admin) throw new VerificationServiceError("configuration");
+
+  let evidencePath: string | null = null;
+  const requestId = randomUUID();
+  const normalizedNim = normalizeNim(input.nim);
+  const encryptedNim = encryptVerificationValue(normalizedNim);
+  const encryptedName = encryptVerificationValue(input.legalName);
+
+  if (input.method === "student_card") {
+    if (
+      !evidence ||
+      evidence.size < 1 ||
+      evidence.size > MAX_EVIDENCE_BYTES ||
+      !SUPPORTED_FILES.has(evidence.type)
+    ) {
+      throw new VerificationServiceError("evidence");
+    }
+    const extension = SUPPORTED_FILES.get(evidence.type);
+    evidencePath = `${userId}/${requestId}/${randomUUID()}.${extension}`;
+    const { error } = await admin.storage
+      .from(VERIFICATION_BUCKET)
+      .upload(evidencePath, await evidence.arrayBuffer(), {
+        contentType: evidence.type,
+        cacheControl: "private, max-age=0",
+        upsert: false,
+      });
+    if (error) throw new VerificationServiceError("evidence");
+  } else if (evidence) {
+    throw new VerificationServiceError("evidence");
+  }
+
+  const { error } = await admin.rpc("create_student_verification_request", {
+    p_user_id: userId,
+    p_request_id: requestId,
+    p_method: input.method,
+    p_campus_claim: input.campus,
+    p_study_program_claim: input.studyProgram,
+    p_degree_level_claim: input.degreeLevel,
+    p_nim_ciphertext: encryptedNim.ciphertext,
+    p_nim_iv: encryptedNim.iv,
+    p_nim_auth_tag: encryptedNim.authTag,
+    p_nim_last_four: normalizedNim.slice(-4),
+    p_nim_fingerprint: fingerprintNim(normalizedNim),
+    p_legal_name_ciphertext: encryptedName.ciphertext,
+    p_legal_name_iv: encryptedName.iv,
+    p_legal_name_auth_tag: encryptedName.authTag,
+    p_consent_version: VERIFICATION_CONSENT_VERSION,
+    p_evidence_path: evidencePath,
+  });
+
+  if (error) {
+    if (evidencePath) {
+      await admin.storage.from(VERIFICATION_BUCKET).remove([evidencePath]);
+    }
+    throw new VerificationServiceError(
+      error.code === "23505" ? "duplicate" : "database",
+    );
+  }
+  return { requestId };
+}
+
+export async function sendCampusEmailCode(
+  userId: string,
+  requestId: string,
+  email: string,
+  sender: CampusVerificationEmailSender = campusVerificationEmailSender,
+) {
+  const admin = createServerAdminClient();
+  if (!admin) throw new VerificationServiceError("configuration");
+
+  const domain = email.split("@")[1];
+  const [{ data: request }, { data: domainRecord }] = await Promise.all([
+    admin
+      .from("student_verification_requests")
+      .select("id, user_id, method, status, campus_claim")
+      .eq("id", requestId)
+      .eq("user_id", userId)
+      .maybeSingle(),
+    admin
+      .from("campus_email_domains")
+      .select("domain, campus_name")
+      .eq("domain", domain)
+      .eq("status", "approved")
+      .maybeSingle(),
+  ]);
+
+  if (
+    !request ||
+    request.method !== "campus_email" ||
+    !["pending", "needs_action"].includes(request.status) ||
+    !domainRecord ||
+    request.campus_claim.trim().toLocaleLowerCase("id-ID") !==
+      domainRecord.campus_name.trim().toLocaleLowerCase("id-ID")
+  ) {
+    throw new VerificationServiceError("email_domain");
+  }
+
+  const { data: existing } = await admin
+    .from("campus_email_verifications")
+    .select("resend_available_at")
+    .eq("request_id", requestId)
+    .maybeSingle<{ resend_available_at: string }>();
+  if (
+    existing &&
+    new Date(existing.resend_available_at).getTime() > Date.now()
+  ) {
+    throw new VerificationServiceError("cooldown");
+  }
+
+  const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
+  const now = Date.now();
+  const challenge = {
+    request_id: requestId,
+    user_id: userId,
+    normalized_email: email,
+    code_hash: hashCampusEmailCode(requestId, email, code),
+    expires_at: new Date(now + CODE_EXPIRY_MINUTES * 60_000).toISOString(),
+    attempts: 0,
+    resend_available_at: new Date(now + CODE_RESEND_SECONDS * 1_000).toISOString(),
+    verified_at: null,
+  };
+  const { error } = await admin
+    .from("campus_email_verifications")
+    .upsert(challenge, { onConflict: "request_id" });
+  if (error) throw new VerificationServiceError("database");
+
+  try {
+    await sender.send({
+      recipient: email,
+      code,
+      expiresInMinutes: CODE_EXPIRY_MINUTES,
+    });
+  } catch {
+    await admin
+      .from("campus_email_verifications")
+      .delete()
+      .eq("request_id", requestId)
+      .eq("user_id", userId);
+    throw new VerificationServiceError("challenge");
+  }
+
+  await admin.from("verification_events").insert({
+    request_id: requestId,
+    user_id: userId,
+    actor_id: userId,
+    event_type: "campus_email_sent",
+  });
+}
+
+export async function confirmCampusEmailCode(
+  userId: string,
+  requestId: string,
+  code: string,
+) {
+  const admin = createServerAdminClient();
+  if (!admin) throw new VerificationServiceError("configuration");
+
+  const { data: challenge } = await admin
+    .from("campus_email_verifications")
+    .select("normalized_email")
+    .eq("request_id", requestId)
+    .eq("user_id", userId)
+    .maybeSingle<{ normalized_email: string }>();
+  if (!challenge) throw new VerificationServiceError("challenge");
+
+  const { data, error } = await admin.rpc(
+    "confirm_student_campus_email_code",
+    {
+      p_user_id: userId,
+      p_request_id: requestId,
+      p_candidate_hash: hashCampusEmailCode(
+        requestId,
+        challenge.normalized_email,
+        code,
+      ),
+      p_max_attempts: MAX_CODE_ATTEMPTS,
+    },
+  );
+  if (error || data !== "verified") {
+    throw new VerificationServiceError("challenge");
+  }
+}

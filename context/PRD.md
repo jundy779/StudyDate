@@ -77,6 +77,9 @@ Diimplementasikan pada code dan migration repository saat ini:
 - consent records;
 - minimal authenticated `/app`;
 - server-side sign-out.
+- Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
+  status nyata, dan workflow review manual;
+- fondasi manual PDDikti review tanpa scraping atau klaim integrasi API resmi.
 
 Live Supabase verification tetap merupakan gate terpisah dan tidak boleh dianggap lulus hanya karena implementasi
 lokal ada.
@@ -99,13 +102,22 @@ Jangan menganggap fitur berikut tersedia:
 
 **Future:**
 
-- student document verification;
+- official PDDikti API adapter, bila endpoint dan otorisasi resmi tersedia;
 - Telegram linking;
 - moderation dashboard;
 - payment/ticketing;
 - recommendation algorithm.
 
 UI tidak boleh menampilkan data palsu untuk fitur tersebut.
+
+### Student Verification Center
+
+Badge mahasiswa hanya diberikan bila dua syarat terpenuhi:
+1. data akademik cocok melalui pemeriksaan manual PDDikti;
+2. kepemilikan akun dibuktikan melalui email kampus yang domainnya disetujui atau review kartu mahasiswa.
+
+Status UI: Belum terverifikasi, Sedang diperiksa, Perlu tindakan, Terverifikasi, Data belum dapat diverifikasi, dan
+Kedaluwarsa. Verifikasi bersifat opsional dan tidak menjamin perilaku atau keamanan pengguna.
 
 ## 7. Onboarding
 

@@ -56,6 +56,11 @@ Identity Reveal hanya membuka nama depan, foto jelas yang disetujui, dan status 
 Setiap jenis kontak memerlukan persetujuan dua arah terpisah. Jangan memakai satu flag global untuk membuka seluruh
 identitas dan kontak.
 
+Student Verification Center harus tetap opsional. Pencocokan data akademik PDDikti saja tidak membuktikan kepemilikan
+akun. Badge hanya boleh diberikan bila data akademik cocok dan kepemilikan dibuktikan melalui email kampus
+terverifikasi atau review kartu mahasiswa yang disetujui. NIM, nama legal, kode, dan dokumen tidak boleh disimpan atau
+ditampilkan sebagai plaintext.
+
 ## 6. Safety rules
 
 Pertemuan offline hanya di tempat umum yang ramai, terang, mudah diakses, dan masih beroperasi. Lokasi pribadi tidak

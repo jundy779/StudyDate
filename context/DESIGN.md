@@ -95,9 +95,19 @@ dan jangan meminta data tidak perlu.
 ## 11. Authenticated app
 
 `/app` saat ini minimal. Boleh menampilkan private greeting, anonymous alias, real verification status, onboarding
-state, dan People/Groups/Events sebagai “Segera hadir”.
+state, Student Verification status/action, dan People/Groups/Events sebagai “Segera hadir”.
 
 Jangan tampilkan fake feed, profile, message, event, group, badge, atau metrics.
+
+### Student Verification Center
+
+Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan, Persetujuan. Status:
+“Belum terverifikasi”, “Sedang diperiksa”, “Perlu tindakan”, “Terverifikasi”,
+“Data belum dapat diverifikasi”, dan “Kedaluwarsa”. Primary action: “Verifikasi Mahasiswa”.
+
+Selalu jelaskan bahwa nama legal dan NIM tidak tampil pada profil publik, verifikasi bersifat opsional, PDDikti match
+saja tidak membuktikan kepemilikan, dan badge tidak menjamin perilaku. Gunakan existing app tokens, visible focus,
+single-column mobile flow, dan status announcement; jangan membuat admin dashboard publik.
 
 ## 12. Components
 

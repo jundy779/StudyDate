@@ -40,6 +40,9 @@ Browser-visible:
 
 Server-only:
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `STUDENT_VERIFICATION_ENCRYPTION_KEY`
+- `STUDENT_VERIFICATION_HMAC_KEY`
+- optional campus-email delivery webhook URL dan token.
 
 Jangan mengimpor service-role client ke Client Component.
 
@@ -109,19 +112,50 @@ timestamp.
 
 Service role hanya untuk operasi server yang jelas, bukan pengganti RLS seluruh aplikasi.
 
-## 10. Future People architecture
+## 10. Student Verification architecture
+
+```text
+/app/verification
+ -> authenticated Route Handler
+ -> strict validation + payload/rate limits
+ -> AES-256-GCM encryption + keyed HMAC fingerprint
+ -> service-only transactional RPC
+ -> private request status
+ -> manual PDDikti review + ownership review
+ -> controlled profile verification update
+```
+
+Trust boundaries:
+- browser tidak pernah memilih hasil review atau target user;
+- NIM dan nama legal dienkripsi sebelum masuk database;
+- fingerprint NIM memakai HMAC key terpisah;
+- email kampus harus cocok dengan domain berstatus `approved`, bukan sekadar suffix `.ac.id`;
+- kode email disimpan sebagai keyed hash dengan expiry, attempt limit, dan resend cooldown;
+- kartu mahasiswa berada di bucket privat, diakses reviewer melalui signed URL lima menit, dan dijadwalkan dihapus;
+- keputusan review dan update `profiles.verification_status` dilakukan dalam satu RPC service-role dengan audit event
+  tersanitasi.
+
+`StudentRegistryVerifier` memisahkan result model dari sumber registry. Implementasi saat ini manual dan mengembalikan
+`unavailable` sampai reviewer memasukkan hasil. Adapter API resmi adalah Future dan tidak boleh memakai scraping,
+endpoint tidak terdokumentasi, atau kredensial palsu.
+
+Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewer = true`, domain kampus berstatus
+`approved`, delivery webhook email server-to-server, dan job terjadwal yang memanggil evidence cleanup service. Tidak
+ada public admin route atau dashboard pada fase ini.
+
+## 11. Future People architecture
 
 People discovery tidak boleh melakukan broad select pada `profiles`.
 
 Gunakan dedicated privacy-safe view, RPC, atau server projection yang hanya mengeluarkan field publik yang disetujui.
 
-## 11. Future conversations
+## 12. Future conversations
 
 Entities yang direncanakan: introductions, conversations, messages, reveal requests, blocks, reports.
 
 Anonymous messages memakai internal StudyDate identity, bukan metadata Telegram atau email.
 
-## 12. Future Telegram architecture
+## 13. Future Telegram architecture
 
 Bot adalah companion untuk notification, short reply, reminder, check-in, safety action, dan Mini App deep link.
 Website/Mini App tetap source of truth untuk discovery, full profile, group/event management, privacy settings, dan
@@ -129,13 +163,13 @@ report detail.
 
 Bot harus mengirim message baru dari server, bukan forward message user.
 
-## 13. Logging
+## 14. Logging
 
 Jangan log email, PII body, token, OTP, magic link, cookie, service-role key, atau private profile content.
 
 Gunakan request ID, sanitized result category, status code, duration, dan non-identifying metrics.
 
-## 14. Failure handling
+## 15. Failure handling
 
 - Jangan tampilkan raw Supabase error.
 - Jangan fake success saat database gagal.
@@ -143,7 +177,7 @@ Gunakan request ID, sanitized result category, status code, duration, dan non-id
 - Auth failure memakai generic message.
 - Missing environment menghasilkan generic unavailable response.
 
-## 15. Production gates
+## 16. Production gates
 
 Sebelum production:
 - dedicated Supabase project verified;
