@@ -10,6 +10,13 @@ import {
   onboardingSchema,
   type OnboardingInput,
 } from "../lib/onboarding/validation.ts";
+import { CAMPUS_OPTIONS } from "../lib/onboarding/options/campuses.ts";
+import { CITY_REGENCY_OPTIONS } from "../lib/onboarding/options/cities.ts";
+import {
+  createOnboardingOptions,
+  filterOnboardingOptions,
+} from "../lib/onboarding/options/shared.ts";
+import { STUDY_PROGRAM_OPTIONS } from "../lib/onboarding/options/study-programs.ts";
 
 const validOnboarding = {
   firstName: "  Naya  ",
@@ -61,6 +68,53 @@ test("onboarding trims profile fields and accepts approved values", () => {
   assert.equal(parsed.firstName, "Naya");
   assert.equal(parsed.campus, "Universitas Indonesia");
   assert.equal(parsed.studyProgram, "Ilmu Komputer");
+});
+
+test("onboarding suggestions are normalized, unique, sorted, and searchable", () => {
+  for (const options of [
+    CAMPUS_OPTIONS,
+    STUDY_PROGRAM_OPTIONS,
+    CITY_REGENCY_OPTIONS,
+  ]) {
+    const labels = options.map((option) => option.label);
+    const searchValues = options.map((option) => option.searchValue);
+    assert.equal(new Set(searchValues).size, searchValues.length);
+    assert.deepEqual(
+      labels,
+      [...labels].sort((left, right) =>
+        left.localeCompare(right, "id-ID", {
+          sensitivity: "base",
+          numeric: true,
+        }),
+      ),
+    );
+  }
+
+  assert.ok(
+    filterOnboardingOptions(CAMPUS_OPTIONS, "universitas indonesia").some(
+      (option) => option.label === "Universitas Indonesia",
+    ),
+  );
+  assert.ok(
+    filterOnboardingOptions(STUDY_PROGRAM_OPTIONS, "sistem informasi").some(
+      (option) => option.label === "Sistem Informasi",
+    ),
+  );
+  assert.ok(
+    filterOnboardingOptions(CITY_REGENCY_OPTIONS, "kabupaten sleman").some(
+      (option) => option.label === "Kabupaten Sleman",
+    ),
+  );
+
+  const customOptions = createOnboardingOptions([
+    "  Pilihan Manual  ",
+    "pilihan manual",
+    "Pilihan Lain",
+  ]);
+  assert.deepEqual(
+    customOptions.map((option) => option.label),
+    ["Pilihan Lain", "Pilihan Manual"],
+  );
 });
 
 test("onboarding rejects every protected or invalid input class", async (t) => {

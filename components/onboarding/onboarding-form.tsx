@@ -4,6 +4,13 @@ import {
   CONNECTION_GOALS,
   INTERESTS,
 } from "@/lib/onboarding/constants";
+import { CAMPUS_OPTIONS } from "@/lib/onboarding/options/campuses";
+import { CITY_REGENCY_OPTIONS } from "@/lib/onboarding/options/cities";
+import { STUDY_PROGRAM_OPTIONS } from "@/lib/onboarding/options/study-programs";
+import {
+  SearchableCreatableCombobox,
+  type ComboboxEntryMode,
+} from "./searchable-creatable-combobox";
 import { useState } from "react";
 
 const STEP_TITLES = [
@@ -12,6 +19,8 @@ const STEP_TITLES = [
   "Pilih cara yang paling nyaman",
   "Privasi dan persetujuan",
 ] as const;
+
+const SEMESTER_OPTIONS = Array.from({ length: 16 }, (_, index) => index + 1);
 
 type FormState = {
   firstName: string;
@@ -34,6 +43,21 @@ type FormState = {
     privacy: boolean;
     communityGuidelines: boolean;
   };
+};
+
+type StepOneField =
+  | "firstName"
+  | "campus"
+  | "studyProgram"
+  | "semester"
+  | "cityRegion";
+
+type StepOneErrors = Partial<Record<StepOneField, string>>;
+
+type StepOneEntryModes = {
+  campus: ComboboxEntryMode;
+  studyProgram: ComboboxEntryMode;
+  cityRegion: ComboboxEntryMode;
 };
 
 const initialState: FormState = {
@@ -115,8 +139,39 @@ function PreferenceToggle({
 export function OnboardingForm() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialState);
+  const [stepOneErrors, setStepOneErrors] = useState<StepOneErrors>({});
+  const [stepOneEntryModes, setStepOneEntryModes] =
+    useState<StepOneEntryModes>({
+      campus: "list",
+      studyProgram: "list",
+      cityRegion: "list",
+    });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function updateStepOneField<Field extends StepOneField>(
+    field: Field,
+    value: FormState[Field],
+  ) {
+    setForm((current) => ({ ...current, [field]: value }));
+    setStepOneErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+    setError("");
+  }
+
+  function updateStepOneEntryMode(
+    field: keyof StepOneEntryModes,
+    mode: ComboboxEntryMode,
+  ) {
+    setStepOneEntryModes((current) => ({ ...current, [field]: mode }));
+  }
 
   function toggleList(
     field: "interests" | "connectionGoals",
@@ -136,22 +191,51 @@ export function OnboardingForm() {
   }
 
   function validateCurrentStep() {
-    if (
-      step === 0 &&
-      (!form.firstName.trim() ||
-        form.firstName.trim().length > 80 ||
-        form.campus.trim().length < 2 ||
-        form.campus.trim().length > 120 ||
-        form.studyProgram.trim().length < 2 ||
-        form.studyProgram.trim().length > 120 ||
-        (form.semester !== null &&
-          (form.semester < 1 || form.semester > 16)) ||
-        (form.cityRegion?.trim().length ?? 0) > 120)
-    ) {
-      setError(
-        "Lengkapi nama depan, kampus, dan program studi. Periksa kembali batas karakter dan semester.",
-      );
-      return false;
+    if (step === 0) {
+      const fieldErrors: StepOneErrors = {};
+      const firstName = form.firstName.trim();
+      const campus = form.campus.trim();
+      const studyProgram = form.studyProgram.trim();
+      const cityRegion = form.cityRegion?.trim() ?? "";
+
+      if (!firstName) {
+        fieldErrors.firstName = "Nama depan wajib diisi.";
+      } else if (firstName.length > 80) {
+        fieldErrors.firstName = "Nama depan maksimal 80 karakter.";
+      }
+
+      if (campus.length < 2) {
+        fieldErrors.campus = "Pilih atau tulis nama kampus minimal 2 karakter.";
+      } else if (campus.length > 120) {
+        fieldErrors.campus = "Nama kampus maksimal 120 karakter.";
+      }
+
+      if (studyProgram.length < 2) {
+        fieldErrors.studyProgram =
+          "Pilih atau tulis program studi minimal 2 karakter.";
+      } else if (studyProgram.length > 120) {
+        fieldErrors.studyProgram = "Program studi maksimal 120 karakter.";
+      }
+
+      if (
+        form.semester !== null &&
+        (form.semester < 1 || form.semester > 16)
+      ) {
+        fieldErrors.semester = "Pilih semester antara 1 dan 16.";
+      }
+
+      if (cityRegion.length > 120) {
+        fieldErrors.cityRegion = "Kota atau kabupaten maksimal 120 karakter.";
+      }
+
+      setStepOneErrors(fieldErrors);
+
+      if (Object.keys(fieldErrors).length) {
+        setError(
+          "Lengkapi nama depan, kampus, dan program studi. Periksa kembali batas karakter dan semester.",
+        );
+        return false;
+      }
     }
 
     if (
@@ -246,57 +330,111 @@ export function OnboardingForm() {
       {step === 0 ? (
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           <TextField
+            id="first-name"
             label="Nama depan"
             value={form.firstName}
             required
             maxLength={80}
             autoComplete="given-name"
-            onChange={(value) => setForm({ ...form, firstName: value })}
+            error={stepOneErrors.firstName}
+            onChange={(value) => updateStepOneField("firstName", value)}
           />
-          <TextField
+          <SearchableCreatableCombobox
+            id="campus"
             label="Kampus"
             value={form.campus}
-            required
+            options={CAMPUS_OPTIONS}
+            placeholder="Cari nama kampus..."
+            noResultsPrompt="Kampusmu tidak ditemukan?"
+            manualButtonLabel="Tambahkan kampus secara manual"
+            manualLabel="Nama kampus"
+            manualPlaceholder="Tulis nama kampusmu"
+            mode={stepOneEntryModes.campus}
+            error={stepOneErrors.campus}
+            autoComplete="organization"
             maxLength={120}
-            onChange={(value) => setForm({ ...form, campus: value })}
+            onChange={(value) => updateStepOneField("campus", value)}
+            onModeChange={(mode) => updateStepOneEntryMode("campus", mode)}
           />
-          <TextField
+          <SearchableCreatableCombobox
+            id="study-program"
             label="Program studi"
             value={form.studyProgram}
-            required
+            options={STUDY_PROGRAM_OPTIONS}
+            placeholder="Cari program studi..."
+            noResultsPrompt="Program studimu tidak ditemukan?"
+            manualButtonLabel="Tambahkan program studi secara manual"
+            manualLabel="Nama program studi"
+            manualPlaceholder="Tulis nama program studimu"
+            mode={stepOneEntryModes.studyProgram}
+            error={stepOneErrors.studyProgram}
             maxLength={120}
-            onChange={(value) => setForm({ ...form, studyProgram: value })}
+            onChange={(value) => updateStepOneField("studyProgram", value)}
+            onModeChange={(mode) =>
+              updateStepOneEntryMode("studyProgram", mode)
+            }
           />
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold">
+          <div className="min-w-0">
+            <label
+              htmlFor="semester"
+              className="mb-2 block text-sm font-semibold"
+            >
               Semester <span className="font-normal text-brand-muted">(opsional)</span>
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={16}
-              inputMode="numeric"
+            </label>
+            <select
+              id="semester"
               value={form.semester ?? ""}
               onChange={(event) =>
-                setForm({
-                  ...form,
-                  semester: event.target.value
+                updateStepOneField(
+                  "semester",
+                  event.target.value
                     ? Number(event.target.value)
                     : null,
-                })
+                )
               }
-              className="focus-ring h-12 w-full rounded-xl border border-brand-border px-4"
-            />
-          </label>
+              aria-invalid={Boolean(stepOneErrors.semester)}
+              aria-describedby={
+                stepOneErrors.semester ? "semester-error" : undefined
+              }
+              className="focus-ring h-12 w-full rounded-xl border border-brand-border bg-white px-4"
+            >
+              <option value="">Pilih semester</option>
+              {SEMESTER_OPTIONS.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+            {stepOneErrors.semester ? (
+              <p
+                id="semester-error"
+                className="mt-2 text-sm text-brand-error"
+              >
+                {stepOneErrors.semester}
+              </p>
+            ) : null}
+          </div>
           <div className="sm:col-span-2">
-            <TextField
-              label="Kota atau wilayah"
+            <SearchableCreatableCombobox
+              id="city-region"
+              label="Kota/Kabupaten"
               optional
               value={form.cityRegion ?? ""}
+              options={CITY_REGENCY_OPTIONS}
+              placeholder="Cari kota atau kabupaten..."
+              noResultsPrompt="Kota atau kabupatenmu tidak ditemukan?"
+              manualButtonLabel="Tambahkan secara manual"
+              manualLabel="Nama kota atau kabupaten"
+              manualPlaceholder="Tulis nama kota atau kabupatenmu"
+              mode={stepOneEntryModes.cityRegion}
+              error={stepOneErrors.cityRegion}
               maxLength={120}
               autoComplete="address-level2"
               onChange={(value) =>
-                setForm({ ...form, cityRegion: value || null })
+                updateStepOneField("cityRegion", value || null)
+              }
+              onModeChange={(mode) =>
+                updateStepOneEntryMode("cityRegion", mode)
               }
             />
           </div>
@@ -524,30 +662,44 @@ export function OnboardingForm() {
 }
 
 function TextField({
+  id,
   label,
   optional = false,
+  error,
   onChange,
   ...inputProps
 }: {
+  id: string;
   label: string;
   optional?: boolean;
+  error?: string;
   onChange: (value: string) => void;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+  const errorId = `${id}-error`;
+
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-semibold">
+    <div className="block min-w-0">
+      <label htmlFor={id} className="mb-2 block text-sm font-semibold">
         {label}{" "}
         {optional ? (
           <span className="font-normal text-brand-muted">(opsional)</span>
         ) : null}
-      </span>
+      </label>
       <input
+        id={id}
         type="text"
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
         className="focus-ring h-12 w-full rounded-xl border border-brand-border px-4"
         {...inputProps}
       />
-    </label>
+      {error ? (
+        <p id={errorId} className="mt-2 text-sm text-brand-error">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

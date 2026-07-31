@@ -1,0 +1,36 @@
+import { createOnboardingOptions } from "./shared.ts";
+
+const CAMPUS_LABELS = [
+  "BINUS University",
+  "IPB University",
+  "Institut Teknologi Bandung",
+  "Institut Teknologi Sepuluh Nopember",
+  "Telkom University",
+  "Universitas Airlangga",
+  "Universitas Andalas",
+  "Universitas Atma Jaya Yogyakarta",
+  "Universitas Brawijaya",
+  "Universitas Diponegoro",
+  "Universitas Gadjah Mada",
+  "Universitas Gunadarma",
+  "Universitas Hasanuddin",
+  "Universitas Indonesia",
+  "Universitas Islam Indonesia",
+  "Universitas Mercu Buana",
+  "Universitas Muhammadiyah Malang",
+  "Universitas Multimedia Nusantara",
+  "Universitas Negeri Jakarta",
+  "Universitas Negeri Malang",
+  "Universitas Negeri Semarang",
+  "Universitas Negeri Surabaya",
+  "Universitas Negeri Yogyakarta",
+  "Universitas Padjadjaran",
+  "Universitas Pelita Harapan",
+  "Universitas Sebelas Maret",
+  "Universitas Sriwijaya",
+  "Universitas Sumatera Utara",
+  "Universitas Trisakti",
+  "UIN Syarif Hidayatullah Jakarta",
+] as const;
+
+export const CAMPUS_OPTIONS = createOnboardingOptions(CAMPUS_LABELS);
