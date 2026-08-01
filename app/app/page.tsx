@@ -1,4 +1,4 @@
-import { AppHeader } from "@/components/app/app-header";
+import { AppShell } from "@/components/app/app-shell";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { VERIFICATION_STATUS_LABELS } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
@@ -41,9 +41,8 @@ async function PrivateAppHome() {
     : "Belum terverifikasi";
 
   return (
-    <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <AppHeader current="home" />
-
+    <AppShell current="home">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-10 sm:py-14 lg:py-20">
         <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
@@ -145,7 +144,8 @@ async function PrivateAppHome() {
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </AppShell>
   );
 }
 

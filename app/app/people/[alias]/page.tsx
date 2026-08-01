@@ -1,4 +1,4 @@
-import { AppHeader } from "@/components/app/app-header";
+import { AppShell } from "@/components/app/app-shell";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   connectionGoalLabels,
@@ -28,8 +28,8 @@ export default async function PeopleDetailPage({ params }: PeopleDetailPageProps
   if (!profile) notFound();
 
   return (
-    <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <AppHeader current="people" />
+    <AppShell current="people">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <Link href="/app/people" className="focus-ring inline-flex min-h-11 items-center rounded-xl text-sm font-semibold text-brand-blue">← Kembali ke People</Link>
         <article className="mt-5 overflow-hidden rounded-[26px] border border-brand-border bg-white shadow-[0_20px_50px_rgba(15,27,51,0.06)]">
@@ -68,6 +68,7 @@ export default async function PeopleDetailPage({ params }: PeopleDetailPageProps
           </footer>
         </article>
       </div>
-    </main>
+      </main>
+    </AppShell>
   );
 }

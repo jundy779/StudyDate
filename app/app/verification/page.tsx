@@ -1,5 +1,5 @@
 import { VerificationForm } from "@/components/verification/verification-form";
-import { AppHeader } from "@/components/app/app-header";
+import { AppShell } from "@/components/app/app-shell";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   VERIFICATION_STATUS_LABELS,
@@ -20,8 +20,8 @@ async function VerificationContent() {
   const active = request && !["cancelled", "expired", "rejected"].includes(request.status);
 
   return (
-    <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <AppHeader current="verification" />
+    <AppShell current="verification">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <div className="max-w-3xl">
           <p className="section-label">Student Verification Center</p>
@@ -71,7 +71,8 @@ async function VerificationContent() {
           <VerificationForm />
         )}
       </div>
-    </main>
+      </main>
+    </AppShell>
   );
 }
 

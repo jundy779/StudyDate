@@ -1,5 +1,5 @@
 import { updatePeopleVisibility } from "@/app/app/people/actions";
-import { AppHeader } from "@/components/app/app-header";
+import { AppShell } from "@/components/app/app-shell";
 import { PeopleFilterForm } from "@/components/people/people-filter-form";
 import { PeopleProfileCard } from "@/components/people/people-profile-card";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
@@ -50,8 +50,8 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
     : { profiles: [], nextCursor: null };
 
   return (
-    <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <AppHeader current="people" />
+    <AppShell current="people">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <section className="grid gap-7 lg:grid-cols-[1fr_360px] lg:items-end">
           <div className="max-w-3xl">
@@ -125,7 +125,8 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
           ) : null}
         </section>
       </div>
-    </main>
+      </main>
+    </AppShell>
   );
 }
 
