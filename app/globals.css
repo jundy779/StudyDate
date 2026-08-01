@@ -94,6 +94,42 @@
   .mascot-cta-shadow {
     filter: drop-shadow(0 10px 18px rgba(15, 27, 51, 0.22));
   }
+
+  .app-sidebar-scroll {
+    scrollbar-color: rgba(102, 112, 133, 0.34) transparent;
+    scrollbar-width: thin;
+  }
+
+  .app-sidebar-scroll:hover {
+    scrollbar-color: rgba(1, 79, 231, 0.48) transparent;
+  }
+
+  .app-sidebar-scroll::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .app-sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .app-sidebar-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(102, 112, 133, 0.34);
+    background-clip: padding-box;
+    border: 1px solid transparent;
+    border-radius: 999px;
+  }
+
+  .app-sidebar-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(1, 79, 231, 0.48);
+  }
+
+  .app-sidebar-scroll::-webkit-scrollbar-button,
+  .app-sidebar-scroll::-webkit-scrollbar-corner {
+    display: none;
+    height: 0;
+    width: 0;
+  }
 }
 
 @keyframes enter {

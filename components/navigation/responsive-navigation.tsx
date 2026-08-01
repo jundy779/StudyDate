@@ -251,7 +251,7 @@ export function ResponsiveNavigation({
           </Link>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-5 lg:px-4">
+        <div className="app-sidebar-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-5 lg:px-4">
           <div className="mb-5 hidden px-3 lg:block">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
               {areaLabel}
@@ -335,7 +335,7 @@ export function ResponsiveNavigation({
                 <X aria-hidden="true" className="h-5 w-5" />
               </button>
             </div>
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
+            <div className="app-sidebar-scroll flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
               <NavigationLinks
                 current={current}
                 items={items}
