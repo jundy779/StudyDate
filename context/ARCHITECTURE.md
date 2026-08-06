@@ -214,8 +214,8 @@ active conversation (both participants have messaged)
 Safe client projection: `eligible`, `selected_by_me`, `mutual`, `mutual_at`, `can_withdraw`.
 One-sided consent is never returned to the counterpart. Withdrawal is allowed only before mutual
 completion. Mutual Interest is deployed (migration `202608060004`). Identity Reveal is a separate
-consent stage that may begin only after `mutual_interest_at` is set; it is implemented locally as
-migration `202608060005` and is not applied remotely until explicit preflight approval.
+consent stage that may begin only after `mutual_interest_at` is set (migration `202608060005`,
+applied remotely).
 
 Migration `202608060004` is applied remotely after controlled preflight.
 
@@ -249,8 +249,7 @@ Post-completion access:
   views or screenshots were erased.
 - No new profile/consent mutation after completion.
 
-Migration `202608060005` is local-only until explicit remote preflight approval.
-Do not claim live Identity Reveal until the migration is applied remotely.
+Migration `202608060005` is applied remotely after controlled preflight.
 Contact Reveal remains unimplemented. Student Verification remains globally disabled.
 ## 13. Staff authorization v1
 

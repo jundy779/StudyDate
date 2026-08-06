@@ -85,7 +85,7 @@ Diimplementasikan pada code dan migration repository saat ini:
   pengiriman pesan anonim, end/block/report, unread nyata, serta polling aman tanpa expose UUID peserta;
 - Mutual Interest v1 (migration `202608060004`) untuk consent privat
   “Kenal Lebih Jauh” di percakapan aktif, tanpa one-sided leak dan tanpa Identity Reveal otomatis;
-- Identity Reveal v1 (migration lokal `202608060005`, belum di-push remote) untuk consent
+- Identity Reveal v1 (migration `202608060005`, applied remotely) untuk consent
   terpisah setelah Mutual Interest: nama depan + foto profil yang disiapkan user, privat
   sampai kedua pihak menyetujui; tanpa Contact Reveal;
 - Staff Roles and Admin Shell v1 dengan satu Supabase Auth, role Owner/Admin/Student, staff login terpisah, owner-only
@@ -231,9 +231,9 @@ Actions: reply, end, block, report, mutual interest.
 
 Jangan bocorkan Telegram metadata, email, sender ID, atau kontak sebelum reveal.
 
-## 11. Implemented — Identity Reveal v1 (local migration pending remote)
+## 11. Implemented — Identity Reveal v1
 
-Identity Reveal v1 (migration lokal `202608060005`) membuka hanya:
+Identity Reveal v1 (migration `202608060005`, applied remotely) membuka hanya:
 - first name yang disiapkan user secara eksplisit untuk reveal pada percakapan eligible;
 - clear profile photo yang diunggah khusus untuk reveal pada percakapan itu.
 

@@ -27,7 +27,7 @@ Sumber migration:
 11. `supabase/migrations/202608060004_create_mutual_interest_v1.sql` — Mutual Interest v1;
     applied remotely after controlled preflight
 12. `supabase/migrations/202608060005_create_identity_reveal_v1.sql` — Identity Reveal v1;
-    local-only until explicit remote preflight approval
+    applied remotely after controlled preflight
 
 ### `early_access_waitlist`
 
@@ -347,7 +347,7 @@ Safe client projection only:
 eligible, selected_by_me, mutual, mutual_at, can_withdraw
 ```
 
-### Identity Reveal v1 (local migration `202608060005`)
+### Identity Reveal v1 (migration `202608060005`, applied remotely)
 
 Tables:
 - `identity_reveal_profile_versions` — conversation-scoped immutable first name + private
@@ -383,7 +383,7 @@ Minimal private safety foundation. Reports may reference `conversation_id` / `an
 ## 7. Planned Contact Reveal
 
 Identity Reveal v1 sudah diimplementasikan sebagai model percakapan-scoped
-(`conversation_identity_reveal_*`, migration lokal `202608060005`), bukan tabel
+(`conversation_identity_reveal_*`, migration `202608060005` applied remotely), bukan tabel
 `reveal_requests` generik.
 
 Contact Reveal (Telegram, Instagram, WhatsApp, email, full name) tetap Planned
