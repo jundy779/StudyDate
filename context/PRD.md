@@ -83,7 +83,7 @@ Diimplementasikan pada code dan migration repository saat ini:
   database, serta handoff `conversation_shells` menuju Anonymous Chat v1 tanpa messaging;
 - Anonymous Chat v1 untuk percakapan teks privat setelah perkenalan diterima, daftar `/app/messages`,
   pengiriman pesan anonim, end/block/report, unread nyata, serta polling aman tanpa expose UUID peserta;
-- Mutual Interest v1 (local migration `202608060004` sampai preflight remote) untuk consent privat
+- Mutual Interest v1 (migration `202608060004`) untuk consent privat
   “Kenal Lebih Jauh” di percakapan aktif, tanpa one-sided leak dan tanpa Identity Reveal otomatis;
 - Staff Roles and Admin Shell v1 dengan satu Supabase Auth, role Owner/Admin/Student, staff login terpisah, owner-only
   staff management, verification review shell, dan audit role tersanitasi.
