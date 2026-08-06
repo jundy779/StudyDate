@@ -19,6 +19,11 @@ Sumber migration:
 5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
 6. `supabase/migrations/202607310004_create_people_discovery.sql` — local-only sampai preflight dan approval terpisah
 7. `supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql` — local-only; belum diterapkan remote
+8. `supabase/migrations/202608060001_create_introduction_requests_v1.sql` — Introduction Requests v1 +
+   block/report foundation (synced remote through controlled apply)
+9. `supabase/migrations/202608060002_fix_introduction_rpc_volatility.sql` — list/eligibility RPCs VOLATILE
+10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` — local-only; Anonymous Chat v1; do not apply
+    remote without preflight approval
 
 ### `early_access_waitlist`
 
@@ -196,6 +201,19 @@ tidak discoverable. Inactive staff tidak otomatis muncul kembali; user harus opt
 - `finalize_staff_verification_review`: active reviewer only, actor dari `auth.uid()`, menolak self-review, mempertahankan
   combined academic-match plus ownership requirement, dan menulis verification audit atomik.
 
+### Introduction Requests RPC
+
+- `send_introduction_request`: alias-based send; eligibility, contact filter, duplicate, cooldown, dan rate limit
+  database-enforced.
+- `accept_introduction_request` / `decline_introduction_request` / `cancel_introduction_request`: participant-gated
+  status transitions; accept membuat `conversation_shells` unik.
+- `list_received_introduction_requests` / `list_sent_introduction_requests`: projection aman tanpa UUID peserta.
+- `get_introduction_send_eligibility` / `count_pending_received_introductions`: state CTA dan badge.
+- `block_student_by_alias` / `report_introduction_request`: fondasi safety; block menutup pending pair.
+
+Helper internal (`is_active_staff_user`, `users_are_blocked`, `introduction_message_has_contact`, dll.) dicabut dari
+anon/authenticated.
+
 ## 4. Approved values
 
 Verification:
@@ -251,52 +269,57 @@ Avatar identifier diturunkan secara deterministik dari public alias pada server/
 disimpan sebagai identitas baru. Jangan return first_name, email, auth metadata, contact, precise location, raw
 verification status, atau internal user ID.
 
-## 6. Planned introductions
+## 6. Implemented introductions
 
-### `introductions`
+### `introduction_requests`
 ```text
 id uuid primary key
 sender_id uuid
 recipient_id uuid
-message text
+opening_message text
 status text
 created_at timestamptz
-replied_at timestamptz null
-expired_at timestamptz null
+updated_at timestamptz
+responded_at timestamptz null
+cancelled_at timestamptz null
+expires_at timestamptz
 ```
 
-Statuses: pending, replied, skipped, reported, expired.
+Statuses: pending, accepted, declined, cancelled, expired.
 
-Rules: one active per pair, no resend after skipped, bounded message, no links/contact before reveal, report available.
+Rules: one pending per unordered pair, 7-day cooldown after decline/cancel, durable rate limits, bounded plain-text
+message with best-effort contact rejection, staff exclusion, block exclusion, no NIM/legal name/contacts stored.
 
-## 7. Planned conversations
+### `conversation_shells`
 
-### `conversations`
-```text
-id uuid primary key
-introduction_id uuid unique
-participant_a_id uuid
-participant_b_id uuid
-status text
-created_at timestamptz
-ended_at timestamptz null
-```
+Created atomically on accept. Unique `introduction_request_id`. Opaque `public_id` (32-hex) for routes.
+Statuses: `awaiting_chat`, `active`, `ended`, `blocked`.
 
-Statuses: anonymous_active, ended, blocked, under_review.
+### `anonymous_messages`
 
-### `messages`
 ```text
 id uuid primary key
 conversation_id uuid
 sender_id uuid
-body text
-moderation_status text
+body text (1–1000, normalized plain text)
 created_at timestamptz
+read_at timestamptz null
+moderation_status text (visible|removed)
+client_idempotency_key text null
 ```
 
-Jangan simpan/expose Telegram forwarding metadata.
+Rules: sender = `auth.uid()` participant only; immutable body; best-effort contact rejection; rate limits
+20/minute and 300/day; duplicate window; no attachments; no table SELECT grants to clients.
 
-## 8. Planned reveal
+### `conversation_events`
+
+Sanitized audit: activated, message_sent, ended, blocked, reported, messages_read.
+
+### `user_blocks` / `user_reports` / `introduction_events`
+
+Minimal private safety foundation. Reports may reference `conversation_id` / `anonymous_message_id`.
+
+## 7. Planned reveal
 
 ### `connection_interests`
 ```text
@@ -323,11 +346,12 @@ Reveal types: identity_basic, telegram, instagram, whatsapp, email, full_name.
 
 Setiap contact type terpisah. Jangan pakai global reveal flag.
 
-## 9. Planned blocks and reports
+## 9. Implemented blocks and reports (Introduction foundation)
 
-`user_blocks` mencegah discovery, introduction, message, dan invitation.
+`user_blocks` mencegah discovery interaction baru dan introduction dua arah.
 
-`reports` dapat mereferensikan user, introduction, conversation, group, atau event. Report detail bersifat privat.
+`user_reports` mereferensikan introduction (dan dapat diperluas ke conversation/group/event kemudian). Report detail
+bersifat privat; tidak ada dashboard moderasi publik pada fase ini.
 
 ## 10. Planned Groups
 

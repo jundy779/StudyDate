@@ -108,7 +108,20 @@ Jangan tampilkan fake feed, profile, message, event, group, badge, atau metrics.
 People memakai editorial campus directory: heading kuat, filter tenang, whitespace lega, dan profile card yang hanya
 merangkum konteks sosial-akademik. Mascot resmi menjadi anonymous avatar; jangan memakai clear human photo, swipe
 deck, compatibility score, atau decorative dating language. Empty/loading/error state harus jujur dan tidak membuat
-fake user. Detail profile berakhir pada informational next step karena Introduction belum diimplementasikan.
+fake user. Detail People memakai CTA nyata `Kirim perkenalan` setelah Introduction Requests v1.
+
+### Introduction Requests
+
+`/app/introductions` memakai tab Masuk/Terkirim, empty state jujur, dan kartu editorial dengan mascot anonim. CTA
+`Kirim perkenalan` di detail People membuka dialog aksesibel. Copy memakai bahasa Perkenalan, bukan match/like/swipe.
+Setelah diterima, tampilkan handoff ke Pesan dengan CTA `Mulai percakapan`.
+
+### Anonymous Chat
+
+`/app/messages` menampilkan daftar percakapan anonim setelah perkenalan diterima. Detail
+`/app/messages/[publicId]` memakai header alias+mascot, privacy note, bubble teks escaped, composer
+`Tulis pesan`, serta aksi Akhiri / Blokir / Laporkan. Jangan menampilkan online status, typing palsu, atau
+dekorasi dating.
 
 ### Student Verification Center
 

@@ -4,6 +4,7 @@ import {
   interestLabels,
 } from "@/lib/people/constants";
 import type { DiscoveryProfile } from "@/lib/people/service";
+import { toPeopleAliasPathSegment } from "@/lib/people/validation";
 import { BadgeCheck, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,7 +47,7 @@ export function PeopleProfileCard({ profile }: { profile: DiscoveryProfile }) {
         <p className="mt-5 line-clamp-3 text-sm leading-6 text-brand-muted">
           {profile.short_intro ?? `Tertarik pada ${firstInterests.map((interest) => interestLabels.get(interest) ?? interest).join(", ")}.`}
         </p>
-        <Link href={`/app/people/${encodeURIComponent(profile.public_alias)}`} className="focus-ring mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue hover:bg-brand-blue hover:text-white">
+        <Link href={`/app/people/${toPeopleAliasPathSegment(profile.public_alias)}`} className="focus-ring mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue hover:bg-brand-blue hover:text-white">
           Lihat profil anonim
         </Link>
       </div>

@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
+  fromPeopleAliasPathSegment,
   parsePeopleFilters,
   peopleAliasSchema,
+  toPeopleAliasPathSegment,
 } from "../lib/people/validation.ts";
 
 const migration = readFileSync(
@@ -70,7 +72,9 @@ test("detail route identifier is the public alias, never a UUID", () => {
       .success,
     false,
   );
-  assert.match(detailPage, /peopleAliasSchema\.safeParse/);
+  assert.equal(toPeopleAliasPathSegment("Partner #184000"), "Partner-184000");
+  assert.equal(fromPeopleAliasPathSegment("Partner-184000"), "Partner #184000");
+  assert.match(detailPage, /fromPeopleAliasPathSegment/);
   assert.doesNotMatch(detailPage, /user_id|auth\.users/);
 });
 

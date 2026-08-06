@@ -27,6 +27,27 @@ export const peopleFiltersSchema = z.object({
 
 export const peopleAliasSchema = z.string().regex(/^Partner #[0-9]{6}$/);
 
+/** Path-safe segment for Partner #123456 → Partner-123456 (avoids # fragment issues). */
+export function toPeopleAliasPathSegment(alias: string) {
+  const match = alias.match(/^Partner #([0-9]{6})$/);
+  if (!match) {
+    throw new Error("invalid discovery alias");
+  }
+  return `Partner-${match[1]}`;
+}
+
+export function fromPeopleAliasPathSegment(segment: string) {
+  const dashed = segment.match(/^Partner-([0-9]{6})$/);
+  if (dashed) {
+    return `Partner #${dashed[1]}`;
+  }
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+}
+
 export type PeopleFilters = z.infer<typeof peopleFiltersSchema>;
 
 export function firstSearchValue(value: string | string[] | undefined) {

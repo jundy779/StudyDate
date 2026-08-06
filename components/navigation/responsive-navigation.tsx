@@ -6,10 +6,12 @@ import type { StaffRole } from "@/lib/staff/authorization";
 import {
   Activity,
   Gavel,
+  Handshake,
   Home,
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   ScrollText,
   ShieldCheck,
   UserCog,
@@ -25,6 +27,8 @@ type NavigationVariant = "student" | "staff";
 type NavigationIcon =
   | "home"
   | "people"
+  | "introductions"
+  | "messages"
   | "verification"
   | "overview"
   | "staff"
@@ -37,6 +41,7 @@ type NavigationItem = {
   label: string;
   key: string;
   icon: NavigationIcon;
+  badge?: number;
 };
 
 type ResponsiveNavigationProps = {
@@ -44,11 +49,15 @@ type ResponsiveNavigationProps = {
   current: string;
   variant: NavigationVariant;
   role?: StaffRole;
+  pendingIntroductions?: number;
+  unreadMessages?: number;
 };
 
 const iconMap = {
   home: Home,
   people: Users,
+  introductions: Handshake,
+  messages: MessageSquare,
   verification: ShieldCheck,
   overview: LayoutDashboard,
   staff: UserCog,
@@ -60,6 +69,18 @@ const iconMap = {
 const studentItems: NavigationItem[] = [
   { href: "/app", label: "Beranda", key: "home", icon: "home" },
   { href: "/app/people", label: "People", key: "people", icon: "people" },
+  {
+    href: "/app/introductions",
+    label: "Perkenalan",
+    key: "introductions",
+    icon: "introductions",
+  },
+  {
+    href: "/app/messages",
+    label: "Pesan",
+    key: "messages",
+    icon: "messages",
+  },
   {
     href: "/app/verification",
     label: "Verifikasi",
@@ -142,7 +163,20 @@ function NavigationLinks({
                 active ? "text-white" : "text-brand-muted group-hover:text-brand-blue"
               }`}
             />
-            <span className={compact ? "sr-only" : undefined}>{item.label}</span>
+            <span className={compact ? "sr-only" : "flex-1"}>{item.label}</span>
+            {item.badge && item.badge > 0 ? (
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  compact
+                    ? "sr-only"
+                    : active
+                      ? "bg-white/20 text-white"
+                      : "bg-brand-blue text-white"
+                }`}
+              >
+                {item.badge}
+              </span>
+            ) : null}
           </Link>
         );
       })}
@@ -173,11 +207,24 @@ export function ResponsiveNavigation({
   current,
   variant,
   role,
+  pendingIntroductions = 0,
+  unreadMessages = 0,
 }: ResponsiveNavigationProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
-  const items = variant === "staff" && role ? getStaffItems(role) : studentItems;
+  const items =
+    variant === "staff" && role
+      ? getStaffItems(role)
+      : studentItems.map((item) => {
+          if (item.key === "introductions" && pendingIntroductions > 0) {
+            return { ...item, badge: pendingIntroductions };
+          }
+          if (item.key === "messages" && unreadMessages > 0) {
+            return { ...item, badge: unreadMessages };
+          }
+          return item;
+        });
   const homeHref =
     variant === "staff"
       ? role === "owner"

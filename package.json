@@ -6,13 +6,15 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:auth": "node --experimental-strip-types --experimental-default-type=module --test tests/auth-onboarding.test.ts tests/migration-security.test.ts",
-    "test:verification": "node --experimental-strip-types --experimental-default-type=module --test tests/verification.test.ts tests/verification-readiness.test.ts",
-    "test:people": "node --experimental-strip-types --experimental-default-type=module --test tests/people-discovery.test.ts",
-    "test:staff": "node --experimental-strip-types --experimental-default-type=module --test tests/staff-authorization.test.ts",
-    "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "test:auth": "node --experimental-strip-types --test tests/auth-onboarding.test.ts tests/migration-security.test.ts",
+    "test:verification": "node --experimental-strip-types --test tests/verification.test.ts tests/verification-readiness.test.ts",
+    "test:people": "node --experimental-strip-types --test tests/people-discovery.test.ts",
+    "test:staff": "node --experimental-strip-types --test tests/staff-authorization.test.ts",
+    "test:introductions": "node --experimental-strip-types --test tests/introductions.test.ts",
+    "test:messages": "node --experimental-strip-types --test tests/messages.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",

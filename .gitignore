@@ -13,6 +13,10 @@
 # testing
 /coverage
 
+# local authenticated browser audit artifacts
+/audit-artifacts/
+*.tmp
+
 # next.js
 /.next/
 /out/
@@ -27,11 +31,9 @@
 .DS_Store
 *.pem
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+debug.log
+*.log
+
 
 # local environment files
 .env

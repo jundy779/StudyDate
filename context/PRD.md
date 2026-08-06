@@ -79,6 +79,10 @@ Diimplementasikan pada code dan migration repository saat ini:
 - server-side sign-out;
 - People Discovery v1 untuk browse profil anonim, filter, detail berbasis alias, pagination, dan kontrol visibilitas
   milik sendiri;
+- Introduction Requests v1 untuk kirim/terima/tolak/batalkan perkenalan privat, fondasi block/report, rate limit
+  database, serta handoff `conversation_shells` menuju Anonymous Chat v1 tanpa messaging;
+- Anonymous Chat v1 untuk percakapan teks privat setelah perkenalan diterima, daftar `/app/messages`,
+  pengiriman pesan anonim, end/block/report, unread nyata, serta polling aman tanpa expose UUID peserta;
 - Staff Roles and Admin Shell v1 dengan satu Supabase Auth, role Owner/Admin/Student, staff login terpisah, owner-only
   staff management, verification review shell, dan audit role tersanitasi.
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
@@ -104,8 +108,6 @@ Jangan menganggap fitur berikut tersedia:
 
 **Planned:**
 
-- introductions;
-- anonymous chat;
 - mutual interest;
 - identity reveal;
 - contact reveal;
@@ -118,7 +120,8 @@ Jangan menganggap fitur berikut tersedia:
 - Telegram linking;
 - moderation dashboard;
 - payment/ticketing;
-- recommendation algorithm.
+- recommendation algorithm;
+- Supabase Realtime delivery untuk chat (v1 memakai authenticated polling RPC).
 
 UI tidak boleh menampilkan data palsu untuk fitur tersebut.
 
@@ -195,23 +198,31 @@ berdasarkan public alias dan memakai pagination berbatas.
 
 Jangan tampilkan full name, clear photo sebelum reveal, contact, precise location, auth email, atau internal ID.
 
-Introduction belum diimplementasikan; detail hanya memberi penjelasan langkah berikutnya tanpa action palsu.
+Detail People menyediakan CTA `Kirim perkenalan` menuju Introduction Requests v1.
 
-## 9. Planned — Introduction MVP
+## 9. Implemented — Introduction Requests v1
 
-Status: pending, replied, skipped, reported, expired.
+Mahasiswa onboarded dapat mengirim satu pesan pembuka singkat ke profil anonim yang eligible, melihat Perkenalan
+Masuk/Terkirim di `/app/introductions`, lalu menerima, menolak, atau membatalkan.
+
+Status: `pending`, `accepted`, `declined`, `cancelled`, `expired`.
 
 Rules:
-- satu introduction aktif per pair;
-- message dibatasi;
-- link/contact difilter;
-- skipped tidak dapat dikirim ulang;
-- report tersedia dari awal;
-- unanswered introduction dapat expired.
+- satu introduction pending per pasangan;
+- message 12–300 karakter, plain text, filter kontak best-effort;
+- cooldown 7 hari setelah decline/cancel untuk pasangan sender→recipient yang sama;
+- rate limit: 5/jam, 15/hari, maksimal 5 pending keluar;
+- pending kedaluarsa setelah 14 hari;
+- active staff tidak dapat mengirim atau menerima;
+- block dua arah menutup pending dan mencegah introduction baru;
+- report hanya oleh peserta introduction;
+- penerimaan tidak membuka identitas, kontak, NIM, atau evidence;
+- accepted menciptakan tepat satu `conversation_shells` berstatus `awaiting_chat` sebagai handoff Anonymous Chat v1
+  tanpa composer pesan.
 
 ## 10. Planned — Anonymous conversation
 
-Chat terbuka hanya setelah introduction dibalas.
+Chat terbuka hanya setelah introduction diterima dan shell `awaiting_chat` diaktifkan pada tahap berikutnya.
 
 Actions: reply, end, block, report, mutual interest.
 

@@ -16,7 +16,7 @@ Browser
        -> Public UI: landing page + Early Access dialog
        -> Public handler: /api/early-access
        -> Auth: /login, /staff/login, /auth/callback
-       -> Protected student: /onboarding, /app, /app/people, /app/people/[alias]
+       -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions
        -> Protected staff: /owner/**, /admin/**
        -> Server handlers/actions
   -> Supabase Auth + PostgreSQL + RLS + RPC
@@ -161,7 +161,45 @@ sendiri. Direct column update atas `is_discoverable` tetap tidak diberikan kepad
 Belum ada block model pada repository saat ini; cross-user block exclusion menjadi syarat sebelum fitur block atau
 Introduction ditambahkan.
 
-## 12. Staff authorization v1
+## 12. Introduction Requests v1 architecture
+
+```text
+/app/people/[alias]
+ -> eligibility RPC (alias-based)
+ -> send_introduction_request(alias, message)
+ -> /app/introductions (Masuk / Terkirim)
+ -> accept | decline | cancel | block | report RPCs
+ -> accepted -> conversation_shells(awaiting_chat, public_id)
+ -> /app/messages/[publicId] Anonymous Chat v1
+```
+
+Semua mutasi memakai SECURITY DEFINER RPC dengan `search_path = ''`, target dari `auth.uid()`, dan lookup penerima
+melalui `public_alias` — bukan UUID mentah dari browser. Projection list hanya mengembalikan alias counterpart,
+ringkasan akademik, badge verifikasi boolean, pesan, status, dan timestamp.
+
+Fondasi `user_blocks` dan `user_reports` privat. Block dua arah mencegah introduction baru dan menutup pending.
+People Discovery di-refresh agar mengecualikan pasangan yang saling memblokir.
+
+Kebijakan visibilitas: bila penerima menonaktifkan People setelah request masuk, peserta tetap dapat melihat request
+yang sudah ada; pengiriman baru tetap membutuhkan discoverability.
+
+## 12b. Anonymous Chat v1 architecture
+
+```text
+accepted introduction
+ -> conversation_shells (public_id opaque)
+ -> /app/messages list + /app/messages/[publicId]
+ -> send_anonymous_message / list_conversation_messages RPCs
+ -> authenticated poll /api/messages/[publicId] (~4s)
+ -> end | block | report
+```
+
+Lifecycle shell: `awaiting_chat` → `active` (pesan pertama) → `ended` | `blocked`.
+Pesan disimpan di `anonymous_messages` (plain text, idempotency key, read_at recipient-only).
+Tidak ada grant SELECT tabel ke `authenticated` agar UUID pengirim tidak bocor lewat PostgREST; delivery v1
+menggunakan polling RPC. Realtime dapat dipertimbangkan kemudian dengan projection aman.
+
+## 13. Staff authorization v1
 
 StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted
 claim, sedangkan `staff_members` menjadi authoritative active membership. Server dan database gagal tertutup bila role,
@@ -191,13 +229,12 @@ script mencari tepat satu existing Auth user, menampilkan hanya masked email dan
 memanggil service-role-only UUID RPC. Email tidak disimpan pada source atau authorization check. Jalankan hanya setelah
 migration diterapkan dan jangan gunakan endpoint publik.
 
-## 13. Future conversations
+## 14. Future conversations
 
-Entities yang direncanakan: introductions, conversations, messages, reveal requests, blocks, reports.
+Entities lanjutan: reveal requests. Anonymous Chat v1 sudah menyediakan `anonymous_messages`,
+`conversation_events`, lifecycle shell, serta RPC pesan.
 
-Anonymous messages memakai internal StudyDate identity, bukan metadata Telegram atau email.
-
-## 14. Future Telegram architecture
+## 15. Future Telegram architecture
 
 Bot adalah companion untuk notification, short reply, reminder, check-in, safety action, dan Mini App deep link.
 Website/Mini App tetap source of truth untuk discovery, full profile, group/event management, privacy settings, dan
@@ -205,13 +242,13 @@ report detail.
 
 Bot harus mengirim message baru dari server, bukan forward message user.
 
-## 15. Logging
+## 16. Logging
 
 Jangan log email, PII body, token, OTP, magic link, cookie, service-role key, atau private profile content.
 
 Gunakan request ID, sanitized result category, status code, duration, dan non-identifying metrics.
 
-## 16. Failure handling
+## 17. Failure handling
 
 - Jangan tampilkan raw Supabase error.
 - Jangan fake success saat database gagal.
@@ -219,7 +256,7 @@ Gunakan request ID, sanitized result category, status code, duration, dan non-id
 - Auth failure memakai generic message.
 - Missing environment menghasilkan generic unavailable response.
 
-## 17. Production gates
+## 18. Production gates
 
 Sebelum production:
 - dedicated Supabase project verified;

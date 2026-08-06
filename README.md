@@ -59,20 +59,23 @@ Implemented:
 - Versioned consent records
 - Minimal authenticated `/app` page
 - Privacy-safe People Discovery v1 at `/app/people`
+- Introduction Requests v1 at `/app/introductions` with send/accept/decline/cancel, block/report foundation, and
+  conversation shell handoff
+- Anonymous Chat v1 at `/app/messages` (local migration `202608060003` until remote preflight)
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
 
-- Introductions
-- Chat
-- Groups
-- Events
-- Verification documents
-- Telegram linking
+- Mutual interest / identity reveal
 - Contact reveal
+- Groups
+- Campus Events
+- Telegram linking
+- Full moderation dashboard
+- Supabase Realtime chat delivery (v1 uses authenticated RPC polling)
 
-The “Segera hadir” areas inside `/app` do not contain fake recommendations or placeholder data.
+Student Verification Center code exists but remains globally disabled unless explicitly enabled for controlled testing.
 
 ### Local requirements
 
@@ -152,6 +155,9 @@ StudyDate migrations must be applied in this order:
 5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
 6. `supabase/migrations/202607310004_create_people_discovery.sql` (local-only until a separate approved preflight)
 7. `supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql` (local-only; do not apply without approval)
+8. `supabase/migrations/202608060001_create_introduction_requests_v1.sql`
+9. `supabase/migrations/202608060002_fix_introduction_rpc_volatility.sql`
+10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` (local-only; do not apply without approval)
 
 Only after the linked project has been manually verified:
 
@@ -227,6 +233,13 @@ People Discovery uses dedicated authenticated RPCs with an explicit safe project
 `profiles` table. Eligible rows require completed onboarding and user opt-in, exclude the current user, and expose
 neither private names, auth email, contacts, NIM, nor internal user IDs.
 
+Introduction Requests v1 uses alias-based SECURITY DEFINER RPCs for send/accept/decline/cancel, durable database rate
+limits, private `user_blocks`/`user_reports`, and an `awaiting_chat` conversation shell on accept. Participant UUIDs are
+not exposed in rendered student routes.
+
+Anonymous Chat v1 (local migration `202608060003`) adds opaque conversation `public_id`, `anonymous_messages`,
+end/block/report RPCs, and authenticated polling. Do not apply remotely without preflight.
+
 ### Early Access waitlist
 
 The Early Access flow includes:
@@ -255,6 +268,8 @@ serving large or horizontally scaled production traffic.
 | `npm run test:verification` | Run Student Verification security and readiness tests |
 | `npm run test:people` | Run People Discovery validation, projection, and authorization tests |
 | `npm run test:staff` | Run staff-role, bootstrap, route-guard, audit, and reviewer authorization tests |
+| `npm run test:introductions` | Run Introduction Requests validation, projection, and authorization tests |
+| `npm run test:messages` | Run Anonymous Chat validation, projection, and authorization tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
@@ -272,6 +287,8 @@ npm run test:auth
 npm run test:verification
 npm run test:people
 npm run test:staff
+npm run test:introductions
+npm run test:messages
 npm run test:browser
 npm run build
 git status --short

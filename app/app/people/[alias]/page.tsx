@@ -1,12 +1,15 @@
 import { AppShell } from "@/components/app/app-shell";
+import { SendIntroductionDialog } from "@/components/introductions/send-introduction-dialog";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
+import { RATE_LIMIT_MESSAGE } from "@/lib/introductions/constants";
+import { getIntroductionSendEligibility } from "@/lib/introductions/service";
 import {
   connectionGoalLabels,
   getMascotForAlias,
   interestLabels,
 } from "@/lib/people/constants";
 import { getDiscoveryProfile } from "@/lib/people/service";
-import { peopleAliasSchema } from "@/lib/people/validation";
+import { peopleAliasSchema, fromPeopleAliasPathSegment } from "@/lib/people/validation";
 import { BadgeCheck, Building2, GraduationCap, MapPin, Shield } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,24 +17,64 @@ import { notFound, redirect } from "next/navigation";
 
 type PeopleDetailPageProps = {
   params: Promise<{ alias: string }>;
+  searchParams: Promise<{ intro?: string; notice?: string }>;
 };
 
-export default async function PeopleDetailPage({ params }: PeopleDetailPageProps) {
+function eligibilityCopy(stateCode: string) {
+  switch (stateCode) {
+    case "self":
+      return "Ini profilmu sendiri.";
+    case "pending":
+      return "Sudah ada perkenalan yang menunggu jawaban.";
+    case "cooldown":
+    case "rate_limited":
+      return RATE_LIMIT_MESSAGE;
+    case "blocked":
+      return "Interaksi dengan profil ini belum tersedia.";
+    case "ok":
+      return null;
+    case "unavailable":
+      return "Perkenalan belum dapat dikirim untuk profil ini saat ini.";
+    default:
+      return "Perkenalan belum dapat dikirim untuk profil ini saat ini.";
+  }
+}
+
+export default async function PeopleDetailPage({
+  params,
+  searchParams,
+}: PeopleDetailPageProps) {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const ownProfile = await getPrivateProfile(user.id);
   if (!ownProfile?.onboarding_completed_at) redirect("/onboarding");
 
-  const parsedAlias = peopleAliasSchema.safeParse((await params).alias);
+  const rawAlias = (await params).alias;
+  const parsedAlias = peopleAliasSchema.safeParse(
+    fromPeopleAliasPathSegment(rawAlias),
+  );
   if (!parsedAlias.success) notFound();
   const profile = await getDiscoveryProfile(parsedAlias.data);
   if (!profile) notFound();
+
+  const query = await searchParams;
+  const eligibility = await getIntroductionSendEligibility(profile.public_alias);
+  const disabledReason = eligibilityCopy(eligibility.state_code);
+  const notice =
+    typeof query.notice === "string" && query.notice.trim()
+      ? query.notice.trim().slice(0, 300)
+      : null;
 
   return (
     <AppShell current="people">
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <Link href="/app/people" className="focus-ring inline-flex min-h-11 items-center rounded-xl text-sm font-semibold text-brand-blue">← Kembali ke People</Link>
+        {notice ? (
+          <p role="alert" className="mt-4 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm text-brand-navy">
+            {notice}
+          </p>
+        ) : null}
         <article className="mt-5 overflow-hidden rounded-[26px] border border-brand-border bg-white shadow-[0_20px_50px_rgba(15,27,51,0.06)]">
           <div className="grid lg:grid-cols-[0.4fr_0.6fr]">
             <div className="relative flex min-h-[300px] items-end justify-center overflow-hidden bg-[radial-gradient(circle_at_30%_25%,#ffffff_0%,#edf4ff_50%,#dfeaff_100%)] p-8 sm:min-h-[380px]">
@@ -63,8 +106,21 @@ export default async function PeopleDetailPage({ params }: PeopleDetailPageProps
             </div>
           </div>
           <footer className="flex flex-col gap-4 border-t border-brand-border bg-brand-navy p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
-            <div className="flex max-w-2xl gap-3"><Shield className="mt-0.5 h-5 w-5 shrink-0 text-blue-300" aria-hidden="true" /><div><h2 className="font-semibold">Perkenalan privat akan hadir berikutnya</h2><p className="mt-1 text-sm leading-6 text-white/65">Pada tahap ini, People hanya untuk melihat profil anonim. Tidak ada kontak atau identitas asli yang dibuka.</p></div></div>
-            <span className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white/80">Belum tersedia</span>
+            <div className="flex max-w-2xl gap-3">
+              <Shield className="mt-0.5 h-5 w-5 shrink-0 text-blue-300" aria-hidden="true" />
+              <div>
+                <h2 className="font-semibold">Kirim perkenalan privat</h2>
+                <p className="mt-1 text-sm leading-6 text-white/65">
+                  Ceritakan sedikit alasan kamu ingin berkenalan. Nama lengkap dan
+                  kontak tetap tertutup.
+                </p>
+              </div>
+            </div>
+            <SendIntroductionDialog
+              alias={profile.public_alias}
+              canSend={eligibility.can_send}
+              disabledReason={disabledReason}
+            />
           </footer>
         </article>
       </div>
