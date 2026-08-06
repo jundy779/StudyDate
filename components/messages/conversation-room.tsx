@@ -16,6 +16,8 @@ import {
   REPORT_REASON_LABELS,
 } from "@/lib/messages/constants";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
+import type { MutualInterestState } from "@/lib/mutual-interest/constants";
+import { MutualInterestPanel } from "@/components/messages/mutual-interest-panel";
 import { getMascotForAlias } from "@/lib/people/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
@@ -34,6 +36,7 @@ import {
 type ConversationRoomProps = {
   conversation: ConversationDetail;
   initialMessages: ChatMessage[];
+  initialMutualInterest: MutualInterestState;
   notice?: string | null;
   state?: string | null;
 };
@@ -63,6 +66,7 @@ function makeIdempotencyKey() {
 export function ConversationRoom({
   conversation,
   initialMessages,
+  initialMutualInterest,
   notice,
   state,
 }: ConversationRoomProps) {
@@ -71,6 +75,7 @@ export function ConversationRoom({
   );
   const [status, setStatus] = useState(conversation.status);
   const [canSend, setCanSend] = useState(conversation.can_send);
+  const [mutualInterest, setMutualInterest] = useState(initialMutualInterest);
   const [body, setBody] = useState("");
   const [clientError, setClientError] = useState<string | null>(notice ?? null);
   const [pending, startTransition] = useTransition();
@@ -122,11 +127,15 @@ export function ConversationRoom({
             status: ConversationDetail["status"];
             can_send: boolean;
           };
+          mutualInterest?: MutualInterestState;
           messages: ChatMessage[];
         };
         if (cancelled) return;
         setStatus(payload.conversation.status);
         setCanSend(payload.conversation.can_send);
+        if (payload.mutualInterest) {
+          setMutualInterest(payload.mutualInterest);
+        }
         setMessages([...payload.messages].reverse());
       } catch {
         failures += 1;
@@ -315,6 +324,14 @@ export function ConversationRoom({
       </div>
 
       <footer className="sticky bottom-0 border-t border-brand-border bg-white px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+        <div className="mb-4">
+          <MutualInterestPanel
+            publicId={conversation.public_id}
+            conversationStatus={status}
+            state={mutualInterest}
+            onStateChange={setMutualInterest}
+          />
+        </div>
         {closed ? (
           <p className="text-sm leading-6 text-brand-muted">
             {status === "blocked"

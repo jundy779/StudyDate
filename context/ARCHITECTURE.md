@@ -16,7 +16,8 @@ Browser
        -> Public UI: landing page + Early Access dialog
        -> Public handler: /api/early-access
        -> Auth: /login, /staff/login, /auth/callback
-       -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions
+       -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions,
+          /app/messages, /app/messages/[publicId]
        -> Protected staff: /owner/**, /admin/**
        -> Server handlers/actions
   -> Supabase Auth + PostgreSQL + RLS + RPC
@@ -198,6 +199,23 @@ Lifecycle shell: `awaiting_chat` → `active` (pesan pertama) → `ended` | `blo
 Pesan disimpan di `anonymous_messages` (plain text, idempotency key, read_at recipient-only).
 Tidak ada grant SELECT tabel ke `authenticated` agar UUID pengirim tidak bocor lewat PostgREST; delivery v1
 menggunakan polling RPC. Realtime dapat dipertimbangkan kemudian dengan projection aman.
+
+## 12c. Mutual Interest v1 architecture
+
+```text
+active conversation (both participants have messaged)
+ -> get_mutual_interest_state / select_mutual_interest / withdraw_mutual_interest
+ -> conversation_mutual_interests (private per participant)
+ -> mutual_interest_at set atomically on second active consent
+ -> sanitized conversation_events.mutual_interest_reached
+ -> UI: Kenal Lebih Jauh (no one-sided leak; no Identity Reveal)
+```
+
+Safe client projection: `eligible`, `selected_by_me`, `mutual`, `mutual_at`, `can_withdraw`.
+One-sided consent is never returned to the counterpart. Withdrawal is allowed only before mutual
+completion. Identity Reveal remains a separate future consent flow.
+
+Migration `202608060004` is local-only until explicit remote preflight approval.
 
 ## 13. Staff authorization v1
 

@@ -24,6 +24,8 @@ Sumber migration:
 9. `supabase/migrations/202608060002_fix_introduction_rpc_volatility.sql` — list/eligibility RPCs VOLATILE
 10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` — Anonymous Chat v1;
     applied remotely after preflight (uses `extensions.gen_random_bytes` for public IDs)
+11. `supabase/migrations/202608060004_create_mutual_interest_v1.sql` — Mutual Interest v1;
+    local-only until explicit remote preflight approval
 
 ### `early_access_waitlist`
 
@@ -313,21 +315,40 @@ Rules: sender = `auth.uid()` participant only; immutable body; best-effort conta
 
 ### `conversation_events`
 
-Sanitized audit: activated, message_sent, ended, blocked, reported, messages_read.
+Sanitized audit: activated, message_sent, ended, blocked, reported, messages_read,
+mutual_interest_reached. Never stores one-sided interest, message bodies, or contacts.
+
+### `conversation_mutual_interests`
+
+Private Mutual Interest v1 consent rows (local migration `202608060004` until remote apply):
+
+```text
+id uuid primary key
+conversation_id uuid not null -> conversation_shells
+participant_id uuid not null -> auth.users
+selected_at timestamptz not null
+withdrawn_at timestamptz null
+created_at / updated_at timestamptz
+unique (conversation_id, participant_id)
+```
+
+Active consent = `withdrawn_at is null`. Counterpart consent is never exposed via RPC.
+`conversation_shells.mutual_interest_at` is set atomically when both participants have an
+active consent. Before mutual completion, a participant may withdraw privately. After
+mutual completion, the timestamp remains; Identity Reveal is a separate feature and is
+not triggered automatically.
+
+Safe client projection only:
+
+```text
+eligible, selected_by_me, mutual, mutual_at, can_withdraw
+```
 
 ### `user_blocks` / `user_reports` / `introduction_events`
 
 Minimal private safety foundation. Reports may reference `conversation_id` / `anonymous_message_id`.
 
 ## 7. Planned reveal
-
-### `connection_interests`
-```text
-connection_id
-user_id
-interested_at
-withdrawn_at null
-```
 
 ### `reveal_requests`
 ```text

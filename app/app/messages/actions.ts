@@ -17,6 +17,11 @@ import {
   sendChatMessageSchema,
 } from "@/lib/messages/validation";
 import { blockStudentByAlias } from "@/lib/introductions/service";
+import {
+  selectMutualInterest,
+  withdrawMutualInterest,
+} from "@/lib/mutual-interest/service";
+import { mutualInterestActionSchema } from "@/lib/mutual-interest/validation";
 import { peopleAliasSchema } from "@/lib/people/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -148,4 +153,34 @@ export async function reportFromConversation(formData: FormData) {
 
   revalidateMessages(parsed.data.publicId);
   redirect(`/app/messages/${parsed.data.publicId}?state=reported`);
+}
+
+export async function selectMutualInterestAction(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = mutualInterestActionSchema.safeParse({
+    publicId: formData.get("publicId"),
+  });
+  if (!parsed.success) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const next = await selectMutualInterest(parsed.data.publicId);
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+export async function withdrawMutualInterestAction(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = mutualInterestActionSchema.safeParse({
+    publicId: formData.get("publicId"),
+  });
+  if (!parsed.success) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const next = await withdrawMutualInterest(parsed.data.publicId);
+  revalidateMessages(parsed.data.publicId);
+  return next;
 }

@@ -4,6 +4,7 @@ import {
   listConversationMessages,
 } from "@/lib/messages/service";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
+import { getMutualInterestState } from "@/lib/mutual-interest/service";
 import { NextResponse, type NextRequest } from "next/server";
 
 type RouteContext = {
@@ -33,7 +34,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
 
-    const messages = await listConversationMessages(parsed.data, { limit: 50 });
+    const [messages, mutualInterest] = await Promise.all([
+      listConversationMessages(parsed.data, { limit: 50 }),
+      getMutualInterestState(parsed.data),
+    ]);
 
     return NextResponse.json({
       conversation: {
@@ -42,6 +46,14 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         counterpart_alias: conversation.counterpart_alias,
         can_send: conversation.can_send,
         unread_count: conversation.unread_count,
+      },
+      // Safe MutualInterestState only — never one-sided counterpart interest.
+      mutualInterest: {
+        eligible: mutualInterest.eligible,
+        selectedByMe: mutualInterest.selectedByMe,
+        mutual: mutualInterest.mutual,
+        mutualAt: mutualInterest.mutualAt,
+        canWithdraw: mutualInterest.canWithdraw,
       },
       messages: messages.map((message) => ({
         message_id: message.message_id,

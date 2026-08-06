@@ -7,6 +7,7 @@ import {
   listConversationMessages,
 } from "@/lib/messages/service";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
+import { getMutualInterestState } from "@/lib/mutual-interest/service";
 import { notFound, redirect } from "next/navigation";
 
 type ConversationPageProps = {
@@ -27,11 +28,13 @@ export default async function ConversationPage({
   const parsed = conversationPublicIdSchema.safeParse(rawId);
   if (!parsed.success) notFound();
 
-  const [conversation, messages, unreadConversations] = await Promise.all([
-    getConversationByPublicId(parsed.data),
-    listConversationMessages(parsed.data, { limit: 50 }),
-    countUnreadConversations(),
-  ]);
+  const [conversation, messages, unreadConversations, mutualInterest] =
+    await Promise.all([
+      getConversationByPublicId(parsed.data),
+      listConversationMessages(parsed.data, { limit: 50 }),
+      countUnreadConversations(),
+      getMutualInterestState(parsed.data),
+    ]);
 
   if (!conversation) notFound();
 
@@ -47,6 +50,7 @@ export default async function ConversationPage({
         <ConversationRoom
           conversation={conversation}
           initialMessages={messages}
+          initialMutualInterest={mutualInterest}
           notice={notice}
           state={query.state ?? null}
         />

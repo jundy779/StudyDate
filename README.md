@@ -61,13 +61,14 @@ Implemented:
 - Privacy-safe People Discovery v1 at `/app/people`
 - Introduction Requests v1 at `/app/introductions` with send/accept/decline/cancel, block/report foundation, and
   conversation shell handoff
-- Anonymous Chat v1 at `/app/messages` (local migration `202608060003` until remote preflight)
+- Anonymous Chat v1 at `/app/messages` (deployed through migration `202608060003`)
+- Mutual Interest v1 inside active conversations (local migration `202608060004` until remote preflight)
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
 
-- Mutual interest / identity reveal
+- Identity reveal
 - Contact reveal
 - Groups
 - Campus Events
@@ -237,8 +238,12 @@ Introduction Requests v1 uses alias-based SECURITY DEFINER RPCs for send/accept/
 limits, private `user_blocks`/`user_reports`, and an `awaiting_chat` conversation shell on accept. Participant UUIDs are
 not exposed in rendered student routes.
 
-Anonymous Chat v1 (local migration `202608060003`) adds opaque conversation `public_id`, `anonymous_messages`,
-end/block/report RPCs, and authenticated polling. Do not apply remotely without preflight.
+Anonymous Chat v1 (migration `202608060003`) adds opaque conversation `public_id`, `anonymous_messages`,
+end/block/report RPCs, and authenticated polling.
+
+Mutual Interest v1 (local migration `202608060004`) adds private “Kenal Lebih Jauh” consent inside an active
+conversation. One-sided interest is never exposed. Mutual completion does not reveal identity or contacts. Do not
+apply `202608060004` remotely without preflight.
 
 ### Early Access waitlist
 
@@ -270,6 +275,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:staff` | Run staff-role, bootstrap, route-guard, audit, and reviewer authorization tests |
 | `npm run test:introductions` | Run Introduction Requests validation, projection, and authorization tests |
 | `npm run test:messages` | Run Anonymous Chat validation, projection, and authorization tests |
+| `npm run test:mutual` | Run Mutual Interest validation, privacy, and authorization tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
@@ -289,6 +295,7 @@ npm run test:people
 npm run test:staff
 npm run test:introductions
 npm run test:messages
+npm run test:mutual
 npm run test:browser
 npm run build
 git status --short
