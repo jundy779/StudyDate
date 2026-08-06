@@ -22,8 +22,8 @@ Sumber migration:
 8. `supabase/migrations/202608060001_create_introduction_requests_v1.sql` — Introduction Requests v1 +
    block/report foundation (synced remote through controlled apply)
 9. `supabase/migrations/202608060002_fix_introduction_rpc_volatility.sql` — list/eligibility RPCs VOLATILE
-10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` — local-only; Anonymous Chat v1; do not apply
-    remote without preflight approval
+10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` — Anonymous Chat v1;
+    applied remotely after preflight (uses `extensions.gen_random_bytes` for public IDs)
 
 ### `early_access_waitlist`
 
