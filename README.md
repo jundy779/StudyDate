@@ -62,7 +62,7 @@ Implemented:
 - Introduction Requests v1 at `/app/introductions` with send/accept/decline/cancel, block/report foundation, and
   conversation shell handoff
 - Anonymous Chat v1 at `/app/messages` (deployed through migration `202608060003`)
-- Mutual Interest v1 inside active conversations (local migration `202608060004` until remote preflight)
+- Mutual Interest v1 inside active conversations (migration `202608060004`)
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -241,9 +241,8 @@ not exposed in rendered student routes.
 Anonymous Chat v1 (migration `202608060003`) adds opaque conversation `public_id`, `anonymous_messages`,
 end/block/report RPCs, and authenticated polling.
 
-Mutual Interest v1 (local migration `202608060004`) adds private “Kenal Lebih Jauh” consent inside an active
-conversation. One-sided interest is never exposed. Mutual completion does not reveal identity or contacts. Do not
-apply `202608060004` remotely without preflight.
+Mutual Interest v1 (migration `202608060004`) adds private “Kenal Lebih Jauh” consent inside an active
+conversation. One-sided interest is never exposed. Mutual completion does not reveal identity or contacts.
 
 ### Early Access waitlist
 

@@ -215,7 +215,7 @@ Safe client projection: `eligible`, `selected_by_me`, `mutual`, `mutual_at`, `ca
 One-sided consent is never returned to the counterpart. Withdrawal is allowed only before mutual
 completion. Identity Reveal remains a separate future consent flow.
 
-Migration `202608060004` is local-only until explicit remote preflight approval.
+Migration `202608060004` is applied remotely after controlled preflight.
 
 ## 13. Staff authorization v1
 

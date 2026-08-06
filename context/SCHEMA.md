@@ -25,7 +25,7 @@ Sumber migration:
 10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` — Anonymous Chat v1;
     applied remotely after preflight (uses `extensions.gen_random_bytes` for public IDs)
 11. `supabase/migrations/202608060004_create_mutual_interest_v1.sql` — Mutual Interest v1;
-    local-only until explicit remote preflight approval
+    applied remotely after controlled preflight
 
 ### `early_access_waitlist`
 
@@ -320,7 +320,7 @@ mutual_interest_reached. Never stores one-sided interest, message bodies, or con
 
 ### `conversation_mutual_interests`
 
-Private Mutual Interest v1 consent rows (local migration `202608060004` until remote apply):
+Private Mutual Interest v1 consent rows (migration `202608060004`, applied remotely):
 
 ```text
 id uuid primary key
