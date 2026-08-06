@@ -26,6 +26,8 @@ Sumber migration:
     applied remotely after preflight (uses `extensions.gen_random_bytes` for public IDs)
 11. `supabase/migrations/202608060004_create_mutual_interest_v1.sql` — Mutual Interest v1;
     applied remotely after controlled preflight
+12. `supabase/migrations/202608060005_create_identity_reveal_v1.sql` — Identity Reveal v1;
+    local-only until explicit remote preflight approval
 
 ### `early_access_waitlist`
 
@@ -316,7 +318,8 @@ Rules: sender = `auth.uid()` participant only; immutable body; best-effort conta
 ### `conversation_events`
 
 Sanitized audit: activated, message_sent, ended, blocked, reported, messages_read,
-mutual_interest_reached. Never stores one-sided interest, message bodies, or contacts.
+mutual_interest_reached, identity_revealed. Never stores one-sided interest/consent,
+message bodies, contacts, or Storage paths.
 
 ### `conversation_mutual_interests`
 
@@ -344,28 +347,38 @@ Safe client projection only:
 eligible, selected_by_me, mutual, mutual_at, can_withdraw
 ```
 
+### Identity Reveal v1 (local migration `202608060005`)
+
+Tables:
+- `identity_reveal_profile_versions` — immutable per-user first name + private photo object key
+- `conversation_identity_reveal_consents` — private per-participant consent linked to a version
+- `conversation_identity_reveals` — immutable completion snapshot of both approved versions
+- `conversation_shells.identity_revealed_at` — server-controlled completion timestamp
+- Storage bucket `identity-reveal-photos` (private; service-role upload/download only)
+
+Safe pre-completion projection only:
+
+```text
+eligible, has_profile, selected_by_me, completed, completed_at, can_withdraw
+```
+
+Completed name projection: `mine_first_name`, `counterpart_first_name` (no photo paths).
+Photos are served through authenticated media proxy after completion.
+Profile first name is user-provided for reveal and is not derived from legal name, NIM,
+email, or People Discovery.
+
 ### `user_blocks` / `user_reports` / `introduction_events`
 
 Minimal private safety foundation. Reports may reference `conversation_id` / `anonymous_message_id`.
 
-## 7. Planned reveal
+## 7. Planned Contact Reveal
 
-### `reveal_requests`
-```text
-id uuid primary key
-connection_id uuid
-reveal_type text
-requester_id uuid
-recipient_id uuid
-requester_consented_at timestamptz
-recipient_consented_at timestamptz null
-revealed_at timestamptz null
-revoked_at timestamptz null
-```
+Identity Reveal v1 sudah diimplementasikan sebagai model percakapan-scoped
+(`conversation_identity_reveal_*`, migration lokal `202608060005`), bukan tabel
+`reveal_requests` generik.
 
-Reveal types: identity_basic, telegram, instagram, whatsapp, email, full_name.
-
-Setiap contact type terpisah. Jangan pakai global reveal flag.
+Contact Reveal (Telegram, Instagram, WhatsApp, email, full name) tetap Planned
+dengan consent per jenis. Jangan pakai global reveal flag.
 
 ## 9. Implemented blocks and reports (Introduction foundation)
 

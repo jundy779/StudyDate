@@ -120,8 +120,9 @@ Setelah diterima, tampilkan handoff ke Pesan dengan CTA `Mulai percakapan`.
 
 `/app/messages` menampilkan daftar percakapan anonim setelah perkenalan diterima. Detail
 `/app/messages/[publicId]` memakai header alias+mascot, privacy note, bubble teks escaped, composer
-`Tulis pesan`, serta aksi Akhiri / Blokir / Laporkan. Jangan menampilkan online status, typing palsu, atau
-dekorasi dating.
+`Tulis pesan`, serta aksi Akhiri / Blokir / Laporkan. Setelah Mutual Interest, panel
+`Buka Identitas` tersedia untuk siapkan nama depan + foto dan consent terpisah. Jangan
+menampilkan online status, typing palsu, atau dekorasi dating.
 
 ### Student Verification Center
 

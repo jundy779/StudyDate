@@ -17,7 +17,13 @@ import {
 } from "@/lib/messages/constants";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
 import type { MutualInterestState } from "@/lib/mutual-interest/constants";
+import type {
+  IdentityRevealCompleted,
+  IdentityRevealProfilePreview,
+  IdentityRevealState,
+} from "@/lib/identity-reveal/constants";
 import { MutualInterestPanel } from "@/components/messages/mutual-interest-panel";
+import { IdentityRevealPanel } from "@/components/messages/identity-reveal-panel";
 import { getMascotForAlias } from "@/lib/people/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
@@ -37,6 +43,9 @@ type ConversationRoomProps = {
   conversation: ConversationDetail;
   initialMessages: ChatMessage[];
   initialMutualInterest: MutualInterestState;
+  initialIdentityReveal: IdentityRevealState;
+  initialIdentityRevealPreview: IdentityRevealProfilePreview | null;
+  initialIdentityRevealCompleted: IdentityRevealCompleted | null;
   notice?: string | null;
   state?: string | null;
 };
@@ -67,6 +76,9 @@ export function ConversationRoom({
   conversation,
   initialMessages,
   initialMutualInterest,
+  initialIdentityReveal,
+  initialIdentityRevealPreview,
+  initialIdentityRevealCompleted,
   notice,
   state,
 }: ConversationRoomProps) {
@@ -76,6 +88,10 @@ export function ConversationRoom({
   const [status, setStatus] = useState(conversation.status);
   const [canSend, setCanSend] = useState(conversation.can_send);
   const [mutualInterest, setMutualInterest] = useState(initialMutualInterest);
+  const [identityReveal, setIdentityReveal] = useState(initialIdentityReveal);
+  const [identityRevealCompleted, setIdentityRevealCompleted] = useState(
+    initialIdentityRevealCompleted,
+  );
   const [body, setBody] = useState("");
   const [clientError, setClientError] = useState<string | null>(notice ?? null);
   const [pending, startTransition] = useTransition();
@@ -128,6 +144,8 @@ export function ConversationRoom({
             can_send: boolean;
           };
           mutualInterest?: MutualInterestState;
+          identityReveal?: IdentityRevealState;
+          identityRevealCompleted?: IdentityRevealCompleted | null;
           messages: ChatMessage[];
         };
         if (cancelled) return;
@@ -135,6 +153,12 @@ export function ConversationRoom({
         setCanSend(payload.conversation.can_send);
         if (payload.mutualInterest) {
           setMutualInterest(payload.mutualInterest);
+        }
+        if (payload.identityReveal) {
+          setIdentityReveal(payload.identityReveal);
+        }
+        if (payload.identityRevealCompleted?.completed) {
+          setIdentityRevealCompleted(payload.identityRevealCompleted);
         }
         setMessages([...payload.messages].reverse());
       } catch {
@@ -324,12 +348,40 @@ export function ConversationRoom({
       </div>
 
       <footer className="sticky bottom-0 border-t border-brand-border bg-white px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
-        <div className="mb-4">
+        <div className="mb-4 space-y-4">
           <MutualInterestPanel
             publicId={conversation.public_id}
             conversationStatus={status}
             state={mutualInterest}
             onStateChange={setMutualInterest}
+          />
+          <IdentityRevealPanel
+            publicId={conversation.public_id}
+            conversationStatus={status}
+            mutualCompleted={mutualInterest.mutual}
+            state={identityReveal}
+            initialPreview={initialIdentityRevealPreview}
+            completedData={identityRevealCompleted}
+            onStateChange={(next) => {
+              setIdentityReveal(next);
+              if (next.completed) {
+                void fetch(`/api/messages/${conversation.public_id}`, {
+                  cache: "no-store",
+                })
+                  .then((response) => (response.ok ? response.json() : null))
+                  .then((payload) => {
+                    if (
+                      payload?.identityRevealCompleted?.completed &&
+                      payload.identityRevealCompleted.mineFirstName
+                    ) {
+                      setIdentityRevealCompleted(
+                        payload.identityRevealCompleted as IdentityRevealCompleted,
+                      );
+                    }
+                  })
+                  .catch(() => undefined);
+              }
+            }}
           />
         </div>
         {closed ? (

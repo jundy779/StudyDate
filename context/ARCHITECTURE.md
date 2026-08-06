@@ -217,6 +217,27 @@ completion. Identity Reveal remains a separate future consent flow.
 
 Migration `202608060004` is applied remotely after controlled preflight.
 
+## 12d. Identity Reveal v1 architecture
+
+```text
+mutual_interest_at set
+ -> prepare reveal profile (first name + private photo, server re-encode)
+ -> get_identity_reveal_state / select_identity_reveal / withdraw_identity_reveal
+ -> conversation_identity_reveal_consents (private per participant)
+ -> identity_revealed_at + conversation_identity_reveals snapshot atomically
+ -> sanitized conversation_events.identity_revealed
+ -> media proxy (no Storage path exposure)
+```
+
+Safe pre-completion projection: `eligible`, `has_profile`, `selected_by_me`,
+`completed`, `completed_at`, `can_withdraw`.
+One-sided prepare/consent is never returned to the counterpart.
+Completed projection exposes only consented first names; photos stream through
+authenticated media proxy after completion.
+
+Migration `202608060005` is local-only until explicit remote preflight approval.
+Do not claim live Identity Reveal until the migration is applied remotely.
+
 ## 13. Staff authorization v1
 
 StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted

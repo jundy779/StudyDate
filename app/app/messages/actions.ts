@@ -22,6 +22,14 @@ import {
   withdrawMutualInterest,
 } from "@/lib/mutual-interest/service";
 import { mutualInterestActionSchema } from "@/lib/mutual-interest/validation";
+import {
+  selectIdentityReveal,
+  withdrawIdentityReveal,
+} from "@/lib/identity-reveal/service";
+import {
+  identityRevealConsentSchema,
+  identityRevealWithdrawSchema,
+} from "@/lib/identity-reveal/validation";
 import { peopleAliasSchema } from "@/lib/people/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -181,6 +189,40 @@ export async function withdrawMutualInterestAction(formData: FormData) {
   }
 
   const next = await withdrawMutualInterest(parsed.data.publicId);
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+export async function selectIdentityRevealAction(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = identityRevealConsentSchema.safeParse({
+    publicId: formData.get("publicId"),
+    profileVersionId: formData.get("profileVersionId"),
+  });
+  if (!parsed.success) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const next = await selectIdentityReveal(
+    parsed.data.publicId,
+    parsed.data.profileVersionId,
+  );
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+export async function withdrawIdentityRevealAction(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = identityRevealWithdrawSchema.safeParse({
+    publicId: formData.get("publicId"),
+  });
+  if (!parsed.success) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const next = await withdrawIdentityReveal(parsed.data.publicId);
   revalidateMessages(parsed.data.publicId);
   return next;
 }

@@ -5,6 +5,10 @@ import {
 } from "@/lib/messages/service";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
 import { getMutualInterestState } from "@/lib/mutual-interest/service";
+import {
+  getCompletedIdentityReveal,
+  getIdentityRevealState,
+} from "@/lib/identity-reveal/service";
 import { NextResponse, type NextRequest } from "next/server";
 
 type RouteContext = {
@@ -34,10 +38,15 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
 
-    const [messages, mutualInterest] = await Promise.all([
+    const [messages, mutualInterest, identityReveal] = await Promise.all([
       listConversationMessages(parsed.data, { limit: 50 }),
       getMutualInterestState(parsed.data),
+      getIdentityRevealState(parsed.data),
     ]);
+
+    const identityRevealCompleted = identityReveal.completed
+      ? await getCompletedIdentityReveal(parsed.data)
+      : null;
 
     return NextResponse.json({
       conversation: {
@@ -55,6 +64,24 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         mutualAt: mutualInterest.mutualAt,
         canWithdraw: mutualInterest.canWithdraw,
       },
+      // Safe IdentityRevealState only — never one-sided prepare/consent.
+      identityReveal: {
+        eligible: identityReveal.eligible,
+        hasProfile: identityReveal.hasProfile,
+        selectedByMe: identityReveal.selectedByMe,
+        completed: identityReveal.completed,
+        completedAt: identityReveal.completedAt,
+        canWithdraw: identityReveal.canWithdraw,
+      },
+      // Names only after completion — never photo paths or UUIDs.
+      identityRevealCompleted: identityRevealCompleted?.completed
+        ? {
+            completed: true,
+            completedAt: identityRevealCompleted.completedAt,
+            mineFirstName: identityRevealCompleted.mineFirstName,
+            counterpartFirstName: identityRevealCompleted.counterpartFirstName,
+          }
+        : null,
       messages: messages.map((message) => ({
         message_id: message.message_id,
         body: message.body,

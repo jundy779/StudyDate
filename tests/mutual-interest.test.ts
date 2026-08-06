@@ -169,7 +169,8 @@ test("UI copy stays calm and privacy-first", () => {
   assert.match(MUTUAL_INTEREST_COPY.mutualBody, /tetap menjaga privasi/i);
   assert.match(MUTUAL_INTEREST_COPY.mutualBody, /tahap terpisah/i);
   assert.match(room, /MutualInterestPanel/);
-  assert.doesNotMatch(room, /Identity Reveal|Reveal identitas|buka kontak/i);
+  assert.match(room, /IdentityRevealPanel/);
+  assert.doesNotMatch(room, /buka kontak|Contact Reveal|WhatsApp/i);
 });
 
 test("identity and contact fields are absent from mutual interest storage", () => {

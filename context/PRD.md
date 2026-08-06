@@ -85,6 +85,9 @@ Diimplementasikan pada code dan migration repository saat ini:
   pengiriman pesan anonim, end/block/report, unread nyata, serta polling aman tanpa expose UUID peserta;
 - Mutual Interest v1 (migration `202608060004`) untuk consent privat
   “Kenal Lebih Jauh” di percakapan aktif, tanpa one-sided leak dan tanpa Identity Reveal otomatis;
+- Identity Reveal v1 (migration lokal `202608060005`, belum di-push remote) untuk consent
+  terpisah setelah Mutual Interest: nama depan + foto profil yang disiapkan user, privat
+  sampai kedua pihak menyetujui; tanpa Contact Reveal;
 - Staff Roles and Admin Shell v1 dengan satu Supabase Auth, role Owner/Admin/Student, staff login terpisah, owner-only
   staff management, verification review shell, dan audit role tersanitasi.
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
@@ -110,7 +113,6 @@ Jangan menganggap fitur berikut tersedia:
 
 **Planned:**
 
-- identity reveal;
 - contact reveal;
 - Groups;
 - Campus Events;
@@ -229,12 +231,16 @@ Actions: reply, end, block, report, mutual interest.
 
 Jangan bocorkan Telegram metadata, email, sender ID, atau kontak sebelum reveal.
 
-## 11. Planned — Reveal
+## 11. Implemented — Identity Reveal v1 (local migration pending remote)
 
-Identity Reveal:
-- first name;
-- clear photo;
-- verification status.
+Identity Reveal v1 (migration lokal `202608060005`) membuka hanya:
+- first name yang disiapkan user secara eksplisit untuk reveal;
+- clear profile photo yang diunggah khusus untuk reveal.
+
+Tidak membuka verification badge sebagai klaim “real identity verified”, kontak, nama legal,
+NIM, atau evidence. Contact Reveal tetap Planned dan memerlukan consent terpisah.
+
+## 11b. Planned — Contact Reveal
 
 Contact Reveal terpisah:
 - Telegram;

@@ -8,6 +8,11 @@ import {
 } from "@/lib/messages/service";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
 import { getMutualInterestState } from "@/lib/mutual-interest/service";
+import {
+  getCompletedIdentityReveal,
+  getIdentityRevealState,
+  getMyIdentityRevealProfilePreview,
+} from "@/lib/identity-reveal/service";
 import { notFound, redirect } from "next/navigation";
 
 type ConversationPageProps = {
@@ -28,15 +33,27 @@ export default async function ConversationPage({
   const parsed = conversationPublicIdSchema.safeParse(rawId);
   if (!parsed.success) notFound();
 
-  const [conversation, messages, unreadConversations, mutualInterest] =
-    await Promise.all([
-      getConversationByPublicId(parsed.data),
-      listConversationMessages(parsed.data, { limit: 50 }),
-      countUnreadConversations(),
-      getMutualInterestState(parsed.data),
-    ]);
+  const [
+    conversation,
+    messages,
+    unreadConversations,
+    mutualInterest,
+    identityReveal,
+    identityRevealPreview,
+  ] = await Promise.all([
+    getConversationByPublicId(parsed.data),
+    listConversationMessages(parsed.data, { limit: 50 }),
+    countUnreadConversations(),
+    getMutualInterestState(parsed.data),
+    getIdentityRevealState(parsed.data),
+    getMyIdentityRevealProfilePreview(),
+  ]);
 
   if (!conversation) notFound();
+
+  const identityRevealCompleted = identityReveal.completed
+    ? await getCompletedIdentityReveal(parsed.data)
+    : null;
 
   const query = await searchParams;
   const notice =
@@ -51,6 +68,9 @@ export default async function ConversationPage({
           conversation={conversation}
           initialMessages={messages}
           initialMutualInterest={mutualInterest}
+          initialIdentityReveal={identityReveal}
+          initialIdentityRevealPreview={identityRevealPreview}
+          initialIdentityRevealCompleted={identityRevealCompleted}
           notice={notice}
           state={query.state ?? null}
         />
