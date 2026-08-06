@@ -71,6 +71,11 @@ test("accepted introduction maps to one shell with opaque public id", () => {
   assert.match(migration, /public_id text/);
   assert.match(migration, /conversation_shells_public_id_format/);
   assert.match(migration, /public_id ~ '\^\[0-9a-f\]\{32\}\$'/);
+  assert.match(migration, /extensions\.gen_random_bytes\(16\)/);
+  assert.doesNotMatch(
+    migration,
+    /encode\(gen_random_bytes\(16\), 'hex'\)/,
+  );
   assert.match(conversationPage, /conversationPublicIdSchema/);
   assert.doesNotMatch(conversationPage, /participant_sender_id|user_id/);
 });

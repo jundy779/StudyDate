@@ -15,7 +15,7 @@ alter table public.conversation_shells
   add column if not exists ended_by uuid references auth.users (id) on delete set null;
 
 update public.conversation_shells
-set public_id = encode(gen_random_bytes(16), 'hex')
+set public_id = encode(extensions.gen_random_bytes(16), 'hex')
 where public_id is null;
 
 alter table public.conversation_shells
@@ -39,7 +39,7 @@ alter table public.conversation_shells
   check (status in ('awaiting_chat', 'active', 'ended', 'blocked'));
 
 alter table public.conversation_shells
-  alter column public_id set default encode(gen_random_bytes(16), 'hex');
+  alter column public_id set default encode(extensions.gen_random_bytes(16), 'hex');
 
 comment on column public.conversation_shells.public_id is
   'Opaque URL-safe conversation identifier. Not an authorization secret.';
