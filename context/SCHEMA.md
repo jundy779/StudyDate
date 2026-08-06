@@ -350,11 +350,18 @@ eligible, selected_by_me, mutual, mutual_at, can_withdraw
 ### Identity Reveal v1 (local migration `202608060005`)
 
 Tables:
-- `identity_reveal_profile_versions` — immutable per-user first name + private photo object key
-- `conversation_identity_reveal_consents` — private per-participant consent linked to a version
+- `identity_reveal_profile_versions` — conversation-scoped immutable first name + private
+  photo object key per `(conversation_id, owner_user_id, version_number)`; one active
+  version per participant per conversation
+- `conversation_identity_reveal_consents` — private per-participant consent; version must
+  belong to the same conversation and caller
 - `conversation_identity_reveals` — immutable completion snapshot of both approved versions
+  from that conversation
 - `conversation_shells.identity_revealed_at` — server-controlled completion timestamp
 - Storage bucket `identity-reveal-photos` (private; service-role upload/download only)
+
+Not a global reusable identity profile. A version prepared for conversation X cannot be
+consented or streamed in conversation Y.
 
 Safe pre-completion projection only:
 
@@ -363,10 +370,12 @@ eligible, has_profile, selected_by_me, completed, completed_at, can_withdraw
 ```
 
 Completed name projection: `mine_first_name`, `counterpart_first_name` (no photo paths).
-Photos are served through authenticated media proxy after completion.
+After `ended`, both names/photos remain available per retention policy.
+After `blocked`, counterpart name/photo are withheld on subsequent requests; own access
+may remain; snapshot/audit retained.
+Photos are served through authenticated media proxy (`private, no-store`).
 Profile first name is user-provided for reveal and is not derived from legal name, NIM,
 email, or People Discovery.
-
 ### `user_blocks` / `user_reports` / `introduction_events`
 
 Minimal private safety foundation. Reports may reference `conversation_id` / `anonymous_message_id`.

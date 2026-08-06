@@ -234,12 +234,19 @@ Jangan bocorkan Telegram metadata, email, sender ID, atau kontak sebelum reveal.
 ## 11. Implemented — Identity Reveal v1 (local migration pending remote)
 
 Identity Reveal v1 (migration lokal `202608060005`) membuka hanya:
-- first name yang disiapkan user secara eksplisit untuk reveal;
-- clear profile photo yang diunggah khusus untuk reveal.
+- first name yang disiapkan user secara eksplisit untuk reveal pada percakapan eligible;
+- clear profile photo yang diunggah khusus untuk reveal pada percakapan itu.
+
+Profil reveal bersifat conversation-scoped (bukan identitas global reusable). Persiapan
+memerlukan Mutual Interest selesai, shell aktif, peserta authenticated non-staff, dan
+tidak saling memblokir. Setelah selesai:
+- `ended` mempertahankan akses nama depan + foto kedua pihak menurut kebijakan retensi;
+- `blocked` menghentikan proyeksi identitas/media lawan pada request berikutnya tanpa
+  mengklaim bahwa screenshot sebelumnya terhapus.
 
 Tidak membuka verification badge sebagai klaim “real identity verified”, kontak, nama legal,
 NIM, atau evidence. Contact Reveal tetap Planned dan memerlukan consent terpisah.
-
+Student Verification tetap dinonaktifkan secara global.
 ## 11b. Planned — Contact Reveal
 
 Contact Reveal terpisah:

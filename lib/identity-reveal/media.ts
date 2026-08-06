@@ -46,17 +46,21 @@ export async function loadIdentityRevealPhotoBytes(input: {
   return { buffer, contentType: row.photo_content_type };
 }
 
-export async function loadMyIdentityRevealPreviewPhotoBytes(
-  ownerUserId: string,
-): Promise<{ buffer: Buffer; contentType: string } | null> {
+export async function loadIdentityRevealPreviewPhotoBytes(input: {
+  publicId: string;
+  ownerUserId: string;
+}): Promise<{ buffer: Buffer; contentType: string } | null> {
   const admin = createServerAdminClient();
   if (!admin) {
     return null;
   }
 
   const { data, error } = await admin.rpc(
-    "resolve_my_identity_reveal_preview_photo_key",
-    { p_owner_user_id: ownerUserId },
+    "resolve_identity_reveal_preview_photo_key",
+    {
+      p_public_id: input.publicId,
+      p_owner_user_id: input.ownerUserId,
+    },
   );
 
   if (error) {

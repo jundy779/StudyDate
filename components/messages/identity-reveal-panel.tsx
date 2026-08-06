@@ -103,6 +103,7 @@ export function IdentityRevealPanel({
     setPhotoPending(true);
     try {
       const formData = new FormData();
+      formData.set("publicId", publicId);
       formData.set("firstName", firstName);
       if (photoFile) {
         formData.set("photo", photoFile);
@@ -150,6 +151,7 @@ export function IdentityRevealPanel({
   }
 
   if (state.completed && completedData?.completed) {
+    const counterpartVisible = Boolean(completedData.counterpartFirstName);
     return (
       <section
         aria-label="Buka Identitas"
@@ -159,19 +161,32 @@ export function IdentityRevealPanel({
           {IDENTITY_REVEAL_COPY.completedTitle}
         </h2>
         <p className="mt-2 text-sm leading-6 text-brand-muted">
-          {IDENTITY_REVEAL_COPY.completedBody}
+          {counterpartVisible
+            ? IDENTITY_REVEAL_COPY.completedBody
+            : IDENTITY_REVEAL_COPY.completedBlockedBody}
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <RevealedCard
             label={IDENTITY_REVEAL_COPY.mineLabel}
             firstName={completedData.mineFirstName ?? ""}
-            photoSrc={`/api/identity-reveal/media?mode=completed&publicId=${publicId}&which=mine`}
+            photoSrc={`/api/identity-reveal/media?mode=completed&publicId=${encodeURIComponent(publicId)}&which=mine`}
           />
-          <RevealedCard
-            label={IDENTITY_REVEAL_COPY.counterpartLabel}
-            firstName={completedData.counterpartFirstName ?? ""}
-            photoSrc={`/api/identity-reveal/media?mode=completed&publicId=${publicId}&which=counterpart`}
-          />
+          {counterpartVisible ? (
+            <RevealedCard
+              label={IDENTITY_REVEAL_COPY.counterpartLabel}
+              firstName={completedData.counterpartFirstName ?? ""}
+              photoSrc={`/api/identity-reveal/media?mode=completed&publicId=${encodeURIComponent(publicId)}&which=counterpart`}
+            />
+          ) : (
+            <div className="rounded-2xl border border-brand-border bg-white p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+                {IDENTITY_REVEAL_COPY.counterpartLabel}
+              </p>
+              <p className="mt-3 text-sm text-brand-muted">
+                {IDENTITY_REVEAL_COPY.counterpartUnavailable}
+              </p>
+            </div>
+          )}
         </div>
       </section>
     );
@@ -226,7 +241,7 @@ export function IdentityRevealPanel({
                 <div className="relative h-14 w-14 overflow-hidden rounded-full bg-brand-border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/api/identity-reveal/media?mode=preview"
+                    src={`/api/identity-reveal/media?mode=preview&publicId=${encodeURIComponent(publicId)}`}
                     alt=""
                     className="h-full w-full object-cover"
                   />

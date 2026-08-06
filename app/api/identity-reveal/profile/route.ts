@@ -27,10 +27,10 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const firstName = formData.get("firstName");
-    const photo = formData.get("photo");
-
-    const parsed = identityRevealProfileSchema.safeParse({ firstName });
+    const parsed = identityRevealProfileSchema.safeParse({
+      publicId: formData.get("publicId"),
+      firstName: formData.get("firstName"),
+    });
     if (!parsed.success) {
       return NextResponse.json(
         { error: IDENTITY_REVEAL_COPY.photoError },
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const photo = formData.get("photo");
     if (!(photo instanceof File) || photo.size <= 0) {
       return NextResponse.json(
         { error: IDENTITY_REVEAL_COPY.photoError },
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
     const bytes = Buffer.from(await photo.arrayBuffer());
     const preview = await createIdentityRevealProfile({
       userId: user.id,
+      publicId: parsed.data.publicId,
       firstName: parsed.data.firstName,
       photoBytes: bytes,
     });

@@ -42,6 +42,8 @@ export const IDENTITY_REVEAL_COPY = {
   completedTitle: "Identitas telah dibuka",
   completedBody:
     "Kalian sekarang dapat melihat nama depan dan foto profil satu sama lain. Informasi kontak tetap tertutup.",
+  completedBlockedBody:
+    "Identitas lawan bicara tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
   closedNote: "Pembukaan identitas tidak tersedia untuk percakapan ini.",
   notReadyNote:
     "Pembukaan identitas tersedia setelah Mutual Interest selesai dan percakapan masih aktif.",
@@ -50,6 +52,7 @@ export const IDENTITY_REVEAL_COPY = {
   loading: "Memuat pembukaan identitas…",
   mineLabel: "Identitasmu",
   counterpartLabel: "Identitas lawan bicara",
+  counterpartUnavailable: "Tidak tersedia",
 } as const;
 
 export const IDENTITY_REVEAL_PHOTO_BUCKET = "identity-reveal-photos";

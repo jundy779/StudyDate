@@ -213,31 +213,45 @@ active conversation (both participants have messaged)
 
 Safe client projection: `eligible`, `selected_by_me`, `mutual`, `mutual_at`, `can_withdraw`.
 One-sided consent is never returned to the counterpart. Withdrawal is allowed only before mutual
-completion. Identity Reveal remains a separate future consent flow.
+completion. Mutual Interest is deployed (migration `202608060004`). Identity Reveal is a separate
+consent stage that may begin only after `mutual_interest_at` is set; it is implemented locally as
+migration `202608060005` and is not applied remotely until explicit preflight approval.
 
 Migration `202608060004` is applied remotely after controlled preflight.
 
 ## 12d. Identity Reveal v1 architecture
 
 ```text
-mutual_interest_at set
- -> prepare reveal profile (first name + private photo, server re-encode)
+mutual_interest_at set + active conversation
+ -> prepare conversation-scoped reveal profile (first name + private photo, server re-encode)
  -> get_identity_reveal_state / select_identity_reveal / withdraw_identity_reveal
- -> conversation_identity_reveal_consents (private per participant)
+ -> conversation_identity_reveal_consents (private per participant; version must match conversation)
  -> identity_revealed_at + conversation_identity_reveals snapshot atomically
  -> sanitized conversation_events.identity_revealed
  -> media proxy (no Storage path exposure)
 ```
 
+Reveal profiles are conversation-scoped (`identity_reveal_profile_versions.conversation_id`),
+not a reusable global identity. Preparing or replacing a profile in conversation X never
+authorizes consent or media in conversation Y. Replacement invalidates only the caller's
+pending consent for that conversation; the counterpart receives no prepare/replace signal.
+
 Safe pre-completion projection: `eligible`, `has_profile`, `selected_by_me`,
 `completed`, `completed_at`, `can_withdraw`.
 One-sided prepare/consent is never returned to the counterpart.
-Completed projection exposes only consented first names; photos stream through
-authenticated media proxy after completion.
+Completed name projection exposes consented first names; photos stream through the
+authenticated media proxy.
+
+Post-completion access:
+- `ended`: both participants retain completed first-name and photo access (conversation retention).
+- `blocked` (or block row): counterpart name/photo are withheld on subsequent requests;
+  own name/photo may remain; internal snapshot/audit retained; UI must not claim prior
+  views or screenshots were erased.
+- No new profile/consent mutation after completion.
 
 Migration `202608060005` is local-only until explicit remote preflight approval.
 Do not claim live Identity Reveal until the migration is applied remotely.
-
+Contact Reveal remains unimplemented. Student Verification remains globally disabled.
 ## 13. Staff authorization v1
 
 StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted

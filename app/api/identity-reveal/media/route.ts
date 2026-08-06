@@ -2,7 +2,7 @@ import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   identityRevealMediaUnavailable,
   loadIdentityRevealPhotoBytes,
-  loadMyIdentityRevealPreviewPhotoBytes,
+  loadIdentityRevealPreviewPhotoBytes,
 } from "@/lib/identity-reveal/media";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
 import { NextResponse, type NextRequest } from "next/server";
@@ -11,6 +11,7 @@ import { z } from "zod";
 const querySchema = z.discriminatedUnion("mode", [
   z.object({
     mode: z.literal("preview"),
+    publicId: conversationPublicIdSchema,
   }),
   z.object({
     mode: z.literal("completed"),
@@ -31,16 +32,11 @@ export async function GET(request: NextRequest) {
   }
 
   const params = request.nextUrl.searchParams;
-  const mode = params.get("mode");
-  const parsed = querySchema.safeParse(
-    mode === "preview"
-      ? { mode: "preview" }
-      : {
-          mode: "completed",
-          publicId: params.get("publicId"),
-          which: params.get("which"),
-        },
-  );
+  const parsed = querySchema.safeParse({
+    mode: params.get("mode"),
+    publicId: params.get("publicId"),
+    which: params.get("which") ?? undefined,
+  });
 
   if (!parsed.success) {
     return identityRevealMediaUnavailable();
@@ -48,7 +44,10 @@ export async function GET(request: NextRequest) {
 
   const loaded =
     parsed.data.mode === "preview"
-      ? await loadMyIdentityRevealPreviewPhotoBytes(user.id)
+      ? await loadIdentityRevealPreviewPhotoBytes({
+          publicId: parsed.data.publicId,
+          ownerUserId: user.id,
+        })
       : await loadIdentityRevealPhotoBytes({
           publicId: parsed.data.publicId,
           viewerUserId: user.id,

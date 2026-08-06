@@ -28,6 +28,7 @@ export const identityRevealWithdrawSchema = z.object({
 });
 
 export const identityRevealProfileSchema = z.object({
+  publicId: conversationPublicIdSchema,
   firstName: firstNameSchema,
 });
 

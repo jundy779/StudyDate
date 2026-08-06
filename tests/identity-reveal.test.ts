@@ -46,9 +46,12 @@ const mutualMigration = readFileSync(
   "utf8",
 );
 
-test("identity reveal migration is local-forward and does not drop chat foundations", () => {
+test("identity reveal migration is local-forward and conversation-scoped", () => {
   assert.match(migration, /Local-only until explicit remote preflight/);
+  assert.match(migration, /Conversation-scoped \(NOT a global identity profile\)/);
   assert.match(migration, /identity_reveal_profile_versions/);
+  assert.match(migration, /conversation_id uuid not null/);
+  assert.match(migration, /identity_reveal_profile_versions_one_active_idx/);
   assert.match(migration, /conversation_identity_reveal_consents/);
   assert.match(migration, /conversation_identity_reveals/);
   assert.match(migration, /identity_revealed_at/);
@@ -122,14 +125,18 @@ test("consent RPCs use auth.uid and public id; client cannot forge completion", 
   );
 });
 
-test("profile versions are immutable snapshots and invalidate pending consent", () => {
+test("profile versions are conversation-scoped immutable snapshots", () => {
   assert.match(migration, /superseded_at/);
   assert.match(migration, /Invalidate pending \(pre-completion\) consents/);
   assert.match(migration, /register_identity_reveal_profile_version/);
+  assert.match(migration, /p_public_id text/);
+  assert.match(migration, /profile\.conversation_id <> shell\.id|profile\.conversation_id = shell\.id/);
   assert.match(migration, /auth\.role\(\) <> 'service_role'/);
   assert.match(migration, /conversation_identity_reveals/);
   assert.match(migration, /sender_profile_version_id/);
   assert.match(migration, /recipient_profile_version_id/);
+  assert.match(service, /p_public_id: input\.publicId/);
+  assert.match(profileRoute, /publicId/);
 });
 
 test("completed reveal returns names only via completed RPC", () => {
@@ -147,6 +154,16 @@ test("completed reveal returns names only via completed RPC", () => {
   assert.doesNotMatch(completedFn, /photo_object_key/);
   assert.match(mediaRoute, /literal\("completed"\)/);
   assert.match(mediaRoute, /private, no-store/);
+});
+
+test("post-completion end retains; block hides counterpart name and media", () => {
+  assert.match(migration, /status = ended: both participants retain/i);
+  assert.match(migration, /hide counterpart identity\/media/i);
+  assert.match(migration, /is_blocked and p_which = 'counterpart'/);
+  assert.match(constants, /completedBlockedBody/);
+  assert.match(constants, /sudah sempat dilihat tidak dapat dihapus/i);
+  assert.match(panel, /completedBlockedBody/);
+  assert.match(panel, /counterpartUnavailable/);
 });
 
 test("photo pipeline validates content, re-encodes, and uses private bucket", () => {
@@ -169,18 +186,30 @@ test("first name is user-provided and not derived from legal or auth identity", 
     /profiles\.first_name|legal_name|auth\.users\.email/,
   );
   assert.equal(
-    identityRevealProfileSchema.safeParse({ firstName: "Andi" }).success,
+    identityRevealProfileSchema.safeParse({
+      publicId: "ab".repeat(16),
+      firstName: "Andi",
+    }).success,
     true,
   );
   assert.equal(
     identityRevealProfileSchema.safeParse({
+      firstName: "Andi",
+    }).success,
+    false,
+  );
+  assert.equal(
+    identityRevealProfileSchema.safeParse({
+      publicId: "ab".repeat(16),
       firstName: "test@example.com",
     }).success,
     false,
   );
   assert.equal(
-    identityRevealProfileSchema.safeParse({ firstName: "https://x.com" })
-      .success,
+    identityRevealProfileSchema.safeParse({
+      publicId: "ab".repeat(16),
+      firstName: "https://x.com",
+    }).success,
     false,
   );
 });
@@ -240,4 +269,11 @@ test("no contact reveal fields stored in identity reveal migration tables", () =
     /telegram_username|whatsapp_number|instagram_handle|phone_number|legal_name|nim_ciphertext/i,
   );
   assert.doesNotMatch(constants, /Contact Reveal|WhatsApp|Telegram/);
+});
+
+test("static contract suite is distinct from behavioral coverage", () => {
+  assert.match(
+    readFileSync(join(root, "package.json"), "utf8"),
+    /identity-reveal-behavior\.test\.ts/,
+  );
 });

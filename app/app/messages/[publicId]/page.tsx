@@ -10,8 +10,8 @@ import { conversationPublicIdSchema } from "@/lib/messages/validation";
 import { getMutualInterestState } from "@/lib/mutual-interest/service";
 import {
   getCompletedIdentityReveal,
+  getIdentityRevealProfilePreview,
   getIdentityRevealState,
-  getMyIdentityRevealProfilePreview,
 } from "@/lib/identity-reveal/service";
 import { notFound, redirect } from "next/navigation";
 
@@ -46,7 +46,7 @@ export default async function ConversationPage({
     countUnreadConversations(),
     getMutualInterestState(parsed.data),
     getIdentityRevealState(parsed.data),
-    getMyIdentityRevealProfilePreview(),
+    getIdentityRevealProfilePreview(parsed.data),
   ]);
 
   if (!conversation) notFound();

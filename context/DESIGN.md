@@ -121,9 +121,11 @@ Setelah diterima, tampilkan handoff ke Pesan dengan CTA `Mulai percakapan`.
 `/app/messages` menampilkan daftar percakapan anonim setelah perkenalan diterima. Detail
 `/app/messages/[publicId]` memakai header alias+mascot, privacy note, bubble teks escaped, composer
 `Tulis pesan`, serta aksi Akhiri / Blokir / Laporkan. Setelah Mutual Interest, panel
-`Buka Identitas` tersedia untuk siapkan nama depan + foto dan consent terpisah. Jangan
-menampilkan online status, typing palsu, atau dekorasi dating.
-
+`Buka Identitas` tersedia untuk siapkan nama depan + foto (conversation-scoped) dan
+consent terpisah. Setelah Identity Reveal selesai, `Akhiri` mempertahankan akses identitas
+yang sudah dibuka; `Blokir` menyembunyikan identitas/media lawan pada request berikutnya
+tanpa mengklaim bahwa konten yang sudah dilihat terhapus. Jangan menampilkan online status,
+typing palsu, atau dekorasi dating.
 ### Student Verification Center
 
 Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan, Persetujuan. Status:

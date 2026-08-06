@@ -89,10 +89,13 @@ export async function getIdentityRevealState(
   return mapState((data ?? [])[0] as StateRow | undefined);
 }
 
-export async function getMyIdentityRevealProfilePreview(): Promise<IdentityRevealProfilePreview | null> {
+export async function getIdentityRevealProfilePreview(
+  publicId: string,
+): Promise<IdentityRevealProfilePreview | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(
-    "get_my_identity_reveal_profile_preview",
+    "get_identity_reveal_profile_preview",
+    { p_public_id: publicId },
   );
 
   if (error) {
@@ -180,10 +183,12 @@ export async function withdrawIdentityReveal(
 
 export async function createIdentityRevealProfile(input: {
   userId: string;
+  publicId: string;
   firstName: string;
   photoBytes: Buffer;
 }): Promise<IdentityRevealProfilePreview> {
   const parsed = identityRevealProfileSchema.safeParse({
+    publicId: input.publicId,
     firstName: input.firstName,
   });
   if (!parsed.success) {
@@ -212,6 +217,7 @@ export async function createIdentityRevealProfile(input: {
   const { data: versionId, error: registerError } = await admin.rpc(
     "register_identity_reveal_profile_version",
     {
+      p_public_id: input.publicId,
       p_owner_user_id: input.userId,
       p_first_name: parsed.data.firstName,
       p_photo_object_key: processed.objectKey,
