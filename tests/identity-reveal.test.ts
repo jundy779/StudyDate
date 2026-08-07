@@ -271,9 +271,8 @@ test("no contact reveal fields stored in identity reveal migration tables", () =
   assert.doesNotMatch(constants, /Contact Reveal|WhatsApp|Telegram/);
 });
 
-test("static contract suite is distinct from behavioral coverage", () => {
-  assert.match(
-    readFileSync(join(root, "package.json"), "utf8"),
-    /identity-reveal-behavior\.test\.ts/,
-  );
+test("static contract suite is distinct from behavioral and hydrate coverage", () => {
+  const pkg = readFileSync(join(root, "package.json"), "utf8");
+  assert.match(pkg, /identity-reveal-behavior\.test\.ts/);
+  assert.match(pkg, /identity-reveal-hydrate\.test\.ts/);
 });

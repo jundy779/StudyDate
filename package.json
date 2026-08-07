@@ -14,7 +14,7 @@
     "test:introductions": "node --experimental-strip-types --test tests/introductions.test.ts",
     "test:messages": "node --experimental-strip-types --test tests/messages.test.ts",
     "test:mutual": "node --experimental-strip-types --test tests/mutual-interest.test.ts",
-    "test:identity-reveal": "node --experimental-strip-types --test tests/identity-reveal.test.ts tests/identity-reveal-behavior.test.ts",
+    "test:identity-reveal": "node --experimental-strip-types --test tests/identity-reveal.test.ts tests/identity-reveal-behavior.test.ts tests/identity-reveal-hydrate.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs"
   },

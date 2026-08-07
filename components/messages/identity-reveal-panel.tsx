@@ -10,6 +10,11 @@ import {
   type IdentityRevealProfilePreview,
   type IdentityRevealState,
 } from "@/lib/identity-reveal/constants";
+import {
+  canShowCounterpartRevealMedia,
+  isIdentityRevealPanelAvailable,
+  normalizeIdentityRevealState,
+} from "@/lib/identity-reveal/panel-visibility";
 import { LoaderCircle } from "lucide-react";
 import { useId, useState, useTransition, type FormEvent } from "react";
 
@@ -43,14 +48,21 @@ export function IdentityRevealPanel({
   const photoId = useId();
   const errorId = useId();
 
+  const safeState = normalizeIdentityRevealState(state);
+
   const closed =
     conversationStatus === "ended" || conversationStatus === "blocked";
 
-  if (!mutualCompleted) {
+  if (
+    !isIdentityRevealPanelAvailable({
+      mutualCompleted,
+      state: safeState,
+    })
+  ) {
     return null;
   }
 
-  if (closed && !state.completed) {
+  if (closed && !safeState.completed) {
     return null;
   }
 
@@ -138,7 +150,7 @@ export function IdentityRevealPanel({
       setShowForm(false);
       setPhotoFile(null);
       onStateChange({
-        ...state,
+        ...safeState,
         hasProfile: true,
         selectedByMe: false,
         canWithdraw: false,
@@ -150,8 +162,11 @@ export function IdentityRevealPanel({
     }
   }
 
-  if (state.completed && completedData?.completed) {
-    const counterpartVisible = Boolean(completedData.counterpartFirstName);
+  if (safeState.completed && completedData?.completed) {
+    const counterpartVisible = canShowCounterpartRevealMedia({
+      completed: completedData.completed,
+      counterpartFirstName: completedData.counterpartFirstName,
+    });
     return (
       <section
         aria-label="Buka Identitas"
@@ -207,12 +222,12 @@ export function IdentityRevealPanel({
         {IDENTITY_REVEAL_COPY.privacyNote}
       </p>
 
-      {state.selectedByMe ? (
+      {safeState.selectedByMe ? (
         <div className="mt-4 space-y-3">
           <p className="text-sm leading-6 text-brand-navy">
             {IDENTITY_REVEAL_COPY.selectedNote}
           </p>
-          {state.canWithdraw ? (
+          {safeState.canWithdraw ? (
             <button
               type="button"
               disabled={pending}
@@ -233,7 +248,7 @@ export function IdentityRevealPanel({
             </button>
           ) : null}
         </div>
-      ) : state.eligible ? (
+      ) : safeState.eligible ? (
         <div className="mt-4 space-y-4">
           {preview?.photoReady && !showForm ? (
             <div className="space-y-3">

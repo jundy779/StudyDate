@@ -22,6 +22,7 @@ import type {
   IdentityRevealProfilePreview,
   IdentityRevealState,
 } from "@/lib/identity-reveal/constants";
+import { normalizeIdentityRevealState } from "@/lib/identity-reveal/panel-visibility";
 import { MutualInterestPanel } from "@/components/messages/mutual-interest-panel";
 import { IdentityRevealPanel } from "@/components/messages/identity-reveal-panel";
 import { getMascotForAlias } from "@/lib/people/constants";
@@ -88,7 +89,9 @@ export function ConversationRoom({
   const [status, setStatus] = useState(conversation.status);
   const [canSend, setCanSend] = useState(conversation.can_send);
   const [mutualInterest, setMutualInterest] = useState(initialMutualInterest);
-  const [identityReveal, setIdentityReveal] = useState(initialIdentityReveal);
+  const [identityReveal, setIdentityReveal] = useState(() =>
+    normalizeIdentityRevealState(initialIdentityReveal),
+  );
   const [identityRevealCompleted, setIdentityRevealCompleted] = useState(
     initialIdentityRevealCompleted,
   );
@@ -359,11 +362,11 @@ export function ConversationRoom({
             publicId={conversation.public_id}
             conversationStatus={status}
             mutualCompleted={mutualInterest.mutual}
-            state={identityReveal}
+            state={normalizeIdentityRevealState(identityReveal)}
             initialPreview={initialIdentityRevealPreview}
             completedData={identityRevealCompleted}
             onStateChange={(next) => {
-              setIdentityReveal(next);
+              setIdentityReveal(normalizeIdentityRevealState(next));
               if (next.completed) {
                 void fetch(`/api/messages/${conversation.public_id}`, {
                   cache: "no-store",
