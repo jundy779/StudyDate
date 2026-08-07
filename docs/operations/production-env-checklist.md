@@ -1,0 +1,58 @@
+# Production environment checklist — StudyDate ID
+
+Do not commit secret values. Fill hosting env (Vercel/etc.) and keep `.env.local` for local only.
+
+## Status categories
+
+| Area | Local (`.env.local`) | Public production |
+|------|----------------------|-------------------|
+| Supabase URL + publishable + service-role | Required | Same project values |
+| `CONTACT_REVEAL_ENCRYPTION_KEY` (+ backup) | Required | Same key (backed up offline) |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3010` | `https://YOUR_DOMAIN` |
+| StudyDate email (`STUDYDATE_*`) | Required to test login mail | Required |
+| `STUDENT_VERIFICATION_ENABLED` | `false` | Keep `false` for limited rollout |
+
+## Required production variables
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN
+SUPABASE_SERVICE_ROLE_KEY=
+CONTACT_REVEAL_ENCRYPTION_KEY=
+CONTACT_REVEAL_KEY_VERSION=1
+
+STUDYDATE_EMAIL_FROM="StudyDate ID <noreply@YOUR_DOMAIN>"
+# either:
+STUDYDATE_RESEND_API_KEY=
+# or SMTP:
+STUDYDATE_SMTP_HOST=
+STUDYDATE_SMTP_PORT=587
+STUDYDATE_SMTP_SECURE=false
+STUDYDATE_SMTP_USER=
+STUDYDATE_SMTP_PASSWORD=
+
+STUDENT_VERIFICATION_ENABLED=false
+```
+
+Verification crypto keys may remain set even while Verification stays disabled.
+
+## Supabase Dashboard (production)
+
+- Authentication → Site URL = `https://YOUR_DOMAIN`
+- Redirect URLs include:
+  - `https://YOUR_DOMAIN/auth/callback`
+  - `https://YOUR_DOMAIN/auth/confirm`
+- Do not use Supabase Auth mailer for product magic links (StudyDate SMTP/Resend owns delivery)
+
+## Hosting
+
+1. Set all variables above in the host dashboard (never commit `.env.local`).
+2. Deploy `studydate-web` production build.
+3. Smoke: landing → login → magic link arrives as StudyDate ID → confirm → `/app` or `/owner`.
+4. Owner opens `/owner/moderation`.
+
+## Blockers until filled by Owner
+
+1. Public HTTPS domain for `NEXT_PUBLIC_SITE_URL`
+2. Resend API key **or** SMTP credentials + From address
