@@ -1,7 +1,9 @@
 # Migration preflight — Moderation triage v1
 
-**Status:** LOCAL READY — remote apply pending correct CLI auth + dry-run approval  
-**Migration file:** `supabase/migrations/202608060008_create_moderation_triage_v1.sql`  
+**Status:** LOCAL READY — remote apply pending correct CLI auth + dry-run approval
+
+**Migration file:** `supabase/migrations/202608060008_create_moderation_triage_v1.sql`
+
 **Project:** `ctbqudtvrfezuoqcecyj`
 
 ## Preflight commands (Owner terminal with StudyDate CLI account)
