@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!consumeEarlyAccessAttempt(request)) {
+  if (!(await consumeEarlyAccessAttempt(request))) {
     return jsonResponse(
       {
         status: "server_error",

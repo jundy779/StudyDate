@@ -109,8 +109,9 @@ CTA source
  -> server-only Supabase insert
 ```
 
-Duplicate memakai friendly success-like state. Current rate limit per-instance harus diganti durable rate limiting
-sebelum traffic besar.
+Duplicate memakai friendly success-like state. Rate limit memakai tabel
+`api_rate_limits` + RPC `consume_api_rate_limit` (service-role) agar tahan multi-instance
+Vercel; fallback in-memory hanya di non-production bila RPC belum tersedia.
 
 Implementasi berada di `components/marketing/early-access-dialog.tsx`, `app/api/early-access/route.ts`, dan
 `lib/early-access/`.
@@ -355,6 +356,7 @@ Sebelum production:
 - RPC rollback test;
 - refresh/sign-out cookie test;
 - waitlist insert/duplicate test;
-- durable rate limiting;
+- durable rate limiting (`api_rate_limits` + magic-link / Early Access);
 - production Site URL dan callback allowlist;
-- security headers dan monitoring tanpa PII.
+- baseline security headers (`next.config.ts`); monitoring tanpa PII tetap P2;
+- Vercel root = `studydate-web` (lihat `docs/operations/vercel-deploy.md`).

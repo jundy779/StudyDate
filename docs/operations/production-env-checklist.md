@@ -48,11 +48,15 @@ Verification crypto keys may remain set even while Verification stays disabled.
 ## Hosting
 
 1. Set all variables above in the host dashboard (never commit `.env.local`).
-2. Deploy `studydate-web` production build.
-3. Smoke: landing → login → magic link arrives as StudyDate ID → confirm → `/app` or `/owner`.
-4. Owner opens `/owner/moderation`.
+2. Deploy `studydate-web` production build (**Vercel root directory = `studydate-web`**).
+3. Apply migration `202608070001` (API rate limits) before public demo traffic.
+4. Smoke: landing → login → magic link arrives as StudyDate ID → confirm → `/app` or `/owner`.
+5. Owner opens `/owner/moderation`.
+6. Full Vercel steps: `docs/operations/vercel-deploy.md`.
 
 ## Blockers until filled by Owner
 
-1. Public HTTPS domain for `NEXT_PUBLIC_SITE_URL`
-2. Resend API key **or** SMTP credentials + From address
+1. Public HTTPS domain for `NEXT_PUBLIC_SITE_URL` (target `https://studydate.id`)
+2. Resend API key **or** SMTP credentials + From address (`STUDYDATE_SMTP_PASSWORD` for Gmail)
+3. Vercel project env mirrors this checklist (Production + Preview as needed)
+4. Supabase Auth Site URL + redirect allowlist for the deployed origin

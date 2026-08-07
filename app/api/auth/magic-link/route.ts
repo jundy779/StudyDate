@@ -1,6 +1,7 @@
 import { deliverStudyDateMagicLink } from "@/lib/auth/magic-link-delivery";
 import { getSiteOrigin } from "@/lib/auth/site-url";
 import { magicLinkRequestSchema } from "@/lib/auth/validation";
+import { consumeMagicLinkAttempts } from "@/lib/security/rate-limit";
 import { NextResponse, type NextRequest } from "next/server";
 
 const MAX_REQUEST_BYTES = 2_048;
@@ -33,6 +34,10 @@ export async function POST(request: NextRequest) {
       { message: "Masukkan alamat email yang valid." },
       { status: 400 },
     );
+  }
+
+  if (!(await consumeMagicLinkAttempts(request, parsed.data.email))) {
+    return NextResponse.json({ message: GENERIC_ERROR }, { status: 429 });
   }
 
   try {

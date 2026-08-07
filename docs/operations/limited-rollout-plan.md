@@ -19,6 +19,10 @@ payments.
 3. **CLI** — profile `studydate` authenticated to project `ctbqudtvrfezuoqcecyj`.
 4. **Regression green** — lint, typecheck, all `test:*`, browser, build.
 5. **Student Verification remains disabled** (`STUDENT_VERIFICATION_ENABLED` ≠ `true`).
+6. **Abuse controls** — migration `202608070001` (API rate limits) applied; Early Access +
+   magic-link use durable Postgres counters (not in-memory Maps).
+7. **Baseline security headers** enabled via `next.config.ts` (nosniff, frame deny, referrer,
+   permissions-policy). Full CSP remains a later P2.
 
 ---
 

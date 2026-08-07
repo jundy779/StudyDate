@@ -1,0 +1,10 @@
+# Keep Vercel uploads lean; secrets never belong here anyway.
+.env*
+!.env.example
+.git
+.next
+audit-artifacts
+node_modules
+coverage
+*.log
+.DS_Store
