@@ -88,7 +88,7 @@
   }
 
   .mascot-cta-slot {
-    @apply h-80 w-80 max-w-full shrink-0 sm:h-96 sm:w-96 lg:h-[28rem] lg:w-full lg:max-h-[28rem] lg:max-w-[28rem];
+    @apply h-72 w-72 max-w-full shrink-0 sm:h-80 sm:w-80 lg:h-[25rem] lg:w-full lg:max-h-[25rem] lg:max-w-[25rem];
   }
 
   .mascot-cta-shadow {

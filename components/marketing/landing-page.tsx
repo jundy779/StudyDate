@@ -50,7 +50,14 @@ type BrandAssetPath =
   | "/brand/logo-horizontal-color.png"
   | "/brand/logo-horizontal-white.png"
   | "/brand/mascot/chat.png"
-  | "/brand/mascot/front.png";
+  | "/brand/mascot/chat-1024.png"
+  | "/brand/mascot/front.png"
+  | "/brand/mascot/front-1024.png"
+  | "/brand/mascot/hello.png"
+  | "/brand/mascot/hello-1024.png"
+  | "/brand/mascot/study.png"
+  | "/brand/mascot/study-1024.png"
+  | "/brand/mascot/avatar.png";
 
 function assetExists(src: string) {
   return existsSync(join(process.cwd(), "public", src.replace(/^\//, "")));
@@ -224,7 +231,7 @@ function ConnectionPreview() {
         <div className="grid min-w-0 grid-cols-[96px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[116px_minmax(0,1fr)] sm:gap-5">
           <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_50%_24%,#ffffff_0%,#edf4ff_66%,#e3edfc_100%)]">
             <BrandAsset
-              src="/brand/mascot/front.png"
+              src="/brand/mascot/front-1024.png"
               alt="Mascot StudyDate membawa buku"
               width={1024}
               height={1024}
@@ -339,6 +346,86 @@ function Hero() {
             Kenali konteksnya lebih dulu. Identitas lengkap tetap privat.
           </p>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function MascotCompanion() {
+  const moments = [
+    {
+      pose: "/brand/mascot/hello.png" as const,
+      label: "Sambut",
+      title: "Mulai dengan sapaan yang aman",
+      copy: "Maskot StudyDate menemani onboarding dan empty state—supaya ruang digital terasa hangat sebelum kamu kenal siapa pun.",
+      imageClass:
+        "h-[17.5rem] w-[17.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[19rem] sm:w-[19rem]",
+    },
+    {
+      pose: "/brand/mascot/study.png" as const,
+      label: "Belajar",
+      title: "Konteks belajar dulu, identitas belakangan",
+      copy: "People menampilkan minat dan tujuan koneksi. Nama asli dan foto jelas baru muncul setelah minat dua arah.",
+      imageClass:
+        "h-[15.5rem] w-[15.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[16.5rem] sm:w-[16.5rem]",
+    },
+    {
+      pose: "/brand/mascot/chat.png" as const,
+      label: "Ngobrol",
+      title: "Chat privat tanpa kontak terbuka",
+      copy: "Ruang percakapan tetap anonim sampai keduanya siap. Kontak seperti LinkedIn dibuka bertahap, bukan sekaligus.",
+      // Half-body crop — slight bump only so it doesn't dwarf the hello pose.
+      imageClass:
+        "h-[16rem] w-[16rem] origin-bottom scale-[1.02] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[17rem] sm:w-[17rem] sm:scale-[1.03]",
+    },
+  ];
+
+  return (
+    <section
+      aria-labelledby="mascot-companion-title"
+      className="border-b border-brand-border bg-white py-16 sm:py-20"
+    >
+      <div className="page-shell">
+        <div className="max-w-2xl">
+          <p className="section-label">Teman digital StudyDate</p>
+          <h2 id="mascot-companion-title" className="section-title mt-4">
+            Maskot yang menemani, bukan menggantikan orang nyata.
+          </h2>
+          <p className="mt-4 max-w-xl text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
+            Dipakai di hero produk, empty state, dan halaman sistem—supaya
+            pengalaman web terasa konsisten dari landing sampai ruang mahasiswa.
+          </p>
+        </div>
+        <ul className="mt-12 grid gap-6 lg:grid-cols-3">
+          {moments.map((item) => (
+            <li
+              key={item.label}
+              className="overflow-hidden rounded-[24px] border border-brand-border bg-brand-surface"
+            >
+              <div className="flex h-72 items-end justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_18%,#ffffff_0%,#edf4ff_62%,#dce9fb_100%)] px-3 pt-4 sm:h-80 sm:px-4">
+                <BrandAsset
+                  src={item.pose}
+                  alt=""
+                  width={1024}
+                  height={1024}
+                  sizes="(max-width: 1023px) 320px, 380px"
+                  className={item.imageClass}
+                />
+              </div>
+              <div className="border-t border-brand-border bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">
+                  {item.label}
+                </p>
+                <h3 className="mt-3 font-heading text-xl font-semibold tracking-[-0.02em] text-brand-navy">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-brand-muted">
+                  {item.copy}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
@@ -500,7 +587,7 @@ function ProgressivePrivacy() {
       </div>
 
       <BrandAsset
-        src="/brand/mascot/chat.png"
+        src="/brand/mascot/chat-1024.png"
         alt=""
         width={1024}
         height={1024}
@@ -711,13 +798,13 @@ function EarlyAccessCTA() {
     <section id="mulai" className="bg-brand-surface py-14 sm:py-20">
       <div className="page-shell">
         <div className="grid overflow-hidden rounded-[30px] bg-brand-blue lg:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)]">
-          <div className="flex items-end justify-center px-4 pb-3 pt-6 sm:px-6 sm:pb-4 lg:min-h-[380px] lg:px-8 lg:pb-6 lg:pt-8">
+          <div className="flex items-end justify-center px-4 pb-3 pt-6 sm:px-6 sm:pb-4 lg:min-h-[340px] lg:px-8 lg:pb-6 lg:pt-8">
             <BrandAsset
               src="/brand/mascot/front.png"
               alt="Maskot StudyDate"
               width={1024}
               height={1024}
-              sizes="(max-width: 1024px) 320px, 448px"
+              sizes="(max-width: 1024px) 300px, 400px"
               className="mascot-cta-slot mascot-cta-shadow object-contain object-bottom"
               inverted
             />
@@ -789,6 +876,7 @@ export function LandingPage() {
       <main>
         <Hero />
         <PillarsOverview />
+        <MascotCompanion />
         <IntroductionFlow />
         <ProgressivePrivacy />
         <Groups />
