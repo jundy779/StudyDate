@@ -42,6 +42,8 @@ Browser-visible:
 
 Server-only:
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `STUDYDATE_EMAIL_FROM` plus either `STUDYDATE_RESEND_API_KEY` or SMTP
+  (`STUDYDATE_SMTP_*`) for StudyDate-branded magic-link delivery (never Supabase Auth mailer)
 - `STUDENT_VERIFICATION_ENCRYPTION_KEY`
 - `STUDENT_VERIFICATION_HMAC_KEY`
 - `CONTACT_REVEAL_ENCRYPTION_KEY` (AES-256-GCM; see `docs/operations/contact-reveal-key-recovery.md`)
@@ -55,14 +57,17 @@ Jangan mengimpor service-role client ke Client Component.
 ```text
 /login
  -> POST /api/auth/magic-link
- -> Supabase signInWithOtp
- -> email link
- -> /auth/callback
- -> exchange PKCE code
- -> verified session
+ -> service-role generateLink (token only; no Supabase mailer)
+ -> StudyDate SMTP/Resend email (branded StudyDate ID)
+ -> /auth/confirm?token_hash=… (first-party)
+ -> session cookie
  -> incomplete: /onboarding
  -> complete: /app
 ```
+
+Local app listen port and `NEXT_PUBLIC_SITE_URL` must match (default `http://localhost:3010`).
+Production sets `NEXT_PUBLIC_SITE_URL` to the public HTTPS origin (domain), independent of
+internal process port.
 
 Redirect target harus masuk allowlist internal.
 

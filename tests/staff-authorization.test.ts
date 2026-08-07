@@ -73,9 +73,13 @@ test("owner bootstrap is service-only, UUID-based, idempotent, and interactive",
 });
 
 test("student and staff login flows remain separate and enumeration-safe", () => {
-  assert.match(studentLogin, /shouldCreateUser: true/);
-  assert.match(staffLogin, /shouldCreateUser: false/);
+  assert.match(studentLogin, /allowCreateUser: true/);
+  assert.match(staffLogin, /allowCreateUser: false/);
   assert.match(staffLogin, /GENERIC_RESPONSE/);
+  assert.doesNotMatch(studentLogin, /signInWithOtp/);
+  assert.doesNotMatch(staffLogin, /signInWithOtp/);
+  assert.match(studentLogin, /deliverStudyDateMagicLink/);
+  assert.match(staffLogin, /deliverStudyDateMagicLink/);
   assert.match(callback, /requestedDestination === "\/staff"/);
   assert.equal(getSafeAuthenticatedDestination("/staff"), "/staff");
   assert.equal(getSafeAuthenticatedDestination("https://evil.example"), "/app");

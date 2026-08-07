@@ -1,6 +1,6 @@
+import { deliverStudyDateMagicLink } from "@/lib/auth/magic-link-delivery";
 import { getSiteOrigin } from "@/lib/auth/site-url";
 import { magicLinkRequestSchema } from "@/lib/auth/validation";
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 const MAX_REQUEST_BYTES = 2_048;
@@ -36,22 +36,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
-    const callbackUrl = new URL("/auth/callback", getSiteOrigin(request));
-    callbackUrl.searchParams.set("next", "/app");
-
-    const { error } = await supabase.auth.signInWithOtp({
+    await deliverStudyDateMagicLink({
       email: parsed.data.email,
-      options: {
-        emailRedirectTo: callbackUrl.toString(),
-        shouldCreateUser: true,
-      },
+      origin: getSiteOrigin(request),
+      nextPath: "/app",
+      kind: "student",
+      allowCreateUser: true,
     });
-
-    if (error) {
-      return NextResponse.json({ message: GENERIC_ERROR }, { status: 503 });
-    }
-
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 503 });

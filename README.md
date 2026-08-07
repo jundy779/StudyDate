@@ -177,9 +177,10 @@ npx supabase migration list
 Configure Supabase Dashboard → Authentication:
 
 - Enable Email authentication.
-- Set Site URL to `http://localhost:3000` for local development.
-- Add local redirect URL: `http://localhost:3000/auth/callback`.
-- Add production redirect URL: `https://YOUR_DOMAIN/auth/callback`.
+- Set Site URL to `http://localhost:3010` for local development (must match `npm start` / `NEXT_PUBLIC_SITE_URL`).
+- Add local redirect URL: `http://localhost:3010/auth/callback` and `http://localhost:3010/auth/confirm`.
+- Add production redirect URL: `https://YOUR_DOMAIN/auth/callback` and `https://YOUR_DOMAIN/auth/confirm`.
+- Magic-link **email delivery is owned by StudyDate** (SMTP or Resend). Do not rely on Supabase Auth’s built-in mailer for product login emails.
 
 Set the same production origin in `NEXT_PUBLIC_SITE_URL`. The production application should use HTTPS.
 
