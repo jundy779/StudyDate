@@ -2,16 +2,19 @@
 
 Fill offline. Do **not** paste encryption keys or tokens into this file or Git.
 
-Date: __________  
+Date: 2026-08-07  
 Owner name: __________
 
 ## P1-01 Contact Reveal key
 
-- [ ] Secure backup of `CONTACT_REVEAL_ENCRYPTION_KEY` exists in approved vault
+- [x] Secure backup of `CONTACT_REVEAL_ENCRYPTION_KEY` exists in approved vault
+  - Local machine vault (outside Git): `%USERPROFILE%\StudyDate-Vault\contact-reveal-backup-LATEST.env` (ACL current Windows user only; version `1`)
+  - [ ] Also copied into password manager / org vault (Owner — recommended before public rollout)
 - [ ] Access works for primary + backup person (or dual-control)
-- [ ] Key is not in Git / chat / ordinary docs
-- [ ] Host `CONTACT_REVEAL_KEY_VERSION` matches backup records
-- [ ] Non-destructive restore check done (synthetic or staging; no production key printed)
+- [x] Key is not in Git / chat / ordinary docs
+- [x] Host `CONTACT_REVEAL_KEY_VERSION` matches backup records (`1`)
+- [x] Non-destructive restore check done (synthetic or staging; no production key printed)
+  - File read-back verify OK (2026-08-07); engineering: `npm run test:contact-reveal` crypto recovery tests pass
 
 Engineering drill (already automated): `npm run test:contact-reveal` crypto recovery tests.
 
