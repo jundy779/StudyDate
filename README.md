@@ -63,16 +63,18 @@ Implemented:
   conversation shell handoff
 - Anonymous Chat v1 at `/app/messages` (deployed through migration `202608060003`)
 - Mutual Interest v1 inside active conversations (migration `202608060004`)
+- Identity Reveal v1 (migration `202608060005`)
+- Contact Reveal v1 for Telegram / Instagram / LinkedIn after Identity Reveal
+  (migrations `202608060006`–`202608060007`)
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
 
-- Identity reveal
-- Contact reveal
+- WhatsApp, phone, email, X/Twitter, Discord, Facebook contact reveal
 - Groups
 - Campus Events
-- Telegram linking
+- Telegram bot linking
 - Full moderation dashboard
 - Supabase Realtime chat delivery (v1 uses authenticated RPC polling)
 
@@ -275,6 +277,8 @@ serving large or horizontally scaled production traffic.
 | `npm run test:introductions` | Run Introduction Requests validation, projection, and authorization tests |
 | `npm run test:messages` | Run Anonymous Chat validation, projection, and authorization tests |
 | `npm run test:mutual` | Run Mutual Interest validation, privacy, and authorization tests |
+| `npm run test:identity-reveal` | Run Identity Reveal static, behavioral, and hydrate tests |
+| `npm run test:contact-reveal` | Run Contact Reveal static contract and behavioral tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |

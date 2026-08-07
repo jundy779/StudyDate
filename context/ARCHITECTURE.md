@@ -275,6 +275,8 @@ Post-completion access:
 - No new prepare/consent for a completed channel; no prepare/consent after end/block.
 
 Migration `202608060006` is applied remotely after controlled preflight.
+Migration `202608060007` fixes PL/pgSQL OUT-parameter `channel` ambiguity in consent
+RPCs (`#variable_conflict use_column` + constraint-based `ON CONFLICT`).
 
 ## 13. Staff authorization v1
 

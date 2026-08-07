@@ -30,6 +30,8 @@ Sumber migration:
     applied remotely after controlled preflight
 13. `supabase/migrations/202608060006_create_contact_reveal_v1.sql` — Contact Reveal v1;
     applied remotely after controlled preflight
+14. `supabase/migrations/202608060007_fix_contact_reveal_channel_ambiguity.sql` —
+    fix PL/pgSQL OUT `channel` ambiguity; applied remotely after live audit
 
 ### `early_access_waitlist`
 
