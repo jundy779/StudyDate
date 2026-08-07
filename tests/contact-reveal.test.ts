@@ -47,6 +47,13 @@ const identityMigration = readFileSync(
   join(root, "supabase/migrations/202608060005_create_identity_reveal_v1.sql"),
   "utf8",
 );
+const migration007 = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608060007_fix_contact_reveal_channel_ambiguity.sql",
+  ),
+  "utf8",
+);
 
 test("contact reveal migration is conversation-scoped and applied remotely", () => {
   assert.match(migration, /Applied remotely to StudyDate project ctbqudtvrfezuoqcecyj/);
@@ -61,6 +68,15 @@ test("contact reveal migration is conversation-scoped and applied remotely", () 
   assert.doesNotMatch(
     migration,
     /create table[\s\S]*whatsapp|phone_number text|email_ciphertext/i,
+  );
+});
+
+test("migration 007 fixes channel ambiguity with use_column and on conflict on constraint", () => {
+  assert.match(migration007, /#variable_conflict use_column/);
+  assert.match(migration007, /on conflict on constraint/);
+  assert.match(
+    migration007,
+    /conversation_contact_reveal_consents_unique_participant_channel/,
   );
 });
 
