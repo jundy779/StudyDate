@@ -50,8 +50,9 @@ test("privacy content states verification disabled and contact channels", () => 
   assert.match(privacy, /Instagram/);
   assert.match(privacy, /LinkedIn/);
   assert.match(privacy, /tidak mendukung pembukaan WhatsApp/i);
-  assert.match(privacy, /Masuk dengan Google \(belum aktif\)/);
-  assert.doesNotMatch(privacy, /signInWithOAuth|Google Sign-In aktif/i);
+  assert.match(privacy, /Masuk dengan Google/);
+  assert.match(privacy, /@gmail\.com/);
+  assert.doesNotMatch(privacy, /Masuk dengan Google \(belum aktif\)/i);
 });
 
 test("sitemap and robots modules exist", () => {

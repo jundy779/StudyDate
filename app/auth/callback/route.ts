@@ -1,5 +1,9 @@
 import { getSafeAuthenticatedDestination } from "@/lib/auth/redirect";
 import { getPrivateProfile } from "@/lib/auth/session";
+import {
+  isAllowedStudentEmail,
+  STUDENT_EMAIL_DOMAIN_ERROR,
+} from "@/lib/auth/allowed-email-domains";
 import { createClient } from "@/lib/supabase/server";
 import { hasEnvVars } from "@/lib/utils";
 import { getPostAuthenticationDestination } from "@/lib/staff/authorization";
@@ -56,10 +60,20 @@ export async function GET(request: NextRequest) {
     redirect(await getPostAuthenticationDestination(user));
   }
 
+  const email = user.email ?? "";
+  if (!isAllowedStudentEmail(email)) {
+    await supabase.auth.signOut();
+    redirect(
+      `/login?error=email_domain&detail=${encodeURIComponent(STUDENT_EMAIL_DOMAIN_ERROR)}`,
+    );
+  }
+
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) {
     redirect("/onboarding");
   }
 
-  redirect(requestedDestination === "/onboarding" ? "/app" : requestedDestination);
+  redirect(
+    requestedDestination === "/onboarding" ? "/app" : requestedDestination,
+  );
 }

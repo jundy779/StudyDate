@@ -1,6 +1,6 @@
 import { deliverStudyDateMagicLink } from "@/lib/auth/magic-link-delivery";
 import { getSiteOrigin } from "@/lib/auth/site-url";
-import { magicLinkRequestSchema } from "@/lib/auth/validation";
+import { staffMagicLinkRequestSchema } from "@/lib/auth/validation";
 import { consumeStaffMagicLinkAttempts } from "@/lib/security/rate-limit";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const parsed = magicLinkRequestSchema.safeParse(body);
+  const parsed = staffMagicLinkRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { message: "Masukkan alamat email yang valid." },
@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Rate-limit without changing enumeration-safe success body on delivery path.
   if (!(await consumeStaffMagicLinkAttempts(request, parsed.data.email))) {
     return NextResponse.json(GENERIC_RESPONSE, { status: 429 });
   }

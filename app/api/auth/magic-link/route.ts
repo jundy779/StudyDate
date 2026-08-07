@@ -30,10 +30,9 @@ export async function POST(request: NextRequest) {
 
   const parsed = magicLinkRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Masukkan alamat email yang valid." },
-      { status: 400 },
-    );
+    const message =
+      parsed.error.issues[0]?.message ?? "Masukkan alamat email yang valid.";
+    return NextResponse.json({ message }, { status: 400 });
   }
 
   if (!(await consumeMagicLinkAttempts(request, parsed.data.email))) {

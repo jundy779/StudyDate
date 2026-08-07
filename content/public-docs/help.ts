@@ -91,8 +91,9 @@ export const helpSections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Masuk lewat /login dengan email—kami mengirim tautan masuk StudyDate.",
-          "Periksa folder spam jika email belum muncul.",
+          "Masuk lewat /login dengan Google atau tautan email StudyDate.",
+          "Email yang didukung: @gmail.com, @vk.com, atau berakhiran .ac.id / .sch.id.",
+          "Periksa folder spam jika email tautan belum muncul.",
           "Pastikan kamu membuka tautan di perangkat yang sama dengan yang kamu maksudkan untuk memakai sesi.",
           "Belum ada penghapusan akun mandiri; sampaikan permintaan melalui kontak di bawah.",
         ],

@@ -77,7 +77,9 @@ jaminan perilaku.
 
 ## 7. Authentication and authorization
 
-- Gunakan Supabase passwordless email auth.
+- Gunakan Supabase Auth: passwordless email (magic link StudyDate) dan opsional
+  Google OAuth melalui provider Supabase.
+- Email mahasiswa publik dibatasi domain: `@gmail.com`, `@vk.com`, `*.ac.id`, `*.sch.id`.
 - Gunakan PKCE dan server-side session handling.
 - Jangan percaya client-side auth state untuk authorization.
 - Protected Server Components wajib memverifikasi sesi kembali.

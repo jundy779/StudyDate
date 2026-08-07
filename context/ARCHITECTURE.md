@@ -59,11 +59,13 @@ Jangan mengimpor service-role client ke Client Component.
 
 ```text
 /login
- -> POST /api/auth/magic-link
- -> service-role generateLink (token only; no Supabase mailer)
- -> StudyDate SMTP/Resend email (branded StudyDate ID)
- -> /auth/confirm?token_hash=… (first-party)
+ -> A) Google OAuth (Supabase provider) -> /auth/callback?code=…
+ -> B) POST /api/auth/magic-link
+      -> service-role generateLink (token only; no Supabase mailer)
+      -> StudyDate SMTP/Resend email (branded StudyDate ID)
+      -> /auth/confirm?token_hash=… (first-party)
  -> session cookie
+ -> student email domain allowlist enforced (gmail.com, vk.com, *.ac.id, *.sch.id)
  -> incomplete: /onboarding
  -> complete: /app
 ```
@@ -71,6 +73,8 @@ Jangan mengimpor service-role client ke Client Component.
 Local app listen port and `NEXT_PUBLIC_SITE_URL` must match (default `http://localhost:3010`).
 Production sets `NEXT_PUBLIC_SITE_URL` to the public HTTPS origin (domain), independent of
 internal process port.
+
+Google provider setup: `docs/operations/google-oauth-setup.md`.
 
 Redirect target harus masuk allowlist internal.
 

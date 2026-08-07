@@ -4,11 +4,17 @@ Root aplikasi: folder **`studydate-web`** (bukan monorepo root).
 
 ## 1. Prasyarat kode
 
-- [ ] Migration `202608070001_create_api_rate_limits_v1` applied ke Supabase `ctbqudtvrfezuoqcecyj`
+- [x] Migration `202608070001_create_api_rate_limits_v1` applied ke Supabase `ctbqudtvrfezuoqcecyj` (2026-08-07)
 - [ ] `STUDENT_VERIFICATION_ENABLED` tetap **bukan** `true`
 - [ ] Contact Reveal key di-backup offline (lihat `owner-p1-confirmation.md`)
 
-## 2. Buat project Vercel
+## Current demo host (auto-deploy)
+
+- Vercel project: `study-date` (team `jundy779s-projects`)
+- Production alias: **https://studydateid.vercel.app**
+- GitHub auto-deploy from `main` / `master` is already connected
+- `NEXT_PUBLIC_SITE_URL` on Vercel should match the live alias (or later `https://studydate.id`)
+
 
 1. Import repo GitHub `StudyDate`
 2. **Root Directory:** `studydate-web`

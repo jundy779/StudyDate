@@ -43,16 +43,28 @@ const validOnboarding = {
   },
 } as const;
 
-test("magic-link input normalizes a valid email and rejects invalid input", () => {
-  const parsed = magicLinkRequestSchema.parse({ email: "  NAYA@EXAMPLE.COM " });
-  assert.equal(parsed.email, "naya@example.com");
+test("magic-link input normalizes a valid allowed email and rejects invalid input", () => {
+  const parsed = magicLinkRequestSchema.parse({ email: "  NAYA@GMAIL.COM " });
+  assert.equal(parsed.email, "naya@gmail.com");
   assert.equal(magicLinkRequestSchema.safeParse({ email: "invalid" }).success, false);
   assert.equal(
+    magicLinkRequestSchema.safeParse({ email: "naya@yahoo.com" }).success,
+    false,
+  );
+  assert.equal(
     magicLinkRequestSchema.safeParse({
-      email: "naya@example.com",
+      email: "naya@gmail.com",
       verificationStatus: "verified",
     }).success,
     false,
+  );
+  assert.equal(
+    magicLinkRequestSchema.safeParse({ email: "siswa@kampus.ac.id" }).success,
+    true,
+  );
+  assert.equal(
+    magicLinkRequestSchema.safeParse({ email: "guru@sekolah.sch.id" }).success,
+    true,
   );
 });
 test("authenticated redirects allow only known internal destinations", () => {

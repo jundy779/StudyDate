@@ -261,16 +261,30 @@ export const privacySections: PublicDocSection[] = [
     ],
   },
   {
-    id: "google-oauth-masa-depan",
-    title: "Masuk dengan Google (belum aktif)",
+    id: "google-oauth",
+    title: "Masuk dengan Google",
     blocks: [
       {
         type: "p",
-        text: "Saat ini StudyDate tidak menawarkan Masuk dengan Google dan tidak mengakses data akun Google kamu. Metode masuk yang aktif adalah tautan email passwordless.",
+        text: "StudyDate menawarkan Masuk dengan Google sebagai alternatif tautan email. Saat kamu memilih Google, kami menerima dari Google data dasar yang diperlukan untuk autentikasi—terutama alamat email akun Google dan pengenal akun—melalui Supabase Auth.",
       },
       {
+        type: "ul",
+        items: [
+          "Email Google harus masuk daftar domain yang didukung (saat ini @gmail.com, @vk.com, atau berakhiran .ac.id / .sch.id).",
+          "Jika email Google di luar daftar itu, sesi tidak dilanjutkan dan kamu diminta memakai email yang didukung.",
+          "Kami tidak memakai Masuk dengan Google untuk mengakses isi Gmail, Drive, atau data Google lain di luar cakupan login.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "domain-email",
+    title: "Batasan domain email",
+    blocks: [
+      {
         type: "p",
-        text: "Jika di masa depan StudyDate mengaktifkan autentikasi Google OAuth untuk produksi, kebijakan ini akan diperbarui sebelum atau bersamaan dengan peluncuran untuk menjelaskan: data dasar yang diterima dari Google (misalnya email dan pengenal akun), tujuan pemakaian, serta pilihan untuk menautkan atau melepaskan akun. Tidak ada klaim akses data Google yang berlaku sampai fitur tersebut benar-benar diaktifkan.",
+        text: "Untuk menjaga komunitas mahasiswa, pendaftaran dan masuk publik (termasuk Early Access) dibatasi pada email @gmail.com, @vk.com, serta alamat yang berakhiran .ac.id atau .sch.id. Login staf memakai jalur terpisah dan tidak memakai batasan domain yang sama.",
       },
     ],
   },

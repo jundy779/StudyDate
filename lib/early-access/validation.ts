@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  isAllowedStudentEmail,
+  STUDENT_EMAIL_DOMAIN_ERROR,
+} from "../auth/allowed-email-domains.ts";
 
 export const earlyAccessInterests = ["people", "groups", "events"] as const;
 export const earlyAccessSources = ["navbar", "hero", "final-cta"] as const;
@@ -11,7 +15,8 @@ export const earlyAccessPayloadSchema = z
       .toLowerCase()
       .min(1, "Email wajib diisi.")
       .max(254, "Email terlalu panjang.")
-      .email("Masukkan alamat email yang valid."),
+      .email("Masukkan alamat email yang valid.")
+      .refine(isAllowedStudentEmail, STUDENT_EMAIL_DOMAIN_ERROR),
     campus: z
       .string()
       .trim()
@@ -25,6 +30,7 @@ export const earlyAccessPayloadSchema = z
     website: z.string().max(200),
   })
   .strict();
+
 
 export type EarlyAccessInput = z.input<typeof earlyAccessPayloadSchema>;
 export type EarlyAccessPayload = z.output<typeof earlyAccessPayloadSchema>;
