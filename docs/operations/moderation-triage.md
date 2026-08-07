@@ -5,39 +5,36 @@ tickets, or personal notes beyond what is required to act.
 
 ---
 
-## Status of technical workflow
+## Technical workflow
 
-**Current deployed schema (`user_reports` through migration `202608060007`) does not
-include moderation status, reviewer, internal note, or staff list/update RPCs.**
+Route: `/owner/moderation` (Owner only via `requireOwner` + `staff_members` /
+`app_metadata`).
 
-Report **submission** (participants → `user_reports`) remains privacy-safe and live.
-
-Owner Moderation **triage with status transitions is blocked** until a separate
-migration preflight is approved and applied. See:
-
-`docs/operations/moderation-triage-migration-preflight.md`
-
-Until that lands, treat the Owner `#moderation` shell as a reminder only — reports must
-not be assumed “handled” by the product UI.
-
----
-
-## Intended limited-rollout workflow (after migration)
+Database (migration `202608060008_create_moderation_triage_v1.sql`):
 
 ```text
 submitted → under_review → resolved
                          → dismissed
 ```
 
-Owner (or authorized reviewer, if granted by product policy) will:
+Direct `submitted → resolved|dismissed` is allowed for sparse limited-rollout queues.
+Terminal states are not reopened from the UI.
 
-1. Open `/owner/moderation` unresolved queue
-2. Open one report
-3. See only sanitized fields needed to triage
-4. Move to `under_review`, then `resolved` or `dismissed`
-5. Optionally store a **bounded plain-text** internal note (staff-only)
+RPCs:
 
-### Privacy boundary
+- `list_moderation_reports`
+- `get_moderation_report`
+- `update_moderation_report_status`
+- `count_unresolved_moderation_reports`
+
+Actor identity is always `auth.uid()` of the Owner session. Clients cannot supply a
+reviewer UUID.
+
+Report **submission** by students remains unchanged and privacy-safe.
+
+---
+
+## Privacy boundary
 
 Moderators must **not** automatically gain:
 
@@ -47,36 +44,33 @@ Moderators must **not** automatically gain:
 - Contact Reveal plaintext or ciphertext
 - unrelated profiles, emails, NIM, legal names
 
-If a report references a specific message, resolve **only that message** when the model
-supports it. If evidence cannot be shown safely, document the limitation — do not add
-broad read grants.
+When a report references a specific message, only a short excerpt of that message may
+appear. Otherwise show target kind + reason + bounded reporter details only.
 
 ---
 
 ## Queue ownership
 
-| Role | Access (intended) |
-|------|-------------------|
+| Role | Access |
+|------|--------|
 | Owner | Full triage queue |
-| Admin without explicit moderation permission | No triage |
+| Admin (even with verification reviewer) | No moderation triage |
 | Student / anon | No access |
-
-Authorization must use `staff_members` + `app_metadata` (never `user_metadata`).
 
 ---
 
 ## First review process
 
-1. Confirm report is actionable (not empty / not duplicate spam of the same hour window).
-2. Classify urgency using `reason_code` only:
+1. Open unresolved queue (`submitted` / `under_review` count on inbox).
+2. Open one report.
+3. Classify using `reason_code`:
    - `harassment` — prioritize
-   - `contact_pressure` — prioritize privacy coaching / block guidance
-   - `spam` — rate / pattern check
-   - `fake_or_misleading` — assess claims carefully; no automatic guilt
+   - `contact_pressure` — privacy / block guidance
+   - `spam` — pattern check
+   - `fake_or_misleading` — no automatic guilt
    - `other` — read bounded details if present
-3. Set status `under_review` before deep work.
-4. Prefer participant **block** tools already in product over surveillance.
-5. Resolve or dismiss with a short internal note (facts only, no pasted chat dumps).
+4. Prefer `under_review` before deep work when the queue is busy.
+5. Resolve or dismiss with a short internal note (facts only).
 
 ---
 
@@ -84,25 +78,25 @@ Authorization must use `staff_members` + `app_metadata` (never `user_metadata`).
 
 | Signal | Action |
 |--------|--------|
-| Suspected privacy leak (identity/contact exposed early) | Escalate to Owner + engineering; preserve report id + timestamps; do not redistribute evidence |
-| Harassment / threats | Guide reporter to block; consider account restriction **only if** product supports it (today: Auth disable is operator/Dashboard, not in-app) |
-| Spam campaign | Check Intro/chat rate limits; consider temporary feature disable via redeploy/env |
-| Suspected underage / severe safety | Owner decision path; follow applicable local policy; do not invent legal SLAs here |
+| Suspected privacy leak | Escalate to Owner + engineering; preserve report id + timestamps |
+| Harassment / threats | Guide reporter to block; Auth disable only via Dashboard if Owner approves |
+| Spam campaign | Check Intro/chat rate limits; consider temporary disable via redeploy/env |
+| Suspected underage / severe safety | Owner decision; do not invent legal SLAs |
 
 ---
 
 ## Evidence preservation
 
-- Keep report row + timestamps.
-- Do not download reveal photos “for the ticket”.
-- Do not export ciphertext or attempt Contact Reveal decrypt for moderation.
-- Sanitized audit trail (after migration): report id, old/new status, reviewer suffix, time.
+- Keep report row + moderation_report_events.
+- Do not download reveal photos for tickets.
+- Do not decrypt Contact Reveal for moderation.
+- Audit fields: report id, old/new status, actor, timestamp.
 
 ---
 
 ## What moderators must never copy externally
 
-- Message bodies beyond a minimal paraphrase
+- Full message histories
 - Contact handles / URLs
 - Reveal first names / photos
 - Emails, NIM, legal names, full UUIDs
@@ -112,14 +106,12 @@ Authorization must use `staff_members` + `app_metadata` (never `user_metadata`).
 
 ## Account restriction
 
-In-app account ban/suspend is **not** implemented as a student-facing control today.
-Operator may disable Auth users via Supabase Dashboard when Owner approves.
-Document the Auth user suffix only — not email — in internal notes when required.
+In-app ban/suspend is not implemented. Operator may disable Auth users via Supabase
+Dashboard when Owner approves. Record Auth user suffix only in internal notes.
 
 ---
 
 ## Incident path
 
 For systemic leaks or key compromise, use
-`docs/operations/contact-reveal-key-recovery.md` and the limited-rollout incident playbook
-under gitignored audit artifacts (if present). Prefer containment over broad data access.
+`docs/operations/contact-reveal-key-recovery.md`.

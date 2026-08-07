@@ -408,8 +408,10 @@ email / arbitrary URLs. Jangan pakai global reveal flag.
 
 `user_blocks` mencegah discovery interaction baru dan introduction dua arah.
 
-`user_reports` mereferensikan introduction (dan dapat diperluas ke conversation/group/event kemudian). Report detail
-bersifat privat; tidak ada dashboard moderasi publik pada fase ini.
+`user_reports` mereferensikan introduction (dan conversation/message). Report detail
+bersifat privat. Owner triage (migration `202608060008`) menambah
+`moderation_status` / catatan internal / `moderation_report_events` dan RPC Owner-only
+di `/owner/moderation`. Mahasiswa tidak melihat hasil moderasi otomatis.
 
 ## 10. Planned Groups
 
