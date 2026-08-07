@@ -48,8 +48,8 @@ const identityMigration = readFileSync(
   "utf8",
 );
 
-test("contact reveal migration is local-forward and conversation-scoped", () => {
-  assert.match(migration, /Local-only until explicit remote preflight/);
+test("contact reveal migration is conversation-scoped and applied remotely", () => {
+  assert.match(migration, /Applied remotely to StudyDate project ctbqudtvrfezuoqcecyj/);
   assert.match(migration, /conversation_contact_versions/);
   assert.match(migration, /conversation_id uuid not null/);
   assert.match(migration, /conversation_contact_versions_one_active_idx/);

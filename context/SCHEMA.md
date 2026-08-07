@@ -28,8 +28,8 @@ Sumber migration:
     applied remotely after controlled preflight
 12. `supabase/migrations/202608060005_create_identity_reveal_v1.sql` — Identity Reveal v1;
     applied remotely after controlled preflight
-13. `supabase/migrations/202608060006_create_contact_reveal_v1.sql` — Contact Reveal v1
-    (local-only until remote preflight)
+13. `supabase/migrations/202608060006_create_contact_reveal_v1.sql` — Contact Reveal v1;
+    applied remotely after controlled preflight
 
 ### `early_access_waitlist`
 
@@ -382,12 +382,12 @@ email, or People Discovery.
 
 Minimal private safety foundation. Reports may reference `conversation_id` / `anonymous_message_id`.
 
-## 7. Contact Reveal v1 (migration `202608060006`, local-only)
+## 7. Contact Reveal v1 (migration `202608060006`, applied remotely)
 
 Identity Reveal v1 sudah diimplementasikan sebagai model percakapan-scoped
 (`conversation_identity_reveal_*`, migration `202608060005` applied remotely).
 
-Contact Reveal v1 (local migration `202608060006`, not applied remotely yet):
+Contact Reveal v1 (migration `202608060006`, applied remotely):
 
 - `conversation_contact_versions` — conversation-scoped immutable encrypted contact
   values per channel (`telegram` | `instagram` | `linkedin`); AES-256-GCM ciphertext + IV

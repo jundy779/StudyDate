@@ -1,5 +1,5 @@
 -- Contact Reveal v1
--- Local-only until explicit remote preflight. Do not db push without approval.
+-- Applied remotely to StudyDate project ctbqudtvrfezuoqcecyj after controlled preflight.
 --
 -- Conversation-scoped Contact Reveal v1 for channels telegram|instagram|linkedin only.
 -- Eligible only after identity_revealed_at is set, active shell, mutual done (implied by IR),

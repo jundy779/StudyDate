@@ -274,8 +274,7 @@ Post-completion access:
   UI must not claim prior views were erased.
 - No new prepare/consent for a completed channel; no prepare/consent after end/block.
 
-Migration `202608060006` is local-only until explicit remote preflight. Do not db push
-without approval.
+Migration `202608060006` is applied remotely after controlled preflight.
 
 ## 13. Staff authorization v1
 

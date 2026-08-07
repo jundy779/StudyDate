@@ -248,9 +248,9 @@ Tidak membuka verification badge sebagai klaim “real identity verified”, kon
 NIM, atau evidence. Contact Reveal memerlukan consent per saluran yang terpisah.
 Student Verification tetap dinonaktifkan secara global.
 
-## 11b. Implemented locally — Contact Reveal v1
+## 11b. Implemented — Contact Reveal v1
 
-Contact Reveal v1 (migration `202608060006`, local-only until remote preflight) membuka
+Contact Reveal v1 (migration `202608060006`, applied remotely) membuka
 hanya saluran yang disetujui dua arah setelah Identity Reveal selesai:
 
 - Telegram (username);
