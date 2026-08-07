@@ -14,7 +14,7 @@ payments.
 
 1. **P1-01 key recovery (Owner)** — checklist in
    `docs/operations/contact-reveal-key-recovery.md` completed offline (no key in Git).
-2. **P1-02 moderation** — migration `202608060008` applied remotely after dry-run; Owner
+2. **P1-02 moderation** — migration `202608060008` applied remotely; Owner
    can triage `/owner/moderation`.
 3. **CLI** — profile `studydate` authenticated to project `ctbqudtvrfezuoqcecyj`.
 4. **Regression green** — lint, typecheck, all `test:*`, browser, build.

@@ -1,5 +1,5 @@
 -- Moderation triage v1 for user_reports.
--- Local-only until explicit remote preflight approval. Do not db push without approval.
+-- Applied remotely to StudyDate project ctbqudtvrfezuoqcecyj (2026-08-07).
 -- Owner-only queue: submitted → under_review → resolved|dismissed.
 -- Never exposes Contact Reveal plaintext, one-sided reveal state, or full chat history.
 
@@ -396,4 +396,4 @@ revoke all on function public.update_moderation_report_status(uuid, text, text)
 grant execute on function public.update_moderation_report_status(uuid, text, text)
   to authenticated;
 
--- Applied remotely: pending StudyDate project ctbqudtvrfezuoqcecyj (awaiting CLI auth + dry-run approval)
+-- Applied remotely to StudyDate project ctbqudtvrfezuoqcecyj (2026-08-07).
