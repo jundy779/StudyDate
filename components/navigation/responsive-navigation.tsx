@@ -118,7 +118,7 @@ function getStaffItems(role: StaffRole): NavigationItem[] {
       icon: "readiness",
     },
     {
-      href: "/owner#moderation",
+      href: "/owner/moderation",
       label: "Moderasi",
       key: "moderation",
       icon: "moderation",

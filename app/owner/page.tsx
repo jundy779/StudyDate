@@ -21,7 +21,7 @@ async function OwnerContent() {
           <section id="system-readiness" className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"><Wrench className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">System readiness</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Controlled verification: <strong className="text-brand-navy">{readiness.readyForControlledTesting ? "Siap diuji" : "Belum siap"}</strong></p></section>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-2">
-          <section id="moderation" className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Moderation</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Shell disiapkan. Operasi moderation belum diimplementasikan.</p></section>
+          <Link href="/owner/moderation" className="focus-ring scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6" id="moderation"><h2 className="font-heading text-xl font-semibold">Moderation</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Antrean triage menunggu migrasi status laporan. Buka halaman Moderasi untuk status dan tautan SOP.</p></Link>
           <Link href="/owner/audit" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Sanitized audit</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat perubahan role tanpa email lengkap atau payload privat.</p></Link>
         </div>
       </div>

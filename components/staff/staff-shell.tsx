@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 type StaffShellProps = {
   children: ReactNode;
-  current: "overview" | "staff" | "verification" | "audit";
+  current: "overview" | "staff" | "verification" | "audit" | "moderation";
   role: StaffRole;
 };
 
