@@ -47,9 +47,11 @@ type CipherRow = {
   mine_ciphertext: unknown;
   mine_iv: unknown;
   mine_auth_tag: unknown;
+  mine_key_version?: number | null;
   counterpart_ciphertext: unknown;
   counterpart_iv: unknown;
   counterpart_auth_tag: unknown;
+  counterpart_key_version?: number | null;
 };
 
 function mapChannel(row: ChannelRow | undefined): ContactRevealChannelState | null {
@@ -111,13 +113,17 @@ function decryptSide(
   ciphertext: unknown,
   iv: unknown,
   authTag: unknown,
+  keyVersion: unknown,
 ): string | null {
   if (!ciphertext || !iv || !authTag) return null;
+  const version = Number(keyVersion);
+  if (!Number.isInteger(version) || version < 1) return null;
   try {
     return decryptContactValue({
       ciphertext: normalizeByteaInput(ciphertext),
       iv: normalizeByteaInput(iv),
       authTag: normalizeByteaInput(authTag),
+      keyVersion: version,
     });
   } catch {
     return null;
@@ -179,6 +185,7 @@ export async function getContactRevealPreview(
         contact_ciphertext?: unknown;
         contact_iv?: unknown;
         contact_auth_tag?: unknown;
+        encryption_key_version?: number | null;
       }
     | undefined;
 
@@ -188,6 +195,7 @@ export async function getContactRevealPreview(
           cipher.contact_ciphertext,
           cipher.contact_iv,
           cipher.contact_auth_tag,
+          cipher.encryption_key_version,
         )
       : null;
 
@@ -238,11 +246,13 @@ export async function getCompletedContactReveal(
     row.mine_ciphertext,
     row.mine_iv,
     row.mine_auth_tag,
+    row.mine_key_version,
   );
   const counterpart = decryptSide(
     row.counterpart_ciphertext,
     row.counterpart_iv,
     row.counterpart_auth_tag,
+    row.counterpart_key_version,
   );
 
   return {

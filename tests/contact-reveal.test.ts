@@ -27,6 +27,10 @@ const cryptoSrc = readFileSync(
   join(root, "lib/contact-reveal/crypto.ts"),
   "utf8",
 );
+const cryptoCoreSrc = readFileSync(
+  join(root, "lib/contact-reveal/crypto-core.ts"),
+  "utf8",
+);
 const panel = readFileSync(
   join(root, "components/messages/contact-reveal-panel.tsx"),
   "utf8",
@@ -160,9 +164,12 @@ test("contact versions are conversation-scoped immutable encrypted snapshots", (
   assert.match(migration, /sender_contact_version_id|participant_a_contact_version_id|first_contact_version/);
   assert.match(service, /register_contact_reveal_version/);
   assert.match(prepareRoute, /prepareContactReveal/);
-  assert.match(cryptoSrc, /aes-256-gcm/);
-  assert.match(cryptoSrc, /CONTACT_REVEAL_ENCRYPTION_KEY/);
+  assert.match(cryptoCoreSrc, /aes-256-gcm/);
+  assert.match(cryptoCoreSrc, /CONTACT_REVEAL_ENCRYPTION_KEY/);
+  assert.match(cryptoCoreSrc, /CONTACT_REVEAL_ENCRYPTION_KEY_V/);
+  assert.match(cryptoCoreSrc, /encryption_key_version|keyVersion/);
   assert.match(cryptoSrc, /server-only/);
+  assert.match(cryptoSrc, /crypto-core/);
 });
 
 test("channels are independent; no global open-all operation", () => {
