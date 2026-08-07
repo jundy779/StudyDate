@@ -44,6 +44,8 @@ Server-only:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `STUDENT_VERIFICATION_ENCRYPTION_KEY`
 - `STUDENT_VERIFICATION_HMAC_KEY`
+- `CONTACT_REVEAL_ENCRYPTION_KEY` (AES-256-GCM; see `docs/operations/contact-reveal-key-recovery.md`)
+- optional `CONTACT_REVEAL_KEY_VERSION` and `CONTACT_REVEAL_ENCRYPTION_KEY_V{n}` during rotation
 - optional campus-email delivery webhook URL dan token.
 
 Jangan mengimpor service-role client ke Client Component.
