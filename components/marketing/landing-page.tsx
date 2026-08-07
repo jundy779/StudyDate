@@ -26,10 +26,11 @@ const navigation = [
 ];
 
 const footerLinks = [
-  { label: "Privasi", href: "/privasi" },
-  { label: "Ketentuan", href: "/ketentuan" },
-  { label: "Pedoman Komunitas", href: "/pedoman-komunitas" },
-  { label: "Bantuan", href: "/bantuan" },
+  { label: "Privasi", href: "/privacy" },
+  { label: "Ketentuan", href: "/terms" },
+  { label: "Pedoman Komunitas", href: "/community-guidelines" },
+  { label: "Keamanan", href: "/safety" },
+  { label: "Bantuan", href: "/help" },
 ];
 
 const peopleFlow = [
@@ -772,7 +773,9 @@ function Footer() {
               </a>
             ))}
           </nav>
-          <p className="mt-5">© 2026 StudyDate ID · Koneksi berkembang dengan persetujuan bersama.</p>
+          <p className="mt-5">
+            © 2026 StudyDate ID · Mulai dari belajar. Kenal perlahan.
+          </p>
         </div>
       </div>
     </footer>

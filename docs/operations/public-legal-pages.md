@@ -1,0 +1,35 @@
+# Public legal & safety pages (production readiness)
+
+Intended production origin: `https://studydate.id`
+
+## Public routes (no auth)
+
+| Path | Purpose |
+|------|---------|
+| `/` | Homepage |
+| `/privacy` | Kebijakan Privasi |
+| `/terms` | Ketentuan Layanan |
+| `/community-guidelines` | Pedoman Komunitas |
+| `/safety` | Pusat Keamanan |
+| `/help` | Bantuan |
+
+Legacy Indonesian slugs redirect permanently to the English paths above (`/privasi` → `/privacy`, etc.).
+
+## Google Search Console / OAuth readiness (no OAuth implemented)
+
+- Homepage and Privacy Policy are public and linked from the footer.
+- Stable URLs relative to `studydate.id` as listed above.
+- `app/sitemap.ts` and `app/robots.ts` expose crawlable public docs; authenticated areas are disallowed in robots.
+- Canonical / `metadataBase` follow `NEXT_PUBLIC_SITE_URL` when set (use `https://studydate.id` in production).
+- **Google Sign-In / Google OAuth is not active.** Privacy Policy includes a forward-looking section only.
+
+Do not configure Google Cloud Console as part of routine product commits; Owner configures production OAuth separately when ready.
+
+## Support contact
+
+No public support inbox is published on these pages until Owner designates an official `studydate.id` address. Help points to Early Access form and in-app report for now.
+
+## Related product flags
+
+- Student Verification remains globally disabled (`STUDENT_VERIFICATION_ENABLED` ≠ `true`).
+- Contact Reveal channels: Telegram, Instagram, LinkedIn only.

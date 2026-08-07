@@ -14,8 +14,11 @@ Jangan menambahkan framework auth lain.
 Browser
   -> Next.js App Router
        -> Public UI: landing page + Early Access dialog
+       -> Public docs: /privacy, /terms, /community-guidelines, /safety, /help
+         (legacy /privasi, /ketentuan, /pedoman-komunitas, /bantuan, /keamanan redirect)
+       -> Public SEO: /sitemap.xml, /robots.txt
        -> Public handler: /api/early-access
-       -> Auth: /login, /staff/login, /auth/callback
+       -> Auth: /login, /staff/login, /auth/callback, /auth/confirm
        -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions,
           /app/messages, /app/messages/[publicId]
        -> Protected staff: /owner/**, /admin/**

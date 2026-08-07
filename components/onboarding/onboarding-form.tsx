@@ -661,7 +661,7 @@ export function OnboardingForm() {
             <ConsentCheckbox
               checked={form.consents.terms}
               label="Saya menyetujui Ketentuan"
-              href="/ketentuan"
+              href="/terms"
               onChange={(checked) =>
                 setForm({
                   ...form,
@@ -672,7 +672,7 @@ export function OnboardingForm() {
             <ConsentCheckbox
               checked={form.consents.privacy}
               label="Saya menyetujui Kebijakan Privasi"
-              href="/privasi"
+              href="/privacy"
               onChange={(checked) =>
                 setForm({
                   ...form,
@@ -683,7 +683,7 @@ export function OnboardingForm() {
             <ConsentCheckbox
               checked={form.consents.communityGuidelines}
               label="Saya menyetujui Pedoman Komunitas"
-              href="/pedoman-komunitas"
+              href="/community-guidelines"
               onChange={(checked) =>
                 setForm({
                   ...form,

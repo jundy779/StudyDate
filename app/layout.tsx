@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
+import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
 import "./globals.css";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
-  title: "StudyDate ID — Temukan koneksi di kampus",
+  metadataBase: new URL(getPublicSiteOrigin()),
+  title: {
+    default: "StudyDate ID — Temukan koneksi di kampus",
+    template: "%s",
+  },
   description:
     "Temukan people, groups, dan campus events untuk belajar, berteman, networking, berkolaborasi, dan membangun koneksi yang berarti.",
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   icons: {
     icon: "/brand/app-icon.png",
     apple: "/brand/app-icon.png",

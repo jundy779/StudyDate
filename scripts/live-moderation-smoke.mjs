@@ -131,7 +131,7 @@ if (ownerErr || !owners?.length) {
       ok: !countErr,
       unresolved: countErr ? null : Number(count ?? 0),
     };
-  } catch (e) {
+  } catch {
     report.ownerRpc = { ok: false, class: "session_failed" };
   }
 }
@@ -195,7 +195,7 @@ try {
   report.http.unauthModerationDetail = await httpGet(
     `/owner/moderation/${randomBytes(16).toString("hex").replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5")}`,
   );
-} catch (e) {
+} catch {
   report.http.error = "fetch_failed_is_server_up";
 }
 

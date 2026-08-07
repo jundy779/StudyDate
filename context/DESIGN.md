@@ -55,9 +55,11 @@ Struktur yang telah disetujui:
 8. Online-first
 9. Offline safety
 10. Early Access CTA
-11. Footer
+11. Footer (tautan publik: `/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`)
 
-Jangan redesign tanpa approval eksplisit.
+Halaman legal/bantuan publik memakai shell editorial terpisah (`PublicDocShell`): Poppins heading,
+Inter body, `page-shell`, lebar baca ~42rem, tanpa ilustrasi dekoratif. Jangan redesign landing tanpa
+approval eksplisit.
 
 ## 6. Hero
 

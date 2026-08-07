@@ -67,6 +67,7 @@ Visibility: public, unlisted, campus-only, invite-only.
 Diimplementasikan pada code dan migration repository saat ini:
 
 - public landing page;
+- public legal/safety/help pages (`/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`);
 - Early Access waitlist;
 - passwordless email authentication;
 - Supabase PKCE callback;
@@ -279,8 +280,12 @@ Attendee list privat secara default.
 
 ## 14. Planned — Safety flows
 
-Landing page memakai pesan positif dan ringkas. Detail safety tersedia pada Safety Center, meeting flow, Community
-Guidelines, dan bot reminder.
+Landing page memakai pesan positif dan ringkas. Detail safety tersedia pada **Pusat Keamanan publik**
+(`/safety`), meeting flow (masih planned), Community Guidelines (`/community-guidelines`), dan bot reminder
+(planned).
+
+Halaman publik legal/bantuan yang diimplementasikan: `/privacy`, `/terms`, `/community-guidelines`, `/safety`,
+`/help` (lihat `docs/operations/public-legal-pages.md`). Google OAuth belum aktif.
 
 Meeting flow harus menyediakan public-location confirmation, cancellation, share plan, safety check, dan post-meeting
 check. Jangan menjanjikan emergency response.
