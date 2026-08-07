@@ -28,6 +28,8 @@ Sumber migration:
     applied remotely after controlled preflight
 12. `supabase/migrations/202608060005_create_identity_reveal_v1.sql` — Identity Reveal v1;
     applied remotely after controlled preflight
+13. `supabase/migrations/202608060006_create_contact_reveal_v1.sql` — Contact Reveal v1
+    (local-only until remote preflight)
 
 ### `early_access_waitlist`
 
@@ -318,7 +320,7 @@ Rules: sender = `auth.uid()` participant only; immutable body; best-effort conta
 ### `conversation_events`
 
 Sanitized audit: activated, message_sent, ended, blocked, reported, messages_read,
-mutual_interest_reached, identity_revealed. Never stores one-sided interest/consent,
+mutual_interest_reached, identity_revealed, contact_revealed. Never stores one-sided interest/consent,
 message bodies, contacts, or Storage paths.
 
 ### `conversation_mutual_interests`
@@ -380,14 +382,25 @@ email, or People Discovery.
 
 Minimal private safety foundation. Reports may reference `conversation_id` / `anonymous_message_id`.
 
-## 7. Planned Contact Reveal
+## 7. Contact Reveal v1 (migration `202608060006`, local-only)
 
 Identity Reveal v1 sudah diimplementasikan sebagai model percakapan-scoped
-(`conversation_identity_reveal_*`, migration `202608060005` applied remotely), bukan tabel
-`reveal_requests` generik.
+(`conversation_identity_reveal_*`, migration `202608060005` applied remotely).
 
-Contact Reveal (Telegram, Instagram, WhatsApp, email, full name) tetap Planned
-dengan consent per jenis. Jangan pakai global reveal flag.
+Contact Reveal v1 (local migration `202608060006`, not applied remotely yet):
+
+- `conversation_contact_versions` — conversation-scoped immutable encrypted contact
+  values per channel (`telegram` | `instagram` | `linkedin`); AES-256-GCM ciphertext + IV
+  + auth tag + key version; one active version per owner/conversation/channel.
+- `conversation_contact_reveal_consents` — private per-participant consent per channel;
+  version must belong to the same conversation, participant, and channel.
+- `conversation_contact_reveals` — immutable completion snapshot per `(conversation_id, channel)`.
+- `conversation_events.contact_revealed` + `event_channel` — sanitized completion event
+  (channel id only; no plaintext contact).
+
+Eligible only after `identity_revealed_at`, active shell, mutual done, both non-staff
+students, not blocked. One-sided prepare/consent never projected. No WhatsApp / phone /
+email / arbitrary URLs. Jangan pakai global reveal flag.
 
 ## 9. Implemented blocks and reports (Introduction foundation)
 

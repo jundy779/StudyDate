@@ -122,9 +122,12 @@ Setelah diterima, tampilkan handoff ke Pesan dengan CTA `Mulai percakapan`.
 `/app/messages/[publicId]` memakai header alias+mascot, privacy note, bubble teks escaped, composer
 `Tulis pesan`, serta aksi Akhiri / Blokir / Laporkan. Setelah Mutual Interest, panel
 `Buka Identitas` tersedia untuk siapkan nama depan + foto (conversation-scoped) dan
-consent terpisah. Setelah Identity Reveal selesai, `Akhiri` mempertahankan akses identitas
-yang sudah dibuka; `Blokir` menyembunyikan identitas/media lawan pada request berikutnya
-tanpa mengklaim bahwa konten yang sudah dilihat terhapus. Jangan menampilkan online status,
+consent terpisah. Setelah Identity Reveal selesai, panel `Bagikan kontak secara bertahap`
+menampilkan Telegram / Instagram / LinkedIn secara independen dengan copy tenang
+(tanpa “buka semua”, countdown, atau sinyal one-sided). Setelah Identity Reveal atau
+saluran Contact Reveal selesai, `Akhiri` mempertahankan akses yang sudah dibuka;
+`Blokir` menyembunyikan identitas/kontak/media lawan pada request berikutnya tanpa
+mengklaim bahwa konten yang sudah dilihat terhapus. Jangan menampilkan online status,
 typing palsu, atau dekorasi dating.
 ### Student Verification Center
 

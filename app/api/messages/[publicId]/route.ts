@@ -9,6 +9,10 @@ import {
   getCompletedIdentityReveal,
   getIdentityRevealState,
 } from "@/lib/identity-reveal/service";
+import {
+  getAllCompletedContactReveals,
+  getContactRevealState,
+} from "@/lib/contact-reveal/service";
 import { NextResponse, type NextRequest } from "next/server";
 
 type RouteContext = {
@@ -38,15 +42,21 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
 
-    const [messages, mutualInterest, identityReveal] = await Promise.all([
-      listConversationMessages(parsed.data, { limit: 50 }),
-      getMutualInterestState(parsed.data),
-      getIdentityRevealState(parsed.data),
-    ]);
+    const [messages, mutualInterest, identityReveal, contactReveal] =
+      await Promise.all([
+        listConversationMessages(parsed.data, { limit: 50 }),
+        getMutualInterestState(parsed.data),
+        getIdentityRevealState(parsed.data),
+        getContactRevealState(parsed.data),
+      ]);
 
     const identityRevealCompleted = identityReveal.completed
       ? await getCompletedIdentityReveal(parsed.data)
       : null;
+
+    const contactRevealCompleted = identityReveal.completed
+      ? await getAllCompletedContactReveals(parsed.data, contactReveal)
+      : [];
 
     return NextResponse.json({
       conversation: {
@@ -82,6 +92,29 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             counterpartFirstName: identityRevealCompleted.counterpartFirstName,
           }
         : null,
+      // Safe ContactRevealState only — never one-sided prepare/consent or encrypted payloads.
+      contactReveal: {
+        channels: contactReveal.channels.map((channel) => ({
+          channel: channel.channel,
+          eligible: channel.eligible,
+          hasContact: channel.hasContact,
+          selectedByMe: channel.selectedByMe,
+          completed: channel.completed,
+          completedAt: channel.completedAt,
+          canWithdraw: channel.canWithdraw,
+        })),
+      },
+      contactRevealCompleted: contactRevealCompleted
+        .filter((item) => item.completed)
+        .map((item) => ({
+          channel: item.channel,
+          completed: true,
+          completedAt: item.completedAt,
+          mineDisplay: item.mineDisplay,
+          counterpartDisplay: item.counterpartDisplay,
+          mineHref: item.mineHref,
+          counterpartHref: item.counterpartHref,
+        })),
       messages: messages.map((message) => ({
         message_id: message.message_id,
         body: message.body,

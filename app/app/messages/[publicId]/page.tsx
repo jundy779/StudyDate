@@ -13,6 +13,17 @@ import {
   getIdentityRevealProfilePreview,
   getIdentityRevealState,
 } from "@/lib/identity-reveal/service";
+import {
+  CONTACT_REVEAL_CHANNELS,
+  type ContactRevealChannel,
+  type ContactRevealCompletedChannel,
+  type ContactRevealPreview,
+} from "@/lib/contact-reveal/constants";
+import {
+  getAllCompletedContactReveals,
+  getContactRevealPreview,
+  getContactRevealState,
+} from "@/lib/contact-reveal/service";
 import { notFound, redirect } from "next/navigation";
 
 type ConversationPageProps = {
@@ -40,6 +51,7 @@ export default async function ConversationPage({
     mutualInterest,
     identityReveal,
     identityRevealPreview,
+    contactReveal,
   ] = await Promise.all([
     getConversationByPublicId(parsed.data),
     listConversationMessages(parsed.data, { limit: 50 }),
@@ -47,6 +59,7 @@ export default async function ConversationPage({
     getMutualInterestState(parsed.data),
     getIdentityRevealState(parsed.data),
     getIdentityRevealProfilePreview(parsed.data),
+    getContactRevealState(parsed.data),
   ]);
 
   if (!conversation) notFound();
@@ -54,6 +67,38 @@ export default async function ConversationPage({
   const identityRevealCompleted = identityReveal.completed
     ? await getCompletedIdentityReveal(parsed.data)
     : null;
+
+  const contactPreviews: Partial<
+    Record<ContactRevealChannel, ContactRevealPreview | null>
+  > = {};
+  const contactCompleted: Partial<
+    Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
+  > = {};
+
+  if (identityReveal.completed) {
+    await Promise.all(
+      CONTACT_REVEAL_CHANNELS.map(async (channel) => {
+        const channelState = contactReveal.channels.find(
+          (item) => item.channel === channel,
+        );
+        if (channelState?.hasContact && !channelState.completed) {
+          contactPreviews[channel] = await getContactRevealPreview(
+            parsed.data,
+            channel,
+          );
+        }
+      }),
+    );
+    const completedList = await getAllCompletedContactReveals(
+      parsed.data,
+      contactReveal,
+    );
+    for (const item of completedList) {
+      if (item.completed) {
+        contactCompleted[item.channel] = item;
+      }
+    }
+  }
 
   const query = await searchParams;
   const notice =
@@ -71,6 +116,9 @@ export default async function ConversationPage({
           initialIdentityReveal={identityReveal}
           initialIdentityRevealPreview={identityRevealPreview}
           initialIdentityRevealCompleted={identityRevealCompleted}
+          initialContactReveal={contactReveal}
+          initialContactPreviews={contactPreviews}
+          initialContactCompleted={contactCompleted}
           notice={notice}
           state={query.state ?? null}
         />

@@ -245,18 +245,24 @@ tidak saling memblokir. Setelah selesai:
   mengklaim bahwa screenshot sebelumnya terhapus.
 
 Tidak membuka verification badge sebagai klaim “real identity verified”, kontak, nama legal,
-NIM, atau evidence. Contact Reveal tetap Planned dan memerlukan consent terpisah.
+NIM, atau evidence. Contact Reveal memerlukan consent per saluran yang terpisah.
 Student Verification tetap dinonaktifkan secara global.
-## 11b. Planned — Contact Reveal
 
-Contact Reveal terpisah:
-- Telegram;
-- Instagram;
-- WhatsApp;
-- email;
-- full name.
+## 11b. Implemented locally — Contact Reveal v1
 
-Setiap tipe membutuhkan mutual consent terpisah.
+Contact Reveal v1 (migration `202608060006`, local-only until remote preflight) membuka
+hanya saluran yang disetujui dua arah setelah Identity Reveal selesai:
+
+- Telegram (username);
+- Instagram (username);
+- LinkedIn (URL profil publik `/in/...`).
+
+Setiap saluran independen: persiapan dan consent satu pihak tetap privat; tidak ada operasi
+“buka semua kontak”. Nilai kontak dienkripsi server-side (AES-256-GCM) dan bersifat
+conversation-scoped. WhatsApp, telepon, email, X/Twitter, Discord, Facebook, dan URL
+bebas tidak diimplementasikan. Setelah saluran selesai: `ended` mempertahankan akses
+kontak yang sudah dibuka; `blocked` menyembunyikan kontak lawan pada request berikutnya
+tanpa mengklaim bahwa konten yang sudah dilihat terhapus.
 
 ## 12. Planned — Groups MVP
 

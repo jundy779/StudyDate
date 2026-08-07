@@ -23,8 +23,16 @@ import type {
   IdentityRevealState,
 } from "@/lib/identity-reveal/constants";
 import { normalizeIdentityRevealState } from "@/lib/identity-reveal/panel-visibility";
+import {
+  emptyContactRevealState,
+  type ContactRevealCompletedChannel,
+  type ContactRevealPreview,
+  type ContactRevealState,
+  type ContactRevealChannel,
+} from "@/lib/contact-reveal/constants";
 import { MutualInterestPanel } from "@/components/messages/mutual-interest-panel";
 import { IdentityRevealPanel } from "@/components/messages/identity-reveal-panel";
+import { ContactRevealPanel } from "@/components/messages/contact-reveal-panel";
 import { getMascotForAlias } from "@/lib/people/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
@@ -47,6 +55,13 @@ type ConversationRoomProps = {
   initialIdentityReveal: IdentityRevealState;
   initialIdentityRevealPreview: IdentityRevealProfilePreview | null;
   initialIdentityRevealCompleted: IdentityRevealCompleted | null;
+  initialContactReveal: ContactRevealState;
+  initialContactPreviews: Partial<
+    Record<ContactRevealChannel, ContactRevealPreview | null>
+  >;
+  initialContactCompleted: Partial<
+    Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
+  >;
   notice?: string | null;
   state?: string | null;
 };
@@ -80,6 +95,9 @@ export function ConversationRoom({
   initialIdentityReveal,
   initialIdentityRevealPreview,
   initialIdentityRevealCompleted,
+  initialContactReveal,
+  initialContactPreviews,
+  initialContactCompleted,
   notice,
   state,
 }: ConversationRoomProps) {
@@ -94,6 +112,12 @@ export function ConversationRoom({
   );
   const [identityRevealCompleted, setIdentityRevealCompleted] = useState(
     initialIdentityRevealCompleted,
+  );
+  const [contactReveal, setContactReveal] = useState(
+    () => initialContactReveal ?? emptyContactRevealState(),
+  );
+  const [contactCompleted, setContactCompleted] = useState(
+    initialContactCompleted,
   );
   const [body, setBody] = useState("");
   const [clientError, setClientError] = useState<string | null>(notice ?? null);
@@ -149,6 +173,8 @@ export function ConversationRoom({
           mutualInterest?: MutualInterestState;
           identityReveal?: IdentityRevealState;
           identityRevealCompleted?: IdentityRevealCompleted | null;
+          contactReveal?: ContactRevealState;
+          contactRevealCompleted?: ContactRevealCompletedChannel[];
           messages: ChatMessage[];
         };
         if (cancelled) return;
@@ -162,6 +188,18 @@ export function ConversationRoom({
         }
         if (payload.identityRevealCompleted?.completed) {
           setIdentityRevealCompleted(payload.identityRevealCompleted);
+        }
+        if (payload.contactReveal) {
+          setContactReveal(payload.contactReveal);
+        }
+        if (payload.contactRevealCompleted) {
+          const nextCompleted: Partial<
+            Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
+          > = {};
+          for (const item of payload.contactRevealCompleted) {
+            nextCompleted[item.channel] = item;
+          }
+          setContactCompleted(nextCompleted);
         }
         setMessages([...payload.messages].reverse());
       } catch {
@@ -380,6 +418,41 @@ export function ConversationRoom({
                       setIdentityRevealCompleted(
                         payload.identityRevealCompleted as IdentityRevealCompleted,
                       );
+                    }
+                    if (payload?.contactReveal) {
+                      setContactReveal(payload.contactReveal as ContactRevealState);
+                    }
+                  })
+                  .catch(() => undefined);
+              }
+            }}
+          />
+          <ContactRevealPanel
+            publicId={conversation.public_id}
+            conversationStatus={status}
+            identityRevealCompleted={Boolean(identityReveal.completed)}
+            state={contactReveal}
+            initialPreviews={initialContactPreviews}
+            completedByChannel={contactCompleted}
+            onStateChange={(next) => {
+              setContactReveal(next);
+              if (next.channels.some((channel) => channel.completed)) {
+                void fetch(`/api/messages/${conversation.public_id}`, {
+                  cache: "no-store",
+                })
+                  .then((response) => (response.ok ? response.json() : null))
+                  .then((payload) => {
+                    if (payload?.contactRevealCompleted) {
+                      const nextCompleted: Partial<
+                        Record<
+                          ContactRevealChannel,
+                          ContactRevealCompletedChannel | null
+                        >
+                      > = {};
+                      for (const item of payload.contactRevealCompleted as ContactRevealCompletedChannel[]) {
+                        nextCompleted[item.channel] = item;
+                      }
+                      setContactCompleted(nextCompleted);
                     }
                   })
                   .catch(() => undefined);

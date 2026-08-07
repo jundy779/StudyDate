@@ -30,6 +30,14 @@ import {
   identityRevealConsentSchema,
   identityRevealWithdrawSchema,
 } from "@/lib/identity-reveal/validation";
+import {
+  selectContactReveal,
+  withdrawContactReveal,
+} from "@/lib/contact-reveal/service";
+import {
+  contactRevealConsentSchema,
+  contactRevealWithdrawSchema,
+} from "@/lib/contact-reveal/validation";
 import { peopleAliasSchema } from "@/lib/people/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -223,6 +231,46 @@ export async function withdrawIdentityRevealAction(formData: FormData) {
   }
 
   const next = await withdrawIdentityReveal(parsed.data.publicId);
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+export async function selectContactRevealAction(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = contactRevealConsentSchema.safeParse({
+    publicId: formData.get("publicId"),
+    channel: formData.get("channel"),
+    contactVersionId: formData.get("contactVersionId"),
+  });
+  if (!parsed.success) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const next = await selectContactReveal(
+    parsed.data.publicId,
+    parsed.data.channel,
+    parsed.data.contactVersionId,
+  );
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+export async function withdrawContactRevealAction(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = contactRevealWithdrawSchema.safeParse({
+    publicId: formData.get("publicId"),
+    channel: formData.get("channel"),
+  });
+  if (!parsed.success) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const next = await withdrawContactReveal(
+    parsed.data.publicId,
+    parsed.data.channel,
+  );
   revalidateMessages(parsed.data.publicId);
   return next;
 }

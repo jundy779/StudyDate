@@ -250,7 +250,33 @@ Post-completion access:
 - No new profile/consent mutation after completion.
 
 Migration `202608060005` is applied remotely after controlled preflight.
-Contact Reveal remains unimplemented. Student Verification remains globally disabled.
+Student Verification remains globally disabled.
+
+## 12e. Contact Reveal v1 architecture
+
+```text
+Identity Reveal completed + active conversation
+ -> prepare: Next API encrypts contact (AES-256-GCM) via service_role register_contact_reveal_version
+ -> get_contact_reveal_state / select_contact_reveal / withdraw_contact_reveal
+ -> conversation_contact_reveal_consents (private per participant + channel; version must match conversation + channel)
+ -> conversation_contact_reveals snapshot atomically per channel
+ -> sanitized conversation_events.contact_revealed (+ event_channel only)
+```
+
+Contact values are conversation-scoped (`conversation_contact_versions`), encrypted at rest,
+and decrypted only in the Next.js server after service_role cipher RPCs. Pre-completion poll
+exposes only safe `ContactRevealChannelState` (no counterpart prepare/consent, no ciphertext).
+Channels (telegram | instagram | linkedin) complete independently.
+
+Post-completion access:
+- `ended`: both participants retain completed contacts for that channel.
+- `blocked` (or block row): counterpart contact ciphertext withheld; own contact may remain;
+  UI must not claim prior views were erased.
+- No new prepare/consent for a completed channel; no prepare/consent after end/block.
+
+Migration `202608060006` is local-only until explicit remote preflight. Do not db push
+without approval.
+
 ## 13. Staff authorization v1
 
 StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted
