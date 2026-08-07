@@ -17,9 +17,13 @@ Engineering drill (already automated): `npm run test:contact-reveal` crypto reco
 
 ## P1-02 Moderation
 
-- [ ] Migration `202608060008` applied to project `ctbqudtvrfezuoqcecyj` after dry-run
-- [ ] `/owner/moderation` lists queue for Owner session
-- [ ] Student session cannot open moderation routes
+- [x] Migration `202608060008` applied to project `ctbqudtvrfezuoqcecyj` after dry-run
+- [x] Owner RPC `list_moderation_reports` allowed (live smoke)
+- [x] Student/anon RPC denied (live smoke)
+- [x] Unauthenticated `/owner/moderation` redirects to staff login
+- [ ] Owner visually opens `/owner/moderation` in browser once
 - [ ] SOP `docs/operations/moderation-triage.md` reviewed
 
-When both sections are checked, limited-rollout P1 blockers are closed operationally.
+Engineering live smoke: `node --experimental-strip-types scripts/live-moderation-smoke.mjs` → `SMOKE_OK` (2026-08-07).
+
+When P1-01 checkboxes above are checked, limited-rollout P1 blockers are closed operationally.
