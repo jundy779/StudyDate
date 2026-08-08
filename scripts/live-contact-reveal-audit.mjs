@@ -22,6 +22,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -58,6 +59,7 @@ const SAFE_STATE_KEYS = new Set([
 mkdirSync(artifactDir, { recursive: true });
 
 const uploadedKeys = [];
+let failureCleanup = null;
 
 const results = {
   deploymentSanity: {},
@@ -480,6 +482,7 @@ async function onboard(client, firstName) {
   const { error } = await client.rpc("complete_student_onboarding_v2", {
     p_public_alias: alias,
     p_first_name: firstName,
+    p_last_name: "Sintetik",
     p_nim_ciphertext: null,
     p_nim_iv: null,
     p_nim_auth_tag: null,
@@ -508,6 +511,18 @@ async function onboard(client, firstName) {
 }
 
 async function setDiscoverable(client, value) {
+  if (value) {
+    const { error: socialError } = await client.rpc(
+      "upsert_my_student_social_contacts",
+      {
+        p_linkedin_url: "https://www.linkedin.com/in/studydate-audit",
+        p_instagram_username: null,
+      },
+    );
+    if (socialError) {
+      throw new Error(`social setup failed: ${errorCategory(socialError)}`);
+    }
+  }
   const { error } = await client.rpc("set_people_discovery_visibility", {
     p_is_discoverable: value,
   });
@@ -1052,6 +1067,13 @@ async function main() {
   }
 
   const ids = kinds.map((kind) => accounts[kind].id);
+  failureCleanup = async () => {
+    await deleteSyntheticRows(admin, ids);
+    for (const id of ids) {
+      await admin.auth.admin.deleteUser(id);
+    }
+    rmSync(accountsPath, { force: true });
+  };
   const precleanStats = await deleteSyntheticRows(admin, ids);
   log(
     "PRECLEAN_OK",
@@ -2423,12 +2445,7 @@ async function main() {
         shellsTouched: stats.shellsTouched,
         introsRemoved: stats.introsRemoved,
         storageKeysRemoved: stats.storageKeysRemoved,
-        accountsRetained: kinds.map((kind) => ({
-          kind,
-          suffix: accounts[kind].suffix,
-          alias: aliases[kind],
-        })),
-        note: "Synthetic Auth users retained in audit-artifacts/contact-reveal-audit-accounts.json; no secrets in report.",
+        accountsDeleted: false,
       };
       pass(section);
     } catch (error) {
@@ -2440,6 +2457,9 @@ async function main() {
   for (const kind of kinds) {
     await sessions[kind].auth.signOut().catch(() => undefined);
   }
+  await failureCleanup();
+  failureCleanup = null;
+  results.cleanup.accountsDeleted = true;
 
   writeFileSync(reportPath, JSON.stringify(results, null, 2));
   log("REPORT_WRITTEN", "audit-artifacts/contact-reveal-live-report.json");
@@ -2447,8 +2467,12 @@ async function main() {
   process.exitCode = 0;
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
   console.error("CONTACT_REVEAL_LIVE_AUDIT_FAILED", errorCategory(error));
+  if (failureCleanup) {
+    await failureCleanup().catch(() => undefined);
+    failureCleanup = null;
+  }
   try {
     writeFileSync(
       reportPath,

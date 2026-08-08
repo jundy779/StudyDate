@@ -10,7 +10,13 @@
 import assert from "node:assert/strict";
 import { randomBytes, randomInt } from "node:crypto";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { createClient } from "@supabase/supabase-js";
@@ -197,7 +203,7 @@ async function ensureAccount(kind, accounts, admin) {
   }
   createdAccountsThisRun = true;
   const stamp = `${Date.now()}.${randomInt(1000, 9999)}`;
-  const email = `studydate.contact.resp.${kind.toLowerCase()}.${stamp}@example.com`;
+  const email = `studydate.contact.resp.${kind.toLowerCase()}.${stamp}@audit.ac.id`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     email_confirm: true,
@@ -262,6 +268,7 @@ async function onboard(client, firstName) {
   const { error } = await client.rpc("complete_student_onboarding_v2", {
     p_public_alias: alias,
     p_first_name: firstName,
+    p_last_name: "Sintetik",
     p_nim_ciphertext: null,
     p_nim_iv: null,
     p_nim_auth_tag: null,
@@ -290,6 +297,16 @@ async function onboard(client, firstName) {
 }
 
 async function setDiscoverable(client, value) {
+  if (value) {
+    const { error: socialError } = await client.rpc(
+      "upsert_my_student_social_contacts",
+      {
+        p_linkedin_url: "https://www.linkedin.com/in/studydate-audit",
+        p_instagram_username: null,
+      },
+    );
+    if (socialError) throw new Error("social setup failed");
+  }
   const { error } = await client.rpc("set_people_discovery_visibility", {
     p_is_discoverable: value,
   });
@@ -905,6 +922,10 @@ async function main() {
     console.log("CONTACT_REVEAL_RESPONSIVE_AUDIT_COMPLETE");
   } finally {
     const stats = await deleteSyntheticRows(admin, cleanupIds);
+    for (const id of cleanupIds) {
+      await admin.auth.admin.deleteUser(id);
+    }
+    rmSync(accountsPath, { force: true });
     report.cleanup = true;
     writeFileSync(reportPath, JSON.stringify(report, null, 2));
     console.log(
