@@ -325,7 +325,7 @@ keyset cursor; retention cleanup lama tetap future ops sampai kebijakan durasi d
 Unread count global dipoll setiap 25 detik, tidak overlap, dan polling dilewati ketika
 document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
 
-## 12g. Study Circle v1 architecture (local-only)
+## 12g. Study Circle v1 architecture (deployed)
 
 ```text
 /app/circles
@@ -336,11 +336,13 @@ document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
  -> optional member Introduction memakai sistem Introduction existing
 ```
 
-Migration `202608090001` bersifat local-only dan belum diterapkan remote. Core tables
-(`study_circles`, `study_circle_memberships`, `study_circle_messages`,
-`study_circle_events`, dan atomic `study_circle_rate_limits`) RLS-enabled tanpa direct
-grant bagi `anon` maupun `authenticated`. Semua projection dan mutation melalui
-`SECURITY DEFINER`, `search_path = ''`, actor dari `auth.uid()`, dan opaque public slug.
+Migration `202608090001` dan forward fix `202608090002` sudah diterapkan remote melalui
+exact dry-run. Fix kedua mengganti tiga RPC yang terkena ambiguitas PL/pgSQL `circle_id`
+yang ditemukan pada live audit pertama. Core tables (`study_circles`,
+`study_circle_memberships`, `study_circle_messages`, `study_circle_events`, dan atomic
+`study_circle_rate_limits`) RLS-enabled tanpa direct grant bagi `anon` maupun
+`authenticated`. Semua projection dan mutation melalui `SECURITY DEFINER`,
+`search_path = ''`, actor dari `auth.uid()`, dan opaque public slug.
 
 V1 memakai direct join untuk Circle `open` atau `campus`; tidak ada join approval,
 waitlist, private/invite Circle, atau moderator role. Owner adalah role Circle-scoped dan
@@ -361,6 +363,11 @@ Owner tidak memperoleh broad member/chat access. Membership tidak pernah menulis
 
 Notifications tidak diperluas pada v1 untuk menghindari notifikasi join/leave/message yang
 bising. Student Verification tetap dinonaktifkan dan bukan syarat Circle.
+
+Live A/B/C/D audit mengonfirmasi safe projection, direct-grant denial, owner/staff
+isolation, open/campus eligibility, discussion dan report scope, block tanpa menghapus
+group history, archive retention, zero automatic private-flow/Notification side effects,
+authenticated UI smoke, dan cleanup sintetis lengkap. Post-deploy migration dry-run kosong.
 
 ## 13. Staff authorization v1
 

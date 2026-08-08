@@ -284,12 +284,13 @@ persiapan/consent/withdrawal Contact Reveal satu sisi dilarang menghasilkan noti
 Notifications v1 tidak mencakup push, Web Push, email, SMS, WhatsApp, Telegram bot,
 presence, typing indicator, atau last seen.
 
-## 12. Implemented locally — Study Circle v1
+## 12. Implemented and deployed — Study Circle v1
 
-Study Circle v1 tersedia melalui migration lokal
-`202608090001_create_study_circles_v1.sql` dan belum diterapkan ke remote. Mahasiswa
-onboarded dapat menemukan Circle terbuka atau Circle kampus yang sama, membuat Circle,
-bergabung langsung, keluar, membaca daftar anggota aman, dan berdiskusi dengan teks biasa.
+Study Circle v1 tersedia melalui migration `202608090001_create_study_circles_v1.sql`
+dan forward fix `202608090002_fix_study_circle_rpc_ambiguity.sql`; keduanya sudah
+disinkronkan ke remote setelah preflight terkontrol. Mahasiswa onboarded dapat menemukan
+Circle terbuka atau Circle kampus yang sama, membuat Circle, bergabung langsung, keluar,
+membaca daftar anggota aman, dan berdiskusi dengan teks biasa.
 
 Membership: `active`, `left`, atau `removed`. Creator menjadi owner Circle; v1 tidak
 menambahkan moderator terpisah atau approval workflow. Owner dapat memperbarui metadata,
@@ -313,6 +314,11 @@ membuat conversation, Mutual Interest, Identity Reveal, atau Contact Reveal.
 
 Notifications schema tidak diubah pada v1: join, leave, pesan grup, dan browsing tidak
 menimbulkan notifikasi agar tidak bising atau menciptakan tekanan sosial.
+
+Live audit sintetis A/B/C/D mengonfirmasi discovery open/campus, membership dan owner
+authorization, discussion privacy, report-scoped evidence, Introduction/block integration,
+arsip, RLS/grants, tidak adanya side effect ke private connection flow atau Notifications,
+safe UI projection, serta cleanup lengkap. Student Verification tetap dinonaktifkan.
 
 ## 13. Planned — Events MVP
 

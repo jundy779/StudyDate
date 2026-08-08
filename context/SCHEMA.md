@@ -39,7 +39,10 @@ Sumber migration:
 17. `supabase/migrations/202608070013_create_notifications_v1.sql` —
     Notifications v1; diterapkan remote setelah controlled preflight dan live A/B/C audit
 18. `supabase/migrations/202608090001_create_study_circles_v1.sql` —
-    Study Circle v1; local-only, belum diterapkan remote
+    Study Circle v1; diterapkan remote setelah exact dry-run
+19. `supabase/migrations/202608090002_fix_study_circle_rpc_ambiguity.sql` —
+    forward fix untuk ambiguitas PL/pgSQL pada member/message/report RPC; diterapkan
+    remote lalu diverifikasi melalui live A/B/C/D audit
 
 ### `early_access_waitlist`
 
@@ -446,7 +449,7 @@ bersifat privat. Owner triage (migration `202608060008`) menambah
 `moderation_status` / catatan internal / `moderation_report_events` dan RPC Owner-only
 di `/owner/moderation`. Mahasiswa tidak melihat hasil moderasi otomatis.
 
-## 10. Study Circle v1 (migration `202608090001`, local-only)
+## 10. Study Circle v1 (migrations `202608090001`–`202608090002`, deployed)
 
 Tables:
 
@@ -494,6 +497,12 @@ target kind `circle` / `circle_message` tanpa broad SELECT atas diskusi.
 
 Archive menolak join dan pesan baru; anggota aktif tetap dapat membaca riwayat. V1 tidak
 memiliki approval, waitlist, moderator, attachment, session/event, atau Circle notification.
+
+Migration `202608090002` mengganti `list_study_circle_members`,
+`list_study_circle_messages`, dan `report_study_circle_member` dengan nama variabel lokal
+yang tidak ambigu. Signature, safe projection, `search_path = ''`, actor `auth.uid()`,
+revoke `public`/`anon`, dan grant authenticated tetap dipertahankan. Live audit
+mengonfirmasi ketiga RPC, report excerpt 280 karakter, direct-table denial, serta cleanup.
 
 ## 11. Planned Events
 

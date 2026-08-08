@@ -150,7 +150,7 @@ Copy tidak pernah berisi isi pesan, nama, kontak, email, NIM, UUID, consent coun
 atau sinyal progres satu sisi. Badge visual dibatasi `99+` tanpa mengubah unread count
 aktual pada accessible label.
 
-### Study Circle v1 (local-only)
+### Study Circle v1 (deployed)
 
 `/app/circles` memakai daftar editorial, bukan dashboard grid atau clone Discord. Header
 memperjelas bahwa membership tidak membuka identitas, kontak, atau private conversation.

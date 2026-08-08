@@ -69,7 +69,8 @@ Implemented:
 - Notifications v1 privacy-safe in-app UI (migration `202608070013`, applied remotely
   after controlled preflight and live A/B/C audit)
 - Study Circle v1 at `/app/circles` with privacy-safe membership, group discussion,
-  Introduction handoff, block/report integration, and local-only migration `202608090001`
+  Introduction handoff, block/report integration, and deployed migrations
+  `202608090001`–`202608090002`
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -341,12 +342,14 @@ trusted trigger creation, deterministic deduplication, read-one/read-all behavio
 three contact channels, one-sided consent silence, safe projection, blocked-history
 privacy, and complete synthetic-account cleanup.
 
-### Study Circle v1 (local-only)
+### Study Circle v1 (deployed)
 
 Migration `202608090001_create_study_circles_v1.sql` adds direct-join Study Circles with
 `open` or same-campus scope, owner-only Circle management, `active | left | removed`
 membership, member-only plain-text discussion, atomic abuse counters, and report-scoped
-moderation evidence. The migration has not been applied remotely.
+moderation evidence. Migration `202608090002_fix_study_circle_rpc_ambiguity.sql` replaces
+three affected RPCs after the first live pass exposed a PL/pgSQL `circle_id` ambiguity.
+Both migrations are synchronized remotely.
 
 Routes are `/app/circles`, `/app/circles/create`, and
 `/app/circles/<opaque-public-slug>`. Member projections reuse only safe People fields;
@@ -363,6 +366,12 @@ V1 deliberately has no moderator role, approval queue, waitlist, group attachmen
 events/sessions, popularity ranking, online state, or Circle notifications. Archiving
 prevents new joins and messages while preserving member-readable history and moderation
 evidence. Student Verification remains globally disabled and is not a Circle prerequisite.
+
+The post-deployment A/B/C/D audit verifies open and campus discovery, direct join,
+idempotency, leave/rejoin, owner removal/edit/archive, member-only discussion, contact
+filtering, all three report contexts, Introduction and block integration, RLS/direct-grant
+denial, safe rendered payloads, zero automatic private-flow side effects, Notification
+silence for Circle operations, authenticated UI smoke, and complete synthetic cleanup.
 
 ### Live Supabase verification checklist
 
