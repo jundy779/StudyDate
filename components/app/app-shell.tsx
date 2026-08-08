@@ -10,6 +10,7 @@ type AppShellProps = {
     | "home"
     | "people"
     | "circles"
+    | "events"
     | "introductions"
     | "messages"
     | "notifications"

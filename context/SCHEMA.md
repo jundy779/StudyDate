@@ -43,6 +43,8 @@ Sumber migration:
 19. `supabase/migrations/202608090002_fix_study_circle_rpc_ambiguity.sql` —
     forward fix untuk ambiguitas PL/pgSQL pada member/message/report RPC; diterapkan
     remote lalu diverifikasi melalui live A/B/C/D audit
+20. `supabase/migrations/202608090003_create_campus_events_v1.sql` —
+    Campus Events v1; local-only, belum diterapkan remote
 
 ### `early_access_waitlist`
 
@@ -504,13 +506,61 @@ yang tidak ambigu. Signature, safe projection, `search_path = ''`, actor `auth.u
 revoke `public`/`anon`, dan grant authenticated tetap dipertahankan. Live audit
 mengonfirmasi ketiga RPC, report excerpt 280 karakter, direct-table denial, serta cleanup.
 
-## 11. Planned Events
+## 11. Campus Events v1 (migration `202608090003`, local-only)
 
-Possible tables: events, event_registrations, event_waitlist, event_checkins, event_reports, organizer_profiles.
+Tables:
 
-Registration: registered, waitlisted, approved, checked_in, cancelled, attended, no_show.
+- `campus_events` — internal UUID, opaque `event-` public slug, organizer, title 5–100,
+  description 20–1000, constrained category, `open | campus` scope, derived campus,
+  `timestamptz` start/end, allowlisted display timezone, constrained public venue,
+  capacity 3–30, `scheduled | cancelled | archived`, dan safety confirmation timestamp.
+- `campus_event_rsvps` — private unique `(event_id, user_id)` row dengan status
+  `going | cancelled`; organizer mendapat RSVP `going` saat create.
+- `campus_event_audit_events` — sanitized lifecycle audit untuk create, edit, RSVP,
+  cancel RSVP, cancel Event, archive, dan report tanpa data kontak/private-flow.
+- `campus_event_rate_limits` — atomic actor/window counters untuk create, RSVP/cancel,
+  edit, dan report.
 
-Attendee list privat secara default.
+RPC authenticated:
+
+```text
+list_campus_events
+get_campus_event
+create_campus_event
+update_campus_event
+rsvp_campus_event
+cancel_campus_event_rsvp
+cancel_campus_event
+archive_campus_event
+list_campus_event_attendees
+report_campus_event
+report_campus_event_organizer
+```
+
+Semua table RLS-enabled dan direct grant dicabut dari `public`, `anon`, serta
+`authenticated`. Capacity authoritative memakai row lock pada `campus_events` sebelum
+menghitung RSVP `going`, sehingga upsert RSVP paralel diserialisasi. Scope kampus,
+organizer, target RSVP, dan report context selalu diturunkan server-side.
+
+Projection discovery/detail memuat metadata Event publik dan jumlah peserta nyata, bukan
+daftar peserta. Projection attendee terbatas pada organizer atau RSVP `going` dan hanya
+memuat `public_alias`, campus, study program, semester, interests/goals, genuine
+verification boolean, organizer boolean, dan waktu RSVP. Pair yang diblokir tidak
+diproyeksikan. Tidak ada nama, email, NIM, clear photo, kontak, UUID, atau private
+connection/reveal state.
+
+`user_reports` memperoleh reference Event, target kind `event | event_organizer`, serta
+snapshot bounded title, description excerpt maksimal 280 karakter, dan venue publik.
+Moderation Triage existing membaca hanya evidence report-scoped tersebut; tidak mendapat
+broad attendee, Anonymous Chat, Identity Reveal, atau Contact Reveal access.
+
+Cancellation mempertahankan RSVP dan evidence serta menolak RSVP baru. Archive hanya
+setelah cancellation atau `end_at`; tidak ada restore. Selesai diturunkan dari waktu,
+bukan status/cron. Waktu/timezone/venue tidak dapat berubah setelah RSVP aktif
+non-organizer pertama; kapasitas tidak dapat turun di bawah RSVP aktif. Tidak ada
+waitlist, approval, check-in, reminder, Event chat,
+ticketing, pembayaran, arbitrary link, Circle association, atau Event notification pada
+v1.
 
 ## 12. Planned meeting plans
 

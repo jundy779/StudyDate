@@ -71,13 +71,15 @@ Implemented:
 - Study Circle v1 at `/app/circles` with privacy-safe membership, group discussion,
   Introduction handoff, block/report integration, and deployed migrations
   `202608090001`–`202608090002`
+- Campus Events v1 implemented locally at `/app/events` with public-place-only venues,
+  atomic-capacity RSVP, private attendee projection, Introduction/block/report reuse, and
+  local migration `202608090003`
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
 
 - WhatsApp, phone, email, X/Twitter, Discord, Facebook contact reveal
-- Campus Events
 - Telegram bot linking
 - Full moderation dashboard
 - Push, browser Web Push, email, SMS, WhatsApp, Telegram bot, or native notifications
@@ -287,6 +289,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:contact-reveal` | Run Contact Reveal static contract and behavioral tests |
 | `npm run test:notifications` | Run Notifications v1 static/privacy/behavioral tests |
 | `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
+| `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, and lifecycle tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
@@ -312,6 +315,7 @@ npm run test:contact-reveal
 npm run test:moderation
 npm run test:notifications
 npm run test:circles
+npm run test:events
 npm run test:browser
 npm run build
 git status --short
@@ -372,6 +376,28 @@ idempotency, leave/rejoin, owner removal/edit/archive, member-only discussion, c
 filtering, all three report contexts, Introduction and block integration, RLS/direct-grant
 denial, safe rendered payloads, zero automatic private-flow side effects, Notification
 silence for Circle operations, authenticated UI smoke, and complete synthetic cleanup.
+
+### Campus Events v1 (local-only)
+
+Migration `202608090003_create_campus_events_v1.sql` adds open or same-campus Events with
+opaque routes, `timestamptz` scheduling, constrained public-place venues, required
+server-side safety affirmations, atomic RSVP capacity, sanitized audit events, and
+report-scoped Moderation Triage evidence. It has not been applied remotely.
+
+Routes are `/app/events`, `/app/events/create`, and
+`/app/events/<opaque-public-slug>`. Discovery exposes real attendee counts, while the safe
+attendee list is limited to the organizer and active attendees. Co-attendance does not
+create an Introduction, conversation, Mutual Interest, Identity Reveal, Contact Reveal,
+or Notification; `Kirim perkenalan` reuses the existing private Introduction flow.
+
+V1 uses `scheduled | cancelled | archived` Events and `going | cancelled` RSVP. Capacity
+is 3–30 and authoritative RSVP serializes on the Event row before counting active seats.
+Cancelled RSVP may rejoin if eligible; cancelled/archived Events cannot accept RSVP.
+Time, timezone, and venue are frozen after the first non-organizer RSVP because v1 does
+not emit update notifications; capacity still cannot drop below active RSVP.
+There is no waitlist, ticketing, payment, check-in, Event chat, arbitrary link, Circle
+association, recommendation ranking, or Event notification. Student Verification remains
+globally disabled and is not an Event prerequisite.
 
 ### Live Supabase verification checklist
 

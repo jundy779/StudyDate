@@ -19,6 +19,7 @@
     "test:contact-reveal": "node --experimental-strip-types --test tests/contact-reveal.test.ts tests/contact-reveal-behavior.test.ts tests/contact-reveal-crypto-recovery.test.ts",
     "test:notifications": "node --experimental-strip-types --test tests/notifications.test.ts",
     "test:circles": "node --experimental-strip-types --test tests/study-circles.test.ts",
+    "test:events": "node --experimental-strip-types --test tests/campus-events.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs"
   },

@@ -21,7 +21,7 @@ Browser
        -> Auth: /login, /staff/login, /auth/callback, /auth/confirm
        -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions,
           /app/messages, /app/messages/[publicId], /app/circles, /app/circles/create,
-          /app/circles/[publicSlug]
+          /app/circles/[publicSlug], /app/events, /app/events/create, /app/events/[publicSlug]
        -> Protected staff: /owner/**, /admin/**
        -> Server handlers/actions
   -> Supabase Auth + PostgreSQL + RLS + RPC
@@ -368,6 +368,53 @@ Live A/B/C/D audit mengonfirmasi safe projection, direct-grant denial, owner/sta
 isolation, open/campus eligibility, discussion dan report scope, block tanpa menghapus
 group history, archive retention, zero automatic private-flow/Notification side effects,
 authenticated UI smoke, dan cleanup sintetis lengkap. Post-deploy migration dry-run kosong.
+
+## 12h. Campus Events v1 architecture (local-only)
+
+```text
+/app/events
+ -> authenticated upcoming discovery RPC (open atau kampus yang sama)
+ -> /app/events/[opaque-public-slug]
+ -> atomic RSVP / cancel RSVP
+ -> organizer atau RSVP going: safe attendee projection
+ -> optional attendee Introduction memakai sistem Introduction existing
+```
+
+Migration lokal `202608090003` menambahkan `campus_events`, `campus_event_rsvps`,
+`campus_event_audit_events`, dan `campus_event_rate_limits`, serta referensi report-scoped
+ke `user_reports`. Seluruh tabel RLS-enabled tanpa direct grant bagi `anon` atau
+`authenticated`; operasi client hanya melalui `SECURITY DEFINER`, `search_path = ''`,
+actor `auth.uid()`, dan opaque public slug.
+
+Event memakai lifecycle `scheduled | cancelled | archived`; kondisi selesai diturunkan
+dari `end_at`. Input waktu lokal wajib membawa timezone allowlisted
+`Asia/Jakarta | Asia/Makassar | Asia/Jayapura`, lalu PostgreSQL mengubahnya ke
+`timestamptz`. Durasi dibatasi 30 menit–12 jam, mulai minimal dua jam dan maksimal 180
+hari ke depan.
+
+Venue hanya dapat memakai kategori tempat publik. Empat afirmasi keselamatan wajib true
+di RPC dan disimpan sebagai satu `safety_confirmed_at`; filter teks lokasi privat menjadi
+kontrol best-effort tambahan. V1 tidak memiliki venue pribadi, live location, link bebas,
+file, event chat, ticketing, pembayaran, waitlist, atau check-in.
+
+RSVP `going | cancelled` mengambil user dari sesi. Organizer otomatis menjadi RSVP
+pertama. RPC RSVP mengunci row Event sebelum menghitung peserta aktif dan melakukan
+upsert, sehingga percobaan bersamaan pada slot terakhir tetap tidak dapat melebihi
+kapasitas. Re-RSVP setelah pembatalan sukarela diizinkan selama eligibility dan kapasitas
+masih terpenuhi.
+
+Discovery/detail hanya memproyeksikan jumlah peserta. Daftar peserta penuh hanya untuk
+organizer atau RSVP `going`, memakai allowlist field People dan mengecualikan pasangan
+yang saling memblokir. Introduction tetap melalui RPC eligibility existing; RSVP tidak
+menulis conversation, Mutual, Identity Reveal, Contact Reveal, atau Notifications.
+
+Organizer adalah role Event-scoped, bukan staff. Edit hanya untuk Event `scheduled` yang
+masih lebih dari dua jam sebelum mulai; scope immutable dan kapasitas tidak dapat turun
+di bawah RSVP aktif. Waktu, timezone, dan venue dikunci setelah RSVP `going`
+non-organizer pertama karena v1 tidak mengirim notifikasi perubahan. Cancel tidak dapat
+dipulihkan, mempertahankan RSVP/evidence, dan
+archive hanya tersedia setelah cancel atau Event berakhir. Circle association dan
+notification perubahan/cancel ditunda agar authorization dan schema v1 tetap sempit.
 
 ## 13. Staff authorization v1
 

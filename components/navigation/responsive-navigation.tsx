@@ -8,6 +8,7 @@ import {
   Activity,
   Bell,
   BookOpen,
+  CalendarDays,
   CircleUserRound,
   Gavel,
   GraduationCap,
@@ -36,6 +37,7 @@ type NavigationIcon =
   | "home"
   | "people"
   | "circles"
+  | "events"
   | "introductions"
   | "messages"
   | "notifications"
@@ -73,6 +75,7 @@ const iconMap = {
   home: Home,
   people: Users,
   circles: UsersRound,
+  events: CalendarDays,
   introductions: Handshake,
   messages: MessageSquare,
   notifications: Bell,
@@ -97,6 +100,12 @@ const studentItems: NavigationItem[] = [
     label: "Study Circle",
     key: "circles",
     icon: "circles",
+  },
+  {
+    href: "/app/events",
+    label: "Campus Events",
+    key: "events",
+    icon: "events",
   },
   {
     href: "/app/introductions",

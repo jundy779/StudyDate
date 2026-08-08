@@ -115,7 +115,6 @@ Jangan menganggap fitur berikut tersedia:
 **Planned:**
 
 - contact reveal;
-- Campus Events;
 
 **Future:**
 
@@ -320,12 +319,41 @@ authorization, discussion privacy, report-scoped evidence, Introduction/block in
 arsip, RLS/grants, tidak adanya side effect ke private connection flow atau Notifications,
 safe UI projection, serta cleanup lengkap. Student Verification tetap dinonaktifkan.
 
-## 13. Planned — Events MVP
+## 13. Implemented locally — Campus Events v1
 
-Event: title, description, category, organizer, visibility, public location/online link, start/end, capacity,
-registration, waitlist, reminder, check-in, report.
+Campus Events v1 tersedia secara lokal melalui migration
+`202608090003_create_campus_events_v1.sql` dan belum diterapkan ke remote. Mahasiswa
+onboarded dapat menemukan acara mendatang yang terbuka atau terbatas pada kampus yang
+sama, membuat acara di tempat publik, RSVP, membatalkan RSVP, serta melaporkan acara
+atau organizer melalui Moderation Triage existing.
 
-Attendee list privat secara default.
+Lifecycle Event adalah `scheduled | cancelled | archived`; status selesai diturunkan dari
+`end_at` agar tidak memerlukan cron. Waktu disimpan sebagai `timestamptz` dan input lokal
+selalu dipasangkan dengan timezone Indonesia yang diizinkan. Venue dibatasi pada kategori
+tempat publik dan membutuhkan empat konfirmasi keselamatan yang ditegakkan server.
+Filter phrasing lokasi privat bersifat best-effort dan bukan jaminan keselamatan.
+
+RSVP adalah `going | cancelled`, idempotent, dapat diaktifkan kembali setelah pembatalan
+sukarela selama Event masih eligible dan memiliki kapasitas. Kapasitas 3–30 ditegakkan
+atomik dengan row lock Event sebelum menghitung RSVP aktif. Organizer otomatis terdaftar
+sebagai peserta pertama dan tidak dapat membatalkan RSVP organizer.
+
+Karena v1 tidak menambahkan notifikasi perubahan, waktu, timezone, dan venue dikunci
+setelah peserta non-organizer pertama memiliki RSVP `going`. Organizer masih dapat
+memperbarui metadata non-lokasi serta kapasitas selama tidak lebih kecil dari jumlah RSVP
+aktif. Pembatalan Event tidak dapat dipulihkan dan mempertahankan riwayat.
+
+Discovery dan detail publik hanya menunjukkan jumlah peserta nyata. Daftar peserta aman
+hanya tersedia bagi organizer dan peserta dengan RSVP `going`; pasangan yang saling
+memblokir tidak diproyeksikan satu sama lain. Projection hanya memakai data People yang
+aman. Attendance tidak pernah membuka nama, foto reveal, kontak, UUID, percakapan privat,
+Mutual Interest, Identity Reveal, atau Contact Reveal.
+
+CTA `Kirim perkenalan` memakai seluruh eligibility Introduction existing. Attendance,
+browse, RSVP, cancel RSVP, dan edit Event tidak membuat private-flow atau Notification.
+Circle association, event chat, waitlist, ticketing, pembayaran, check-in, reminder, dan
+notification pembatalan ditunda dari v1. Student Verification tetap dinonaktifkan dan
+bukan syarat penggunaan Event.
 
 ## 14. Planned — Safety flows
 

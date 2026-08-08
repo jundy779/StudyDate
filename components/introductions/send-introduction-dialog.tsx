@@ -34,6 +34,7 @@ export function SendIntroductionDialog({
   const errorId = useId();
   const counterId = useId();
   const hintId = useId();
+  const textareaId = useId();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [clientError, setClientError] = useState<string | null>(null);
@@ -150,13 +151,13 @@ export function SendIntroductionDialog({
             <input type="hidden" name="recipientAlias" value={alias} />
             <div>
               <label
-                htmlFor="openingMessage"
+                htmlFor={textareaId}
                 className="text-sm font-semibold text-brand-navy"
               >
                 Pesan pembuka
               </label>
               <textarea
-                id="openingMessage"
+                id={textareaId}
                 name="openingMessage"
                 rows={5}
                 maxLength={INTRODUCTION_MESSAGE_MAX}

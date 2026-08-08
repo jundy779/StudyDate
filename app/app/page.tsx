@@ -26,8 +26,8 @@ const productAreas = [
     title: "Campus Events",
     description: "Jelajahi kegiatan, workshop, dan kesempatan networking.",
     icon: CalendarDays,
-    href: null,
-    action: null,
+    href: "/app/events",
+    action: "Jelajahi Events",
   },
 ] as const;
 
@@ -119,7 +119,7 @@ async function PrivateAppHome() {
               </h2>
             </div>
             <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">
-              People & Circle tersedia
+              People, Circle & Events tersedia
             </span>
           </div>
 

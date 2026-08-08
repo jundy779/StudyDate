@@ -1,0 +1,146 @@
+import { AppShell } from "@/components/app/app-shell";
+import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
+import { EventFilterForm } from "@/components/events/event-filter-form";
+import { EventListItem } from "@/components/events/event-list-item";
+import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
+import { listCampusEvents } from "@/lib/events/service";
+import { parseEventFilters } from "@/lib/events/validation";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+
+type EventsPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function paginationHref(
+  filters: Record<string, string | undefined>,
+  cursor: { before: string; cursor: string },
+) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+  });
+  params.set("before", cursor.before);
+  params.set("cursor", cursor.cursor);
+  return `/app/events?${params.toString()}`;
+}
+
+async function EventsContent({ searchParams }: EventsPageProps) {
+  const user = await getAuthenticatedUser();
+  if (!user) redirect("/login");
+  const profile = await getPrivateProfile(user.id);
+  if (!profile?.onboarding_completed_at) redirect("/onboarding");
+
+  const rawSearchParams = await searchParams;
+  const parsed = parseEventFilters(rawSearchParams);
+  const filters = parsed.success ? parsed.data : {};
+  const result = parsed.success
+    ? await listCampusEvents(parsed.data)
+    : { events: [], nextCursor: null };
+
+  return (
+    <AppShell current="events">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
+        <div className="page-shell py-8 sm:py-12 lg:py-16">
+          <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="max-w-3xl">
+              <p className="section-label">Campus Events</p>
+              <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
+                Kegiatan kampus, bertemu di tempat publik
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
+                Temukan acara belajar dan komunitas yang akan datang. RSVP tidak
+                membuka identitas, kontak, atau percakapan privat.
+              </p>
+            </div>
+            <Link
+              href="/app/events/create"
+              className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Buat Event
+            </Link>
+          </header>
+
+          <section
+            aria-labelledby="event-filter-title"
+            className="mt-10 border-y border-brand-border py-7"
+          >
+            <h2 id="event-filter-title" className="font-heading text-xl font-semibold text-brand-navy">
+              Cari acara mendatang
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-brand-muted">
+              Gunakan judul, kategori, atau cakupan. Tidak ada ranking atau popularitas.
+            </p>
+            <EventFilterForm filters={filters} />
+            {!parsed.success ? (
+              <p role="alert" className="mt-4 text-sm font-medium text-brand-error">
+                Filter tidak valid. Hapus filter lalu coba lagi.
+              </p>
+            ) : null}
+          </section>
+
+          <section className="mt-10" aria-labelledby="event-results-title">
+            <div className="max-w-2xl">
+              <p className="section-label">Acara mendatang</p>
+              <h2
+                id="event-results-title"
+                className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
+              >
+                Pilih kegiatan yang sesuai
+              </h2>
+            </div>
+            {result.events.length ? (
+              <div className="mt-7 rounded-[22px] border border-brand-border bg-white px-5 py-7 sm:px-8">
+                {result.events.map((event) => (
+                  <EventListItem key={event.public_slug} event={event} />
+                ))}
+              </div>
+            ) : parsed.success ? (
+              <div className="mt-7">
+                <MascotEmptyState
+                  pose="study"
+                  title={
+                    filters.search || filters.category || filters.scope
+                      ? "Belum ada Event yang cocok"
+                      : "Belum ada acara mendatang"
+                  }
+                  description="Coba ubah filter atau buat kegiatan kecil di tempat publik."
+                  action={{ href: "/app/events/create", label: "Buat Event" }}
+                />
+              </div>
+            ) : null}
+            {result.nextCursor ? (
+              <div className="mt-8 flex justify-center">
+                <Link
+                  href={paginationHref(filters, result.nextCursor)}
+                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border bg-white px-6 text-sm font-semibold text-brand-navy"
+                >
+                  Muat lebih banyak
+                </Link>
+              </div>
+            ) : null}
+          </section>
+        </div>
+      </main>
+    </AppShell>
+  );
+}
+
+export default function EventsPage(props: EventsPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-svh bg-brand-surface">
+          <p className="page-shell py-10 text-sm text-brand-muted">
+            Menyiapkan Campus Events…
+          </p>
+        </main>
+      }
+    >
+      <EventsContent {...props} />
+    </Suspense>
+  );
+}

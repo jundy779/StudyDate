@@ -172,6 +172,33 @@ focus jelas. Native `details` dapat dipakai untuk tindakan sekunder tanpa modal 
 Tablet mempertahankan rail 88px, desktop sidebar 260px, mobile satu kolom, dan semua
 copy panjang wajib wrap tanpa horizontal overflow.
 
+### Campus Events v1 (local-only)
+
+`/app/events` memakai daftar editorial acara mendatang dengan filter nama, kategori, dan
+cakupan. Jangan memakai poster palsu, ranking, trending, popularity score, scarcity copy,
+atau direktori attendee publik. Jumlah peserta harus berasal dari RSVP nyata.
+
+Create form mengutamakan waktu, tempat publik, kapasitas, lalu empat afirmasi keselamatan
+yang jelas. Copy utama: “Gunakan tempat publik yang ramai dan masih beroperasi.” Larangan
+rumah, kamar kos, apartemen pribadi, dan kamar hotel disampaikan tenang tanpa menjanjikan
+keselamatan mutlak. Field tanggal/waktu dan timezone harus memiliki label serta helper
+yang terhubung.
+
+Detail memakai hierarchy: title/status, kategori/cakupan, tanggal dan waktu, venue publik,
+kapasitas, deskripsi, RSVP, attendee aman bila authorized, organizer projection, lalu
+report/organizer controls. Full, cancelled, archived, dan past harus memakai teks selain
+warna. Venue/address panjang wajib wrap.
+
+Daftar attendee hanya untuk organizer atau RSVP `going`, memakai mascot anonim dan safe
+People projection. CTA `Kirim perkenalan` memakai dialog existing. RSVP, cancel RSVP,
+edit, cancel Event, archive, dan report harus keyboard-accessible dengan focus jelas.
+Gunakan native `details` untuk tindakan sekunder; konfirmasi destruktif tidak boleh
+bergantung pada dialog tanpa focus management.
+
+Mobile satu kolom dengan date/time controls yang dapat dipakai; tablet mempertahankan
+rail 88px dan desktop sidebar 260px. Tidak ada event chat, map embed, arbitrary links,
+poster, fake people, atau visual dating.
+
 ### Student Verification Center
 
 Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan, Persetujuan. Status:
