@@ -12,16 +12,22 @@ const productAreas = [
     title: "People",
     description: "Temukan koneksi dengan konteks dan privasi yang jelas.",
     icon: Users,
+    href: "/app/people",
+    action: "Jelajahi People",
   },
   {
-    title: "Groups",
+    title: "Study Circle",
     description: "Mulai dari Study Circle dan kelompok kecil kampus.",
     icon: Network,
+    href: "/app/circles",
+    action: "Jelajahi Circle",
   },
   {
     title: "Campus Events",
     description: "Jelajahi kegiatan, workshop, dan kesempatan networking.",
     icon: CalendarDays,
+    href: null,
+    action: null,
   },
 ] as const;
 
@@ -113,16 +119,16 @@ async function PrivateAppHome() {
               </h2>
             </div>
             <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">
-              People tersedia
+              People & Circle tersedia
             </span>
           </div>
 
           <div className="mt-7 grid gap-4 md:grid-cols-3">
-            {productAreas.map(({ title, description, icon: Icon }) => (
+            {productAreas.map(({ title, description, icon: Icon, href, action }) => (
               <article
                 key={title}
                 className={`rounded-[22px] border border-brand-border bg-white p-6 ${
-                  title === "People" ? "" : "opacity-75"
+                  href ? "" : "opacity-75"
                 }`}
               >
                 <Icon
@@ -135,12 +141,12 @@ async function PrivateAppHome() {
                 <p className="mt-3 text-sm leading-6 text-brand-muted">
                   {description}
                 </p>
-                {title === "People" ? (
+                {href && action ? (
                   <Link
-                    href="/app/people"
+                    href={href}
                     className="focus-ring mt-6 inline-flex min-h-11 items-center rounded-xl text-sm font-semibold text-brand-blue"
                   >
-                    Jelajahi People
+                    {action}
                   </Link>
                 ) : (
                   <p className="mt-6 text-sm font-semibold text-brand-blue">

@@ -9,6 +9,7 @@ type AppShellProps = {
   current:
     | "home"
     | "people"
+    | "circles"
     | "introductions"
     | "messages"
     | "notifications"

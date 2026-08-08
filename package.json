@@ -18,6 +18,7 @@
     "test:identity-reveal": "node --experimental-strip-types --test tests/identity-reveal.test.ts tests/identity-reveal-behavior.test.ts tests/identity-reveal-hydrate.test.ts",
     "test:contact-reveal": "node --experimental-strip-types --test tests/contact-reveal.test.ts tests/contact-reveal-behavior.test.ts tests/contact-reveal-crypto-recovery.test.ts",
     "test:notifications": "node --experimental-strip-types --test tests/notifications.test.ts",
+    "test:circles": "node --experimental-strip-types --test tests/study-circles.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs"
   },

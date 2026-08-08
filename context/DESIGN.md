@@ -150,6 +150,28 @@ Copy tidak pernah berisi isi pesan, nama, kontak, email, NIM, UUID, consent coun
 atau sinyal progres satu sisi. Badge visual dibatasi `99+` tanpa mengubah unread count
 aktual pada accessible label.
 
+### Study Circle v1 (local-only)
+
+`/app/circles` memakai daftar editorial, bukan dashboard grid atau clone Discord. Header
+memperjelas bahwa membership tidak membuka identitas, kontak, atau private conversation.
+Filter dibatasi pada nama, topik, dan cakupan; tidak ada popularitas, ranking, match
+percentage, member online, atau rekomendasi palsu.
+
+Create form meminta nama, deskripsi, topik, cakupan `StudyDate | kampus yang sama`, dan
+batas anggota. Detail memakai hierarchy: header Circle, description, diskusi, daftar
+anggota aman, lalu owner controls. Jangan membuat seluruh section menjadi nested cards;
+gunakan border, whitespace, dan typographic hierarchy StudyDate.
+
+Diskusi menggunakan satu kolom pesan plain text dengan alias mascot anonim, timestamp
+terbaca, empty state jujur, composer bounded, dan penjelasan bahwa ruang ini bukan
+Anonymous Chat privat. Member list hanya menampilkan safe People projection. CTA
+`Kirim perkenalan` memakai dialog dan eligibility Introduction existing.
+
+Join/leave, report, remove member, edit, dan archive harus keyboard-accessible dengan
+focus jelas. Native `details` dapat dipakai untuk tindakan sekunder tanpa modal berlebih.
+Tablet mempertahankan rail 88px, desktop sidebar 260px, mobile satu kolom, dan semua
+copy panjang wajib wrap tanpa horizontal overflow.
+
 ### Student Verification Center
 
 Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan, Persetujuan. Status:

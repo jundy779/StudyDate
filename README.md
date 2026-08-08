@@ -68,13 +68,14 @@ Implemented:
   (migrations `202608060006`–`202608060007`)
 - Notifications v1 privacy-safe in-app UI (migration `202608070013`, applied remotely
   after controlled preflight and live A/B/C audit)
+- Study Circle v1 at `/app/circles` with privacy-safe membership, group discussion,
+  Introduction handoff, block/report integration, and local-only migration `202608090001`
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
 
 - WhatsApp, phone, email, X/Twitter, Discord, Facebook contact reveal
-- Groups
 - Campus Events
 - Telegram bot linking
 - Full moderation dashboard
@@ -284,6 +285,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:identity-reveal` | Run Identity Reveal static, behavioral, and hydrate tests |
 | `npm run test:contact-reveal` | Run Contact Reveal static contract and behavioral tests |
 | `npm run test:notifications` | Run Notifications v1 static/privacy/behavioral tests |
+| `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
@@ -308,6 +310,7 @@ npm run test:identity-reveal
 npm run test:contact-reveal
 npm run test:moderation
 npm run test:notifications
+npm run test:circles
 npm run test:browser
 npm run build
 git status --short
@@ -337,6 +340,29 @@ The post-deployment live audit verifies A/B/C recipient isolation, direct-table 
 trusted trigger creation, deterministic deduplication, read-one/read-all behavior, all
 three contact channels, one-sided consent silence, safe projection, blocked-history
 privacy, and complete synthetic-account cleanup.
+
+### Study Circle v1 (local-only)
+
+Migration `202608090001_create_study_circles_v1.sql` adds direct-join Study Circles with
+`open` or same-campus scope, owner-only Circle management, `active | left | removed`
+membership, member-only plain-text discussion, atomic abuse counters, and report-scoped
+moderation evidence. The migration has not been applied remotely.
+
+Routes are `/app/circles`, `/app/circles/create`, and
+`/app/circles/<opaque-public-slug>`. Member projections reuse only safe People fields;
+legal name, first name, email, NIM, clear reveal photos, contacts, UUIDs, and private
+connection state are excluded.
+
+Circle membership never creates Anonymous Chat, Mutual Interest, Identity Reveal, or
+Contact Reveal. Member-to-member introductions call the existing Introduction eligibility
+and send flow, including block, staff exclusion, cooldown, rate limit, and discoverability
+rules. Blocked members may still see existing member-authorized group history, while direct
+Introduction affordances remain unavailable.
+
+V1 deliberately has no moderator role, approval queue, waitlist, group attachments,
+events/sessions, popularity ranking, online state, or Circle notifications. Archiving
+prevents new joins and messages while preserving member-readable history and moderation
+evidence. Student Verification remains globally disabled and is not a Circle prerequisite.
 
 ### Live Supabase verification checklist
 

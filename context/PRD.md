@@ -115,7 +115,6 @@ Jangan menganggap fitur berikut tersedia:
 **Planned:**
 
 - contact reveal;
-- Groups;
 - Campus Events;
 
 **Future:**
@@ -285,11 +284,35 @@ persiapan/consent/withdrawal Contact Reveal satu sisi dilarang menghasilkan noti
 Notifications v1 tidak mencakup push, Web Push, email, SMS, WhatsApp, Telegram bot,
 presence, typing indicator, atau last seen.
 
-## 12. Planned — Groups MVP
+## 12. Implemented locally — Study Circle v1
 
-Group card: name, type, date/time, online/public location, capacity, host verification, visibility, join request, rules.
+Study Circle v1 tersedia melalui migration lokal
+`202608090001_create_study_circles_v1.sql` dan belum diterapkan ke remote. Mahasiswa
+onboarded dapat menemukan Circle terbuka atau Circle kampus yang sama, membuat Circle,
+bergabung langsung, keluar, membaca daftar anggota aman, dan berdiskusi dengan teks biasa.
 
-Controls: join, leave, report, block organizer, waitlist. Contact peserta tidak publik.
+Membership: `active`, `left`, atau `removed`. Creator menjadi owner Circle; v1 tidak
+menambahkan moderator terpisah atau approval workflow. Owner dapat memperbarui metadata,
+mengeluarkan anggota, dan mengarsipkan Circle, tetapi tidak mendapat akses staff, Anonymous
+Chat, Identity Reveal, Contact Reveal, atau data privat mahasiswa.
+
+Daftar anggota hanya memakai projection setara People: alias anonim, mascot resmi di UI,
+kampus, program studi, semester, minat/tujuan, dan badge genuine bila benar-benar verified.
+Nama, email, NIM, foto reveal, kontak, UUID, dan state koneksi privat tidak diproyeksikan.
+
+Diskusi hanya dapat dibaca/ditulis anggota aktif, berupa plain text maksimal 800 karakter,
+tanpa attachment, rich embed, voice, atau video. Filter kontak best-effort mendorong anggota
+memakai Perkenalan dan Contact Reveal. Riwayat grup tetap terlihat bagi anggota aktif ketika
+dua anggota saling memblokir, tetapi eligibility Perkenalan tetap mengikuti seluruh aturan
+Introduction dan block yang sudah ada.
+
+Circle dan pesan dapat dilaporkan melalui antrean moderasi platform dengan evidence excerpt
+maksimal 280 karakter yang terikat pada objek laporan. Arsip mencegah join dan pesan baru
+namun mempertahankan riwayat anggota aktif dan evidence moderasi. Membership tidak pernah
+membuat conversation, Mutual Interest, Identity Reveal, atau Contact Reveal.
+
+Notifications schema tidak diubah pada v1: join, leave, pesan grup, dan browsing tidak
+menimbulkan notifikasi agar tidak bising atau menciptakan tekanan sosial.
 
 ## 13. Planned — Events MVP
 

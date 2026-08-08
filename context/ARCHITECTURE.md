@@ -20,7 +20,8 @@ Browser
        -> Public handler: /api/early-access
        -> Auth: /login, /staff/login, /auth/callback, /auth/confirm
        -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions,
-          /app/messages, /app/messages/[publicId]
+          /app/messages, /app/messages/[publicId], /app/circles, /app/circles/create,
+          /app/circles/[publicSlug]
        -> Protected staff: /owner/**, /admin/**
        -> Server handlers/actions
   -> Supabase Auth + PostgreSQL + RLS + RPC
@@ -323,6 +324,43 @@ dedupe notification mengacu pada message row. List dibatasi 20 item per halaman 
 keyset cursor; retention cleanup lama tetap future ops sampai kebijakan durasi disetujui.
 Unread count global dipoll setiap 25 detik, tidak overlap, dan polling dilewati ketika
 document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
+
+## 12g. Study Circle v1 architecture (local-only)
+
+```text
+/app/circles
+ -> authenticated discovery RPC (open atau campus yang sama)
+ -> /app/circles/[opaque-public-slug]
+ -> direct join / leave
+ -> active-member-only safe member + discussion projections
+ -> optional member Introduction memakai sistem Introduction existing
+```
+
+Migration `202608090001` bersifat local-only dan belum diterapkan remote. Core tables
+(`study_circles`, `study_circle_memberships`, `study_circle_messages`,
+`study_circle_events`, dan atomic `study_circle_rate_limits`) RLS-enabled tanpa direct
+grant bagi `anon` maupun `authenticated`. Semua projection dan mutation melalui
+`SECURITY DEFINER`, `search_path = ''`, actor dari `auth.uid()`, dan opaque public slug.
+
+V1 memakai direct join untuk Circle `open` atau `campus`; tidak ada join approval,
+waitlist, private/invite Circle, atau moderator role. Owner adalah role Circle-scoped dan
+bukan staff. Membership `active | left | removed`; anggota yang dikeluarkan tidak dapat
+join ulang pada v1. Owner tidak dapat meninggalkan Circle, tetapi dapat mengarsipkannya.
+
+Member projection hanya mengembalikan alias, campus, study program, semester,
+interests/goals, genuine verification boolean, role Circle, dan joined timestamp. Diskusi
+plain text maksimal 800 karakter hanya tersedia bagi anggota aktif, memakai idempotency key,
+rate limit atomik, dan filter kontak best-effort existing. Riwayat group tetap terlihat bagi
+anggota aktif yang saling memblokir; block mematikan Introduction melalui eligibility
+existing dan tidak menghapus riwayat publik/grup secara diam-diam.
+
+Report Circle/member/message memperluas `user_reports` dan Owner triage existing. Bukti
+pesan berupa snapshot maksimal 280 karakter dari pesan yang benar-benar terikat ke Circle;
+Owner tidak memperoleh broad member/chat access. Membership tidak pernah menulis
+`conversation_shells`, Mutual Interest, Identity Reveal, atau Contact Reveal.
+
+Notifications tidak diperluas pada v1 untuk menghindari notifikasi join/leave/message yang
+bising. Student Verification tetap dinonaktifkan dan bukan syarat Circle.
 
 ## 13. Staff authorization v1
 

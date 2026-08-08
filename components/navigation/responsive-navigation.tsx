@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   UserCog,
   Users,
+  UsersRound,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -34,6 +35,7 @@ type NavigationVariant = "student" | "staff";
 type NavigationIcon =
   | "home"
   | "people"
+  | "circles"
   | "introductions"
   | "messages"
   | "notifications"
@@ -70,6 +72,7 @@ type ResponsiveNavigationProps = {
 const iconMap = {
   home: Home,
   people: Users,
+  circles: UsersRound,
   introductions: Handshake,
   messages: MessageSquare,
   notifications: Bell,
@@ -89,6 +92,12 @@ const iconMap = {
 const studentItems: NavigationItem[] = [
   { href: "/app", label: "Beranda", key: "home", icon: "home" },
   { href: "/app/people", label: "People", key: "people", icon: "people" },
+  {
+    href: "/app/circles",
+    label: "Study Circle",
+    key: "circles",
+    icon: "circles",
+  },
   {
     href: "/app/introductions",
     label: "Perkenalan",

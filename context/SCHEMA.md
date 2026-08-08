@@ -38,6 +38,8 @@ Sumber migration:
     campus/study-program catalogs, profile/account lifecycle, dan social contacts
 17. `supabase/migrations/202608070013_create_notifications_v1.sql` —
     Notifications v1; diterapkan remote setelah controlled preflight dan live A/B/C audit
+18. `supabase/migrations/202608090001_create_study_circles_v1.sql` —
+    Study Circle v1; local-only, belum diterapkan remote
 
 ### `early_access_waitlist`
 
@@ -444,15 +446,54 @@ bersifat privat. Owner triage (migration `202608060008`) menambah
 `moderation_status` / catatan internal / `moderation_report_events` dan RPC Owner-only
 di `/owner/moderation`. Mahasiswa tidak melihat hasil moderasi otomatis.
 
-## 10. Planned Groups
+## 10. Study Circle v1 (migration `202608090001`, local-only)
 
-Possible tables: groups, group_memberships, group_join_requests, group_sessions, group_reports.
+Tables:
 
-Membership: requested, approved, waitlisted, declined, left, removed.
+- `study_circles` — internal UUID, opaque `circle-` public slug, owner, bounded name
+  (4–80), description (20–600), topic, `open | campus` scope, member limit 3–30,
+  `active | archived` lifecycle.
+- `study_circle_memberships` — private `(circle_id, user_id)` rows dengan role
+  `owner | member` dan status `active | left | removed`.
+- `study_circle_messages` — private group text 1–800 karakter, opaque public ID,
+  per-author idempotency key, `visible | removed`, tanpa attachment atau rich content.
+- `study_circle_events` — sanitized lifecycle audit tanpa message body, contact, atau
+  private connection state.
+- `study_circle_rate_limits` — atomic actor/window counters untuk create, membership,
+  message, dan report.
 
-Visibility: public, unlisted, campus_only, invite_only.
+Direct table grants dicabut dari `anon` dan `authenticated`; semua table RLS-enabled.
+RPC authenticated:
 
-Contact list peserta privat.
+```text
+list_study_circles
+get_study_circle
+create_study_circle
+update_study_circle
+join_study_circle
+leave_study_circle
+remove_study_circle_member
+archive_study_circle
+list_study_circle_members
+list_study_circle_messages
+send_study_circle_message
+report_study_circle
+report_study_circle_member
+```
+
+Member projection hanya: `public_alias`, campus, study program, semester, interests,
+connection goals, genuine verification boolean, Circle role, dan joined timestamp.
+Message projection hanya: opaque message ID, author alias, genuine verification boolean,
+body, timestamp, dan `is_mine`. Tidak ada UUID, nama, email, NIM, clear photo, contact,
+reveal state, atau private conversation state.
+
+`user_reports` memperoleh `study_circle_id`, optional Circle message reference, dan
+immutable report-scoped excerpt maksimal 280 karakter. Composite FK memastikan message
+evidence berasal dari Circle yang dilaporkan. Existing Owner moderation queue menampilkan
+target kind `circle` / `circle_message` tanpa broad SELECT atas diskusi.
+
+Archive menolak join dan pesan baru; anggota aktif tetap dapat membaca riwayat. V1 tidak
+memiliki approval, waitlist, moderator, attachment, session/event, atau Circle notification.
 
 ## 11. Planned Events
 
