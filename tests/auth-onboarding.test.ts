@@ -20,6 +20,7 @@ import { STUDY_PROGRAM_OPTIONS } from "../lib/onboarding/options/study-programs.
 
 const validOnboarding = {
   firstName: "  Naya  ",
+  lastName: "  Putri  ",
   nim: " 12.34-5678 ",
   campus: "  Universitas Indonesia  ",
   studyProgram: "  Ilmu Komputer  ",
@@ -80,6 +81,7 @@ test("authenticated redirects allow only known internal destinations", () => {
 test("onboarding trims profile fields and accepts approved values", () => {
   const parsed = onboardingSchema.parse(validOnboarding);
   assert.equal(parsed.firstName, "Naya");
+  assert.equal(parsed.lastName, "Putri");
   assert.equal(parsed.nim, "12.34-5678");
   assert.equal(parsed.campus, "Universitas Indonesia");
   assert.equal(parsed.studyProgram, "Ilmu Komputer");
@@ -112,6 +114,12 @@ test("onboarding suggestions are normalized, unique, sorted, and searchable", ()
     ),
   );
   assert.ok(
+    filterOnboardingOptions(CAMPUS_OPTIONS, "nurul fikri").some(
+      (option) =>
+        option.label === "Sekolah Tinggi Teknologi Terpadu Nurul Fikri",
+    ),
+  );
+  assert.ok(
     filterOnboardingOptions(STUDY_PROGRAM_OPTIONS, "sistem informasi").some(
       (option) => option.label === "Sistem Informasi",
     ),
@@ -136,6 +144,7 @@ test("onboarding suggestions are normalized, unique, sorted, and searchable", ()
 test("onboarding rejects every protected or invalid input class", async (t) => {
   const cases: Array<[string, unknown]> = [
     ["empty first name", { ...validOnboarding, firstName: " " }],
+    ["empty last name", { ...validOnboarding, lastName: " " }],
     ["invalid NIM", { ...validOnboarding, nim: "1---2" }],
     ["long NIM", { ...validOnboarding, nim: "1".repeat(33) }],
     ["short campus", { ...validOnboarding, campus: "A" }],

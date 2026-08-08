@@ -58,6 +58,14 @@ export async function requireOwner(): Promise<StaffAccess> {
   return access;
 }
 
+/** Active owner or admin (campus catalog, shared staff tools). */
+export async function requireActiveStaff(): Promise<StaffAccess> {
+  const user = await getAuthenticatedUser();
+  const access = await getCurrentStaffAccess(user);
+  if (!access) return redirectNonStaff(user);
+  return access;
+}
+
 export async function requireVerificationReviewer(): Promise<StaffAccess> {
   const user = await getAuthenticatedUser();
   const access = await getCurrentStaffAccess(user);

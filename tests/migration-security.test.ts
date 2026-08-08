@@ -16,6 +16,13 @@ const academicRefinementMigration = readFileSync(
   ),
   "utf8",
 );
+const lastNameMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202608070008_add_profile_last_name.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 test("migration creates all private onboarding objects with RLS enabled", () => {
   for (const table of ["profiles", "privacy_preferences", "user_consents"]) {
@@ -171,5 +178,20 @@ test("onboarding v2 keeps one atomic RPC with protected academic data", () => {
   assert.match(
     academicRefinementMigration,
     /revoke execute on function public\.complete_student_onboarding\([\s\S]*from authenticated/,
+  );
+});
+
+test("profile last_name migration stays private and updates onboarding RPC", () => {
+  assert.match(lastNameMigration, /add column if not exists last_name/);
+  assert.match(lastNameMigration, /profiles_last_name_length/);
+  assert.match(lastNameMigration, /p_last_name text/);
+  assert.match(lastNameMigration, /last_name = excluded\.last_name/);
+  assert.match(
+    lastNameMigration,
+    /never returned by People discovery|Owner-scoped only/i,
+  );
+  assert.doesNotMatch(
+    lastNameMigration,
+    /create or replace function public\.list_discoverable/,
   );
 });

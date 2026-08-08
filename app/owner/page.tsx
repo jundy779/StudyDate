@@ -22,6 +22,8 @@ async function OwnerContent() {
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-2">
           <Link href="/owner/moderation" className="focus-ring scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6" id="moderation"><h2 className="font-heading text-xl font-semibold">Moderation</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Antrean laporan Owner dengan status submitted → under_review → resolved/dismissed.</p></Link>
+          <Link href="/owner/campuses" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kurasi daftar kampus onboarding: usulan manual, tambah, edit, hapus.</p></Link>
+          <Link href="/owner/study-programs" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Jurusan</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kurasi daftar program studi: usulan manual, tambah, edit, hapus.</p></Link>
           <Link href="/owner/audit" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Sanitized audit</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat perubahan role tanpa email lengkap atau payload privat.</p></Link>
         </div>
       </div>

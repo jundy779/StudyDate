@@ -1,6 +1,9 @@
 import { createOnboardingOptions } from "./shared.ts";
 
-const STUDY_PROGRAM_LABELS = [
+/**
+ * Seed / fallback study-program labels when DB catalog is empty or unavailable.
+ */
+export const SEED_STUDY_PROGRAM_LABELS = [
   "Administrasi Bisnis",
   "Akuntansi",
   "Arsitektur",
@@ -37,6 +40,13 @@ const STUDY_PROGRAM_LABELS = [
   "Teknologi Informasi",
 ] as const;
 
+/** @deprecated Prefer loadApprovedStudyProgramOptions(); kept for tests/fallback. */
 export const STUDY_PROGRAM_OPTIONS = createOnboardingOptions(
-  STUDY_PROGRAM_LABELS,
+  SEED_STUDY_PROGRAM_LABELS,
 );
+
+export function mergeStudyProgramLabels(
+  ...labelGroups: readonly (readonly string[])[]
+) {
+  return createOnboardingOptions(labelGroups.flat());
+}

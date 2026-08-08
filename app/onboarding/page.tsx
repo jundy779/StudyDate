@@ -1,5 +1,7 @@
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
+import { loadApprovedCampusOptions } from "@/lib/campus/service";
+import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -15,6 +17,11 @@ async function OnboardingContent() {
   if (profile?.onboarding_completed_at) {
     redirect("/app");
   }
+
+  const [campusOptions, studyProgramOptions] = await Promise.all([
+    loadApprovedCampusOptions(),
+    loadApprovedStudyProgramOptions(),
+  ]);
 
   return (
     <main className="min-h-svh overflow-x-clip bg-brand-surface px-5 py-7 sm:px-8 sm:py-10 lg:py-14">
@@ -34,7 +41,10 @@ async function OnboardingContent() {
           />
         </Link>
         <section className="mt-7 rounded-[24px] border border-brand-border bg-white p-5 shadow-[0_24px_70px_rgba(15,27,51,0.08)] sm:mt-9 sm:p-9 lg:p-12">
-          <OnboardingForm />
+          <OnboardingForm
+            campusOptions={campusOptions}
+            studyProgramOptions={studyProgramOptions}
+          />
         </section>
       </div>
     </main>

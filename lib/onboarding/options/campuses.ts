@@ -1,10 +1,15 @@
 import { createOnboardingOptions } from "./shared.ts";
 
-const CAMPUS_LABELS = [
-  "BINUS University",
+/**
+ * Seed / fallback campus labels when DB catalog is empty or unavailable.
+ * Live list prefers approved rows from `campus_options` after migration.
+ */
+export const SEED_CAMPUS_LABELS = [
+  "BINUS UNIVERSITY",
   "IPB University",
   "Institut Teknologi Bandung",
   "Institut Teknologi Sepuluh Nopember",
+  "Sekolah Tinggi Teknologi Terpadu Nurul Fikri",
   "Telkom University",
   "Universitas Airlangga",
   "Universitas Andalas",
@@ -15,7 +20,9 @@ const CAMPUS_LABELS = [
   "Universitas Gunadarma",
   "Universitas Hasanuddin",
   "Universitas Indonesia",
+  "Universitas Indraprasta PGRI",
   "Universitas Islam Indonesia",
+  "Universitas Islam Negeri Syarif Hidayatullah",
   "Universitas Mercu Buana",
   "Universitas Muhammadiyah Malang",
   "Universitas Multimedia Nusantara",
@@ -30,7 +37,13 @@ const CAMPUS_LABELS = [
   "Universitas Sriwijaya",
   "Universitas Sumatera Utara",
   "Universitas Trisakti",
-  "UIN Syarif Hidayatullah Jakarta",
 ] as const;
 
-export const CAMPUS_OPTIONS = createOnboardingOptions(CAMPUS_LABELS);
+/** @deprecated Prefer loadApprovedCampusOptions(); kept for tests/fallback. */
+export const CAMPUS_OPTIONS = createOnboardingOptions(SEED_CAMPUS_LABELS);
+
+export function mergeCampusLabels(
+  ...labelGroups: readonly (readonly string[])[]
+) {
+  return createOnboardingOptions(labelGroups.flat());
+}

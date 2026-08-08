@@ -1,0 +1,38 @@
+import { z } from "zod";
+
+export const campusManageSchema = z
+  .object({
+    action: z.enum(["create", "update", "approve", "reject", "delete"]),
+    id: z.string().uuid().optional().nullable(),
+    name: z
+      .string()
+      .trim()
+      .min(2, "Nama kampus minimal 2 karakter.")
+      .max(120, "Nama kampus maksimal 120 karakter.")
+      .optional()
+      .nullable(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.action === "create" && !value.name) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Nama kampus wajib diisi.",
+        path: ["name"],
+      });
+    }
+    if (
+      (value.action === "update" ||
+        value.action === "approve" ||
+        value.action === "reject" ||
+        value.action === "delete") &&
+      !value.id
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "ID kampus wajib.",
+        path: ["id"],
+      });
+    }
+  });
+
+export type CampusManageInput = z.infer<typeof campusManageSchema>;

@@ -25,6 +25,7 @@ const optionalTrimmedString = (maximum: number) =>
 export const onboardingSchema = z
   .object({
     firstName: z.string().trim().min(1).max(80),
+    lastName: z.string().trim().min(1).max(80),
     nim: z
       .union([
         nimInputSchema,

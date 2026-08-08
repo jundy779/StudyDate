@@ -7,6 +7,7 @@ import {
 import { CAMPUS_OPTIONS } from "@/lib/onboarding/options/campuses";
 import { CITY_REGENCY_OPTIONS } from "@/lib/onboarding/options/cities";
 import { STUDY_PROGRAM_OPTIONS } from "@/lib/onboarding/options/study-programs";
+import type { OnboardingOption } from "@/lib/onboarding/options/shared";
 import {
   SearchableCreatableCombobox,
   type ComboboxEntryMode,
@@ -32,6 +33,7 @@ const DEGREE_OPTIONS = [
 
 type FormState = {
   firstName: string;
+  lastName: string;
   nim: string;
   campus: string;
   studyProgram: string;
@@ -57,6 +59,7 @@ type FormState = {
 
 type StepOneField =
   | "firstName"
+  | "lastName"
   | "nim"
   | "campus"
   | "studyProgram"
@@ -74,6 +77,7 @@ type StepOneEntryModes = {
 
 const initialState: FormState = {
   firstName: "",
+  lastName: "",
   nim: "",
   campus: "",
   studyProgram: "",
@@ -150,7 +154,13 @@ function PreferenceToggle({
   );
 }
 
-export function OnboardingForm() {
+export function OnboardingForm({
+  campusOptions = CAMPUS_OPTIONS,
+  studyProgramOptions = STUDY_PROGRAM_OPTIONS,
+}: {
+  campusOptions?: readonly OnboardingOption[];
+  studyProgramOptions?: readonly OnboardingOption[];
+}) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialState);
   const [stepOneErrors, setStepOneErrors] = useState<StepOneErrors>({});
@@ -208,6 +218,7 @@ export function OnboardingForm() {
     if (step === 0) {
       const fieldErrors: StepOneErrors = {};
       const firstName = form.firstName.trim();
+      const lastName = form.lastName.trim();
       const nim = form.nim.trim();
       const campus = form.campus.trim();
       const studyProgram = form.studyProgram.trim();
@@ -217,6 +228,12 @@ export function OnboardingForm() {
         fieldErrors.firstName = "Nama depan wajib diisi.";
       } else if (firstName.length > 80) {
         fieldErrors.firstName = "Nama depan maksimal 80 karakter.";
+      }
+
+      if (!lastName) {
+        fieldErrors.lastName = "Nama belakang wajib diisi.";
+      } else if (lastName.length > 80) {
+        fieldErrors.lastName = "Nama belakang maksimal 80 karakter.";
       }
 
       if (
@@ -369,6 +386,17 @@ export function OnboardingForm() {
             onChange={(value) => updateStepOneField("firstName", value)}
           />
           <TextField
+            id="last-name"
+            label="Nama belakang"
+            value={form.lastName}
+            required
+            maxLength={80}
+            autoComplete="family-name"
+            helperText="Disimpan privat. Tidak ditampilkan di People."
+            error={stepOneErrors.lastName}
+            onChange={(value) => updateStepOneField("lastName", value)}
+          />
+          <TextField
             id="nim"
             label="NIM"
             optional
@@ -384,7 +412,7 @@ export function OnboardingForm() {
             id="campus"
             label="Kampus"
             value={form.campus}
-            options={CAMPUS_OPTIONS}
+            options={campusOptions}
             placeholder="Cari nama kampus..."
             noResultsPrompt="Kampusmu tidak ditemukan?"
             manualButtonLabel="Tambahkan kampus secara manual"
@@ -402,7 +430,7 @@ export function OnboardingForm() {
             id="study-program"
             label="Program studi"
             value={form.studyProgram}
-            options={STUDY_PROGRAM_OPTIONS}
+            options={studyProgramOptions}
             placeholder="Cari program studi..."
             noResultsPrompt="Program studimu tidak ditemukan?"
             manualButtonLabel="Tambahkan program studi secara manual"

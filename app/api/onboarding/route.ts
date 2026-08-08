@@ -1,6 +1,8 @@
+import { suggestCampusOption } from "@/lib/campus/service";
 import { completeOnboardingWithAliasRetry } from "@/lib/onboarding/service";
 import { onboardingSchema } from "@/lib/onboarding/validation";
 import { createClient } from "@/lib/supabase/server";
+import { suggestStudyProgramOption } from "@/lib/study-program/service";
 import {
   encryptVerificationValue,
   fingerprintNim,
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
         const { error } = await supabase.rpc("complete_student_onboarding_v2", {
           p_public_alias: alias,
           p_first_name: input.firstName,
+          p_last_name: input.lastName,
           p_nim_ciphertext: encryptedNim?.ciphertext ?? null,
           p_nim_iv: encryptedNim?.iv ?? null,
           p_nim_auth_tag: encryptedNim?.authTag ?? null,
@@ -90,6 +93,11 @@ export async function POST(request: NextRequest) {
         return { error };
       },
     );
+
+    await Promise.allSettled([
+      suggestCampusOption(parsed.data.campus),
+      suggestStudyProgramOption(parsed.data.studyProgram),
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch {
