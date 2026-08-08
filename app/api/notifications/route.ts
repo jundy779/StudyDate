@@ -1,4 +1,3 @@
-import { getStudentDeactivatedAt } from "@/lib/account/lifecycle";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   countUnreadNotifications,
@@ -14,12 +13,11 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    const [profile, staff, deactivatedAt] = await Promise.all([
+    const [profile, staff] = await Promise.all([
       getPrivateProfile(user.id),
       getCurrentStaffAccess(user),
-      getStudentDeactivatedAt(user.id),
     ]);
-    if (staff || !profile?.onboarding_completed_at || deactivatedAt) {
+    if (staff || !profile?.onboarding_completed_at) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 
