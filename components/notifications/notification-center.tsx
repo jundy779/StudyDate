@@ -63,7 +63,15 @@ export function NotificationCenter({
         nextCursor: Cursor | null;
         unreadCount: number;
       };
-      setItems((current) => [...current, ...payload.notifications]);
+      setItems((current) => {
+        const existingIds = new Set(current.map((item) => item.publicId));
+        return [
+          ...current,
+          ...payload.notifications.filter(
+            (item) => !existingIds.has(item.publicId),
+          ),
+        ];
+      });
       setNextCursor(payload.nextCursor);
       setUnreadCount(payload.unreadCount);
     } catch {

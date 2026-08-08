@@ -11,7 +11,11 @@ export default function NotificationsError({
   return (
     <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell max-w-3xl py-8 sm:py-12 lg:py-16">
-        <section className="rounded-2xl border border-brand-border bg-white px-6 py-14 text-center sm:px-10">
+        <section
+          role="alert"
+          aria-live="assertive"
+          className="rounded-2xl border border-brand-border bg-white px-6 py-14 text-center sm:px-10"
+        >
           <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-surface text-brand-blue">
             <BellOff aria-hidden="true" className="h-6 w-6" />
           </span>

@@ -6,8 +6,10 @@ export default function NotificationsLoading() {
         <div className="mt-4 h-10 w-48 animate-pulse rounded-xl bg-brand-border motion-reduce:animate-none" />
         <div className="mt-3 h-5 w-full max-w-md animate-pulse rounded-lg bg-brand-border motion-reduce:animate-none" />
         <section
+          role="status"
           aria-label="Memuat notifikasi"
           aria-busy="true"
+          aria-live="polite"
           className="mt-8 overflow-hidden rounded-2xl border border-brand-border bg-white"
         >
           {[0, 1, 2].map((item) => (

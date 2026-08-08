@@ -36,8 +36,20 @@ const item = readFileSync(
   join(root, "components/notifications/notification-item.tsx"),
   "utf8",
 );
+const center = readFileSync(
+  join(root, "components/notifications/notification-center.tsx"),
+  "utf8",
+);
 const page = readFileSync(
   join(root, "app/app/notifications/page.tsx"),
+  "utf8",
+);
+const loading = readFileSync(
+  join(root, "app/app/notifications/loading.tsx"),
+  "utf8",
+);
+const errorState = readFileSync(
+  join(root, "app/app/notifications/error.tsx"),
   "utf8",
 );
 const copy = readFileSync(
@@ -293,6 +305,12 @@ test("navigation, polling, page, and accessibility contracts are real", () => {
   assert.match(item, /<button/);
   assert.match(item, /focus-ring/);
   assert.match(item, /Belum dibaca/);
+  assert.match(center, /existingIds/);
+  assert.match(center, /!existingIds\.has\(item\.publicId\)/);
+  assert.match(loading, /role="status"/);
+  assert.match(loading, /aria-live="polite"/);
+  assert.match(errorState, /role="alert"/);
+  assert.match(errorState, /aria-live="assertive"/);
   assert.match(page, /NotificationCenter/);
   assert.match(page, /Notifikasi/);
   assert.match(page, /limit: 21/);
