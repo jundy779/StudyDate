@@ -8,6 +8,7 @@ export type PrivateProfile = {
   first_name: string;
   verification_status: "unverified" | "pending" | "verified" | "rejected";
   onboarding_completed_at: string | null;
+  deactivated_at: string | null;
 };
 
 export async function getAuthenticatedUser(): Promise<User | null> {
@@ -25,7 +26,7 @@ export async function getPrivateProfile(
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "public_alias, first_name, verification_status, onboarding_completed_at",
+      "public_alias, first_name, verification_status, onboarding_completed_at, deactivated_at",
     )
     .eq("user_id", userId)
     .maybeSingle<PrivateProfile>();

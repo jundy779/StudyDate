@@ -9,15 +9,25 @@ import { BadgeCheck, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export function PeopleProfileCard({ profile }: { profile: DiscoveryProfile }) {
+export function PeopleProfileCard({
+  profile,
+  mascotSrc,
+  hideCta = false,
+}: {
+  profile: DiscoveryProfile;
+  /** Override hashed alias mascot (e.g. profile self-preview). */
+  mascotSrc?: string;
+  hideCta?: boolean;
+}) {
   const firstGoals = profile.connection_goals.slice(0, 2);
   const firstInterests = profile.interests.slice(0, 3);
+  const imageSrc = mascotSrc ?? getMascotForAlias(profile.public_alias);
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[22px] border border-brand-border bg-white shadow-[0_14px_36px_rgba(15,27,51,0.055)]">
       <div className="grid grid-cols-[112px_1fr] gap-5 bg-[linear-gradient(135deg,#eef4ff_0%,#f8faff_100%)] p-5 sm:grid-cols-[124px_1fr]">
         <div className="relative flex aspect-square items-end justify-center overflow-hidden rounded-[18px] border border-white/90 bg-white/70">
-          <Image src={getMascotForAlias(profile.public_alias)} alt="" width={124} height={124} className="h-[88%] w-[88%] object-contain object-bottom" />
+          <Image src={imageSrc} alt="" width={124} height={124} className="h-[88%] w-[88%] object-contain object-bottom" />
         </div>
         <div className="min-w-0 self-center">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">Profil anonim</p>
@@ -47,9 +57,11 @@ export function PeopleProfileCard({ profile }: { profile: DiscoveryProfile }) {
         <p className="mt-5 line-clamp-3 text-sm leading-6 text-brand-muted">
           {profile.short_intro ?? `Tertarik pada ${firstInterests.map((interest) => interestLabels.get(interest) ?? interest).join(", ")}.`}
         </p>
-        <Link href={`/app/people/${toPeopleAliasPathSegment(profile.public_alias)}`} className="focus-ring mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue hover:bg-brand-blue hover:text-white">
-          Lihat profil anonim
-        </Link>
+        {hideCta ? null : (
+          <Link href={`/app/people/${toPeopleAliasPathSegment(profile.public_alias)}`} className="focus-ring mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue hover:bg-brand-blue hover:text-white">
+            Lihat profil anonim
+          </Link>
+        )}
       </div>
     </article>
   );

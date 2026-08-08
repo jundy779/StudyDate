@@ -5,6 +5,7 @@ import {
   withdrawContactRevealAction,
 } from "@/app/app/messages/actions";
 import {
+  CONTACT_REVEAL_CHANNEL_DISPLAY_ORDER,
   CONTACT_REVEAL_CHANNELS,
   CONTACT_REVEAL_COPY,
   type ContactRevealChannel,
@@ -26,6 +27,8 @@ type ContactRevealPanelProps = {
   completedByChannel: Partial<
     Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
   >;
+  /** Prefill from Edit profil (LinkedIn wajib / IG opsional). */
+  profileDefaults?: Partial<Record<ContactRevealChannel, string>>;
   onStateChange: (next: ContactRevealState) => void;
 };
 
@@ -36,6 +39,7 @@ export function ContactRevealPanel({
   state,
   initialPreviews,
   completedByChannel,
+  profileDefaults,
   onStateChange,
 }: ContactRevealPanelProps) {
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +56,10 @@ export function ContactRevealPanel({
   >(() => {
     const initial: Partial<Record<ContactRevealChannel, string>> = {};
     for (const channel of CONTACT_REVEAL_CHANNELS) {
-      initial[channel] = initialPreviews[channel]?.displayValue ?? "";
+      initial[channel] =
+        initialPreviews[channel]?.displayValue ??
+        profileDefaults?.[channel] ??
+        "";
     }
     return initial;
   });
@@ -65,13 +72,13 @@ export function ContactRevealPanel({
     state.channels.map((item) => [item.channel, item] as const),
   );
 
-  const anyCompleted = CONTACT_REVEAL_CHANNELS.some(
+  const anyCompleted = CONTACT_REVEAL_CHANNEL_DISPLAY_ORDER.some(
     (channel) => channelMap.get(channel)?.completed,
   );
-  const anyEligible = CONTACT_REVEAL_CHANNELS.some(
+  const anyEligible = CONTACT_REVEAL_CHANNEL_DISPLAY_ORDER.some(
     (channel) => channelMap.get(channel)?.eligible,
   );
-  const anyInProgress = CONTACT_REVEAL_CHANNELS.some((channel) => {
+  const anyInProgress = CONTACT_REVEAL_CHANNEL_DISPLAY_ORDER.some((channel) => {
     const item = channelMap.get(channel);
     return Boolean(item?.hasContact || item?.selectedByMe);
   });
@@ -88,15 +95,17 @@ export function ContactRevealPanel({
     return null;
   }
 
-  const visibleChannels = CONTACT_REVEAL_CHANNELS.filter((channel) => {
-    const item = channelMap.get(channel);
-    if (!item) return false;
-    if (item.completed) return true;
-    if (!item.eligible && !item.hasContact && !item.selectedByMe) {
-      return false;
-    }
-    return true;
-  });
+  const visibleChannels = CONTACT_REVEAL_CHANNEL_DISPLAY_ORDER.filter(
+    (channel) => {
+      const item = channelMap.get(channel);
+      if (!item) return false;
+      if (item.completed) return true;
+      if (!item.eligible && !item.hasContact && !item.selectedByMe) {
+        return false;
+      }
+      return true;
+    },
+  );
 
   function patchChannelState(
     channel: ContactRevealChannel,

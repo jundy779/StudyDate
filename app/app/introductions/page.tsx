@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app/app-shell";
+import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { IntroductionCard } from "@/components/introductions/introduction-card";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
@@ -6,7 +7,6 @@ import {
   listReceivedIntroductions,
   listSentIntroductions,
 } from "@/lib/introductions/service";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -118,42 +118,20 @@ export default async function IntroductionsPage({
             className="mt-8 space-y-4"
           >
             {items.length === 0 ? (
-              <div className="rounded-[22px] border border-dashed border-brand-border bg-white px-6 py-12 text-center">
-                <Image
-                  src="/brand/mascot/hello.png"
-                  alt=""
-                  width={120}
-                  height={120}
-                  className="mx-auto h-24 w-24 object-contain"
+              tab === "masuk" ? (
+                <MascotEmptyState
+                  pose="hello"
+                  title="Belum ada perkenalan masuk"
+                  description="Saat seseorang ingin mengenalmu lebih jauh, perkenalannya akan muncul di sini."
                 />
-                {tab === "masuk" ? (
-                  <>
-                    <h2 className="mt-5 font-heading text-2xl font-semibold text-brand-navy">
-                      Belum ada perkenalan masuk.
-                    </h2>
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-brand-muted">
-                      Saat seseorang ingin mengenalmu lebih jauh, perkenalannya
-                      akan muncul di sini.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="mt-5 font-heading text-2xl font-semibold text-brand-navy">
-                      Kamu belum mengirim perkenalan.
-                    </h2>
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-brand-muted">
-                      Jelajahi People, buka profil anonim, lalu kirim pesan
-                      pembuka yang hangat.
-                    </p>
-                    <Link
-                      href="/app/people"
-                      className="focus-ring mt-5 inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-                    >
-                      Jelajahi People
-                    </Link>
-                  </>
-                )}
-              </div>
+              ) : (
+                <MascotEmptyState
+                  pose="hello"
+                  title="Kamu belum mengirim perkenalan"
+                  description="Jelajahi People, buka profil anonim, lalu kirim pesan pembuka yang hangat."
+                  action={{ href: "/app/people", label: "Jelajahi People" }}
+                />
+              )
             ) : (
               items.map((item) => (
                 <IntroductionCard

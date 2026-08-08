@@ -33,6 +33,7 @@ import {
 import { MutualInterestPanel } from "@/components/messages/mutual-interest-panel";
 import { IdentityRevealPanel } from "@/components/messages/identity-reveal-panel";
 import { ContactRevealPanel } from "@/components/messages/contact-reveal-panel";
+import { CounterpartPrivacyCard } from "@/components/messages/counterpart-privacy-card";
 import { getMascotForAlias } from "@/lib/people/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
@@ -62,6 +63,7 @@ type ConversationRoomProps = {
   initialContactCompleted: Partial<
     Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
   >;
+  profileContactDefaults?: Partial<Record<ContactRevealChannel, string>>;
   notice?: string | null;
   state?: string | null;
 };
@@ -98,6 +100,7 @@ export function ConversationRoom({
   initialContactReveal,
   initialContactPreviews,
   initialContactCompleted,
+  profileContactDefaults,
   notice,
   state,
 }: ConversationRoomProps) {
@@ -390,6 +393,12 @@ export function ConversationRoom({
 
       <footer className="sticky bottom-0 border-t border-brand-border bg-white px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
         <div className="mb-4 space-y-4">
+          <CounterpartPrivacyCard
+            mutual={mutualInterest.mutual}
+            identityCompleted={identityRevealCompleted}
+            contactReveal={contactReveal}
+            contactCompleted={contactCompleted}
+          />
           <MutualInterestPanel
             publicId={conversation.public_id}
             conversationStatus={status}
@@ -434,6 +443,7 @@ export function ConversationRoom({
             state={contactReveal}
             initialPreviews={initialContactPreviews}
             completedByChannel={contactCompleted}
+            profileDefaults={profileContactDefaults}
             onStateChange={(next) => {
               setContactReveal(next);
               if (next.channels.some((channel) => channel.completed)) {

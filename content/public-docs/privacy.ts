@@ -57,7 +57,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Saat onboarding, kamu dapat mengisi data seperti nama depan, kampus, program studi, jenjang, semester (opsional), kota/wilayah umum (opsional), minat, tujuan koneksi, preferensi cara memulai, serta persetujuan Ketentuan, Privasi, dan Pedoman Komunitas.",
+        text: "Saat onboarding, kamu dapat mengisi data seperti nama depan, nama belakang, kampus, program studi, jenjang, semester (opsional), kota/wilayah umum (opsional), minat, tujuan koneksi, preferensi cara memulai, serta persetujuan Ketentuan, Privasi, dan Pedoman Komunitas. Nama depan dan nama belakang disimpan privat; People menampilkan alias anonim, bukan nama lengkap.",
       },
       {
         type: "ul",
@@ -157,10 +157,14 @@ export const privacySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
+          "LinkedIn (URL profil publik) — diprioritaskan; di Edit profil LinkedIn wajib untuk tampil di People",
+          "Instagram (username) — opsional di profil dan Contact Reveal",
           "Telegram (username)",
-          "Instagram (username)",
-          "LinkedIn (URL profil publik)",
         ],
+      },
+      {
+        type: "p",
+        text: "Di Edit profil kamu dapat menyimpan LinkedIn (wajib) dan Instagram (opsional) sebagai default privat. Nilai itu tidak tampil di People; saat Contact Reveal, form dapat diisi otomatis dari default tersebut, lalu tetap membutuhkan persetujuan dua arah per saluran.",
       },
       {
         type: "note",
@@ -214,7 +218,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah Identity Reveal atau Contact Reveal selesai, akses terbatas dapat dipertahankan sesuai perilaku produk bila percakapan diakhiri secara normal. Kebijakan retensi dan penghapusan akun secara self-service belum sepenuhnya difinalisasi; lihat bagian penghapusan akun.",
+        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah Identity Reveal atau Contact Reveal selesai, akses terbatas dapat dipertahankan sesuai perilaku produk bila percakapan diakhiri secara normal. Mahasiswa dapat menonaktifkan atau menghapus akun dari Edit profil; lihat bagian penghapusan akun.",
       },
     ],
   },
@@ -224,7 +228,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Saat ini belum tersedia tombol penghapusan akun mandiri di aplikasi. Jika kamu ingin meminta penghapusan atau penonaktifan akun, sampaikan melalui halaman Bantuan atau formulir Early Access di beranda dengan menjelaskan permintaanmu. Kami akan menindaklanjuti secara manual sesuai kapasitas operasional. Status proses formal dapat diperbarui di kebijakan ini setelah Owner menetapkan alur yang lebih lengkap.",
+        text: "Di Edit profil, akun mahasiswa dapat: (1) dinonaktifkan sementara—profil disembunyikan dari People dan akses aplikasi diblokir sampai diaktifkan kembali, sementara data tetap di server; atau (2) dihapus permanen. Penghapusan permanen menghapus akun autentikasi, profil, riwayat verifikasi dan bukti unggahan terkait, foto Identity Reveal milikmu, data percakapan yang ikut cascade, serta jejak waitlist/rate-limit untuk email akun. Tindakan ini tidak dapat dibatalkan. Akun staf tidak memakai alur self-service ini.",
       },
     ],
   },
@@ -314,7 +318,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kamu dapat meninjau dan memperbarui sebagian data profil di dalam aplikasi setelah masuk, mengatur preferensi privasi yang tersedia, serta memakai blokir/lapor. Untuk permintaan akses tambahan, koreksi, atau penghapusan yang belum tersedia di antarmuka, gunakan halaman Bantuan.",
+        text: "Kamu dapat meninjau dan memperbarui data profil di Edit profil, mengatur visibilitas People, menonaktifkan atau menghapus akun mahasiswa secara mandiri, serta memakai blokir/lapor. Untuk permintaan akses tambahan atau koreksi yang belum tersedia di antarmuka, gunakan halaman Bantuan.",
       },
       {
         type: "ul",

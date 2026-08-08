@@ -6,6 +6,10 @@ export const CONTACT_REVEAL_CHANNELS = [
 
 export type ContactRevealChannel = (typeof CONTACT_REVEAL_CHANNELS)[number];
 
+/** Display / preference order: LinkedIn first (required on profile), then IG, then Telegram. */
+export const CONTACT_REVEAL_CHANNEL_DISPLAY_ORDER: readonly ContactRevealChannel[] =
+  ["linkedin", "instagram", "telegram"];
+
 export type ContactRevealChannelState = {
   channel: ContactRevealChannel;
   eligible: boolean;
@@ -40,7 +44,7 @@ export type ContactRevealCompletedChannel = {
 export const CONTACT_REVEAL_COPY = {
   heading: "Bagikan kontak secara bertahap",
   description:
-    "Setiap jenis kontak membutuhkan persetujuan dua arah. Membagikan satu kontak tidak akan membuka kontak lainnya.",
+    "LinkedIn diprioritaskan; Instagram dan Telegram opsional. Setiap jenis kontak membutuhkan persetujuan dua arah. Membagikan satu kontak tidak akan membuka kontak lainnya.",
   privacyNote:
     "Pilihanmu tetap privat sampai kalian berdua menyetujui jenis kontak yang sama.",
   addContactCta: "Tambahkan kontak",

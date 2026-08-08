@@ -69,6 +69,9 @@ export async function GET(request: NextRequest) {
   }
 
   const profile = await getPrivateProfile(user.id);
+  if (profile?.deactivated_at) {
+    redirect("/account/reactivate");
+  }
   if (!profile?.onboarding_completed_at) {
     redirect("/onboarding");
   }

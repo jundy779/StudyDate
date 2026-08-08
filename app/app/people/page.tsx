@@ -1,5 +1,6 @@
 import { updatePeopleVisibility } from "@/app/app/people/actions";
 import { AppShell } from "@/components/app/app-shell";
+import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { PeopleFilterForm } from "@/components/people/people-filter-form";
 import { PeopleProfileCard } from "@/components/people/people-profile-card";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
@@ -11,8 +12,7 @@ import {
   firstSearchValue,
   parsePeopleFilters,
 } from "@/lib/people/validation";
-import { Eye, EyeOff, Users } from "lucide-react";
-import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -112,15 +112,12 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
               )}
             </>
           ) : parsed.success ? (
-            <div className="mt-6 grid overflow-hidden rounded-[22px] border border-brand-border bg-white sm:grid-cols-[180px_1fr]">
-              <div className="flex min-h-44 items-end justify-center bg-[linear-gradient(145deg,#edf4ff,#f8faff)] p-5">
-                <Image src="/brand/mascot/study.png" alt="" width={140} height={140} className="h-32 w-32 object-contain" />
-              </div>
-              <div className="self-center p-6 sm:p-8">
-                <Users className="h-6 w-6 text-brand-blue" aria-hidden="true" />
-                <h3 className="mt-4 font-heading text-xl font-semibold text-brand-navy">Belum ada profil yang cocok</h3>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-brand-muted">Coba longgarkan filter. Hanya profil yang memilih tampil di People dan telah menyelesaikan onboarding yang dapat ditemukan.</p>
-              </div>
+            <div className="mt-6">
+              <MascotEmptyState
+                pose="study"
+                title="Belum ada profil yang cocok"
+                description="Coba longgarkan filter. Hanya profil yang memilih tampil di People dan telah menyelesaikan onboarding yang dapat ditemukan."
+              />
             </div>
           ) : null}
         </section>

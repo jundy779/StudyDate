@@ -190,8 +190,9 @@ test("privacy-safe projections exclude private identity fields", () => {
   assert.doesNotMatch(introductionsPage, /\/app\/introductions\/\[/);
   assert.doesNotMatch(
     detailPage,
-    /profile\.first_name|\blegal_name\b|\bNIM\b|@gmail/i,
+    /profile\.first_name|\blegal_name\b|profile\.nim|@gmail/i,
   );
+  assert.match(detailPage, /NIM tidak dibagikan ke pengguna lain/);
   assert.match(detailPage, /Kirim perkenalan/);
 });
 
@@ -298,6 +299,10 @@ test("student navigation includes Perkenalan and staff shell does not", () => {
   assert.match(navigation, /label: "Perkenalan"/);
   assert.match(navigation, /href: "\/app\/introductions"/);
   assert.match(navigation, /label: "Pesan"/);
+  assert.match(navigation, /label: "Bantuan"/);
+  assert.match(navigation, /href: "\/help"/);
+  assert.match(navigation, /label: "Privasi & keamanan"/);
+  assert.match(navigation, /href: "\/app\/account\/privacy"/);
   assert.doesNotMatch(staffShell, /\/app\/introductions/);
   assert.match(service, /rpc\(\s*[\n\r\s]*"send_introduction_request"/);
   assert.match(service, /rpc\(\s*[\n\r\s]*"list_received_introduction_requests"/);

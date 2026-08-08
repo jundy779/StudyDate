@@ -83,13 +83,21 @@ async function PrivateAppHome() {
                 </dd>
               </div>
             </dl>
-            <Link
-              href="/app/verification"
-              className="focus-ring mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
-            >
-              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-              Verifikasi Mahasiswa
-            </Link>
+            <div className="mt-5 flex flex-col gap-3">
+              <Link
+                href="/app/profile"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
+              >
+                Edit profil
+              </Link>
+              <Link
+                href="/app/verification"
+                className="focus-ring inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
+              >
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                Verifikasi Mahasiswa
+              </Link>
+            </div>
           </aside>
         </section>
 

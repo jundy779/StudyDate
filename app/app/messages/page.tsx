@@ -1,13 +1,13 @@
-import Link from "next/link";
 import { AppShell } from "@/components/app/app-shell";
+import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { ConversationListItem } from "@/components/messages/conversation-list-item";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   countUnreadConversations,
   listMyConversations,
 } from "@/lib/messages/service";
-import Image from "next/image";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 type MessagesPageProps = {
   searchParams: Promise<{ state?: string }>;
@@ -17,7 +17,7 @@ const stateMessages: Record<string, string> = {
   error: "Pesan belum dapat dimuat. Coba lagi sebentar.",
 };
 
-export default async function MessagesPage({ searchParams }: MessagesPageProps) {
+async function MessagesContent({ searchParams }: MessagesPageProps) {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
@@ -56,28 +56,12 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
 
           <section className="mt-8 space-y-4" aria-label="Daftar percakapan">
             {conversations.length === 0 ? (
-              <div className="rounded-[22px] border border-dashed border-brand-border bg-white px-6 py-12 text-center">
-                <Image
-                  src="/brand/mascot/chat.png"
-                  alt=""
-                  width={120}
-                  height={120}
-                  className="mx-auto h-24 w-24 object-contain"
-                />
-                <h2 className="mt-5 font-heading text-2xl font-semibold text-brand-navy">
-                  Belum ada percakapan
-                </h2>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-brand-muted">
-                  Percakapan anonim akan muncul setelah sebuah perkenalan
-                  diterima.
-                </p>
-                <Link
-                  href="/app/people"
-                  className="focus-ring mt-5 inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-                >
-                  Jelajahi People
-                </Link>
-              </div>
+              <MascotEmptyState
+                pose="chat"
+                title="Belum ada percakapan"
+                description="Percakapan anonim akan muncul setelah sebuah perkenalan diterima."
+                action={{ href: "/app/people", label: "Jelajahi People" }}
+              />
             ) : (
               conversations.map((item) => (
                 <ConversationListItem key={item.public_id} item={item} />
@@ -87,5 +71,21 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
         </div>
       </main>
     </AppShell>
+  );
+}
+
+export default function MessagesPage(props: MessagesPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-svh bg-brand-surface">
+          <p className="page-shell py-10 text-sm text-brand-muted">
+            Menyiapkan Pesan…
+          </p>
+        </main>
+      }
+    >
+      <MessagesContent {...props} />
+    </Suspense>
   );
 }

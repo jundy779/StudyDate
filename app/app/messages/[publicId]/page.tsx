@@ -24,14 +24,16 @@ import {
   getContactRevealPreview,
   getContactRevealState,
 } from "@/lib/contact-reveal/service";
+import { getMyStudentSocialContacts } from "@/lib/profile/social-service";
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 
 type ConversationPageProps = {
   params: Promise<{ publicId: string }>;
   searchParams: Promise<{ notice?: string; state?: string }>;
 };
 
-export default async function ConversationPage({
+async function ConversationContent({
   params,
   searchParams,
 }: ConversationPageProps) {
@@ -106,6 +108,14 @@ export default async function ConversationPage({
       ? query.notice.trim().slice(0, 300)
       : null;
 
+  const social = await getMyStudentSocialContacts(user.id);
+  const profileContactDefaults = {
+    linkedin: social.linkedinUrl ?? undefined,
+    instagram: social.instagramUsername
+      ? `@${social.instagramUsername}`
+      : undefined,
+  };
+
   return (
     <AppShell current="messages" unreadMessages={unreadConversations}>
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
@@ -119,10 +129,27 @@ export default async function ConversationPage({
           initialContactReveal={contactReveal}
           initialContactPreviews={contactPreviews}
           initialContactCompleted={contactCompleted}
+          profileContactDefaults={profileContactDefaults}
           notice={notice}
           state={query.state ?? null}
         />
       </main>
     </AppShell>
+  );
+}
+
+export default function ConversationPage(props: ConversationPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-svh bg-brand-surface">
+          <p className="page-shell py-10 text-sm text-brand-muted">
+            Menyiapkan percakapan…
+          </p>
+        </main>
+      }
+    >
+      <ConversationContent {...props} />
+    </Suspense>
   );
 }
