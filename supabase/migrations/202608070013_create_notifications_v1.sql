@@ -76,6 +76,7 @@ as $$
       from public.profiles profile
       where profile.user_id = p_user_id
         and profile.onboarding_completed_at is not null
+        and nullif(to_jsonb(profile)->>'deactivated_at', '') is null
     )
     and not public.is_active_staff_user(p_user_id);
 $$;
