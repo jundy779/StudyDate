@@ -37,7 +37,7 @@ Sumber migration:
 16. migrations `202608070001`–`202608070012` — durable rate limits, DB-backed
     campus/study-program catalogs, profile/account lifecycle, dan social contacts
 17. `supabase/migrations/202608070013_create_notifications_v1.sql` —
-    Notifications v1; local-only, belum diterapkan remote
+    Notifications v1; diterapkan remote setelah controlled preflight dan live A/B/C audit
 
 ### `early_access_waitlist`
 
@@ -331,7 +331,7 @@ Sanitized audit: activated, message_sent, ended, blocked, reported, messages_rea
 mutual_interest_reached, identity_revealed, contact_revealed. Never stores one-sided interest/consent,
 message bodies, contacts, or Storage paths.
 
-### `user_notifications` (migration `202608070013`, local-only)
+### `user_notifications` (migration `202608070013`, applied remotely)
 
 ```text
 id uuid internal primary key

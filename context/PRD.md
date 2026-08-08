@@ -265,11 +265,11 @@ bebas tidak diimplementasikan. Setelah saluran selesai: `ended` mempertahankan a
 kontak yang sudah dibuka; `blocked` menyembunyikan kontak lawan pada request berikutnya
 tanpa mengklaim bahwa konten yang sudah dilihat terhapus.
 
-## 11c. Implemented locally — Notifications v1
+## 11c. Implemented and deployed — Notifications v1
 
-Notifications v1 tersedia secara lokal melalui migration `202608070013` dan belum
-diterapkan ke remote. Notifikasi in-app hanya dibuat untuk event bermakna yang telah
-diotorisasi pada tahap produk saat itu:
+Notifications v1 tersedia melalui migration `202608070013`, diterapkan ke remote setelah
+single-migration dry-run, dan lolos live audit A/B/C dengan cleanup sintetis. Notifikasi
+in-app hanya dibuat untuk event bermakna yang telah diotorisasi pada tahap produk saat itu:
 
 - perkenalan baru;
 - perkenalan diterima;

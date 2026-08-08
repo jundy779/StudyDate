@@ -293,7 +293,7 @@ Migration `202608060006` is applied remotely after controlled preflight.
 Migration `202608060007` fixes PL/pgSQL OUT-parameter `channel` ambiguity in consent
 RPCs (`#variable_conflict use_column` + constraint-based `ON CONFLICT`).
 
-## 12f. Notifications v1 architecture (local-only)
+## 12f. Notifications v1 architecture
 
 ```text
 trusted product transition
@@ -304,8 +304,11 @@ trusted product transition
  -> student bell + /app/notifications
 ```
 
-Migration `202608070013` bersifat local-only sampai preflight dan approval deployment
-terpisah. Tabel tidak memiliki direct grant untuk `anon` atau `authenticated`.
+Migration `202608070013` sudah diterapkan remote setelah exact dry-run hanya menampilkan
+migration tersebut; migration history kemudian sinkron dan post-push dry-run kosong.
+Live A/B/C audit mengonfirmasi RLS, recipient isolation, dedupe, read-state, one-sided
+silence, seluruh channel Contact Reveal, blocked-history privacy, dan cleanup sintetis.
+Tabel tidak memiliki direct grant untuk `anon` atau `authenticated`.
 `emit_user_notification` dan seluruh trigger helper tidak executable oleh student;
 dedupe key deterministik memiliki unique constraint dan tidak pernah diproyeksikan.
 

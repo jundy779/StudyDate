@@ -66,8 +66,8 @@ Implemented:
 - Identity Reveal v1 (migration `202608060005`)
 - Contact Reveal v1 for Telegram / Instagram / LinkedIn after Identity Reveal
   (migrations `202608060006`–`202608060007`)
-- Notifications v1 privacy-safe in-app UI and local migration `202608070013`
-  (local-only; not applied remotely)
+- Notifications v1 privacy-safe in-app UI (migration `202608070013`, applied remotely
+  after controlled preflight and live A/B/C audit)
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -317,12 +317,13 @@ git check-ignore .env.local
 Confirm that `.env.local` is ignored and no generated screenshots, test credentials, tokens, or secret values are
 staged.
 
-### Notifications v1 (local-only)
+### Notifications v1
 
 Migration `202608070013_create_notifications_v1.sql` adds recipient-scoped in-app
 notifications for Introduction received/accepted, Anonymous Chat messages, completed
 Mutual Interest, completed Identity Reveal, and completed Contact Reveal per Telegram,
-Instagram, or LinkedIn. It has not been applied remotely.
+Instagram, or LinkedIn. It was applied remotely after an exact single-migration dry-run;
+the post-push history is synchronized and a repeat dry-run reports no pending changes.
 
 One-sided Mutual selection/withdrawal, Identity preparation/consent/withdrawal, and
 Contact preparation/consent/withdrawal intentionally create no notification. Message
@@ -331,6 +332,11 @@ moderation notes are not part of the notification projection.
 
 Notifications use bounded keyset pagination and a 25-second authenticated global unread
 poll that pauses while the document is hidden. Chat polling remains unchanged.
+
+The post-deployment live audit verifies A/B/C recipient isolation, direct-table denial,
+trusted trigger creation, deterministic deduplication, read-one/read-all behavior, all
+three contact channels, one-sided consent silence, safe projection, blocked-history
+privacy, and complete synthetic-account cleanup.
 
 ### Live Supabase verification checklist
 

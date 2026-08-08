@@ -132,7 +132,7 @@ saluran Contact Reveal selesai, `Akhiri` mempertahankan akses yang sudah dibuka;
 mengklaim bahwa konten yang sudah dilihat terhapus. Jangan menampilkan online status,
 typing palsu, atau dekorasi dating.
 
-### Notifications v1 (local-only)
+### Notifications v1
 
 Student navigation mempertahankan struktur global yang sudah ada dan menambahkan
 Notifikasi dengan bell serta unread badge nyata. Desktop menyediakan panel ringkas
