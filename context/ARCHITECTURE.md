@@ -293,6 +293,34 @@ Migration `202608060006` is applied remotely after controlled preflight.
 Migration `202608060007` fixes PL/pgSQL OUT-parameter `channel` ambiguity in consent
 RPCs (`#variable_conflict use_column` + constraint-based `ON CONFLICT`).
 
+## 12f. Notifications v1 architecture (local-only)
+
+```text
+trusted product transition
+ -> same-transaction trigger on introduction/message/completed conversation event
+ -> user_notifications (recipient + constrained type + safe path + channel only)
+ -> list/count/mark RPCs derive actor from auth.uid()
+ -> /api/notifications authenticated projection
+ -> student bell + /app/notifications
+```
+
+Migration `202608070013` bersifat local-only sampai preflight dan approval deployment
+terpisah. Tabel tidak memiliki direct grant untuk `anon` atau `authenticated`.
+`emit_user_notification` dan seluruh trigger helper tidak executable oleh student;
+dedupe key deterministik memiliki unique constraint dan tidak pernah diproyeksikan.
+
+Perkenalan dan pesan dipicu langsung setelah row source-of-truth berhasil dimasukkan.
+Mutual, Identity, dan Contact hanya dipicu dari sanitized `conversation_events` completion
+yang memverifikasi timestamp/snapshot completion. Tidak ada trigger pada tabel consent,
+profile preparation, contact version, withdrawal, block reason, report detail, atau
+moderation notes sehingga state satu sisi tidak dapat menghasilkan notifikasi.
+
+MESSAGE_RECEIVED v1 memakai satu row per pesan karena insert pesan sudah idempotent dan
+dedupe notification mengacu pada message row. List dibatasi 20 item per halaman dengan
+keyset cursor; retention cleanup lama tetap future ops sampai kebijakan durasi disetujui.
+Unread count global dipoll setiap 25 detik, tidak overlap, dan polling dilewati ketika
+document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
+
 ## 13. Staff authorization v1
 
 StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted

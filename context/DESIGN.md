@@ -131,6 +131,25 @@ saluran Contact Reveal selesai, `Akhiri` mempertahankan akses yang sudah dibuka;
 `Blokir` menyembunyikan identitas/kontak/media lawan pada request berikutnya tanpa
 mengklaim bahwa konten yang sudah dilihat terhapus. Jangan menampilkan online status,
 typing palsu, atau dekorasi dating.
+
+### Notifications v1 (local-only)
+
+Student navigation mempertahankan struktur global yang sudah ada dan menambahkan
+Notifikasi dengan bell serta unread badge nyata. Desktop menyediakan panel ringkas
+berisi lima item terbaru dan tautan ke `/app/notifications`; mobile bell langsung
+membuka halaman penuh agar header dan drawer tetap usable. Staff shell tidak mendapat
+notification UI student.
+
+Halaman Notifikasi memakai daftar editorial tunggal, bukan grid/card dashboard.
+Setiap item menampilkan icon kategori, safe title/description, timestamp Indonesia,
+status belum dibaca yang juga tersedia sebagai teks screen reader, dan navigasi
+keyboard-accessible. State yang wajib: loading skeleton, generic error + retry, empty
+state icon tanpa mascot baru, mark one saat item dibuka, mark all, serta load more.
+
+Copy tidak pernah berisi isi pesan, nama, kontak, email, NIM, UUID, consent counterpart,
+atau sinyal progres satu sisi. Badge visual dibatasi `99+` tanpa mengubah unread count
+aktual pada accessible label.
+
 ### Student Verification Center
 
 Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan, Persetujuan. Status:

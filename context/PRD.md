@@ -265,6 +265,26 @@ bebas tidak diimplementasikan. Setelah saluran selesai: `ended` mempertahankan a
 kontak yang sudah dibuka; `blocked` menyembunyikan kontak lawan pada request berikutnya
 tanpa mengklaim bahwa konten yang sudah dilihat terhapus.
 
+## 11c. Implemented locally — Notifications v1
+
+Notifications v1 tersedia secara lokal melalui migration `202608070013` dan belum
+diterapkan ke remote. Notifikasi in-app hanya dibuat untuk event bermakna yang telah
+diotorisasi pada tahap produk saat itu:
+
+- perkenalan baru;
+- perkenalan diterima;
+- pesan Anonymous Chat baru tanpa isi pesan;
+- Mutual Interest yang sudah selesai dua arah;
+- Identity Reveal yang sudah selesai dua arah;
+- Contact Reveal yang sudah selesai dua arah per Telegram, Instagram, atau LinkedIn.
+
+Tidak ada notifikasi untuk decline, report status, aktivitas antrean moderasi, atau
+persetujuan satu sisi. Secara khusus, pilihan/withdrawal Mutual Interest satu sisi,
+persiapan/consent/withdrawal Identity Reveal satu sisi, dan
+persiapan/consent/withdrawal Contact Reveal satu sisi dilarang menghasilkan notifikasi.
+Notifications v1 tidak mencakup push, Web Push, email, SMS, WhatsApp, Telegram bot,
+presence, typing indicator, atau last seen.
+
 ## 12. Planned — Groups MVP
 
 Group card: name, type, date/time, online/public location, capacity, host verification, visibility, join request, rules.

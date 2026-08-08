@@ -165,8 +165,8 @@ try {
 
     assert.deepEqual(focusOrder, [
       "Kembali ke halaman utama StudyDate",
+      "button",
       "email",
-      "submit",
     ]);
     process.stdout.write(`Keyboard focus order: ${focusOrder.join(" -> ")}\n`);
   }

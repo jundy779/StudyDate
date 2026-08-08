@@ -32,6 +32,12 @@ Sumber migration:
     applied remotely after controlled preflight
 14. `supabase/migrations/202608060007_fix_contact_reveal_channel_ambiguity.sql` —
     fix PL/pgSQL OUT `channel` ambiguity; applied remotely after live audit
+15. `supabase/migrations/202608060008_create_moderation_triage_v1.sql` —
+    Owner-only Moderation Triage; deployed through actual repository state
+16. migrations `202608070001`–`202608070012` — durable rate limits, DB-backed
+    campus/study-program catalogs, profile/account lifecycle, dan social contacts
+17. `supabase/migrations/202608070013_create_notifications_v1.sql` —
+    Notifications v1; local-only, belum diterapkan remote
 
 ### `early_access_waitlist`
 
@@ -324,6 +330,31 @@ Rules: sender = `auth.uid()` participant only; immutable body; best-effort conta
 Sanitized audit: activated, message_sent, ended, blocked, reported, messages_read,
 mutual_interest_reached, identity_revealed, contact_revealed. Never stores one-sided interest/consent,
 message bodies, contacts, or Storage paths.
+
+### `user_notifications` (migration `202608070013`, local-only)
+
+```text
+id uuid internal primary key
+public_id text unique opaque 32-hex
+recipient_user_id uuid -> auth.users
+notification_type constrained text
+target_path constrained safe app path
+metadata jsonb (empty, except completed contact channel)
+dedupe_key text unique internal
+created_at timestamptz server default
+read_at timestamptz server controlled
+```
+
+Allowed types: `INTRODUCTION_RECEIVED`, `INTRODUCTION_ACCEPTED`,
+`MESSAGE_RECEIVED`, `MUTUAL_INTEREST_COMPLETED`, `IDENTITY_REVEAL_COMPLETED`,
+dan `CONTACT_REVEAL_COMPLETED`. `REPORT_STATUS_UPDATED` tidak dibuat karena kebijakan
+aktual tidak memproyeksikan hasil moderasi kepada student.
+
+Tidak menyimpan copy, message body, alias/nama, contact value, email, NIM, participant
+UUID dalam projection, ciphertext, atau Storage path. Target hanya
+`/app/introductions` atau `/app/messages/<opaque-public-id>`. Table RLS-enabled tanpa
+direct grants; read dan read-state melalui RPC yang mengambil actor dari `auth.uid()`.
+Dedupe key tidak dikembalikan kepada client.
 
 ### `conversation_mutual_interests`
 

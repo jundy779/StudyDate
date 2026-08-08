@@ -2,17 +2,24 @@
 
 import { signOut } from "@/app/app/actions";
 import { staffSignOut } from "@/app/staff/actions";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import type { StaffRole } from "@/lib/staff/authorization";
 import {
   Activity,
+  Bell,
+  BookOpen,
+  CircleUserRound,
   Gavel,
+  GraduationCap,
   Handshake,
   Home,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Menu,
   MessageSquare,
   ScrollText,
+  Shield,
   ShieldCheck,
   UserCog,
   Users,
@@ -29,12 +36,18 @@ type NavigationIcon =
   | "people"
   | "introductions"
   | "messages"
+  | "notifications"
   | "verification"
   | "overview"
   | "staff"
   | "audit"
   | "readiness"
-  | "moderation";
+  | "moderation"
+  | "campuses"
+  | "study-programs"
+  | "profile"
+  | "help"
+  | "privacy-safety";
 
 type NavigationItem = {
   href: string;
@@ -51,6 +64,7 @@ type ResponsiveNavigationProps = {
   role?: StaffRole;
   pendingIntroductions?: number;
   unreadMessages?: number;
+  unreadNotifications?: number;
 };
 
 const iconMap = {
@@ -58,12 +72,18 @@ const iconMap = {
   people: Users,
   introductions: Handshake,
   messages: MessageSquare,
+  notifications: Bell,
   verification: ShieldCheck,
   overview: LayoutDashboard,
   staff: UserCog,
   audit: ScrollText,
   readiness: Activity,
   moderation: Gavel,
+  campuses: GraduationCap,
+  "study-programs": BookOpen,
+  profile: CircleUserRound,
+  help: LifeBuoy,
+  "privacy-safety": Shield,
 } as const;
 
 const studentItems: NavigationItem[] = [
@@ -82,10 +102,32 @@ const studentItems: NavigationItem[] = [
     icon: "messages",
   },
   {
+    href: "/app/notifications",
+    label: "Notifikasi",
+    key: "notifications",
+    icon: "notifications",
+  },
+  {
     href: "/app/verification",
     label: "Verifikasi",
     key: "verification",
     icon: "verification",
+  },
+  {
+    href: "/app/profile",
+    label: "Profil",
+    key: "profile",
+    icon: "profile",
+  },
+];
+
+const studentAccountItems: NavigationItem[] = [
+  { href: "/help", label: "Bantuan", key: "help", icon: "help" },
+  {
+    href: "/app/account/privacy",
+    label: "Privasi & keamanan",
+    key: "privacy-safety",
+    icon: "privacy-safety",
   },
 ];
 
@@ -98,6 +140,18 @@ function getStaffItems(role: StaffRole): NavigationItem[] {
         key: "verification",
         icon: "verification",
       },
+      {
+        href: "/admin/campuses",
+        label: "Kampus",
+        key: "campuses",
+        icon: "campuses",
+      },
+      {
+        href: "/admin/study-programs",
+        label: "Jurusan",
+        key: "study-programs",
+        icon: "study-programs",
+      },
     ];
   }
 
@@ -109,6 +163,18 @@ function getStaffItems(role: StaffRole): NavigationItem[] {
       label: "Verifikasi",
       key: "verification",
       icon: "verification",
+    },
+    {
+      href: "/owner/campuses",
+      label: "Kampus",
+      key: "campuses",
+      icon: "campuses",
+    },
+    {
+      href: "/owner/study-programs",
+      label: "Jurusan",
+      key: "study-programs",
+      icon: "study-programs",
     },
     { href: "/owner/audit", label: "Audit", key: "audit", icon: "audit" },
     {
@@ -131,14 +197,23 @@ function NavigationLinks({
   items,
   compact = false,
   onNavigate,
+  ariaLabel = "Navigasi utama",
+  sectionLabel,
 }: {
   current: string;
   items: NavigationItem[];
   compact?: boolean;
   onNavigate?: () => void;
+  ariaLabel?: string;
+  sectionLabel?: string;
 }) {
   return (
-    <nav aria-label="Navigasi utama" className="space-y-1.5">
+    <nav aria-label={ariaLabel} className="space-y-1.5">
+      {sectionLabel && !compact ? (
+        <p className="px-3.5 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
+          {sectionLabel}
+        </p>
+      ) : null}
       {items.map((item) => {
         const Icon = iconMap[item.icon];
         const active = current === item.key;
@@ -174,13 +249,52 @@ function NavigationLinks({
                       : "bg-brand-blue text-white"
                 }`}
               >
-                {item.badge}
+                <span aria-hidden="true">
+                  {item.badge > 99 ? "99+" : item.badge}
+                </span>
+                <span className="sr-only">
+                  {item.badge} belum dibaca
+                </span>
               </span>
             ) : null}
           </Link>
         );
       })}
     </nav>
+  );
+}
+
+function StudentNavigation({
+  current,
+  items,
+  accountItems,
+  compact = false,
+  onNavigate,
+}: {
+  current: string;
+  items: NavigationItem[];
+  accountItems: NavigationItem[];
+  compact?: boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <NavigationLinks
+        current={current}
+        items={items}
+        compact={compact}
+        onNavigate={onNavigate}
+        ariaLabel="Navigasi utama"
+      />
+      <NavigationLinks
+        current={current}
+        items={accountItems}
+        compact={compact}
+        onNavigate={onNavigate}
+        ariaLabel="Akun"
+        sectionLabel="Akun"
+      />
+    </div>
   );
 }
 
@@ -209,22 +323,27 @@ export function ResponsiveNavigation({
   role,
   pendingIntroductions = 0,
   unreadMessages = 0,
+  unreadNotifications = 0,
 }: ResponsiveNavigationProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
-  const items =
-    variant === "staff" && role
-      ? getStaffItems(role)
-      : studentItems.map((item) => {
-          if (item.key === "introductions" && pendingIntroductions > 0) {
-            return { ...item, badge: pendingIntroductions };
-          }
-          if (item.key === "messages" && unreadMessages > 0) {
-            return { ...item, badge: unreadMessages };
-          }
-          return item;
-        });
+  const isStaff = variant === "staff" && Boolean(role);
+  const items = isStaff
+    ? getStaffItems(role as StaffRole)
+    : studentItems.map((item) => {
+        if (item.key === "introductions" && pendingIntroductions > 0) {
+          return { ...item, badge: pendingIntroductions };
+        }
+        if (item.key === "messages" && unreadMessages > 0) {
+          return { ...item, badge: unreadMessages };
+        }
+        if (item.key === "notifications" && unreadNotifications > 0) {
+          return { ...item, badge: unreadNotifications };
+        }
+        return item;
+      });
+  const accountItems = isStaff ? [] : studentAccountItems;
   const homeHref =
     variant === "staff"
       ? role === "owner"
@@ -305,10 +424,27 @@ export function ResponsiveNavigation({
             </p>
           </div>
           <div className="md:hidden lg:block">
-            <NavigationLinks current={current} items={items} />
+            {isStaff ? (
+              <NavigationLinks current={current} items={items} />
+            ) : (
+              <StudentNavigation
+                current={current}
+                items={items}
+                accountItems={accountItems}
+              />
+            )}
           </div>
           <div className="lg:hidden">
-            <NavigationLinks current={current} items={items} compact />
+            {isStaff ? (
+              <NavigationLinks current={current} items={items} compact />
+            ) : (
+              <StudentNavigation
+                current={current}
+                items={items}
+                accountItems={accountItems}
+                compact
+              />
+            )}
           </div>
           <div className="mt-auto pt-6">
             <div className="md:hidden lg:block">
@@ -322,7 +458,7 @@ export function ResponsiveNavigation({
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-brand-border bg-white/95 px-5 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-brand-border bg-white/95 px-4 backdrop-blur md:hidden sm:px-5">
           <Link href={homeHref} className="focus-ring rounded-lg" aria-label="StudyDate ID">
             <Image
               src="/brand/logo-horizontal-color.png"
@@ -333,17 +469,46 @@ export function ResponsiveNavigation({
               priority
             />
           </Link>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-app-navigation"
-            aria-label="Buka menu navigasi"
-            className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand-border text-brand-navy"
-          >
-            <Menu aria-hidden="true" className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {!isStaff ? (
+              <Link
+                href="/app/notifications"
+                aria-label={
+                  unreadNotifications > 0
+                    ? `Notifikasi, ${unreadNotifications} belum dibaca`
+                    : "Notifikasi, tidak ada yang belum dibaca"
+                }
+                className="focus-ring relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand-border bg-white text-brand-navy"
+              >
+                <Bell aria-hidden="true" className="h-5 w-5" />
+                {unreadNotifications > 0 ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-brand-blue px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white"
+                  >
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                ) : null}
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-app-navigation"
+              aria-label="Buka menu navigasi"
+              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand-border text-brand-navy"
+            >
+              <Menu aria-hidden="true" className="h-5 w-5" />
+            </button>
+          </div>
         </header>
+
+        {!isStaff ? (
+          <div className="fixed right-6 top-6 z-40 hidden md:block">
+            <NotificationBell initialUnreadCount={unreadNotifications} />
+          </div>
+        ) : null}
 
         {children}
       </div>
@@ -383,11 +548,20 @@ export function ResponsiveNavigation({
               </button>
             </div>
             <div className="app-sidebar-scroll flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
-              <NavigationLinks
-                current={current}
-                items={items}
-                onNavigate={() => setMobileOpen(false)}
-              />
+              {isStaff ? (
+                <NavigationLinks
+                  current={current}
+                  items={items}
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              ) : (
+                <StudentNavigation
+                  current={current}
+                  items={items}
+                  accountItems={accountItems}
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              )}
               <div className="mt-auto pt-8">
                 <SignOutButton variant={variant} />
               </div>

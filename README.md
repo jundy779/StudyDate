@@ -66,6 +66,8 @@ Implemented:
 - Identity Reveal v1 (migration `202608060005`)
 - Contact Reveal v1 for Telegram / Instagram / LinkedIn after Identity Reveal
   (migrations `202608060006`–`202608060007`)
+- Notifications v1 privacy-safe in-app UI and local migration `202608070013`
+  (local-only; not applied remotely)
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -76,6 +78,7 @@ Not implemented yet:
 - Campus Events
 - Telegram bot linking
 - Full moderation dashboard
+- Push, browser Web Push, email, SMS, WhatsApp, Telegram bot, or native notifications
 - Supabase Realtime chat delivery (v1 uses authenticated RPC polling)
 
 Student Verification Center code exists but remains globally disabled unless explicitly enabled for controlled testing.
@@ -280,6 +283,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:mutual` | Run Mutual Interest validation, privacy, and authorization tests |
 | `npm run test:identity-reveal` | Run Identity Reveal static, behavioral, and hydrate tests |
 | `npm run test:contact-reveal` | Run Contact Reveal static contract and behavioral tests |
+| `npm run test:notifications` | Run Notifications v1 static/privacy/behavioral tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
@@ -300,6 +304,10 @@ npm run test:staff
 npm run test:introductions
 npm run test:messages
 npm run test:mutual
+npm run test:identity-reveal
+npm run test:contact-reveal
+npm run test:moderation
+npm run test:notifications
 npm run test:browser
 npm run build
 git status --short
@@ -308,6 +316,21 @@ git check-ignore .env.local
 
 Confirm that `.env.local` is ignored and no generated screenshots, test credentials, tokens, or secret values are
 staged.
+
+### Notifications v1 (local-only)
+
+Migration `202608070013_create_notifications_v1.sql` adds recipient-scoped in-app
+notifications for Introduction received/accepted, Anonymous Chat messages, completed
+Mutual Interest, completed Identity Reveal, and completed Contact Reveal per Telegram,
+Instagram, or LinkedIn. It has not been applied remotely.
+
+One-sided Mutual selection/withdrawal, Identity preparation/consent/withdrawal, and
+Contact preparation/consent/withdrawal intentionally create no notification. Message
+bodies, names, contact values, email, NIM, raw UUIDs, Storage paths, report details, and
+moderation notes are not part of the notification projection.
+
+Notifications use bounded keyset pagination and a 25-second authenticated global unread
+poll that pauses while the document is hidden. Chat polling remains unchanged.
 
 ### Live Supabase verification checklist
 
