@@ -326,6 +326,8 @@ export function ResponsiveNavigation({
   unreadNotifications = 0,
 }: ResponsiveNavigationProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [liveUnreadNotifications, setLiveUnreadNotifications] =
+    useState(unreadNotifications);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
   const isStaff = variant === "staff" && Boolean(role);
@@ -338,8 +340,8 @@ export function ResponsiveNavigation({
         if (item.key === "messages" && unreadMessages > 0) {
           return { ...item, badge: unreadMessages };
         }
-        if (item.key === "notifications" && unreadNotifications > 0) {
-          return { ...item, badge: unreadNotifications };
+        if (item.key === "notifications" && liveUnreadNotifications > 0) {
+          return { ...item, badge: liveUnreadNotifications };
         }
         return item;
       });
@@ -356,6 +358,10 @@ export function ResponsiveNavigation({
         ? "Owner workspace"
         : "Admin verification"
       : "Ruang mahasiswa";
+
+  useEffect(() => {
+    setLiveUnreadNotifications(unreadNotifications);
+  }, [unreadNotifications]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -474,19 +480,21 @@ export function ResponsiveNavigation({
               <Link
                 href="/app/notifications"
                 aria-label={
-                  unreadNotifications > 0
-                    ? `Notifikasi, ${unreadNotifications} belum dibaca`
+                  liveUnreadNotifications > 0
+                    ? `Notifikasi, ${liveUnreadNotifications} belum dibaca`
                     : "Notifikasi, tidak ada yang belum dibaca"
                 }
                 className="focus-ring relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand-border bg-white text-brand-navy"
               >
                 <Bell aria-hidden="true" className="h-5 w-5" />
-                {unreadNotifications > 0 ? (
+                {liveUnreadNotifications > 0 ? (
                   <span
                     aria-hidden="true"
                     className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-brand-blue px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white"
                   >
-                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                    {liveUnreadNotifications > 99
+                      ? "99+"
+                      : liveUnreadNotifications}
                   </span>
                 ) : null}
               </Link>
@@ -506,7 +514,10 @@ export function ResponsiveNavigation({
 
         {!isStaff ? (
           <div className="fixed right-6 top-6 z-40 hidden md:block">
-            <NotificationBell initialUnreadCount={unreadNotifications} />
+            <NotificationBell
+              initialUnreadCount={liveUnreadNotifications}
+              onUnreadCountChange={setLiveUnreadNotifications}
+            />
           </div>
         ) : null}
 

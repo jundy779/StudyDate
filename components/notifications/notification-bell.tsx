@@ -10,8 +10,10 @@ const POLL_INTERVAL_MS = 25_000;
 
 export function NotificationBell({
   initialUnreadCount,
+  onUnreadCountChange,
 }: {
   initialUnreadCount: number;
+  onUnreadCountChange?: (count: number) => void;
 }) {
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [items, setItems] = useState<NotificationItemData[]>([]);
@@ -22,10 +24,18 @@ export function NotificationBell({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const requestActive = useRef(false);
+  const pendingItemsRequest = useRef(false);
   const previousOpen = useRef(false);
 
   const fetchNotifications = useCallback(async (withItems: boolean) => {
-    if (requestActive.current || document.visibilityState === "hidden") return;
+    if (document.visibilityState === "hidden") return;
+    if (requestActive.current) {
+      if (withItems) {
+        pendingItemsRequest.current = true;
+        setLoading(true);
+      }
+      return;
+    }
     requestActive.current = true;
     if (withItems) setLoading(true);
 
@@ -37,15 +47,23 @@ export function NotificationBell({
         notifications: NotificationItemData[];
       };
       setUnreadCount(payload.unreadCount);
-      if (withItems) setItems(payload.notifications.slice(0, 5));
+      onUnreadCountChange?.(payload.unreadCount);
+      if (withItems || pendingItemsRequest.current) {
+        setItems(payload.notifications.slice(0, 5));
+      }
       setError(false);
     } catch {
-      if (withItems) setError(true);
+      if (withItems || pendingItemsRequest.current) setError(true);
     } finally {
       requestActive.current = false;
-      if (withItems) setLoading(false);
+      if (withItems || pendingItemsRequest.current) setLoading(false);
+      pendingItemsRequest.current = false;
     }
-  }, []);
+  }, [onUnreadCountChange]);
+
+  useEffect(() => {
+    setUnreadCount(initialUnreadCount);
+  }, [initialUnreadCount]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
