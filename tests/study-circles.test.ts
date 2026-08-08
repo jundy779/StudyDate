@@ -13,6 +13,13 @@ const migration = readFileSync(
   join(root, "supabase/migrations/202608090001_create_study_circles_v1.sql"),
   "utf8",
 );
+const ambiguityFixMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608090002_fix_study_circle_rpc_ambiguity.sql",
+  ),
+  "utf8",
+);
 const service = readFileSync(join(root, "lib/circles/service.ts"), "utf8");
 const detailPage = readFileSync(
   join(root, "app/app/circles/[publicSlug]/page.tsx"),
@@ -237,4 +244,24 @@ test("SC-35 validation, routes, navigation, and regression command are wired", (
   );
   assert.match(navigation, /href: "\/app\/circles"/);
   assert.match(packageJson, /"test:circles"/);
+});
+
+test("SC-36 deployed member, message, and report RPCs avoid circle_id ambiguity", () => {
+  for (const functionName of [
+    "list_study_circle_members",
+    "list_study_circle_messages",
+    "report_study_circle_member",
+  ]) {
+    assert.match(
+      ambiguityFixMigration,
+      new RegExp(`create or replace function public\\.${functionName}\\(`),
+    );
+  }
+  assert.match(ambiguityFixMigration, /target_circle_id uuid/);
+  assert.doesNotMatch(ambiguityFixMigration, /^\s+circle_id uuid;$/m);
+  assert.match(ambiguityFixMigration, /set search_path = ''/);
+  assert.match(
+    ambiguityFixMigration,
+    /revoke all on function public\.list_study_circle_members\(text\)\s+from public, anon/i,
+  );
 });
