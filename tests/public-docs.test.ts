@@ -55,6 +55,18 @@ test("privacy content states verification disabled and contact channels", () => 
   assert.doesNotMatch(privacy, /Masuk dengan Google \(belum aktif\)/i);
 });
 
+test("public doc shell swaps Masuk for Kembali when logged in", () => {
+  const shell = readFileSync(
+    join(root, "components/marketing/public-doc-shell.tsx"),
+    "utf8",
+  );
+  assert.match(shell, /getAuthenticatedUser/);
+  assert.match(shell, /Kembali/);
+  assert.match(shell, /Beranda/);
+  assert.match(shell, /Masuk/);
+  assert.match(shell, /Suspense/);
+});
+
 test("sitemap and robots modules exist", () => {
   const sitemap = readFileSync(join(root, "app/sitemap.ts"), "utf8");
   const robots = readFileSync(join(root, "app/robots.ts"), "utf8");

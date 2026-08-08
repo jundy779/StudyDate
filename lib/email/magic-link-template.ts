@@ -3,11 +3,19 @@ import "server-only";
 const BRAND_BLUE = "#014FE7";
 const BRAND_NAVY = "#0F1B33";
 
+/** Inline CID used by StudyDate SMTP/Resend attachments. */
+export const STUDYDATE_EMAIL_LOGO_CID = "studydate-logo";
+
 export type MagicLinkEmailKind = "student" | "staff";
 
 export function buildMagicLinkEmail(input: {
   kind: MagicLinkEmailKind;
   confirmUrl: string;
+  /**
+   * Logo URL for HTML (prefer `cid:studydate-logo` with an inline attachment,
+   * or an absolute https URL to `/brand/logo-horizontal-color.png`).
+   */
+  logoSrc?: string;
 }) {
   const heading =
     input.kind === "staff"
@@ -23,7 +31,11 @@ export function buildMagicLinkEmail(input: {
       ? "Tautan masuk staff StudyDate ID"
       : "Tautan masuk StudyDate ID";
 
+  const logoSrc = input.logoSrc?.trim() || `cid:${STUDYDATE_EMAIL_LOGO_CID}`;
+
   const text = [
+    "StudyDate ID",
+    "",
     heading,
     "",
     lead,
@@ -50,8 +62,8 @@ export function buildMagicLinkEmail(input: {
         <table role="presentation" width="100%" style="max-width:560px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:22px;overflow:hidden;">
           <tr>
             <td style="padding:28px 28px 12px 28px;">
-              <p style="margin:0;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:${BRAND_BLUE};font-weight:700;">StudyDate ID</p>
-              <h1 style="margin:16px 0 0 0;font-family:Poppins,Inter,Segoe UI,sans-serif;font-size:28px;line-height:1.2;letter-spacing:-0.03em;color:${BRAND_NAVY};">${heading}</h1>
+              <img src="${logoSrc}" alt="StudyDate ID" width="168" height="36" style="display:block;width:168px;height:auto;border:0;outline:none;text-decoration:none;" />
+              <h1 style="margin:20px 0 0 0;font-family:Poppins,Inter,Segoe UI,sans-serif;font-size:28px;line-height:1.2;letter-spacing:-0.03em;color:${BRAND_NAVY};">${heading}</h1>
               <p style="margin:16px 0 0 0;font-size:16px;line-height:1.65;color:#4B5565;">${lead}</p>
               <p style="margin:28px 0 0 0;">
                 <a href="${input.confirmUrl}" style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;text-decoration:none;font-weight:700;font-size:15px;padding:14px 22px;border-radius:12px;">Masuk sekarang</a>

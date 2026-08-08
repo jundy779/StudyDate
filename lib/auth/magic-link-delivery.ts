@@ -1,11 +1,30 @@
 import "server-only";
 
-import { buildMagicLinkEmail } from "@/lib/email/magic-link-template";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import {
+  buildMagicLinkEmail,
+  STUDYDATE_EMAIL_LOGO_CID,
+} from "@/lib/email/magic-link-template";
 import {
   isStudyDateEmailConfigured,
   sendStudyDateEmail,
 } from "@/lib/email/mailer";
 import { createServerAdminClient } from "@/lib/supabase/admin";
+
+const EMAIL_LOGO_PATH = join(
+  process.cwd(),
+  "public/brand/logo-horizontal-color.png",
+);
+
+function loadStudyDateEmailLogo() {
+  try {
+    return readFileSync(EMAIL_LOGO_PATH);
+  } catch {
+    return null;
+  }
+}
 
 export type DeliverMagicLinkInput = {
   email: string;
@@ -79,9 +98,15 @@ export async function deliverStudyDateMagicLink(input: DeliverMagicLinkInput) {
   confirmUrl.searchParams.set("type", "email");
   confirmUrl.searchParams.set("next", input.nextPath);
 
+  const logo = loadStudyDateEmailLogo();
+  const logoSrc = logo
+    ? `cid:${STUDYDATE_EMAIL_LOGO_CID}`
+    : new URL("/brand/logo-horizontal-color.png", input.origin).toString();
+
   const template = buildMagicLinkEmail({
     kind: input.kind,
     confirmUrl: confirmUrl.toString(),
+    logoSrc,
   });
 
   await sendStudyDateEmail({
@@ -89,5 +114,15 @@ export async function deliverStudyDateMagicLink(input: DeliverMagicLinkInput) {
     subject: template.subject,
     text: template.text,
     html: template.html,
+    inlineAttachments: logo
+      ? [
+          {
+            filename: "logo-horizontal-color.png",
+            content: logo,
+            contentId: STUDYDATE_EMAIL_LOGO_CID,
+            contentType: "image/png",
+          },
+        ]
+      : undefined,
   });
 }

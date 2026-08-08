@@ -35,13 +35,21 @@ test("StudyDate email templates are branded and omit Supabase wording", () => {
   assert.match(template, /StudyDate ID/);
   assert.match(template, /#014FE7/);
   assert.match(template, /MEET • CONNECT • GROW/);
+  assert.match(template, /logoSrc|STUDYDATE_EMAIL_LOGO_CID|alt="StudyDate ID"/);
   assert.doesNotMatch(template, /supabase|Supabase/i);
+});
+
+test("magic-link delivery attaches StudyDate brand logo inline", () => {
+  assert.match(delivery, /logo-horizontal-color\.png/);
+  assert.match(delivery, /STUDYDATE_EMAIL_LOGO_CID/);
+  assert.match(delivery, /inlineAttachments/);
 });
 
 test("mailer supports Resend or SMTP and requires StudyDate from address", () => {
   assert.match(mailer, /STUDYDATE_RESEND_API_KEY/);
   assert.match(mailer, /STUDYDATE_SMTP_HOST/);
   assert.match(mailer, /STUDYDATE_EMAIL_FROM/);
+  assert.match(mailer, /inlineAttachments/);
   assert.doesNotMatch(mailer, /signInWithOtp/);
 });
 

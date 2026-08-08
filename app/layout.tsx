@@ -17,6 +17,20 @@ export const metadata: Metadata = {
     icon: "/brand/app-icon.png",
     apple: "/brand/app-icon.png",
   },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "StudyDate ID",
+    title: "StudyDate ID — Temukan koneksi di kampus",
+    description:
+      "Temukan people, groups, dan campus events untuk belajar, berteman, networking, berkolaborasi, dan membangun koneksi yang berarti.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "StudyDate ID — Temukan koneksi di kampus",
+    description:
+      "Temukan people, groups, dan campus events untuk belajar, berteman, networking, berkolaborasi, dan membangun koneksi yang berarti.",
+  },
 };
 
 const inter = Inter({

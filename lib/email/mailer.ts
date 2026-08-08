@@ -2,11 +2,20 @@ import "server-only";
 
 import nodemailer from "nodemailer";
 
+export type StudyDateEmailInlineAttachment = {
+  filename: string;
+  content: Buffer;
+  /** Content-ID without angle brackets; referenced in HTML as cid:<id>. */
+  contentId: string;
+  contentType?: string;
+};
+
 export type StudyDateOutboundEmail = {
   to: string;
   subject: string;
   text: string;
   html: string;
+  inlineAttachments?: StudyDateEmailInlineAttachment[];
 };
 
 export function isStudyDateEmailConfigured() {
@@ -47,6 +56,12 @@ async function sendViaResend(message: StudyDateOutboundEmail) {
       subject: message.subject,
       html: message.html,
       text: message.text,
+      attachments: message.inlineAttachments?.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content.toString("base64"),
+        content_id: attachment.contentId,
+        content_type: attachment.contentType ?? "image/png",
+      })),
     }),
     cache: "no-store",
     signal: AbortSignal.timeout(15_000),
@@ -81,6 +96,13 @@ async function sendViaSmtp(message: StudyDateOutboundEmail) {
     subject: message.subject,
     text: message.text,
     html: message.html,
+    attachments: message.inlineAttachments?.map((attachment) => ({
+      filename: attachment.filename,
+      content: attachment.content,
+      cid: attachment.contentId,
+      contentType: attachment.contentType ?? "image/png",
+      contentDisposition: "inline" as const,
+    })),
   });
 }
 
