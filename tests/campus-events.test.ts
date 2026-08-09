@@ -12,13 +12,18 @@ import {
 } from "../lib/events/validation.ts";
 
 const root = process.cwd();
-const sql = readFileSync(
+const baseSql = readFileSync(
+  join(root, "supabase/migrations/202608090003_create_campus_events_v1.sql"),
+  "utf8",
+);
+const detailFixSql = readFileSync(
   join(
     root,
-    "supabase/migrations/202608090003_create_campus_events_v1.sql",
+    "supabase/migrations/202608090004_fix_campus_event_detail_projection.sql",
   ),
   "utf8",
 );
+const sql = `${baseSql}\n${detailFixSql}`;
 const service = readFileSync(join(root, "lib/events/service.ts"), "utf8");
 const packageJson = readFileSync(join(root, "package.json"), "utf8");
 const NOW = Date.UTC(2026, 7, 9, 0, 0);
@@ -333,10 +338,16 @@ test("CE-41 archived hanya organizer atau RSVP history", () => {
   assert.throws(() => model.detail(C, slug), /unavailable/);
 });
 test("CE-42 detail publik berisi count tanpa attendee list", () => {
-  const detail = sql.match(/create or replace function public\.get_campus_event[\s\S]*?create or replace function public\.create_campus_event/)?.[0];
+  const detail = detailFixSql.match(
+    /create or replace function public\.get_campus_event[\s\S]*?revoke all on function public\.get_campus_event/,
+  )?.[0];
   assert.ok(detail);
   assert.match(detail, /going_count/);
   assert.match(detail, /organizer_alias text/);
+  assert.match(
+    detail,
+    /organizer_profile\.verification_status = 'verified',\s*target\.status,\s*target\.ends_at <=/,
+  );
   assert.doesNotMatch(
     detail.match(/returns table \(([\s\S]*?)\)\nlanguage/)?.[1] ?? "",
     /\b(user_id|email|first_name|contact|uuid)\b/i,
