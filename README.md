@@ -71,9 +71,9 @@ Implemented:
 - Study Circle v1 at `/app/circles` with privacy-safe membership, group discussion,
   Introduction handoff, block/report integration, and deployed migrations
   `202608090001`–`202608090002`
-- Campus Events v1 implemented locally at `/app/events` with public-place-only venues,
+- Campus Events v1 deployed at `/app/events` with public-place-only venues,
   atomic-capacity RSVP, private attendee projection, Introduction/block/report reuse, and
-  local migration `202608090003`
+  migrations `202608090003`–`202608090004`
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -377,12 +377,13 @@ filtering, all three report contexts, Introduction and block integration, RLS/di
 denial, safe rendered payloads, zero automatic private-flow side effects, Notification
 silence for Circle operations, authenticated UI smoke, and complete synthetic cleanup.
 
-### Campus Events v1 (local-only)
+### Campus Events v1 (deployed)
 
-Migration `202608090003_create_campus_events_v1.sql` adds open or same-campus Events with
-opaque routes, `timestamptz` scheduling, constrained public-place venues, required
-server-side safety affirmations, atomic RSVP capacity, sanitized audit events, and
-report-scoped Moderation Triage evidence. It has not been applied remotely.
+Migrations `202608090003_create_campus_events_v1.sql` and
+`202608090004_fix_campus_event_detail_projection.sql` are applied remotely. They add open
+or same-campus Events with opaque routes, `timestamptz` scheduling, constrained
+public-place venues, required server-side safety affirmations, atomic RSVP capacity,
+sanitized audit events, and report-scoped Moderation Triage evidence.
 
 Routes are `/app/events`, `/app/events/create`, and
 `/app/events/<opaque-public-slug>`. Discovery exposes real attendee counts, while the safe
@@ -398,6 +399,13 @@ not emit update notifications; capacity still cannot drop below active RSVP.
 There is no waitlist, ticketing, payment, check-in, Event chat, arbitrary link, Circle
 association, recommendation ranking, or Event notification. Student Verification remains
 globally disabled and is not an Event prerequisite.
+
+The live synthetic A/B/C/D audit verifies venue and timestamp rejection, open/campus
+discovery, safe detail and attendee projections, exact final-slot concurrency, RSVP
+cancel/rejoin, block and Introduction behavior, schedule/venue locking, organizer/staff
+isolation, scoped reports, cancel/archive retention, RLS/direct-grant denial, zero
+automatic private-flow or Event Notification writes, authenticated UI smoke, and complete
+cleanup. The post-deployment migration dry-run is empty.
 
 ### Live Supabase verification checklist
 

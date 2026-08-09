@@ -369,7 +369,7 @@ isolation, open/campus eligibility, discussion dan report scope, block tanpa men
 group history, archive retention, zero automatic private-flow/Notification side effects,
 authenticated UI smoke, dan cleanup sintetis lengkap. Post-deploy migration dry-run kosong.
 
-## 12h. Campus Events v1 architecture (local-only)
+## 12h. Campus Events v1 architecture (deployed)
 
 ```text
 /app/events
@@ -380,9 +380,11 @@ authenticated UI smoke, dan cleanup sintetis lengkap. Post-deploy migration dry-
  -> optional attendee Introduction memakai sistem Introduction existing
 ```
 
-Migration lokal `202608090003` menambahkan `campus_events`, `campus_event_rsvps`,
+Migration `202608090003` dan forward fix `202608090004` telah diterapkan remote.
+Migration tersebut menambahkan `campus_events`, `campus_event_rsvps`,
 `campus_event_audit_events`, dan `campus_event_rate_limits`, serta referensi report-scoped
-ke `user_reports`. Seluruh tabel RLS-enabled tanpa direct grant bagi `anon` atau
+ke `user_reports`; forward fix menyelaraskan urutan projection RPC detail yang ditemukan
+oleh audit live pertama. Seluruh tabel RLS-enabled tanpa direct grant bagi `anon` atau
 `authenticated`; operasi client hanya melalui `SECURITY DEFINER`, `search_path = ''`,
 actor `auth.uid()`, dan opaque public slug.
 
@@ -415,6 +417,13 @@ non-organizer pertama karena v1 tidak mengirim notifikasi perubahan. Cancel tida
 dipulihkan, mempertahankan RSVP/evidence, dan
 archive hanya tersedia setelah cancel atau Event berakhir. Circle association dan
 notification perubahan/cancel ditunda agar authorization dan schema v1 tetap sempit.
+
+Live audit A/B/C/D mengonfirmasi public-place filtering, waktu/timezone, open/campus
+eligibility, RSVP idempotency dan exact final-slot concurrency, safe detail/attendee
+projection, block/Introduction integration, report scope, organizer/staff isolation,
+cancel/archive retention, direct-table denial, zero automatic private-flow/Event
+Notification side effects, authenticated UI smoke, dan cleanup sintetis lengkap.
+Post-deploy migration dry-run kosong.
 
 ## 13. Staff authorization v1
 

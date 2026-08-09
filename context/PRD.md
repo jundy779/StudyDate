@@ -319,13 +319,15 @@ authorization, discussion privacy, report-scoped evidence, Introduction/block in
 arsip, RLS/grants, tidak adanya side effect ke private connection flow atau Notifications,
 safe UI projection, serta cleanup lengkap. Student Verification tetap dinonaktifkan.
 
-## 13. Implemented locally — Campus Events v1
+## 13. Implemented and deployed — Campus Events v1
 
-Campus Events v1 tersedia secara lokal melalui migration
-`202608090003_create_campus_events_v1.sql` dan belum diterapkan ke remote. Mahasiswa
-onboarded dapat menemukan acara mendatang yang terbuka atau terbatas pada kampus yang
-sama, membuat acara di tempat publik, RSVP, membatalkan RSVP, serta melaporkan acara
-atau organizer melalui Moderation Triage existing.
+Campus Events v1 tersedia melalui migration
+`202608090003_create_campus_events_v1.sql` dan forward fix
+`202608090004_fix_campus_event_detail_projection.sql`; keduanya telah diterapkan ke
+remote dan post-deploy dry-run kosong. Mahasiswa onboarded dapat menemukan acara
+mendatang yang terbuka atau terbatas pada kampus yang sama, membuat acara di tempat
+publik, RSVP, membatalkan RSVP, serta melaporkan acara atau organizer melalui Moderation
+Triage existing.
 
 Lifecycle Event adalah `scheduled | cancelled | archived`; status selesai diturunkan dari
 `end_at` agar tidak memerlukan cron. Waktu disimpan sebagai `timestamptz` dan input lokal
@@ -354,6 +356,12 @@ browse, RSVP, cancel RSVP, dan edit Event tidak membuat private-flow atau Notifi
 Circle association, event chat, waitlist, ticketing, pembayaran, check-in, reminder, dan
 notification pembatalan ditunda dari v1. Student Verification tetap dinonaktifkan dan
 bukan syarat penggunaan Event.
+
+Live audit sintetis A/B/C/D mengonfirmasi venue dan batas waktu, open/campus discovery,
+RSVP idempotent serta final-slot concurrency, attendee projection aman, block dan
+Introduction existing, organizer/staff isolation, report-scoped evidence, schedule/venue
+lock, cancel/archive retention, RLS/grants, zero private-flow atau Event Notification
+otomatis, authenticated UI smoke, serta cleanup lengkap.
 
 ## 14. Planned — Safety flows
 

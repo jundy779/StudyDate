@@ -172,7 +172,7 @@ focus jelas. Native `details` dapat dipakai untuk tindakan sekunder tanpa modal 
 Tablet mempertahankan rail 88px, desktop sidebar 260px, mobile satu kolom, dan semua
 copy panjang wajib wrap tanpa horizontal overflow.
 
-### Campus Events v1 (local-only)
+### Campus Events v1 (deployed)
 
 `/app/events` memakai daftar editorial acara mendatang dengan filter nama, kategori, dan
 cakupan. Jangan memakai poster palsu, ranking, trending, popularity score, scarcity copy,

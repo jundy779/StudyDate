@@ -44,7 +44,10 @@ Sumber migration:
     forward fix untuk ambiguitas PL/pgSQL pada member/message/report RPC; diterapkan
     remote lalu diverifikasi melalui live A/B/C/D audit
 20. `supabase/migrations/202608090003_create_campus_events_v1.sql` —
-    Campus Events v1; local-only, belum diterapkan remote
+    Campus Events v1; diterapkan remote setelah exact dry-run
+21. `supabase/migrations/202608090004_fix_campus_event_detail_projection.sql` —
+    forward fix urutan projection RPC detail; diterapkan remote setelah live defect
+    terkonfirmasi
 
 ### `early_access_waitlist`
 
@@ -506,7 +509,7 @@ yang tidak ambigu. Signature, safe projection, `search_path = ''`, actor `auth.u
 revoke `public`/`anon`, dan grant authenticated tetap dipertahankan. Live audit
 mengonfirmasi ketiga RPC, report excerpt 280 karakter, direct-table denial, serta cleanup.
 
-## 11. Campus Events v1 (migration `202608090003`, local-only)
+## 11. Campus Events v1 (migrations `202608090003`–`202608090004`, deployed)
 
 Tables:
 
@@ -536,6 +539,14 @@ list_campus_event_attendees
 report_campus_event
 report_campus_event_organizer
 ```
+
+Forward fix `202608090004` mempertahankan signature, grants, dan privacy projection
+`get_campus_event`, tetapi menyelaraskan kolom `status` pada urutan `RETURN QUERY`.
+Live audit A/B/C/D mengonfirmasi detail organizer/non-attendee/attendee, safe projection,
+venue dan waktu, campus scope, exact final-slot concurrency, cancel/rejoin, block dan
+Introduction, report evidence, cancel/archive, direct-table denial, zero automatic
+private-flow/Event Notification writes, authenticated UI smoke, serta cleanup tanpa sisa.
+Post-deploy migration dry-run kosong.
 
 Semua table RLS-enabled dan direct grant dicabut dari `public`, `anon`, serta
 `authenticated`. Capacity authoritative memakai row lock pada `campus_events` sebelum
