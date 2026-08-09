@@ -21,8 +21,6 @@ const interestValues = INTERESTS.map((interest) => interest.value) as [
 ];
 
 export const profileUpdateSchema = z.object({
-  firstName: z.string().trim().min(1).max(80),
-  lastName: z.string().trim().min(1).max(80),
   campus: z.string().trim().min(2).max(120),
   studyProgram: z.string().trim().min(2).max(120),
   degreeLevel: z.enum(degreeLevels),
@@ -57,8 +55,6 @@ export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 
 export type EditableStudentProfile = {
   publicAlias: string;
-  firstName: string;
-  lastName: string | null;
   campus: string;
   studyProgram: string;
   degreeLevel: string;

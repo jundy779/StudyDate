@@ -1,7 +1,10 @@
 import { signOut } from "@/app/app/actions";
 import { reactivateStudentAccountAction } from "@/app/app/profile/account-actions";
 import { AccountDangerZone } from "@/components/profile/account-danger-zone";
-import { getStudentDeactivatedAt } from "@/lib/account/lifecycle";
+import {
+  getMyAccountDeletionStatus,
+  getStudentDeactivatedAt,
+} from "@/lib/account/lifecycle";
 import { getAuthenticatedUser } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -16,7 +19,13 @@ async function ReactivateContent({ searchParams }: ReactivatePageProps) {
     redirect("/login");
   }
 
-  const deactivatedAt = await getStudentDeactivatedAt(user.id);
+  const [deactivatedAt, deletionStatus] = await Promise.all([
+    getStudentDeactivatedAt(user.id),
+    getMyAccountDeletionStatus(),
+  ]);
+  if (deletionStatus) {
+    redirect("/account/deletion-pending");
+  }
   if (!deactivatedAt) {
     redirect("/app");
   }
@@ -33,8 +42,8 @@ async function ReactivateContent({ searchParams }: ReactivatePageProps) {
         </h1>
         <p className="mt-5 text-lg leading-8 text-brand-muted">
           Akun mahasiswamu dinonaktifkan. Data masih ada di server. Aktifkan
-          kembali untuk masuk ke aplikasi, atau hapus permanen jika ingin semua
-          data hilang.
+          kembali untuk masuk ke aplikasi, atau ajukan penghapusan akun.
+          Cleanup final menunggu kebijakan retensi yang disetujui.
         </p>
         {errorCode === "reactivate" ? (
           <p role="alert" className="mt-4 text-sm font-semibold text-brand-error">

@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  getMyAccountDeletionStatus,
   getStudentDeactivatedAt,
 } from "@/lib/account/lifecycle";
 import { getAuthenticatedUser } from "@/lib/auth/session";
@@ -19,7 +20,17 @@ export async function requireActiveStudentAppAccess() {
     return user;
   }
 
-  const deactivatedAt = await getStudentDeactivatedAt(user.id);
+  const [deactivatedAt, deletionStatus] = await Promise.all([
+    getStudentDeactivatedAt(user.id),
+    getMyAccountDeletionStatus(),
+  ]);
+  if (
+    deletionStatus === "pending" ||
+    deletionStatus === "processing" ||
+    deletionStatus === "failed"
+  ) {
+    redirect("/account/deletion-pending");
+  }
   if (deactivatedAt) {
     redirect("/account/reactivate");
   }

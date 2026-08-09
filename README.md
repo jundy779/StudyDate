@@ -74,6 +74,10 @@ Implemented:
 - Campus Events v1 deployed at `/app/events` with public-place-only venues,
   atomic-capacity RSVP, private attendee projection, Introduction/block/report reuse, and
   migrations `202608090003`–`202608090004`
+- Account & Privacy Controls v1 at `/app/settings` for bounded profile editing,
+  People visibility, own-block management, session basics, privacy summary, and
+  an immediate privacy-lock deletion request. Migration `202608100001` is
+  LOCAL-ONLY; final destructive cleanup awaits Owner retention decisions.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -290,6 +294,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:notifications` | Run Notifications v1 static/privacy/behavioral tests |
 | `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
 | `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, and lifecycle tests |
+| `npm run test:account-privacy` | Run Account & Privacy settings, block, projection, deletion-gate, and lifecycle tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
@@ -316,6 +321,7 @@ npm run test:moderation
 npm run test:notifications
 npm run test:circles
 npm run test:events
+npm run test:account-privacy
 npm run test:browser
 npm run build
 git status --short

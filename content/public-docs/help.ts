@@ -95,7 +95,7 @@ export const helpSections: PublicDocSection[] = [
           "Email yang didukung: @gmail.com, @vk.com, atau berakhiran .ac.id / .sch.id.",
           "Periksa folder spam jika email tautan belum muncul.",
           "Pastikan kamu membuka tautan di perangkat yang sama dengan yang kamu maksudkan untuk memakai sesi.",
-          "Belum ada penghapusan akun mandiri; sampaikan permintaan melalui kontak di bawah.",
+          "Permintaan penghapusan akun tersedia di Pengaturan. Profil dan akses sosial langsung dikunci; cleanup final mengikuti kebijakan retensi yang telah ditinjau.",
         ],
       },
       {
@@ -125,7 +125,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Email dukungan publik resmi domain studydate.id belum dipublikasikan di situs ini. Untuk pertanyaan umum sebelum punya akun, gunakan formulir Early Access di beranda. Untuk isu keamanan atau pelanggaran di dalam aplikasi, utamakan fitur laporkan. Permintaan kebijakan atau penghapusan akun dapat disampaikan melalui formulir Early Access dengan subjek yang jelas, atau diperbarui di halaman ini setelah Owner menetapkan kanal resmi.",
+        text: "Email dukungan publik resmi domain studydate.id belum dipublikasikan di situs ini. Untuk pertanyaan umum sebelum punya akun, gunakan formulir Early Access di beranda. Untuk isu keamanan atau pelanggaran di dalam aplikasi, utamakan fitur laporkan. Pengguna yang sudah masuk dapat mengirim permintaan penghapusan dari Pengaturan.",
       },
     ],
   },

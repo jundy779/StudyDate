@@ -4,6 +4,7 @@ import { saveStudentProfile } from "@/app/app/profile/actions";
 import { PeopleProfileCard } from "@/components/people/people-profile-card";
 import { CONNECTION_GOALS, INTERESTS } from "@/lib/onboarding/constants";
 import type { DiscoveryProfile } from "@/lib/people/service";
+import type { OnboardingOption } from "@/lib/onboarding/options/shared";
 import {
   countCompletedProfileItems,
   getProfileCompletenessItems,
@@ -37,6 +38,8 @@ const MASCOT_LABEL: Record<ProfileMascot, string> = {
 
 type ProfileEditFormProps = {
   profile: EditableStudentProfile;
+  campusOptions?: readonly OnboardingOption[];
+  studyProgramOptions?: readonly OnboardingOption[];
 };
 
 function SelectionChip({
@@ -96,7 +99,11 @@ function Section({
   );
 }
 
-export function ProfileEditForm({ profile }: ProfileEditFormProps) {
+export function ProfileEditForm({
+  profile,
+  campusOptions = [],
+  studyProgramOptions = [],
+}: ProfileEditFormProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -125,8 +132,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const completeness = useMemo(
     () =>
       getProfileCompletenessItems({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
         campus,
         studyProgram,
         cityRegion,
@@ -139,8 +144,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         instagramUsername,
       }),
     [
-      profile.firstName,
-      profile.lastName,
       campus,
       studyProgram,
       cityRegion,
@@ -286,51 +289,49 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     >
       <div className="order-2 space-y-4 lg:order-1 lg:space-y-5">
         <Section
-          title="Data diri"
-          description={`Nama lengkap privat. Di People orang lain melihat ${profile.publicAlias}.`}
+          title="Profil belajar"
+          description="Informasi ini membantu mahasiswa lain menemukan konteks belajar yang cocok."
         >
           <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             <label className="text-sm font-semibold">
-              Nama depan
-              <input
-                name="firstName"
-                required
-                maxLength={80}
-                defaultValue={profile.firstName}
-                className="focus-ring mt-1.5 h-11 w-full rounded-xl border border-brand-border px-3 font-normal"
-              />
-            </label>
-            <label className="text-sm font-semibold">
-              Nama belakang
-              <input
-                name="lastName"
-                required
-                maxLength={80}
-                defaultValue={profile.lastName ?? ""}
-                className="focus-ring mt-1.5 h-11 w-full rounded-xl border border-brand-border px-3 font-normal"
-              />
-            </label>
-            <label className="text-sm font-semibold">
               Kampus
-              <input
+              <select
                 name="campus"
                 required
-                maxLength={120}
                 value={campus}
                 onChange={(event) => setCampus(event.target.value)}
                 className="focus-ring mt-1.5 h-11 w-full rounded-xl border border-brand-border px-3 font-normal"
-              />
+              >
+                {!campusOptions.some((option) => option.label === campus) ? (
+                  <option value={campus}>{campus}</option>
+                ) : null}
+                {campusOptions.map((option) => (
+                  <option key={option.searchValue} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-sm font-semibold">
               Program studi
-              <input
+              <select
                 name="studyProgram"
                 required
-                maxLength={120}
                 value={studyProgram}
                 onChange={(event) => setStudyProgram(event.target.value)}
                 className="focus-ring mt-1.5 h-11 w-full rounded-xl border border-brand-border px-3 font-normal"
-              />
+              >
+                {!studyProgramOptions.some(
+                  (option) => option.label === studyProgram,
+                ) ? (
+                  <option value={studyProgram}>{studyProgram}</option>
+                ) : null}
+                {studyProgramOptions.map((option) => (
+                  <option key={option.searchValue} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-sm font-semibold">
               Jenjang
@@ -525,7 +526,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 Tampilkan profil anonim di People
               </span>
               <span className="mt-0.5 block text-xs leading-5 text-brand-muted">
-                Butuh LinkedIn. Tanpa nama lengkap, foto wajah, atau kontak.
+                Saat dimatikan, profil hilang dari hasil People baru. Koneksi,
+                percakapan, Circle, Event, dan data yang sudah dibuka tidak
+                otomatis dihapus.
               </span>
             </span>
           </label>

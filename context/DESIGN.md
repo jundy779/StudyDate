@@ -199,6 +199,20 @@ Mobile satu kolom dengan date/time controls yang dapat dipakai; tablet mempertah
 rail 88px dan desktop sidebar 260px. Tidak ada event chat, map embed, arbitrary links,
 poster, fake people, atau visual dating.
 
+### Account & Privacy Controls v1 (LOCAL-ONLY)
+
+`/app/settings` memakai satu halaman dengan section Profil, Privasi, Blokir,
+dan Akun. Gunakan heading, divider, whitespace, dan satu kolom baca; jangan
+mengubahnya menjadi grid card dashboard. Navigasi anchor dapat scroll
+horizontal pada mobile tanpa membuat page overflow.
+
+Profil menjelaskan alias immutable dan safe People projection. Privasi
+membedakan data terlihat, privat, serta dibuka melalui consent existing tanpa
+menampilkan one-sided state. Block list memakai maskot resmi dan confirmation
+dialog aksesibel dengan Escape/focus restore. Delete request memakai dialog
+tenang, acknowledgement eksplisit, dan menjelaskan privacy lock langsung serta
+cleanup final yang masih menunggu kebijakan Owner.
+
 ### Student Verification Center
 
 Gunakan utility copy dan struktur tiga langkah: Data akademik, Bukti kepemilikan, Persetujuan. Status:

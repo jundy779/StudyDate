@@ -22,6 +22,7 @@ import {
   ScrollText,
   Shield,
   ShieldCheck,
+  Settings,
   UserCog,
   Users,
   UsersRound,
@@ -50,6 +51,7 @@ type NavigationIcon =
   | "campuses"
   | "study-programs"
   | "profile"
+  | "settings"
   | "help"
   | "privacy-safety";
 
@@ -88,6 +90,7 @@ const iconMap = {
   campuses: GraduationCap,
   "study-programs": BookOpen,
   profile: CircleUserRound,
+  settings: Settings,
   help: LifeBuoy,
   "privacy-safety": Shield,
 } as const;
@@ -132,10 +135,10 @@ const studentItems: NavigationItem[] = [
     icon: "verification",
   },
   {
-    href: "/app/profile",
-    label: "Profil",
-    key: "profile",
-    icon: "profile",
+    href: "/app/settings",
+    label: "Pengaturan",
+    key: "settings",
+    icon: "settings",
   },
 ];
 

@@ -20,9 +20,11 @@
     "test:notifications": "node --experimental-strip-types --test tests/notifications.test.ts",
     "test:circles": "node --experimental-strip-types --test tests/study-circles.test.ts",
     "test:events": "node --experimental-strip-types --test tests/campus-events.test.ts",
+    "test:account-privacy": "node --experimental-strip-types --test tests/account-privacy-controls.test.ts tests/profile-edit.test.ts tests/account-lifecycle.test.ts",
     "test:audit-closure": "node --experimental-strip-types --test tests/audit-closure.test.ts",
     "test:all": "node --experimental-strip-types --test tests/*.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
+    "test:account-privacy:browser": "node scripts/account-privacy-responsive-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs"
   },
   "dependencies": {

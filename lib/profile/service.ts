@@ -11,8 +11,6 @@ export type { EditableStudentProfile };
 
 type ProfileRow = {
   public_alias: string;
-  first_name: string;
-  last_name: string | null;
   campus: string;
   study_program: string;
   degree_level: string;
@@ -33,7 +31,7 @@ export async function getEditableStudentProfile(
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "public_alias, first_name, last_name, campus, study_program, degree_level, semester, city_region, short_intro, interests, connection_goals, avatar_mascot, is_discoverable, verification_status",
+      "public_alias, campus, study_program, degree_level, semester, city_region, short_intro, interests, connection_goals, avatar_mascot, is_discoverable, verification_status",
     )
     .eq("user_id", userId)
     .maybeSingle<ProfileRow>();
@@ -46,8 +44,6 @@ export async function getEditableStudentProfile(
 
   return {
     publicAlias: data.public_alias,
-    firstName: data.first_name,
-    lastName: data.last_name,
     campus: data.campus,
     studyProgram: data.study_program,
     degreeLevel: data.degree_level,
@@ -66,9 +62,7 @@ export async function getEditableStudentProfile(
 
 export async function updateMyStudentProfile(input: ProfileUpdateInput) {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("update_my_student_profile", {
-    p_first_name: input.firstName,
-    p_last_name: input.lastName,
+  const { error } = await supabase.rpc("update_my_student_profile_settings", {
     p_campus: input.campus,
     p_study_program: input.studyProgram,
     p_degree_level: input.degreeLevel,

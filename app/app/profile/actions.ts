@@ -30,8 +30,6 @@ export async function saveStudentProfile(formData: FormData) {
   }
 
   const parsed = profileUpdateSchema.safeParse({
-    firstName: formData.get("firstName"),
-    lastName: formData.get("lastName"),
     campus: formData.get("campus"),
     studyProgram: formData.get("studyProgram"),
     degreeLevel: formData.get("degreeLevel"),
@@ -67,6 +65,7 @@ export async function saveStudentProfile(formData: FormData) {
 
   revalidatePath("/app");
   revalidatePath("/app/profile");
+  revalidatePath("/app/settings");
   revalidatePath("/app/people");
   return { ok: true as const };
 }

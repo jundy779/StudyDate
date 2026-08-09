@@ -425,6 +425,29 @@ cancel/archive retention, direct-table denial, zero automatic private-flow/Event
 Notification side effects, authenticated UI smoke, dan cleanup sintetis lengkap.
 Post-deploy migration dry-run kosong.
 
+## 12i. Account & Privacy Controls v1 (LOCAL-ONLY)
+
+`/app/settings` memakai satu Server Component dengan empat section dan server
+actions/RPC sempit. Profil settings tidak menerima target user, nama privat,
+verification, staff, alias, atau reveal data. Perubahan kampus/program harus
+memilih katalog approved; nilai legacy saat ini boleh tetap tampil tetapi
+tidak dapat disimpan sebagai nilai baru tanpa approval katalog.
+
+Block management memakai `list_my_blocked_students` dan
+`unblock_my_blocked_student(alias)`. Projection hanya alias, konteks akademik,
+maskot, dan waktu block milik actor. Tidak ada counterpart block state.
+
+`account_deletion_requests` adalah antrean internal idempotent
+`pending | processing | completed | failed`. Request student hanya membuat
+privacy lock (`is_discoverable=false`, `deactivated_at`), lalu
+`is_eligible_introduction_student` menjadi shared database gate untuk
+Introduction, Chat, Mutual, Identity, Contact, Circle, dan Event. Route guard
+mengarahkan akun request ke `/account/deletion-pending`.
+
+Tidak ada student-executable cleanup worker. Final Auth/DB/Storage cleanup
+ditunda sampai kebijakan Owner disetujui; migration
+`202608100001_account_privacy_controls_v1.sql` tidak diterapkan remote.
+
 ## 13. Staff authorization v1
 
 StudyDate memakai satu Supabase Auth untuk Student, Admin, dan Owner. `auth.users.app_metadata` memberi coarse trusted

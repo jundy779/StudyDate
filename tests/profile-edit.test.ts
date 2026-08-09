@@ -19,6 +19,13 @@ const interestsMigration = readFileSync(
   ),
   "utf8",
 );
+const settingsMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608100001_account_privacy_controls_v1.sql",
+  ),
+  "utf8",
+);
 const page = readFileSync(join(root, "app/app/profile/page.tsx"), "utf8");
 const form = readFileSync(
   join(root, "components/profile/profile-edit-form.tsx"),
@@ -34,6 +41,18 @@ test("profile self-edit migration hardens update RPC", () => {
   assert.doesNotMatch(migration, /identity-reveal-photos/);
 });
 
+test("settings migration replaces legacy identity editing with bounded fields", () => {
+  assert.match(settingsMigration, /update_my_student_profile_settings/);
+  assert.doesNotMatch(
+    settingsMigration.match(
+      /create or replace function public\.update_my_student_profile_settings[\s\S]*?revoke all on function public\.update_my_student_profile_settings/,
+    )?.[0] ?? "",
+    /p_first_name|p_last_name/,
+  );
+  assert.match(settingsMigration, /campus_options/);
+  assert.match(settingsMigration, /study_program_options/);
+});
+
 test("profile interests/goals migration extends update RPC", () => {
   assert.match(interestsMigration, /p_interests text\[\]/);
   assert.match(interestsMigration, /p_connection_goals text\[\]/);
@@ -42,7 +61,7 @@ test("profile interests/goals migration extends update RPC", () => {
 });
 
 test("profile edit UI separates mascot from clear-face photos", () => {
-  assert.match(page, /Edit profil/);
+  assert.match(page, /\/app\/settings#profil/);
   assert.match(form, /Avatar & visibilitas/);
   assert.match(form, /Identity Reveal/);
   assert.match(form, /PROFILE_MASCOT_OPTIONS/);
@@ -60,8 +79,6 @@ test("profile edit UI includes completeness, preview, and interests", () => {
 
 test("profile completeness checklist tracks expected items", () => {
   const incomplete = getProfileCompletenessItems({
-    firstName: "A",
-    lastName: "B",
     campus: "UMN",
     studyProgram: "Informatika",
     cityRegion: null,
@@ -76,8 +93,6 @@ test("profile completeness checklist tracks expected items", () => {
   assert.equal(countCompletedProfileItems(incomplete), 1);
 
   const complete = getProfileCompletenessItems({
-    firstName: "A",
-    lastName: "B",
     campus: "UMN",
     studyProgram: "Informatika",
     cityRegion: "Tangerang",

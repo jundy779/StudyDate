@@ -218,7 +218,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah Identity Reveal atau Contact Reveal selesai, akses terbatas dapat dipertahankan sesuai perilaku produk bila percakapan diakhiri secara normal. Mahasiswa dapat menonaktifkan atau menghapus akun dari Edit profil; lihat bagian penghapusan akun.",
+        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah Identity Reveal atau Contact Reveal selesai, akses terbatas dapat dipertahankan sesuai perilaku produk bila percakapan diakhiri secara normal. Mahasiswa dapat menonaktifkan akun atau mengirim permintaan penghapusan dari Pengaturan; lihat bagian penghapusan akun.",
       },
     ],
   },
@@ -228,7 +228,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Di Edit profil, akun mahasiswa dapat: (1) dinonaktifkan sementara—profil disembunyikan dari People dan akses aplikasi diblokir sampai diaktifkan kembali, sementara data tetap di server; atau (2) dihapus permanen. Penghapusan permanen menghapus akun autentikasi, profil, riwayat verifikasi dan bukti unggahan terkait, foto Identity Reveal milikmu, data percakapan yang ikut cascade, serta jejak waitlist/rate-limit untuk email akun. Tindakan ini tidak dapat dibatalkan. Akun staf tidak memakai alur self-service ini.",
+        text: "Di Pengaturan, akun mahasiswa dapat: (1) dinonaktifkan sementara—profil disembunyikan dari People dan akses aplikasi diblokir sampai diaktifkan kembali, sementara data tetap di server; atau (2) mengirim permintaan penghapusan. Saat permintaan diterima, profil segera disembunyikan dan akses sosial dinonaktifkan. Cleanup final belum dijalankan sampai Owner menyetujui kebijakan retensi untuk Identity Reveal, Contact Reveal, percakapan dan riwayat grup, bukti moderasi, Circle yang dimiliki, serta Event yang diorganisasi. Akun staf tidak memakai alur self-service ini.",
       },
     ],
   },
@@ -318,7 +318,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kamu dapat meninjau dan memperbarui data profil di Edit profil, mengatur visibilitas People, menonaktifkan atau menghapus akun mahasiswa secara mandiri, serta memakai blokir/lapor. Untuk permintaan akses tambahan atau koreksi yang belum tersedia di antarmuka, gunakan halaman Bantuan.",
+        text: "Kamu dapat meninjau dan memperbarui data profil belajar di Pengaturan, mengatur visibilitas People, mengelola blokir sendiri, menonaktifkan akun, atau mengirim permintaan penghapusan. Untuk permintaan akses tambahan atau koreksi yang belum tersedia di antarmuka, gunakan halaman Bantuan.",
       },
       {
         type: "ul",

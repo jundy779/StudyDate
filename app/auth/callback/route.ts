@@ -1,5 +1,6 @@
 import { getSafeAuthenticatedDestination } from "@/lib/auth/redirect";
 import { getPrivateProfile } from "@/lib/auth/session";
+import { getMyAccountDeletionStatus } from "@/lib/account/lifecycle";
 import {
   isAllowedStudentEmail,
   STUDENT_EMAIL_DOMAIN_ERROR,
@@ -69,6 +70,14 @@ export async function GET(request: NextRequest) {
   }
 
   const profile = await getPrivateProfile(user.id);
+  const deletionStatus = await getMyAccountDeletionStatus();
+  if (
+    deletionStatus === "pending" ||
+    deletionStatus === "processing" ||
+    deletionStatus === "failed"
+  ) {
+    redirect("/account/deletion-pending");
+  }
   if (profile?.deactivated_at) {
     redirect("/account/reactivate");
   }

@@ -48,6 +48,8 @@ Sumber migration:
 21. `supabase/migrations/202608090004_fix_campus_event_detail_projection.sql` —
     forward fix urutan projection RPC detail; diterapkan remote setelah live defect
     terkonfirmasi
+22. `supabase/migrations/202608100001_account_privacy_controls_v1.sql` —
+    Account & Privacy Controls v1; **LOCAL-ONLY, belum diterapkan remote**
 
 ### `early_access_waitlist`
 
@@ -124,6 +126,14 @@ revoked_at timestamptz null
 ```
 
 Consent types: terms, privacy, community_guidelines. Normal client tidak boleh menulis ulang consent timestamp.
+
+### `account_deletion_requests` (LOCAL-ONLY)
+
+Antrean internal idempotent per user dengan status `pending | processing |
+completed | failed`, timestamp lifecycle, retry count, dan sanitized
+`failure_code`. Table RLS-enabled tanpa direct grant ke student. Student hanya
+dapat memanggil request/status wrapper miliknya; processing/cleanup worker tidak
+diberikan kepada `authenticated`.
 
 ### `staff_members`
 
@@ -209,6 +219,21 @@ Requirements:
 
 Ketiga RPC memakai `SECURITY DEFINER`, fixed empty `search_path`, revoke dari `public`/`anon`, dan execute grant hanya
 untuk `authenticated`. Migration menambahkan partial alias index dan GIN indexes untuk interest serta connection goal.
+
+### Account & Privacy Controls RPC (LOCAL-ONLY)
+
+- `update_my_student_profile_settings`: actor `auth.uid()`, hanya field profil
+  belajar yang diizinkan, katalog campus/program approved, tanpa nama privat,
+  alias, NIM, verification, staff, atau reveal data.
+- `list_my_blocked_students`: blokir yang dibuat actor saja, safe anonymous
+  projection tanpa UUID/counterpart state.
+- `unblock_my_blocked_student`: alias-based, hanya menghapus row
+  `(blocker_id=auth.uid(), blocked_id=target)`.
+- `request_my_student_account_deletion`: idempotent, membuat privacy lock dan
+  tidak melakukan destructive cleanup.
+- `get_my_account_deletion_status`: hanya status/timestamp milik actor.
+- `is_eligible_introduction_student`: ditambahkan deactivation/deletion gate
+  yang digunakan kembali oleh private flow, Circle, dan Event.
 
 Migration Staff v1 mengganti projection RPC secara kompatibel untuk mengecualikan `staff_members.status = 'active'`
 dan menolak active staff mengaktifkan discoverability. Grant/reactivation juga memaksa profile yang sudah ada menjadi

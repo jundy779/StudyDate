@@ -363,6 +363,28 @@ Introduction existing, organizer/staff isolation, report-scoped evidence, schedu
 lock, cancel/archive retention, RLS/grants, zero private-flow atau Event Notification
 otomatis, authenticated UI smoke, serta cleanup lengkap.
 
+## 13b. Local-only — Account & Privacy Controls v1
+
+`/app/settings` menggabungkan Profil, Privasi, Blokir, dan Akun dalam satu
+halaman editorial. Mahasiswa dapat memperbarui kampus/program yang telah
+disetujui, jenjang, semester, wilayah umum, intro, minat/tujuan, maskot,
+default Contact Reveal privat, dan visibilitas People. Alias anonim tetap
+immutable; nama legal/privat, NIM, status staff/verifikasi, snapshot reveal,
+ciphertext, dan UUID tidak menjadi field settings.
+
+Daftar blokir hanya menunjukkan safe anonymous projection dari blokir yang
+dibuat user saat ini. Unblock tidak memulihkan Introduction, chat, atau reveal.
+Discoverability OFF hanya menutup hasil/direct detail People baru dan tidak
+menghapus relationship, Circle, Event, atau reveal yang sudah sah.
+
+Permintaan penghapusan membuat privacy lock langsung dan idempotent:
+profil non-discoverable, akses normal ditutup, dan shared social mutation
+ditolak oleh guard database. Cleanup final belum aktif sampai Owner memutuskan
+retensi moderation, completed Identity/Contact Reveal, shared-history
+tombstone, Circle ownership, Event organizer policy, dan durasi antrean.
+Migration `202608100001` tetap LOCAL-ONLY. Student Verification tetap
+dinonaktifkan.
+
 ## 14. Planned — Safety flows
 
 Landing page memakai pesan positif dan ringkas. Detail safety tersedia pada **Pusat Keamanan publik**

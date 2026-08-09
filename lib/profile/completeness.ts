@@ -9,8 +9,6 @@ export type ProfileCompletenessItem = {
 export function getProfileCompletenessItems(
   profile: Pick<
     EditableStudentProfile,
-    | "firstName"
-    | "lastName"
     | "campus"
     | "studyProgram"
     | "cityRegion"
@@ -26,11 +24,9 @@ export function getProfileCompletenessItems(
   return [
     {
       id: "basics",
-      label: "Data diri & kampus",
+      label: "Kampus & program studi",
       done: Boolean(
-        profile.firstName?.trim() &&
-          profile.lastName?.trim() &&
-          profile.campus?.trim() &&
+        profile.campus?.trim() &&
           profile.studyProgram?.trim(),
       ),
     },

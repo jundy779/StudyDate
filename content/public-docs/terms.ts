@@ -102,7 +102,7 @@ export const termsSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kami dapat membatasi, menangguhkan, atau menghentikan akses bila ada pelanggaran Ketentuan, Pedoman Komunitas, risiko keamanan, permintaan hukum, atau penyalahgunaan layanan. Kamu dapat berhenti memakai StudyDate kapan saja. Permintaan penghapusan akun saat ini diproses secara manual melalui Bantuan karena self-service belum tersedia.",
+        text: "Kami dapat membatasi, menangguhkan, atau menghentikan akses bila ada pelanggaran Ketentuan, Pedoman Komunitas, risiko keamanan, permintaan hukum, atau penyalahgunaan layanan. Kamu dapat berhenti memakai StudyDate kapan saja. Permintaan penghapusan akun tersedia di Pengaturan; akses sosial dikunci segera, sedangkan cleanup final mengikuti kebijakan retensi yang telah ditinjau.",
       },
     ],
   },
