@@ -38,14 +38,14 @@ export default function NotFound() {
               </Link>
             </div>
           </div>
-          <div className="relative mx-auto flex min-h-[320px] w-full max-w-md items-center justify-center overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_50%_18%,#ffffff_0%,#edf4ff_55%,#dce9fb_100%)] lg:min-h-[380px] lg:max-w-none">
+          <div className="relative mx-auto flex min-h-[320px] w-full max-w-[380px] items-center justify-center overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_50%_18%,#ffffff_0%,#edf4ff_55%,#dce9fb_100%)] sm:min-h-[380px] sm:max-w-[440px] lg:min-h-[440px] lg:max-w-[500px]">
             <Image
-              src="/brand/mascot/hello-1024.png"
+              src="/brand/mascot/hello.png"
               alt="Maskot StudyDate melambaikan tangan"
-              width={1024}
-              height={1024}
+              width={276}
+              height={346}
               priority
-              className="h-auto w-[720px] max-w-none object-contain drop-shadow-[0_16px_28px_rgba(15,27,51,0.14)] sm:w-[800px] lg:w-[880px]"
+              className="h-auto w-[225px] object-contain drop-shadow-[0_16px_28px_rgba(15,27,51,0.14)] sm:w-[270px] lg:w-[320px]"
             />
           </div>
         </div>
