@@ -347,6 +347,7 @@ export function ResponsiveNavigation({
   const [liveUnreadNotifications, setLiveUnreadNotifications] =
     useState(unreadNotifications);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
   const isStaff = variant === "staff" && Boolean(role);
   const items = isStaff
@@ -383,7 +384,7 @@ export function ResponsiveNavigation({
 
   useEffect(() => {
     if (!mobileOpen) return;
-    const previousFocus = document.activeElement as HTMLElement | null;
+    const trigger = mobileTriggerRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
@@ -413,7 +414,7 @@ export function ResponsiveNavigation({
     return () => {
       window.removeEventListener("keydown", handleDialogKeys);
       document.body.style.overflow = previousOverflow;
-      previousFocus?.focus();
+      trigger?.focus();
     };
   }, [mobileOpen]);
 
@@ -428,7 +429,6 @@ export function ResponsiveNavigation({
               width={42}
               height={42}
               className="h-10 w-10 object-contain lg:hidden"
-              priority
             />
             <Image
               src="/brand/logo-horizontal-color.png"
@@ -436,7 +436,6 @@ export function ResponsiveNavigation({
               width={176}
               height={42}
               className="hidden h-auto w-[158px] lg:block"
-              priority
             />
           </Link>
         </div>
@@ -518,6 +517,7 @@ export function ResponsiveNavigation({
               </Link>
             ) : null}
             <button
+              ref={mobileTriggerRef}
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-expanded={mobileOpen}

@@ -3,7 +3,6 @@ import "server-only";
 import {
   CONTACT_REVEAL_CHANNELS,
   CONTACT_REVEAL_COPY,
-  emptyContactRevealState,
   type ContactRevealChannel,
   type ContactRevealChannelState,
   type ContactRevealCompletedChannel,
@@ -138,7 +137,7 @@ export async function getContactRevealState(
     p_public_id: publicId,
   });
   if (error) {
-    return emptyContactRevealState();
+    throw new Error(CONTACT_REVEAL_COPY.genericError);
   }
   return mapState((data ?? []) as ChannelRow[]);
 }
@@ -227,17 +226,19 @@ export async function getCompletedContactReveal(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return empty;
+  if (!user) throw new Error(CONTACT_REVEAL_COPY.genericError);
 
   const admin = createServerAdminClient();
-  if (!admin || !isContactRevealKeyConfigured()) return empty;
+  if (!admin || !isContactRevealKeyConfigured()) {
+    throw new Error(CONTACT_REVEAL_COPY.genericError);
+  }
 
   const { data, error } = await admin.rpc("get_completed_contact_reveal_cipher", {
     p_public_id: publicId,
     p_viewer_user_id: user.id,
     p_channel: channel,
   });
-  if (error) return empty;
+  if (error) throw new Error(CONTACT_REVEAL_COPY.genericError);
 
   const row = (data ?? [])[0] as CipherRow | undefined;
   if (!row?.completed) return empty;
@@ -254,19 +255,18 @@ export async function getCompletedContactReveal(
     row.counterpart_auth_tag,
     row.counterpart_key_version,
   );
+  if (!mine || !counterpart) {
+    throw new Error(CONTACT_REVEAL_COPY.genericError);
+  }
 
   return {
     channel,
     completed: true,
     completedAt: row.completed_at ? String(row.completed_at) : null,
-    mineDisplay: mine ? formatContactDisplay(channel, mine) : null,
-    counterpartDisplay: counterpart
-      ? formatContactDisplay(channel, counterpart)
-      : null,
-    mineHref: mine ? formatContactHref(channel, mine) : null,
-    counterpartHref: counterpart
-      ? formatContactHref(channel, counterpart)
-      : null,
+    mineDisplay: formatContactDisplay(channel, mine),
+    counterpartDisplay: formatContactDisplay(channel, counterpart),
+    mineHref: formatContactHref(channel, mine),
+    counterpartHref: formatContactHref(channel, counterpart),
   };
 }
 

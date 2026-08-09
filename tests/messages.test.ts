@@ -10,6 +10,12 @@ import {
   CHAT_MESSAGE_MAX,
   CHAT_RATE_LIMITS,
 } from "../lib/messages/constants.ts";
+import {
+  getCharacterThresholdAnnouncement,
+  isNearChatBottom,
+  mergeChatMessages,
+  nextPollDelay,
+} from "../lib/messages/client-state.ts";
 
 const migration = readFileSync(
   new URL(
@@ -202,7 +208,18 @@ test("student navigation includes Pesan and staff shell does not", () => {
 
 test("delivery uses authenticated poll route without Realtime table grants", () => {
   assert.match(pollRoute, /listConversationMessages/);
-  assert.match(room, /setInterval/);
+  assert.match(room, /setTimeout/);
+  assert.doesNotMatch(room, /setInterval/);
+  assert.match(room, /document\.hidden/);
+  assert.match(room, /visibilitychange/);
+  assert.match(room, /messageController\?\.abort/);
+  assert.match(room, /revealController\?\.abort/);
+  assert.match(
+    room,
+    /function handleVisibility\(\)[\s\S]*messageGeneration \+= 1;[\s\S]*revealGeneration \+= 1;[\s\S]*messageController\?\.abort\(\);[\s\S]*revealController\?\.abort\(\);/,
+  );
+  assert.match(room, /mode=messages/);
+  assert.match(room, /mode=reveal/);
   assert.match(migration, /No table SELECT grants|polling/i);
   assert.doesNotMatch(migration, /grant select on table public\.anonymous_messages to authenticated/i);
 });
@@ -210,4 +227,88 @@ test("delivery uses authenticated poll route without Realtime table grants", () 
 test("client cannot forge moderation state", () => {
   assert.doesNotMatch(migration, /p_moderation_status/);
   assert.match(migration, /moderation_status text not null default 'visible'/);
+});
+
+test("history merge deduplicates and preserves deterministic chronological order", () => {
+  const message = (
+    id: string,
+    createdAt: string,
+    body = id,
+  ) => ({
+    message_id: id,
+    body,
+    is_mine: false,
+    created_at: createdAt,
+    read_at: null,
+    moderation_status: "visible" as const,
+  });
+  const merged = mergeChatMessages(
+    [
+      message("b", "2026-08-09T10:00:00.000Z"),
+      message("c", "2026-08-09T10:01:00.000Z"),
+    ],
+    [
+      message("a", "2026-08-09T09:59:00.000Z"),
+      message("b", "2026-08-09T10:00:00.000Z", "updated"),
+    ],
+  );
+  assert.deepEqual(
+    merged.map(({ message_id }) => message_id),
+    ["a", "b", "c"],
+  );
+  assert.equal(merged[1]?.body, "updated");
+});
+
+test("history endpoint uses existing stable cursor and bounded page", () => {
+  assert.match(
+    service,
+    /p_before_created_at:\s*options\?\.beforeCreatedAt \?\? null/,
+  );
+  assert.match(service, /p_before_id:\s*options\?\.beforeId \?\? null/);
+  assert.match(pollRoute, /export async function POST/);
+  assert.match(pollRoute, /beforeCreatedAt/);
+  assert.match(pollRoute, /beforeId/);
+  assert.match(pollRoute, /limit:\s*50/);
+  assert.match(pollRoute, /hasMore:\s*messages\.length === 50/);
+  assert.match(room, /Muat pesan sebelumnya/);
+  assert.match(room, /Awal percakapan/);
+  assert.match(room, /prependSnapshot/);
+  assert.match(room, /mergeChatMessages/);
+});
+
+test("poll backoff is bounded and success cadence can reset", () => {
+  assert.equal(nextPollDelay(0, 4000, 30000), 4000);
+  assert.equal(nextPollDelay(1, 4000, 30000), 8000);
+  assert.equal(nextPollDelay(8, 4000, 30000), 30000);
+  assert.equal(nextPollDelay(0, 30000, 120000), 30000);
+});
+
+test("near-bottom policy preserves readers who are scrolled upward", () => {
+  assert.equal(isNearChatBottom(1000, 600, 320), true);
+  assert.equal(isNearChatBottom(1000, 400, 320), false);
+  assert.match(room, /Pesan baru/);
+  assert.match(room, /shouldScrollAfterUpdate\.current = nearBottom/);
+});
+
+test("message character announcements only occur at useful thresholds", () => {
+  assert.equal(getCharacterThresholdAnnouncement(900, 1000), "100 karakter tersisa.");
+  assert.equal(getCharacterThresholdAnnouncement(980, 1000), "20 karakter tersisa.");
+  assert.equal(getCharacterThresholdAnnouncement(1000, 1000), "Batas karakter tercapai.");
+  assert.equal(getCharacterThresholdAnnouncement(500, 1000), "");
+  assert.doesNotMatch(room, /id=\{counterId\} aria-live/);
+});
+
+test("end dialog and chat layout close accessibility audit contracts", () => {
+  assert.match(room, /aria-labelledby=\{endTitleId\}/);
+  assert.match(room, /aria-describedby=\{endDescriptionId\}/);
+  assert.match(room, /endCancelRef\.current\?\.focus/);
+  assert.match(room, /onClose=\{\(\) => endTriggerRef\.current\?\.focus/);
+  assert.match(room, /aria-label="Privasi dan pembukaan bertahap"/);
+  assert.match(
+    room,
+    /<footer className="sticky bottom-0 z-20[^"]*">/,
+  );
+  const privacySection = room.indexOf('aria-label="Privasi dan pembukaan bertahap"');
+  const stickyFooter = room.indexOf('<footer className="sticky bottom-0');
+  assert.ok(privacySection >= 0 && privacySection < stickyFooter);
 });

@@ -83,7 +83,7 @@ export async function getIdentityRevealState(
   });
 
   if (error) {
-    return mapState(null);
+    throw new Error(IDENTITY_REVEAL_COPY.genericError);
   }
 
   return mapState((data ?? [])[0] as StateRow | undefined);
@@ -99,7 +99,7 @@ export async function getIdentityRevealProfilePreview(
   );
 
   if (error) {
-    return null;
+    throw new Error(IDENTITY_REVEAL_COPY.genericError);
   }
 
   const row = (data ?? [])[0] as PreviewRow | undefined;
@@ -131,7 +131,7 @@ export async function getCompletedIdentityReveal(
   });
 
   if (error) {
-    return empty;
+    throw new Error(IDENTITY_REVEAL_COPY.genericError);
   }
 
   const row = (data ?? [])[0] as CompletedRow | undefined;

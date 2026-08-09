@@ -20,6 +20,8 @@
     "test:notifications": "node --experimental-strip-types --test tests/notifications.test.ts",
     "test:circles": "node --experimental-strip-types --test tests/study-circles.test.ts",
     "test:events": "node --experimental-strip-types --test tests/campus-events.test.ts",
+    "test:audit-closure": "node --experimental-strip-types --test tests/audit-closure.test.ts",
+    "test:all": "node --experimental-strip-types --test tests/*.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs"
   },
@@ -33,31 +35,31 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",
-    "next": "16.2.12",
+    "nanoid": "3.3.18",
+    "next": "16.3.0",
     "next-themes": "^0.4.6",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "9.0.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "sharp": "^0.34.4",
+    "sharp": "0.35.3",
     "tailwind-merge": "^3.3.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/nodemailer": "^6.4.17",
+    "@types/nodemailer": "8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
-    "eslint-config-next": "15.3.1",
+    "eslint-config-next": "16.3.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5"
   },
   "allowScripts": {
-    "sharp@0.34.5": true,
-    "sharp@0.34.4": true
+    "sharp@0.35.3": true
   }
 }

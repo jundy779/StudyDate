@@ -15,6 +15,12 @@ import {
   REPORT_REASON_CODES,
   REPORT_REASON_LABELS,
 } from "@/lib/messages/constants";
+import {
+  getCharacterThresholdAnnouncement,
+  isNearChatBottom,
+  mergeChatMessages,
+  nextPollDelay,
+} from "@/lib/messages/client-state";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
 import type { MutualInterestState } from "@/lib/mutual-interest/constants";
 import type {
@@ -41,6 +47,7 @@ import Link from "next/link";
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -126,18 +133,50 @@ export function ConversationRoom({
   const [clientError, setClientError] = useState<string | null>(notice ?? null);
   const [pending, startTransition] = useTransition();
   const [pollNote, setPollNote] = useState<string | null>(null);
+  const [revealNote, setRevealNote] = useState<string | null>(null);
+  const [hasMoreHistory, setHasMoreHistory] = useState(
+    initialMessages.length === 50,
+  );
+  const [historyPending, setHistoryPending] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [newMessagesAvailable, setNewMessagesAvailable] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef(messages);
   const markedRead = useRef(false);
+  const initialScrollDone = useRef(false);
+  const shouldScrollAfterUpdate = useRef(false);
+  const prependSnapshot = useRef<{ height: number; top: number } | null>(null);
   const errorId = useId();
   const counterId = useId();
+  const counterStatusId = useId();
+  const endTitleId = useId();
+  const endDescriptionId = useId();
   const endDialogRef = useRef<HTMLDialogElement>(null);
+  const endTriggerRef = useRef<HTMLButtonElement>(null);
+  const endCancelRef = useRef<HTMLButtonElement>(null);
 
   const chronological = useMemo(() => messages, [messages]);
 
   useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  useLayoutEffect(() => {
     const node = listRef.current;
     if (!node) return;
-    node.scrollTop = node.scrollHeight;
+
+    if (prependSnapshot.current) {
+      const snapshot = prependSnapshot.current;
+      prependSnapshot.current = null;
+      node.scrollTop = snapshot.top + node.scrollHeight - snapshot.height;
+      return;
+    }
+    if (!initialScrollDone.current || shouldScrollAfterUpdate.current) {
+      node.scrollTop = node.scrollHeight;
+      initialScrollDone.current = true;
+      shouldScrollAfterUpdate.current = false;
+      setNewMessagesAvailable(false);
+    }
   }, [chronological.length]);
 
   useEffect(() => {
@@ -151,77 +190,210 @@ export function ConversationRoom({
 
   useEffect(() => {
     let cancelled = false;
-    let failures = 0;
+    let messageFailures = 0;
+    let revealFailures = 0;
+    let messageTimer: number | undefined;
+    let revealTimer: number | undefined;
+    let messageGeneration = 0;
+    let revealGeneration = 0;
+    let messageController: AbortController | null = null;
+    let revealController: AbortController | null = null;
 
-    async function poll() {
+    function scheduleMessages(delay: number) {
+      window.clearTimeout(messageTimer);
+      if (!cancelled && !document.hidden) {
+        messageTimer = window.setTimeout(pollMessages, delay);
+      }
+    }
+
+    function scheduleReveal(delay: number) {
+      window.clearTimeout(revealTimer);
+      if (!cancelled && !document.hidden) {
+        revealTimer = window.setTimeout(pollReveal, delay);
+      }
+    }
+
+    async function pollMessages() {
+      if (cancelled || document.hidden) return;
+      const generation = ++messageGeneration;
+      messageController = new AbortController();
       try {
         const response = await fetch(
-          `/api/messages/${conversation.public_id}`,
-          { cache: "no-store" },
+          `/api/messages/${conversation.public_id}?mode=messages`,
+          { cache: "no-store", signal: messageController.signal },
         );
         if (!response.ok) {
-          failures += 1;
-          if (!cancelled && failures >= 2) {
-            setPollNote("Menyambungkan ulang…");
-          }
-          return;
+          throw new Error("poll unavailable");
         }
-        failures = 0;
-        if (!cancelled) setPollNote(null);
         const payload = (await response.json()) as {
           conversation: {
             status: ConversationDetail["status"];
             can_send: boolean;
           };
+          messages: ChatMessage[];
+        };
+        if (cancelled || generation !== messageGeneration) return;
+        messageFailures = 0;
+        setPollNote(null);
+        setStatus(payload.conversation.status);
+        setCanSend(payload.conversation.can_send);
+        const node = listRef.current;
+        const nearBottom = node
+          ? isNearChatBottom(node.scrollHeight, node.scrollTop, node.clientHeight)
+          : true;
+        const known = new Set(
+          messagesRef.current.map((message) => message.message_id),
+        );
+        const hasNew = payload.messages.some(
+          (message) => !known.has(message.message_id),
+        );
+        if (hasNew) {
+          shouldScrollAfterUpdate.current = nearBottom;
+          setNewMessagesAvailable(!nearBottom);
+        }
+        setMessages((current) =>
+          mergeChatMessages(current, payload.messages),
+        );
+      } catch {
+        if (cancelled) return;
+        messageFailures += 1;
+        if (messageFailures >= 2) {
+          setPollNote("Menyambungkan ulang…");
+        }
+      } finally {
+        scheduleMessages(
+          nextPollDelay(messageFailures, 4000, 30000),
+        );
+      }
+    }
+
+    async function pollReveal() {
+      if (cancelled || document.hidden) return;
+      const generation = ++revealGeneration;
+      revealController = new AbortController();
+      try {
+        const response = await fetch(
+          `/api/messages/${conversation.public_id}?mode=reveal`,
+          { cache: "no-store", signal: revealController.signal },
+        );
+        if (!response.ok) throw new Error("reveal unavailable");
+        const payload = (await response.json()) as {
           mutualInterest?: MutualInterestState;
           identityReveal?: IdentityRevealState;
           identityRevealCompleted?: IdentityRevealCompleted | null;
           contactReveal?: ContactRevealState;
           contactRevealCompleted?: ContactRevealCompletedChannel[];
-          messages: ChatMessage[];
         };
-        if (cancelled) return;
-        setStatus(payload.conversation.status);
-        setCanSend(payload.conversation.can_send);
-        if (payload.mutualInterest) {
-          setMutualInterest(payload.mutualInterest);
-        }
-        if (payload.identityReveal) {
-          setIdentityReveal(payload.identityReveal);
-        }
+        if (cancelled || generation !== revealGeneration) return;
+        revealFailures = 0;
+        setRevealNote(null);
+        if (payload.mutualInterest) setMutualInterest(payload.mutualInterest);
+        if (payload.identityReveal) setIdentityReveal(payload.identityReveal);
         if (payload.identityRevealCompleted?.completed) {
           setIdentityRevealCompleted(payload.identityRevealCompleted);
         }
-        if (payload.contactReveal) {
-          setContactReveal(payload.contactReveal);
-        }
+        if (payload.contactReveal) setContactReveal(payload.contactReveal);
         if (payload.contactRevealCompleted) {
-          const nextCompleted: Partial<
-            Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
-          > = {};
-          for (const item of payload.contactRevealCompleted) {
-            nextCompleted[item.channel] = item;
-          }
-          setContactCompleted(nextCompleted);
+          setContactCompleted((current) => {
+            const next = { ...current };
+            for (const item of payload.contactRevealCompleted ?? []) {
+              next[item.channel] = item;
+            }
+            return next;
+          });
         }
-        setMessages([...payload.messages].reverse());
       } catch {
-        failures += 1;
-        if (!cancelled && failures >= 2) {
-          setPollNote("Menyambungkan ulang…");
-        }
+        if (cancelled) return;
+        revealFailures += 1;
+        setRevealNote("Data pembukaan belum dapat diperbarui.");
+      } finally {
+        scheduleReveal(nextPollDelay(revealFailures, 30000, 120000));
       }
     }
 
-    const timer = window.setInterval(() => {
-      void poll();
-    }, 4000);
+    function handleVisibility() {
+      window.clearTimeout(messageTimer);
+      window.clearTimeout(revealTimer);
+      messageGeneration += 1;
+      revealGeneration += 1;
+      messageController?.abort();
+      revealController?.abort();
+      if (!document.hidden) {
+        void pollMessages();
+        void pollReveal();
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    scheduleMessages(4000);
+    scheduleReveal(30000);
 
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
+      messageGeneration += 1;
+      revealGeneration += 1;
+      messageController?.abort();
+      revealController?.abort();
+      window.clearTimeout(messageTimer);
+      window.clearTimeout(revealTimer);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [conversation.public_id]);
+
+  async function loadOlderMessages() {
+    const oldest = messages[0];
+    const node = listRef.current;
+    if (!oldest || !node || historyPending) return;
+    setHistoryPending(true);
+    setHistoryError(null);
+    prependSnapshot.current = {
+      height: node.scrollHeight,
+      top: node.scrollTop,
+    };
+    try {
+      const response = await fetch(`/api/messages/${conversation.public_id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          beforeCreatedAt: oldest.created_at,
+          beforeId: oldest.message_id,
+        }),
+      });
+      if (!response.ok) throw new Error("history unavailable");
+      const payload = (await response.json()) as {
+        messages: ChatMessage[];
+        hasMore: boolean;
+      };
+      setMessages((current) => mergeChatMessages(current, payload.messages));
+      setHasMoreHistory(payload.hasMore);
+    } catch {
+      prependSnapshot.current = null;
+      setHistoryError("Pesan sebelumnya belum dapat dimuat.");
+    } finally {
+      setHistoryPending(false);
+    }
+  }
+
+  function trapEndDialogFocus(event: KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== "Tab") return;
+    const focusable = event.currentTarget.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function closeEndDialog() {
+    endDialogRef.current?.close();
+  }
 
   function onComposerSubmit(event: FormEvent<HTMLFormElement>) {
     if (!canSend || pending) {
@@ -307,6 +479,11 @@ export function ConversationRoom({
             {pollNote}
           </p>
         ) : null}
+        {revealNote ? (
+          <p role="status" className="mt-3 text-xs text-brand-muted">
+            {revealNote}
+          </p>
+        ) : null}
         {state === "ended" || status === "ended" ? (
           <p role="status" className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy">
             {CONVERSATION_CLOSED_MESSAGE}
@@ -332,6 +509,34 @@ export function ConversationRoom({
         aria-relevant="additions"
         aria-label="Riwayat percakapan anonim"
       >
+        <div className="pb-2 text-center">
+          {hasMoreHistory ? (
+            <button
+              type="button"
+              onClick={() => void loadOlderMessages()}
+              disabled={historyPending}
+              className="focus-ring inline-flex min-h-10 items-center rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-blue disabled:opacity-60"
+            >
+              {historyPending ? "Memuat…" : "Muat pesan sebelumnya"}
+            </button>
+          ) : chronological.length > 0 ? (
+            <p className="text-xs text-brand-muted">Awal percakapan.</p>
+          ) : null}
+          {historyError ? (
+            <div className="mt-2">
+              <p role="alert" className="text-sm text-red-700">
+                {historyError}
+              </p>
+              <button
+                type="button"
+                onClick={() => void loadOlderMessages()}
+                className="focus-ring mt-2 text-sm font-semibold text-brand-blue"
+              >
+                Coba lagi
+              </button>
+            </div>
+          ) : null}
+        </div>
         {status === "awaiting_chat" && chronological.length === 0 ? (
           <p className="rounded-[18px] border border-dashed border-brand-border bg-white px-4 py-5 text-sm leading-6 text-brand-muted">
             Perkenalan sudah diterima. Mulai percakapan dengan santai dan tetap
@@ -389,10 +594,28 @@ export function ConversationRoom({
             </div>
           );
         })}
+        {newMessagesAvailable ? (
+          <div className="sticky bottom-2 flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                const node = listRef.current;
+                if (!node) return;
+                node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+                setNewMessagesAvailable(false);
+              }}
+              className="focus-ring rounded-xl border border-brand-border bg-white px-4 py-2 text-sm font-semibold text-brand-blue"
+            >
+              Pesan baru
+            </button>
+          </div>
+        ) : null}
       </div>
 
-      <footer className="sticky bottom-0 border-t border-brand-border bg-white px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
-        <div className="mb-4 space-y-4">
+      <section
+        aria-label="Privasi dan pembukaan bertahap"
+        className="space-y-4 border-t border-brand-border bg-white px-4 py-5 sm:px-6"
+      >
           <CounterpartPrivacyCard
             mutual={mutualInterest.mutual}
             identityCompleted={identityRevealCompleted}
@@ -469,7 +692,9 @@ export function ConversationRoom({
               }
             }}
           />
-        </div>
+      </section>
+
+      <footer className="sticky bottom-0 z-20 border-t border-brand-border bg-white px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
         {closed ? (
           <p className="text-sm leading-6 text-brand-muted">
             {status === "blocked"
@@ -497,15 +722,25 @@ export function ConversationRoom({
               maxLength={CHAT_MESSAGE_MAX}
               disabled={pending}
               aria-invalid={clientError ? true : undefined}
-              aria-describedby={[counterId, clientError ? errorId : null]
+              aria-describedby={[counterId, counterStatusId, clientError ? errorId : null]
                 .filter(Boolean)
                 .join(" ")}
               className="focus-ring w-full resize-y rounded-xl border border-brand-border bg-brand-surface px-3 py-3 text-sm leading-6 text-brand-navy"
               placeholder="Bagikan pesan singkat tanpa membagikan kontak."
             />
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span id={counterId} aria-live="polite" className="text-xs text-brand-muted">
+              <span id={counterId} className="text-xs text-brand-muted">
                 {body.trim().length} dari {CHAT_MESSAGE_MAX} karakter
+              </span>
+              <span
+                id={counterStatusId}
+                className="sr-only"
+                aria-live="polite"
+              >
+                {getCharacterThresholdAnnouncement(
+                  body.trim().length,
+                  CHAT_MESSAGE_MAX,
+                )}
               </span>
               <button
                 type="submit"
@@ -536,9 +771,13 @@ export function ConversationRoom({
           {!closed ? (
             <>
               <button
+                ref={endTriggerRef}
                 type="button"
                 className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy"
-                onClick={() => endDialogRef.current?.showModal()}
+                onClick={() => {
+                  endDialogRef.current?.showModal();
+                  requestAnimationFrame(() => endCancelRef.current?.focus());
+                }}
               >
                 Akhiri percakapan
               </button>
@@ -607,16 +846,26 @@ export function ConversationRoom({
 
       <dialog
         ref={endDialogRef}
-        className="w-[min(100%,24rem)] rounded-[22px] border border-brand-border bg-white p-0 text-brand-navy shadow-[0_24px_60px_rgba(15,27,51,0.18)] backdrop:bg-brand-navy/45"
+        aria-labelledby={endTitleId}
+        aria-describedby={endDescriptionId}
+        onKeyDown={trapEndDialogFocus}
+        onClose={() => endTriggerRef.current?.focus()}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) closeEndDialog();
+        }}
+        className="max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] max-w-96 overflow-y-auto rounded-[22px] border border-brand-border bg-white p-0 text-brand-navy shadow-[0_24px_60px_rgba(15,27,51,0.18)] backdrop:bg-brand-navy/45"
       >
         <form method="dialog" className="space-y-4 p-5">
-          <h2 className="font-heading text-xl font-semibold">Akhiri percakapan?</h2>
-          <p className="text-sm leading-6 text-brand-muted">
+          <h2 id={endTitleId} className="font-heading text-xl font-semibold">
+            Akhiri percakapan?
+          </h2>
+          <p id={endDescriptionId} className="text-sm leading-6 text-brand-muted">
             Setelah diakhiri, pesan baru tidak dapat dikirim. Riwayat tetap
             tersedia untuk kalian berdua.
           </p>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
+              ref={endCancelRef}
               type="submit"
               value="cancel"
               className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-brand-muted"

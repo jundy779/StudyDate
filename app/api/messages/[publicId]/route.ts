@@ -42,19 +42,22 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
 
+    const mode = _request.nextUrl.searchParams.get("mode");
     const [messages, mutualInterest, identityReveal, contactReveal] =
       await Promise.all([
-        listConversationMessages(parsed.data, { limit: 50 }),
-        getMutualInterestState(parsed.data),
-        getIdentityRevealState(parsed.data),
-        getContactRevealState(parsed.data),
+        mode === "reveal"
+          ? Promise.resolve([])
+          : listConversationMessages(parsed.data, { limit: 50 }),
+        mode === "messages" ? null : getMutualInterestState(parsed.data),
+        mode === "messages" ? null : getIdentityRevealState(parsed.data),
+        mode === "messages" ? null : getContactRevealState(parsed.data),
       ]);
 
-    const identityRevealCompleted = identityReveal.completed
+    const identityRevealCompleted = identityReveal?.completed
       ? await getCompletedIdentityReveal(parsed.data)
       : null;
 
-    const contactRevealCompleted = identityReveal.completed
+    const contactRevealCompleted = identityReveal?.completed && contactReveal
       ? await getAllCompletedContactReveals(parsed.data, contactReveal)
       : [];
 
@@ -67,22 +70,26 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         unread_count: conversation.unread_count,
       },
       // Safe MutualInterestState only — never one-sided counterpart interest.
-      mutualInterest: {
-        eligible: mutualInterest.eligible,
-        selectedByMe: mutualInterest.selectedByMe,
-        mutual: mutualInterest.mutual,
-        mutualAt: mutualInterest.mutualAt,
-        canWithdraw: mutualInterest.canWithdraw,
-      },
+      mutualInterest: mutualInterest
+        ? {
+            eligible: mutualInterest.eligible,
+            selectedByMe: mutualInterest.selectedByMe,
+            mutual: mutualInterest.mutual,
+            mutualAt: mutualInterest.mutualAt,
+            canWithdraw: mutualInterest.canWithdraw,
+          }
+        : undefined,
       // Safe IdentityRevealState only — never one-sided prepare/consent.
-      identityReveal: {
-        eligible: identityReveal.eligible,
-        hasProfile: identityReveal.hasProfile,
-        selectedByMe: identityReveal.selectedByMe,
-        completed: identityReveal.completed,
-        completedAt: identityReveal.completedAt,
-        canWithdraw: identityReveal.canWithdraw,
-      },
+      identityReveal: identityReveal
+        ? {
+            eligible: identityReveal.eligible,
+            hasProfile: identityReveal.hasProfile,
+            selectedByMe: identityReveal.selectedByMe,
+            completed: identityReveal.completed,
+            completedAt: identityReveal.completedAt,
+            canWithdraw: identityReveal.canWithdraw,
+          }
+        : undefined,
       // Names only after completion — never photo paths or UUIDs.
       identityRevealCompleted: identityRevealCompleted?.completed
         ? {
@@ -93,17 +100,19 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           }
         : null,
       // Safe ContactRevealState only — never one-sided prepare/consent or encrypted payloads.
-      contactReveal: {
-        channels: contactReveal.channels.map((channel) => ({
-          channel: channel.channel,
-          eligible: channel.eligible,
-          hasContact: channel.hasContact,
-          selectedByMe: channel.selectedByMe,
-          completed: channel.completed,
-          completedAt: channel.completedAt,
-          canWithdraw: channel.canWithdraw,
-        })),
-      },
+      contactReveal: contactReveal
+        ? {
+            channels: contactReveal.channels.map((channel) => ({
+              channel: channel.channel,
+              eligible: channel.eligible,
+              hasContact: channel.hasContact,
+              selectedByMe: channel.selectedByMe,
+              completed: channel.completed,
+              completedAt: channel.completedAt,
+              canWithdraw: channel.canWithdraw,
+            })),
+          }
+        : undefined,
       contactRevealCompleted: contactRevealCompleted
         .filter((item) => item.completed)
         .map((item) => ({
@@ -123,6 +132,46 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         read_at: message.read_at,
         moderation_status: message.moderation_status,
       })),
+    });
+  } catch {
+    return NextResponse.json({ error: "unavailable" }, { status: 503 });
+  }
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  const profile = await getPrivateProfile(user.id);
+  if (!profile?.onboarding_completed_at) {
+    return NextResponse.json({ error: "onboarding" }, { status: 403 });
+  }
+  const { publicId: raw } = await context.params;
+  const publicId = conversationPublicIdSchema.safeParse(raw);
+  if (!publicId.success) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  const body = (await request.json().catch(() => null)) as
+    | { beforeCreatedAt?: unknown; beforeId?: unknown }
+    | null;
+  if (
+    typeof body?.beforeCreatedAt !== "string" ||
+    Number.isNaN(Date.parse(body.beforeCreatedAt)) ||
+    typeof body.beforeId !== "string" ||
+    !/^[0-9a-f-]{36}$/i.test(body.beforeId)
+  ) {
+    return NextResponse.json({ error: "invalid_cursor" }, { status: 400 });
+  }
+  try {
+    const messages = await listConversationMessages(publicId.data, {
+      beforeCreatedAt: body.beforeCreatedAt,
+      beforeId: body.beforeId,
+      limit: 50,
+    });
+    return NextResponse.json({
+      messages,
+      hasMore: messages.length === 50,
     });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });

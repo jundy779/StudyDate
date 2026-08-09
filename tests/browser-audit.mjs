@@ -7,6 +7,7 @@ const chromePath =
   process.env.CHROME_PATH ??
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const projectRoot = process.cwd();
+const baseUrl = process.env.AUDIT_BASE_URL ?? "http://localhost:3010";
 const profilePath = join(
   projectRoot,
   ".next",
@@ -137,7 +138,7 @@ try {
     const loaded = waitForEvent("Page.loadEventFired", sessionId);
     await send(
       "Page.navigate",
-      { url: "http://localhost:3010/login" },
+      { url: `${baseUrl}/login` },
       sessionId,
     );
     await loaded;
@@ -187,7 +188,7 @@ try {
     const loaded = waitForEvent("Page.loadEventFired", sessionId);
     await send(
       "Page.navigate",
-      { url: "http://localhost:3010/login" },
+      { url: `${baseUrl}/login` },
       sessionId,
     );
     await loaded;
@@ -231,6 +232,7 @@ try {
       `${width}px: ${metrics.rootScrollWidth}/${metrics.rootClientWidth}px, no horizontal overflow\n`,
     );
   }
+
 } finally {
   chrome.kill();
 }

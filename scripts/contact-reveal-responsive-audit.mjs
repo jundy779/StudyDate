@@ -28,7 +28,7 @@ const accountsPath = join(
   "audit-artifacts",
   "contact-reveal-audit-accounts.json",
 );
-const shotDir = join(projectRoot, "audit-artifacts", "contact-reveal-responsive");
+const shotDir = join(projectRoot, "audit-artifacts", "audit-closure");
 const reportPath = join(
   projectRoot,
   "audit-artifacts",
@@ -58,6 +58,13 @@ const report = {
   consoleClean: false,
   networkClean: false,
   messagesApiNoCipher: false,
+  endDialogKeyboard: false,
+  endDialogStress: false,
+  drawerKeyboard: false,
+  hiddenPollingPaused: false,
+  imagePreloadClean: false,
+  viewportReduction: false,
+  onboardingComboboxKeyboard: false,
   preflightIrCompleted: false,
   preflightChannelEligibleOrCompleted: false,
   cleanup: false,
@@ -200,6 +207,7 @@ async function ensureAccount(kind, accounts, admin) {
   if (accounts[kind]?.id) {
     const { data } = await admin.auth.admin.getUserById(accounts[kind].id);
     if (data?.user && !data.user.app_metadata?.role) return accounts[kind];
+    delete accounts[kind];
   }
   createdAccountsThisRun = true;
   const stamp = `${Date.now()}.${randomInt(1000, 9999)}`;
@@ -565,7 +573,7 @@ async function ensureNextServer() {
   throw new Error("Next server failed to become ready");
 }
 
-async function runChrome(accounts, publicId) {
+async function runChrome(accounts, publicId, onboardingAccount) {
   const profilePath = join(
     projectRoot,
     ".next",
@@ -737,7 +745,14 @@ async function runChrome(accounts, publicId) {
       await delay(1500);
     }
 
-    const viewports = [[375, 812], [768, 1024], [1024, 768], [1440, 900]];
+    const viewports = [
+      [320, 568],
+      [360, 800],
+      [390, 844],
+      [768, 1024],
+      [1024, 768],
+      [1440, 900],
+    ];
     let overflowOk = true;
     let panelOk = false;
 
@@ -797,6 +812,359 @@ async function runChrome(accounts, publicId) {
     report.noHorizontalOverflow = overflowOk;
     assert.equal(panelOk, true, "Contact Reveal panel heading missing");
     assert.equal(overflowOk, true, "horizontal overflow detected");
+
+    await send(
+      "Emulation.setDeviceMetricsOverride",
+      { width: 390, height: 420, deviceScaleFactor: 1, mobile: true },
+      sessionId,
+    );
+    await evaluate(
+      `(() => {
+        const input = document.querySelector("#chat-body");
+        input?.focus();
+        return Boolean(input);
+      })()`,
+      sessionId,
+    );
+    const dialogOpen = await evaluate(
+      `(() => {
+        const button = [...document.querySelectorAll("button")]
+          .find((node) => node.textContent?.trim() === "Akhiri percakapan");
+        button?.click();
+        const dialog = document.querySelector("dialog");
+        return {
+          open: Boolean(dialog?.open),
+          labelled: Boolean(dialog?.getAttribute("aria-labelledby")),
+          described: Boolean(dialog?.getAttribute("aria-describedby")),
+          focusText: document.activeElement?.textContent?.trim() ?? "",
+        };
+      })()`,
+      sessionId,
+    );
+    console.log(
+      `DIALOG_OPEN_CHECK open=${dialogOpen.open} labelled=${dialogOpen.labelled} described=${dialogOpen.described} focus=${JSON.stringify(dialogOpen.focusText)}`,
+    );
+    assert.deepEqual(dialogOpen, {
+      open: true,
+      labelled: true,
+      described: true,
+      focusText: "Batal",
+    });
+    const dialogStress = await evaluate(
+      `(() => {
+        const dialog = document.querySelector("dialog[open]");
+        if (!dialog) return null;
+        const rect = dialog.getBoundingClientRect();
+        return {
+          withinViewport:
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= window.innerHeight + 1 &&
+            rect.right <= window.innerWidth + 1,
+          scrollable: dialog.scrollHeight <= dialog.clientHeight || getComputedStyle(dialog).overflowY === "auto",
+          composerReachable: Boolean(document.querySelector("#chat-body")),
+        };
+      })()`,
+      sessionId,
+    );
+    assert.deepEqual(dialogStress, {
+      withinViewport: true,
+      scrollable: true,
+      composerReachable: true,
+    });
+    report.endDialogStress = true;
+    report.viewportReduction = true;
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyDown", key: "Tab", code: "Tab" },
+      sessionId,
+    );
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyUp", key: "Tab", code: "Tab" },
+      sessionId,
+    );
+    await send(
+      "Input.dispatchKeyEvent",
+      {
+        type: "rawKeyDown",
+        key: "Escape",
+        code: "Escape",
+        windowsVirtualKeyCode: 27,
+        nativeVirtualKeyCode: 27,
+      },
+      sessionId,
+    );
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyUp", key: "Escape", code: "Escape" },
+      sessionId,
+    );
+    await delay(500);
+    const dialogClosed = await evaluate(
+      `(() => ({
+        closed: !document.querySelector("dialog")?.open,
+        focusText: document.activeElement?.textContent?.trim() ?? "",
+      }))()`,
+      sessionId,
+    );
+    console.log(
+      `DIALOG_CLOSE_CHECK closed=${dialogClosed.closed} focus=${JSON.stringify(dialogClosed.focusText)}`,
+    );
+    assert.equal(dialogClosed.closed, true);
+    assert.equal(dialogClosed.focusText, "Akhiri percakapan");
+    report.endDialogKeyboard = true;
+
+    const menuTriggerFound = await evaluate(
+      `(() => {
+        const button = document.querySelector('button[aria-label="Buka menu navigasi"]');
+        button?.click();
+        return Boolean(button);
+      })()`,
+      sessionId,
+    );
+    assert.equal(menuTriggerFound, true, "mobile navigation trigger missing");
+    await delay(200);
+    const menuTrigger = await evaluate(
+      `(() => {
+        const dialog = document.querySelector('[role="dialog"][aria-label="Menu navigasi"]');
+        return {
+          opened: Boolean(dialog),
+          focusedClose: document.activeElement?.getAttribute("aria-label") === "Tutup menu",
+          bodyLocked: document.body.style.overflow === "hidden",
+        };
+      })()`,
+      sessionId,
+    );
+    assert.deepEqual(menuTrigger, {
+      opened: true,
+      focusedClose: true,
+      bodyLocked: true,
+    });
+    await send(
+      "Input.dispatchKeyEvent",
+      {
+        type: "rawKeyDown",
+        key: "Escape",
+        code: "Escape",
+        windowsVirtualKeyCode: 27,
+        nativeVirtualKeyCode: 27,
+      },
+      sessionId,
+    );
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyUp", key: "Escape", code: "Escape" },
+      sessionId,
+    );
+    await delay(500);
+    const menuClosed = await evaluate(
+      `(() => ({
+        closed: !document.querySelector('[role="dialog"][aria-label="Menu navigasi"]'),
+        focusRestored: document.activeElement?.getAttribute("aria-label") === "Buka menu navigasi",
+        bodyRestored: document.body.style.overflow !== "hidden",
+      }))()`,
+      sessionId,
+    );
+    assert.deepEqual(menuClosed, {
+      closed: true,
+      focusRestored: true,
+      bodyRestored: true,
+    });
+    report.drawerKeyboard = true;
+
+    const pollingPaused = await evaluate(
+      `(() => {
+        const before = performance.getEntriesByType("resource")
+          .filter((entry) => /\\/api\\/messages\\//.test(entry.name)).length;
+        Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+        document.dispatchEvent(new Event("visibilitychange"));
+        return new Promise((resolve) => setTimeout(() => {
+          const after = performance.getEntriesByType("resource")
+            .filter((entry) => /\\/api\\/messages\\//.test(entry.name)).length;
+          resolve(after === before);
+        }, 5200));
+      })()`,
+      sessionId,
+    );
+    assert.equal(pollingPaused, true, "message polling continued while hidden");
+    report.hiddenPollingPaused = true;
+
+    const imagePreloadClean = await evaluate(
+      `(() => {
+        const imagePreloads = [...document.querySelectorAll('link[rel="preload"][as="image"]')]
+          .map((node) => node.getAttribute("href") || node.getAttribute("imagesrcset") || "");
+        return !imagePreloads.some((value) => /symbol-blue/.test(value));
+      })()`,
+      sessionId,
+    );
+    assert.equal(imagePreloadClean, true, "hidden logo image was preloaded");
+    report.imagePreloadClean = true;
+
+    const onboardingUrl = await magicCallbackUrl(
+      onboardingAccount.email,
+      "/onboarding",
+    );
+    {
+      const loaded = waitForEvent("Page.loadEventFired", sessionId);
+      await send("Page.navigate", { url: onboardingUrl }, sessionId);
+      await loaded;
+      await delay(800);
+    }
+    const initialCombobox = await evaluate(
+      `(() => {
+        const input = document.querySelector('#campus[role="combobox"]');
+        input?.click();
+        return {
+          found: Boolean(input),
+          focused: document.activeElement === input,
+          activeElement: document.activeElement?.id || document.activeElement?.tagName || "",
+          expanded: input?.getAttribute("aria-expanded"),
+          active: input?.getAttribute("aria-activedescendant") || "",
+        };
+      })()`,
+      sessionId,
+    );
+    await delay(100);
+    const openedCombobox = await evaluate(
+      `(() => {
+        const input = document.querySelector('#campus[role="combobox"]');
+        return {
+          focused: document.activeElement === input,
+          activeElement: document.activeElement?.id || document.activeElement?.tagName || "",
+          expanded: input?.getAttribute("aria-expanded"),
+          active: input?.getAttribute("aria-activedescendant") || "",
+        };
+      })()`,
+      sessionId,
+    );
+    console.log(
+      `COMBOBOX_OPEN_CHECK found=${initialCombobox.found} initialFocus=${initialCombobox.focused} focus=${openedCombobox.focused} element=${openedCombobox.activeElement} expanded=${openedCombobox.expanded} active=${Boolean(openedCombobox.active)}`,
+    );
+    assert.equal(initialCombobox.found, true, "campus combobox missing");
+    assert.equal(openedCombobox.expanded, "true");
+    assert.ok(openedCombobox.active);
+    await send(
+      "Runtime.evaluate",
+      {
+        expression: 'document.querySelector(\'#campus[role="combobox"]\')?.focus()',
+        awaitPromise: true,
+      },
+      sessionId,
+    );
+
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyDown", key: "ArrowDown", code: "ArrowDown" },
+      sessionId,
+    );
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyUp", key: "ArrowDown", code: "ArrowDown" },
+      sessionId,
+    );
+    const afterDown = await evaluate(
+      `(() => {
+        const input = document.querySelector('#campus[role="combobox"]');
+        return {
+          focused: document.activeElement === input,
+          active: input?.getAttribute("aria-activedescendant") || "",
+        };
+      })()`,
+      sessionId,
+    );
+    assert.equal(afterDown.focused, true);
+    assert.notEqual(afterDown.active, openedCombobox.active);
+
+    for (const key of ["End", "Home", "ArrowUp"]) {
+      await send(
+        "Input.dispatchKeyEvent",
+        { type: "keyDown", key, code: key },
+        sessionId,
+      );
+      await send(
+        "Input.dispatchKeyEvent",
+        { type: "keyUp", key, code: key },
+        sessionId,
+      );
+    }
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyDown", key: "Escape", code: "Escape" },
+      sessionId,
+    );
+    await send(
+      "Input.dispatchKeyEvent",
+      { type: "keyUp", key: "Escape", code: "Escape" },
+      sessionId,
+    );
+    const escapedCombobox = await evaluate(
+      `(() => {
+        const input = document.querySelector('#campus[role="combobox"]');
+        return {
+          focused: document.activeElement === input,
+          expanded: input?.getAttribute("aria-expanded"),
+          active: input?.getAttribute("aria-activedescendant") || "",
+        };
+      })()`,
+      sessionId,
+    );
+    assert.deepEqual(escapedCombobox, {
+      focused: true,
+      expanded: "false",
+      active: "",
+    });
+
+    await evaluate(
+      `(() => {
+        const input = document.querySelector('#campus[role="combobox"]');
+        input?.focus();
+        if (!input) return;
+        const setter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          "value",
+        )?.set;
+        setter?.call(input, "zzzz-tidak-ada");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      })()`,
+      sessionId,
+    );
+    await delay(100);
+    const noResults = await evaluate(
+      `(() => ({
+        status: document.querySelector('[role="status"]')?.textContent?.trim() || "",
+        manual: [...document.querySelectorAll("button")].some((button) =>
+          button.textContent?.trim() === "Tambahkan kampus secara manual"
+        ),
+      }))()`,
+      sessionId,
+    );
+    assert.deepEqual(noResults, {
+      status: "Tidak ada hasil yang cocok.",
+      manual: true,
+    });
+    await evaluate(
+      `(() => {
+        const button = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent?.trim() === "Tambahkan kampus secara manual"
+        );
+        button?.click();
+      })()`,
+      sessionId,
+    );
+    await delay(100);
+    const manualEntry = await evaluate(
+      `(() => {
+        const input = document.querySelector("#campus-manual");
+        return {
+          found: Boolean(input),
+          focused: document.activeElement === input,
+        };
+      })()`,
+      sessionId,
+    );
+    assert.deepEqual(manualEntry, { found: true, focused: true });
+    report.onboardingComboboxKeyboard = true;
 
     await evaluate(
       `(() => fetch(${JSON.stringify(`/api/messages/${publicId}`)}, { credentials: "include" }).then((r) => r.status))()`,
@@ -871,7 +1239,8 @@ async function main() {
 
   const { admin } = adminBundle();
   const accounts = await loadOrCreateAccounts(admin);
-  const cleanupIds = [accounts.A.id, accounts.B.id];
+  const onboardingAccount = await ensureAccount("O", accounts, admin);
+  const cleanupIds = [accounts.A.id, accounts.B.id, onboardingAccount.id];
   console.log(
     createdAccountsThisRun ? "ACCOUNTS_SOURCE created_minimal_AB" : "ACCOUNTS_SOURCE reused_file",
   );
@@ -915,7 +1284,7 @@ async function main() {
     await sessionB.auth.signOut().catch(() => undefined);
 
     await ensureNextServer();
-    await runChrome(accounts, publicId);
+    await runChrome(accounts, publicId, onboardingAccount);
 
     writeFileSync(reportPath, JSON.stringify(report, null, 2));
     console.log("REPORT_WRITTEN");
@@ -938,7 +1307,7 @@ main()
   .catch((error) => {
     const reason =
       error?.code === "ERR_ASSERTION"
-        ? "assert"
+        ? error.message
         : error?.message
           ? "error"
           : "unknown";

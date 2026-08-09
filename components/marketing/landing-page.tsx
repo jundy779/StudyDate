@@ -215,7 +215,6 @@ function ConnectionPreview() {
             width={40}
             height={40}
             className="h-6 w-6 object-contain"
-            priority
           />
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
             PEOPLE • PROFIL ANONIM
@@ -237,7 +236,6 @@ function ConnectionPreview() {
               height={1024}
               sizes="(max-width: 639px) 96px, 116px"
               className="h-full w-full object-contain object-bottom p-2 drop-shadow-[0_8px_14px_rgba(15,27,51,0.13)]"
-              priority
             />
           </div>
 
