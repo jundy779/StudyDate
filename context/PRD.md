@@ -377,13 +377,18 @@ dibuat user saat ini. Unblock tidak memulihkan Introduction, chat, atau reveal.
 Discoverability OFF hanya menutup hasil/direct detail People baru dan tidak
 menghapus relationship, Circle, Event, atau reveal yang sudah sah.
 
-Permintaan penghapusan membuat privacy lock langsung dan idempotent:
-profil non-discoverable, akses normal ditutup, dan shared social mutation
-ditolak oleh guard database. Cleanup final belum aktif sampai Owner memutuskan
-retensi moderation, completed Identity/Contact Reveal, shared-history
-tombstone, Circle ownership, Event organizer policy, dan durasi antrean.
-Migration `202608100001` tetap LOCAL-ONLY. Student Verification tetap
-dinonaktifkan.
+Permintaan penghapusan bersifat irreversible melalui Student UI serta membuat
+privacy lock langsung dan idempotent: profil non-discoverable, akses normal
+ditutup, dan shared social mutation ditolak oleh guard database. Worker
+server-only menghapus data privat/Storage sebelum Auth, mengarsipkan Circle
+milik user, membatalkan Event mendatang, dan mempertahankan shared history
+dengan tombstone `Akun dihapus`. Identity/Contact user yang menghapus akun
+langsung tidak lagi diproyeksikan.
+
+Bukti moderasi aktif bertahan sampai kasus selesai; bukti resolved/dismissed
+dan security audit tersanitasi mengikuti satu kebijakan limited-rollout
+maksimum 180 hari. Migrations `202608100001`–`202608100002` tetap LOCAL-ONLY.
+Student Verification tetap dinonaktifkan.
 
 ## 14. Planned — Safety flows
 

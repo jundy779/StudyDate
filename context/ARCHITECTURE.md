@@ -444,9 +444,14 @@ privacy lock (`is_discoverable=false`, `deactivated_at`), lalu
 Introduction, Chat, Mutual, Identity, Contact, Circle, dan Event. Route guard
 mengarahkan akun request ke `/account/deletion-pending`.
 
-Tidak ada student-executable cleanup worker. Final Auth/DB/Storage cleanup
-ditunda sampai kebijakan Owner disetujui; migration
-`202608100001_account_privacy_controls_v1.sql` tidak diterapkan remote.
+Migration forward-only `202608100002_finalize_account_deletion_lifecycle.sql`
+menambahkan lease/retry service-only, shared-history FK tombstone-safe,
+Identity/Contact suppression, central 180-day limited-rollout retention,
+Circle archive, Event cancellation, dan Auth-last finalization. Executor
+`scripts/process-account-deletions.mjs` berjalan dari trusted scheduler/runner,
+bukan browser, dan memakai object refs Storage yang diturunkan server-side.
+Mahasiswa tetap hanya dapat request self dan membaca status sendiri.
+Kedua migration Account/Privacy belum diterapkan remote.
 
 ## 13. Staff authorization v1
 

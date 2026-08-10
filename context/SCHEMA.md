@@ -50,6 +50,9 @@ Sumber migration:
     terkonfirmasi
 22. `supabase/migrations/202608100001_account_privacy_controls_v1.sql` —
     Account & Privacy Controls v1; **LOCAL-ONLY, belum diterapkan remote**
+23. `supabase/migrations/202608100002_finalize_account_deletion_lifecycle.sql` —
+    final deletion worker contracts, tombstone-safe shared history, dan
+    centralized retention; **LOCAL-ONLY, belum diterapkan remote**
 
 ### `early_access_waitlist`
 
@@ -133,7 +136,16 @@ Antrean internal idempotent per user dengan status `pending | processing |
 completed | failed`, timestamp lifecycle, retry count, dan sanitized
 `failure_code`. Table RLS-enabled tanpa direct grant ke student. Student hanya
 dapat memanggil request/status wrapper miliknya; processing/cleanup worker tidak
-diberikan kepada `authenticated`.
+diberikan kepada `authenticated`. Forward migration menambahkan lease 15 menit,
+database/Auth cleanup checkpoints, dan audit operasi tersanitasi.
+
+### `account_privacy_policy` / `account_deletion_audit_events` (LOCAL-ONLY)
+
+Policy singleton menjadi satu sumber durasi retensi moderation/security
+limited-rollout (180 hari). Audit deletion hanya menyimpan request reference,
+event category, dan waktu—tanpa user ID, email, object path, isi privat, atau
+raw error. Shared history memakai nullable Auth FK agar Auth dapat dihapus
+terakhir tanpa menghapus pesan, Circle, Event, RSVP, atau report.
 
 ### `staff_members`
 
@@ -230,10 +242,14 @@ untuk `authenticated`. Migration menambahkan partial alias index dan GIN indexes
 - `unblock_my_blocked_student`: alias-based, hanya menghapus row
   `(blocker_id=auth.uid(), blocked_id=target)`.
 - `request_my_student_account_deletion`: idempotent, membuat privacy lock dan
-  tidak melakukan destructive cleanup.
+  tidak memberi student kontrol atas cleanup.
 - `get_my_account_deletion_status`: hanya status/timestamp milik actor.
 - `is_eligible_introduction_student`: ditambahkan deactivation/deletion gate
   yang digunakan kembali oleh private flow, Circle, dan Event.
+- `claim_account_deletion_job`, `list_account_deletion_storage_objects`,
+  `cleanup_account_deletion_database`, `complete_account_deletion_job`,
+  `fail_account_deletion_job`, dan `purge_expired_account_deletion_retention`:
+  service-role only, leased, bounded, retryable, dan tidak granted ke student.
 
 Migration Staff v1 mengganti projection RPC secara kompatibel untuk mengecualikan `staff_members.status = 'active'`
 dan menolak active staff mengaktifkan discoverability. Grant/reactivation juga memaksa profile yang sudah ada menjadi

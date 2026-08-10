@@ -11,6 +11,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const lifecycleMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608100002_finalize_account_deletion_lifecycle.sql",
+  ),
+  "utf8",
+);
 const settingsPage = readFileSync(
   join(root, "app/app/settings/page.tsx"),
   "utf8",
@@ -27,6 +34,14 @@ const lifecycle = readFileSync(join(root, "lib/account/lifecycle.ts"), "utf8");
 const guard = readFileSync(join(root, "lib/account/guard.ts"), "utf8");
 const verification = readFileSync(
   join(root, "lib/verification/readiness.ts"),
+  "utf8",
+);
+const worker = readFileSync(
+  join(root, "scripts/process-account-deletions.mjs"),
+  "utf8",
+);
+const pendingPage = readFileSync(
+  join(root, "app/account/deletion-pending/page.tsx"),
   "utf8",
 );
 
@@ -110,17 +125,173 @@ test("shared eligibility gate blocks direct social RPC bypass after deletion req
   assert.match(eligibility, /status in \('pending', 'processing', 'failed'\)/);
 });
 
-test("deletion cleanup remains non-destructive pending Owner policy", () => {
-  assert.match(migration, /Cleanup processing is intentionally not exposed/);
+test("deletion worker is service-only, leased, bounded, and retryable", () => {
   assert.doesNotMatch(lifecycle, /auth\.admin\.deleteUser|storage\.from|SUPABASE_SERVICE_ROLE_KEY/);
-  assert.doesNotMatch(
-    migration,
-    /delete from public\.(anonymous_messages|study_circle_messages|campus_events|conversation_identity_reveals|conversation_contact_reveals|user_reports)/,
-  );
   assert.match(
     migration,
     /revoke all on table public\.account_deletion_requests[\s\S]*authenticated/,
   );
+  assert.match(lifecycleMigration, /for update skip locked/);
+  assert.match(lifecycleMigration, /interval '15 minutes'/);
+  assert.match(lifecycleMigration, /retry_count = retry_count \+ 1/);
+  assert.match(lifecycleMigration, /auth\.role\(\) <> 'service_role'/);
+  assert.match(
+    lifecycleMigration,
+    /revoke all on function public\.cleanup_account_deletion_database[\s\S]*authenticated/,
+  );
+  assert.match(worker, /--limit must be an integer between 1 and 25/);
+  assert.match(worker, /auth\.admin\.deleteUser/);
+  assert.match(
+    worker,
+    /removeOwnedStorage\(job\)[\s\S]*cleanupDatabase\(job\)[\s\S]*deleteAuthUser\(job\)[\s\S]*completeJob\(job\)/,
+  );
+  assert.doesNotMatch(worker, /console\.(log|error)\([^)]*error/);
+});
+
+test("request is self-only, irreversible in Student UI, and failed state remains locked", () => {
+  const requestFunction =
+    lifecycleMigration.match(
+      /create or replace function public\.request_my_student_account_deletion[\s\S]*?revoke all on function public\.request_my_student_account_deletion/,
+    )?.[0] ?? "";
+  assert.match(requestFunction, /actor uuid := auth\.uid\(\)/);
+  assert.doesNotMatch(requestFunction, /p_user_id|cancel|reactivate/);
+  assert.doesNotMatch(lifecycleMigration, /cancel_my_student_account_deletion/);
+  assert.match(migration, /status in \('pending', 'processing', 'failed'\)/);
+  assert.match(pendingPage, /Penghapusan akun masih diproses/);
+  assert.doesNotMatch(pendingPage, /retry_count|failure_code|lease|Storage|database/);
+});
+
+test("Identity and Contact projections stop serving a deleting counterpart", () => {
+  const identityProjection =
+    lifecycleMigration.match(
+      /create or replace function public\.get_completed_identity_reveal[\s\S]*?create or replace function public\.resolve_identity_reveal_photo_key/,
+    )?.[0] ?? "";
+  const identityMedia =
+    lifecycleMigration.match(
+      /create or replace function public\.resolve_identity_reveal_photo_key[\s\S]*?create or replace function public\.get_completed_contact_reveal_cipher/,
+    )?.[0] ?? "";
+  const contactProjection =
+    lifecycleMigration.match(
+      /create or replace function public\.get_completed_contact_reveal_cipher[\s\S]*?revoke all on function public\.get_completed_identity_reveal/,
+    )?.[0] ?? "";
+  assert.match(identityProjection, /is_account_deletion_locked\(counterpart_id\)/);
+  assert.match(
+    identityProjection,
+    /is_account_deletion_locked\(counterpart_id\)[\s\S]*select\s+false,\s+null::timestamptz,\s+null::text,\s+null::text/,
+  );
+  assert.match(identityMedia, /is_account_deletion_locked\(owner_id\)/);
+  assert.match(contactProjection, /is_account_deletion_locked\(counterpart_id\)/);
+  assert.match(
+    contactProjection,
+    /is_account_deletion_locked\(counterpart_id\)[\s\S]*select false,\s+null::timestamptz/,
+  );
+  assert.match(contactProjection, /mine\.contact_ciphertext/);
+  assert.match(contactProjection, /case when hide_counterpart then null else counterpart\.contact_ciphertext end/);
+  assert.match(lifecycleMigration, /where participant_id = target_user_id/);
+  assert.match(lifecycleMigration, /where owner_user_id = target_user_id/);
+});
+
+test("Storage cleanup is scoped to server-derived object references", () => {
+  const inventory =
+    lifecycleMigration.match(
+      /create or replace function public\.list_account_deletion_storage_objects[\s\S]*?create or replace function public\.cleanup_account_deletion_database/,
+    )?.[0] ?? "";
+  assert.match(inventory, /identity-reveal-photos/);
+  assert.match(inventory, /student-verification-evidence/);
+  assert.match(inventory, /where version\.owner_user_id = target_user_id/);
+  assert.match(inventory, /where request\.user_id = target_user_id/);
+  assert.doesNotMatch(worker, /process\.argv.*object|p_object|p_bucket|prefix/);
+  assert.match(worker, /objects\.slice\(index, index \+ 100\)/);
+});
+
+test("shared history uses tombstones without rewriting message bodies", () => {
+  assert.match(lifecycleMigration, /'Akun dihapus'/);
+  assert.match(lifecycleMigration, /anonymous_messages[\s\S]*on delete set null/);
+  assert.match(lifecycleMigration, /study_circle_messages[\s\S]*on delete set null/);
+  assert.match(lifecycleMigration, /campus_events[\s\S]*on delete set null/);
+  assert.match(lifecycleMigration, /message\.body/);
+  assert.doesNotMatch(lifecycleMigration, /update public\.(anonymous_messages|study_circle_messages)[\s\S]*body\s*=/);
+  assert.match(lifecycleMigration, /then 'Akun dihapus' else profile\.public_alias/);
+});
+
+test("owned resources are finalized idempotently without transfer", () => {
+  const cleanup =
+    lifecycleMigration.match(
+      /create or replace function public\.cleanup_account_deletion_database[\s\S]*?create or replace function public\.complete_account_deletion_job/,
+    )?.[0] ?? "";
+  assert.match(cleanup, /update public\.study_circles[\s\S]*status = 'archived'/);
+  assert.match(cleanup, /where owner_user_id = target_user_id/);
+  assert.match(cleanup, /update public\.campus_events[\s\S]*status = 'cancelled'/);
+  assert.match(cleanup, /status = 'scheduled'[\s\S]*starts_at > timezone/);
+  assert.doesNotMatch(cleanup, /set[\s\S]{0,120}(owner_user_id|organizer_user_id)\s*=/);
+  assert.doesNotMatch(
+    cleanup,
+    /delete from public\.(study_circles|study_circle_messages|campus_events|anonymous_messages)\b/,
+  );
+  assert.match(
+    cleanup,
+    /delete from public\.campus_event_rsvps[\s\S]*where user_id = target_user_id/,
+  );
+});
+
+test("verification private data is purged without decryption or client projection", () => {
+  const cleanup =
+    lifecycleMigration.match(
+      /create or replace function public\.cleanup_account_deletion_database[\s\S]*?create or replace function public\.complete_account_deletion_job/,
+    )?.[0] ?? "";
+  assert.match(cleanup, /delete from public\.student_verification_requests/);
+  assert.match(cleanup, /delete from public\.onboarding_academic_claims/);
+  assert.match(cleanup, /delete from public\.profiles/);
+  assert.match(cleanup, /delete from public\.privacy_preferences/);
+  assert.match(cleanup, /delete from public\.user_consents/);
+  assert.doesNotMatch(cleanup, /decrypt|nim_ciphertext|legal_name_ciphertext/);
+  assert.doesNotMatch(worker, /nim|legal_name|ciphertext|auth_tag/);
+});
+
+test("moderation and security retention is centralized and bounded", () => {
+  assert.match(lifecycleMigration, /create table public\.account_privacy_policy/);
+  assert.match(lifecycleMigration, /moderation_retention_days smallint not null default 180/);
+  assert.match(lifecycleMigration, /security_audit_retention_days smallint not null default 180/);
+  assert.match(lifecycleMigration, /moderation_status in \('resolved', 'dismissed'\)/);
+  assert.match(lifecycleMigration, /resolved_at[\s\S]*make_interval\(days => policy\.moderation_retention_days\)/);
+  assert.match(
+    lifecycleMigration,
+    /introduction_events[\s\S]*account_deletion_request_id/,
+  );
+  assert.match(
+    lifecycleMigration,
+    /conversation_events[\s\S]*account_deletion_request_id/,
+  );
+  assert.match(
+    lifecycleMigration,
+    /study_circle_events[\s\S]*account_deletion_request_id/,
+  );
+  assert.match(
+    lifecycleMigration,
+    /campus_event_audit_events[\s\S]*account_deletion_request_id/,
+  );
+  assert.doesNotMatch(
+    lifecycleMigration.match(
+      /create or replace function public\.cleanup_account_deletion_database[\s\S]*?create or replace function public\.complete_account_deletion_job/,
+    )?.[0] ?? "",
+    /delete from public\.user_reports/,
+  );
+});
+
+test("Auth finalization is last and completion requires Auth FK cleanup", () => {
+  const completion =
+    lifecycleMigration.match(
+      /create or replace function public\.complete_account_deletion_job[\s\S]*?create or replace function public\.fail_account_deletion_job/,
+    )?.[0] ?? "";
+  assert.match(completion, /database_cleanup_at is not null/);
+  assert.match(completion, /user_id is null/);
+  assert.match(completion, /status = 'completed'/);
+  assert.match(
+    worker,
+    /removeOwnedStorage\(job\)[\s\S]*cleanupDatabase\(job\)[\s\S]*deleteAuthUser\(job\)[\s\S]*completeJob\(job\)/,
+  );
+  assert.match(worker, /getUserById/);
+  assert.match(worker, /not found/i);
 });
 
 test("settings projection and copy contain no forbidden privacy fields", () => {

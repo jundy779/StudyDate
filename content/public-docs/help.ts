@@ -95,7 +95,7 @@ export const helpSections: PublicDocSection[] = [
           "Email yang didukung: @gmail.com, @vk.com, atau berakhiran .ac.id / .sch.id.",
           "Periksa folder spam jika email tautan belum muncul.",
           "Pastikan kamu membuka tautan di perangkat yang sama dengan yang kamu maksudkan untuk memakai sesi.",
-          "Permintaan penghapusan akun tersedia di Pengaturan. Profil dan akses sosial langsung dikunci; cleanup final mengikuti kebijakan retensi yang telah ditinjau.",
+          "Permintaan penghapusan akun tersedia di Pengaturan. Akun dan profil langsung dinonaktifkan, lalu penghapusan data privat diproses oleh sistem. Riwayat bersama yang perlu dipertahankan tampil sebagai “Akun dihapus”.",
         ],
       },
       {

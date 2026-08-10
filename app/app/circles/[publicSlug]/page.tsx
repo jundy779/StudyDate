@@ -114,10 +114,12 @@ export default async function CircleDetailPage({
     : [[], { messages: [], hasMore: false }];
   const eligibilityEntries = isActiveMember
     ? await Promise.all(
-        memberRows.map(async (member) => [
+        memberRows
+          .filter((member) => member.public_alias !== "Akun dihapus")
+          .map(async (member) => [
           member.public_alias,
           await getIntroductionSendEligibility(member.public_alias),
-        ] as const),
+          ] as const),
       )
     : [];
   const eligibilityByAlias = new Map(eligibilityEntries);
@@ -308,7 +310,8 @@ export default async function CircleDetailPage({
                                 >
                                   {formatTimestamp(message.created_at)}
                                 </time>
-                                {!message.is_mine ? (
+                                {!message.is_mine &&
+                                message.author_alias !== "Akun dihapus" ? (
                                   <details>
                                     <summary className="focus-ring cursor-pointer rounded text-xs font-semibold text-brand-muted">
                                       Laporkan pesan
@@ -401,10 +404,12 @@ export default async function CircleDetailPage({
                                 </span>
                               ) : null}
                             </div>
-                            <p className="mt-1 break-words text-xs leading-5 text-brand-muted">
-                              {member.study_program} · {member.campus}
-                              {member.semester ? ` · Semester ${member.semester}` : ""}
-                            </p>
+                            {member.public_alias !== "Akun dihapus" ? (
+                              <p className="mt-1 break-words text-xs leading-5 text-brand-muted">
+                                {member.study_program} · {member.campus}
+                                {member.semester ? ` · Semester ${member.semester}` : ""}
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                         {eligibility?.can_send ? (
@@ -415,7 +420,8 @@ export default async function CircleDetailPage({
                             />
                           </div>
                         ) : null}
-                        {member.public_alias !== ownProfile.public_alias ? (
+                        {member.public_alias !== ownProfile.public_alias &&
+                        member.public_alias !== "Akun dihapus" ? (
                           <details className="mt-3">
                             <summary className="focus-ring cursor-pointer rounded text-xs font-semibold text-brand-muted">
                               Tindakan anggota

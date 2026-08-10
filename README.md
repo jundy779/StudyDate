@@ -76,8 +76,9 @@ Implemented:
   migrations `202608090003`–`202608090004`
 - Account & Privacy Controls v1 at `/app/settings` for bounded profile editing,
   People visibility, own-block management, session basics, privacy summary, and
-  an immediate privacy-lock deletion request. Migration `202608100001` is
-  LOCAL-ONLY; final destructive cleanup awaits Owner retention decisions.
+  an immediate privacy-lock deletion request. Migrations `202608100001`–
+  `202608100002` are LOCAL-ONLY and implement the retryable server-only cleanup,
+  shared-history tombstones, Circle/Event policy, and Auth-last finalization.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -295,6 +296,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
 | `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, and lifecycle tests |
 | `npm run test:account-privacy` | Run Account & Privacy settings, block, projection, deletion-gate, and lifecycle tests |
+| `npm run account-deletions:process -- --limit=10` | Process bounded account-deletion jobs from a trusted server runner |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |

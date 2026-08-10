@@ -211,7 +211,10 @@ membedakan data terlihat, privat, serta dibuka melalui consent existing tanpa
 menampilkan one-sided state. Block list memakai maskot resmi dan confirmation
 dialog aksesibel dengan Escape/focus restore. Delete request memakai dialog
 tenang, acknowledgement eksplisit, dan menjelaskan privacy lock langsung serta
-cleanup final yang masih menunggu kebijakan Owner.
+penghapusan server-side yang tidak dapat dibatalkan melalui Student UI.
+`/account/deletion-pending` hanya menyatakan akun tidak aktif dan penghapusan
+sedang diproses; stage, retry count, failure code, dan detail Storage tidak
+ditampilkan.
 
 ### Student Verification Center
 

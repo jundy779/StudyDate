@@ -466,9 +466,11 @@ export function ConversationRoom({
                 </span>
               ) : null}
             </div>
-            <p className="mt-1 text-sm text-brand-muted">
-              {conversation.study_program} · {conversation.campus}
-            </p>
+            {conversation.counterpart_alias !== "Akun dihapus" ? (
+              <p className="mt-1 text-sm text-brand-muted">
+                {conversation.study_program} · {conversation.campus}
+              </p>
+            ) : null}
             <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
               {CONVERSATION_PRIVACY_NOTE}
             </p>

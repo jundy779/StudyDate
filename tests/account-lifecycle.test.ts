@@ -34,7 +34,7 @@ test("account lifecycle migration supports soft deactivate and staff FK", () => 
   assert.match(migration, /staff_members_created_by_fkey/);
 });
 
-test("deletion request privacy-locks without destructive cleanup", () => {
+test("deletion request privacy-locks before server-only cleanup", () => {
   assert.match(lifecycle, /request_my_student_account_deletion/);
   assert.match(lifecycle, /ACCOUNT_DELETE_CONFIRMATION/);
   assert.match(lifecycle, /getCurrentStaffAccess/);
@@ -50,7 +50,7 @@ test("profile danger zone exposes student-only account controls", () => {
   assert.match(danger, /ACCOUNT_DELETE_CONFIRMATION/);
 });
 
-test("privacy documents self-service deactivation and reviewed deletion", () => {
+test("privacy documents self-service deactivation and deletion lifecycle", () => {
   assert.match(privacy, /penghapusan-akun/);
   assert.match(privacy, /permintaan penghapusan/i);
   assert.match(privacy, /dinonaktifkan sementara/i);

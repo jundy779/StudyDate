@@ -15,6 +15,7 @@ function formatActivity(value: string) {
 }
 
 export function ConversationListItem({ item }: { item: ConversationItem }) {
+  const isDeleted = item.counterpart_alias === "Akun dihapus";
   const preview =
     item.preview_body?.trim() ||
     (item.status === "awaiting_chat"
@@ -56,10 +57,12 @@ export function ConversationListItem({ item }: { item: ConversationItem }) {
               </span>
             ) : null}
           </div>
-          <p className="mt-1 text-xs text-brand-muted">
-            {item.study_program} · {item.campus}
-            {item.semester ? ` · Semester ${item.semester}` : ""}
-          </p>
+          {!isDeleted ? (
+            <p className="mt-1 text-xs text-brand-muted">
+              {item.study_program} · {item.campus}
+              {item.semester ? ` · Semester ${item.semester}` : ""}
+            </p>
+          ) : null}
           <p className="mt-3 line-clamp-2 whitespace-pre-wrap break-words text-sm leading-6 text-brand-navy">
             {preview}
           </p>

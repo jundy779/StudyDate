@@ -140,7 +140,7 @@ export const privacySections: PublicDocSection[] = [
         items: [
           "Tidak membuka nama legal, NIM, email akun, atau kontak.",
           "Tidak mengklaim bahwa Identity Reveal sama dengan “identitas terverifikasi secara resmi”.",
-          "Jika percakapan diakhiri setelah selesai, akses nama depan dan foto yang sudah dibuka dapat tetap tersedia sesuai kebijakan retensi produk.",
+          "Jika percakapan diakhiri setelah selesai, akses nama depan dan foto yang sudah dibuka dapat tetap tersedia. Jika pemilik data menghapus akun, StudyDate berhenti menyajikan identitas tersebut melalui layanan.",
           "Jika ada pemblokiran, proyeksi identitas lawan dihentikan pada permintaan berikutnya—tanpa menjamin penghapusan konten yang sudah dilihat.",
         ],
       },
@@ -218,7 +218,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah Identity Reveal atau Contact Reveal selesai, akses terbatas dapat dipertahankan sesuai perilaku produk bila percakapan diakhiri secara normal. Mahasiswa dapat menonaktifkan akun atau mengirim permintaan penghapusan dari Pengaturan; lihat bagian penghapusan akun.",
+        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah permintaan penghapusan efektif, data privat akun dihapus melalui proses server. Riwayat bersama tertentu dapat dipertahankan dalam bentuk anonim agar konteks pengguna lain dan integritas moderasi tidak rusak. Bukti laporan aktif disimpan sampai kasus selesai; bukti yang sudah selesai dan audit keamanan tersanitasi dapat disimpan secara terbatas hingga 180 hari bila diperlukan.",
       },
     ],
   },
@@ -228,7 +228,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Di Pengaturan, akun mahasiswa dapat: (1) dinonaktifkan sementara—profil disembunyikan dari People dan akses aplikasi diblokir sampai diaktifkan kembali, sementara data tetap di server; atau (2) mengirim permintaan penghapusan. Saat permintaan diterima, profil segera disembunyikan dan akses sosial dinonaktifkan. Cleanup final belum dijalankan sampai Owner menyetujui kebijakan retensi untuk Identity Reveal, Contact Reveal, percakapan dan riwayat grup, bukti moderasi, Circle yang dimiliki, serta Event yang diorganisasi. Akun staf tidak memakai alur self-service ini.",
+        text: "Di Pengaturan, akun mahasiswa dapat dinonaktifkan sementara atau diminta untuk dihapus. Permintaan penghapusan bersifat tidak dapat dibatalkan melalui antarmuka mahasiswa: profil dan akses akun langsung dinonaktifkan, lalu sistem menghapus data privat, media Identity Reveal, nilai Contact Reveal, dan data verifikasi milik akun. Circle milik akun diarsipkan dan Event mendatang yang diorganisasi dibatalkan. Riwayat percakapan, pesan Circle, Event, dan bukti moderasi yang masih diperlukan dapat tetap tersedia dengan identitas “Akun dihapus”. Informasi yang sebelumnya sudah dilihat atau disalin orang lain di luar StudyDate tidak selalu dapat dihapus dari perangkat mereka. Akun staf tidak memakai alur self-service ini.",
       },
     ],
   },

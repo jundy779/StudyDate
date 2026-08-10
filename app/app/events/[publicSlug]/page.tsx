@@ -131,10 +131,12 @@ export default async function EventDetailPage({
     : [];
   const eligibilityEntries = canViewAttendees
     ? await Promise.all(
-        attendeeRows.map(async (attendee) => [
+        attendeeRows
+          .filter((attendee) => attendee.public_alias !== "Akun dihapus")
+          .map(async (attendee) => [
           attendee.public_alias,
           await getIntroductionSendEligibility(attendee.public_alias),
-        ] as const),
+          ] as const),
       )
     : [];
   const eligibilityByAlias = new Map(eligibilityEntries);
@@ -370,10 +372,12 @@ export default async function EventDetailPage({
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-1 break-words text-xs leading-5 text-brand-muted">
-                            {attendee.study_program} · {attendee.campus}
-                            {attendee.semester ? ` · Semester ${attendee.semester}` : ""}
-                          </p>
+                          {attendee.public_alias !== "Akun dihapus" ? (
+                            <p className="mt-1 break-words text-xs leading-5 text-brand-muted">
+                              {attendee.study_program} · {attendee.campus}
+                              {attendee.semester ? ` · Semester ${attendee.semester}` : ""}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                       {eligibility?.can_send ? (

@@ -20,13 +20,14 @@ async function DeletionPendingContent() {
           Permintaan penghapusan diterima
         </h1>
         <p className="mt-5 text-lg leading-8 text-brand-muted">
-          Profilmu sudah disembunyikan dan akses sosial dinonaktifkan. Cleanup
-          final belum dijalankan sampai kebijakan retensi, Reveal, shared
-          history, Circle, Event, dan bukti moderasi disetujui Owner.
+          Akunmu sudah tidak aktif, profil tidak dapat ditemukan, dan akses
+          normal StudyDate tidak tersedia. Penghapusan data akun sedang
+          diproses oleh sistem.
         </p>
         <p className="mt-4 text-sm leading-6 text-brand-muted">
-          Status internal: permintaan sedang ditangani. Detail kegagalan
-          operasional tidak ditampilkan di halaman ini.
+          Penghapusan akun masih diproses. Beberapa riwayat bersama dapat tetap
+          tersedia dalam bentuk anonim agar konteks dan bukti keamanan tidak
+          rusak.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <form action={signOut}>
