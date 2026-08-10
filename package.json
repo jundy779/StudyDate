@@ -25,6 +25,7 @@
     "test:all": "node --experimental-strip-types --test tests/*.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "test:account-privacy:browser": "node scripts/account-privacy-responsive-audit.mjs",
+    "test:account-privacy:live": "node scripts/live-account-privacy-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs",
     "account-deletions:process": "node scripts/process-account-deletions.mjs"
   },

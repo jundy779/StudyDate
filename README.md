@@ -77,8 +77,9 @@ Implemented:
 - Account & Privacy Controls v1 at `/app/settings` for bounded profile editing,
   People visibility, own-block management, session basics, privacy summary, and
   an immediate privacy-lock deletion request. Migrations `202608100001`–
-  `202608100002` are LOCAL-ONLY and implement the retryable server-only cleanup,
-  shared-history tombstones, Circle/Event policy, and Auth-last finalization.
+  `202608100003` are deployed and live-verified; they implement retryable
+  server-only cleanup, shared-history tombstones, Circle/Event policy, and
+  Auth-last finalization.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 

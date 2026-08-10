@@ -363,7 +363,7 @@ Introduction existing, organizer/staff isolation, report-scoped evidence, schedu
 lock, cancel/archive retention, RLS/grants, zero private-flow atau Event Notification
 otomatis, authenticated UI smoke, serta cleanup lengkap.
 
-## 13b. Local-only — Account & Privacy Controls v1
+## 13b. Deployed — Account & Privacy Controls v1
 
 `/app/settings` menggabungkan Profil, Privasi, Blokir, dan Akun dalam satu
 halaman editorial. Mahasiswa dapat memperbarui kampus/program yang telah
@@ -387,8 +387,9 @@ langsung tidak lagi diproyeksikan.
 
 Bukti moderasi aktif bertahan sampai kasus selesai; bukti resolved/dismissed
 dan security audit tersanitasi mengikuti satu kebijakan limited-rollout
-maksimum 180 hari. Migrations `202608100001`–`202608100002` tetap LOCAL-ONLY.
-Student Verification tetap dinonaktifkan.
+maksimum 180 hari. Migrations `202608100001`–`202608100003` telah diterapkan
+dan live-verified pada project StudyDate. Student Verification tetap
+dinonaktifkan.
 
 ## 14. Planned — Safety flows
 

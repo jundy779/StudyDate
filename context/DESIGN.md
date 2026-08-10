@@ -199,7 +199,7 @@ Mobile satu kolom dengan date/time controls yang dapat dipakai; tablet mempertah
 rail 88px dan desktop sidebar 260px. Tidak ada event chat, map embed, arbitrary links,
 poster, fake people, atau visual dating.
 
-### Account & Privacy Controls v1 (LOCAL-ONLY)
+### Account & Privacy Controls v1 (DEPLOYED / LIVE-VERIFIED)
 
 `/app/settings` memakai satu halaman dengan section Profil, Privasi, Blokir,
 dan Akun. Gunakan heading, divider, whitespace, dan satu kolom baca; jangan

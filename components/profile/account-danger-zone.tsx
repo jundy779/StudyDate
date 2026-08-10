@@ -7,6 +7,7 @@ import {
 import { ACCOUNT_DELETE_CONFIRMATION } from "@/lib/account/lifecycle-constants";
 import { TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { flushSync } from "react-dom";
 
 type AccountDangerZoneProps = {
   /** When true, hide soft-deactivate (already on reactivate screen). */
@@ -24,17 +25,22 @@ export function AccountDangerZone({
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  function closeDeleteDialog() {
+    flushSync(() => {
+      setShowDelete(false);
+      setConfirmation("");
+    });
+    deleteTriggerRef.current?.focus();
+  }
+
   useEffect(() => {
     if (!showDelete) return;
-    const previousFocus = document.activeElement as HTMLElement | null;
-    const trigger = deleteTriggerRef.current;
     cancelRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && !isPending) {
         event.preventDefault();
-        setShowDelete(false);
-        setConfirmation("");
+        closeDeleteDialog();
         return;
       }
       if (event.key !== "Tab") return;
@@ -56,7 +62,6 @@ export function AccountDangerZone({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      (previousFocus ?? trigger)?.focus();
     };
   }, [isPending, showDelete]);
 
@@ -114,7 +119,6 @@ export function AccountDangerZone({
             kapan saja.
           </p>
           <button
-            ref={deleteTriggerRef}
             type="button"
             disabled={isPending}
             onClick={onDeactivate}
@@ -128,6 +132,8 @@ export function AccountDangerZone({
       <div className="mt-6 space-y-4">
         {!showDelete ? (
           <button
+            id="delete-account-trigger"
+            ref={deleteTriggerRef}
             type="button"
             disabled={isPending}
             onClick={() => setShowDelete(true)}
@@ -189,8 +195,7 @@ export function AccountDangerZone({
                 type="button"
                 disabled={isPending}
                 onClick={() => {
-                  setShowDelete(false);
-                  setConfirmation("");
+                  closeDeleteDialog();
                 }}
                 className="focus-ring min-h-12 rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy disabled:opacity-60"
               >

@@ -18,6 +18,13 @@ const lifecycleMigration = readFileSync(
   ),
   "utf8",
 );
+const hardeningMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608100003_harden_account_deletion_runtime.sql",
+  ),
+  "utf8",
+);
 const settingsPage = readFileSync(
   join(root, "app/app/settings/page.tsx"),
   "utf8",
@@ -152,6 +159,27 @@ test("deletion worker is service-only, leased, bounded, and retryable", () => {
   assert.doesNotMatch(worker, /console\.(log|error)\([^)]*error/);
 });
 
+test("forward hardening closes deletion races and preserves shared tombstones", () => {
+  assert.match(hardeningMigration, /reject_account_deletion_locked_mutation/);
+  assert.match(
+    hardeningMigration,
+    /before insert or update or delete on public\./,
+  );
+  assert.match(
+    hardeningMigration,
+    /delete from public\.study_circle_memberships[\s\S]*status <> 'active'/,
+  );
+  assert.match(
+    hardeningMigration,
+    /delete from public\.campus_event_rsvps[\s\S]*status <> 'going'/,
+  );
+  assert.match(hardeningMigration, /auth_users_account_cleanup_first/);
+  assert.match(hardeningMigration, /claim_account_deletion_job_by_id/);
+  assert.match(hardeningMigration, /purge_expired_account_deletion_requests/);
+  assert.match(worker, /--request-id=/);
+  assert.match(worker, /if \(failed > 0\) process\.exitCode = 1/);
+});
+
 test("request is self-only, irreversible in Student UI, and failed state remains locked", () => {
   const requestFunction =
     lifecycleMigration.match(
@@ -233,8 +261,12 @@ test("owned resources are finalized idempotently without transfer", () => {
     /delete from public\.(study_circles|study_circle_messages|campus_events|anonymous_messages)\b/,
   );
   assert.match(
-    cleanup,
-    /delete from public\.campus_event_rsvps[\s\S]*where user_id = target_user_id/,
+    hardeningMigration,
+    /delete from public\.campus_event_rsvps[\s\S]*status <> 'going'/,
+  );
+  assert.match(
+    hardeningMigration,
+    /delete from public\.study_circle_memberships[\s\S]*status <> 'active'/,
   );
 });
 
@@ -315,7 +347,7 @@ test("responsive audit requires authenticated settings and opens the deletion di
     /ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE is required/,
   );
   assert.match(browserAudit, /settings heading/);
-  assert.match(browserAudit, /Minta penghapusan akun/);
+  assert.match(browserAudit, /delete-account-trigger/);
   assert.match(browserAudit, /closedWithEscape/);
   assert.match(browserAudit, /focusRestored/);
   assert.doesNotMatch(

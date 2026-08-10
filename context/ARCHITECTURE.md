@@ -425,7 +425,7 @@ cancel/archive retention, direct-table denial, zero automatic private-flow/Event
 Notification side effects, authenticated UI smoke, dan cleanup sintetis lengkap.
 Post-deploy migration dry-run kosong.
 
-## 12i. Account & Privacy Controls v1 (LOCAL-ONLY)
+## 12i. Account & Privacy Controls v1 (DEPLOYED / LIVE-VERIFIED)
 
 `/app/settings` memakai satu Server Component dengan empat section dan server
 actions/RPC sempit. Profil settings tidak menerima target user, nama privat,
@@ -450,8 +450,15 @@ Identity/Contact suppression, central 180-day limited-rollout retention,
 Circle archive, Event cancellation, dan Auth-last finalization. Executor
 `scripts/process-account-deletions.mjs` berjalan dari trusted scheduler/runner,
 bukan browser, dan memakai object refs Storage yang diturunkan server-side.
+
+Migration `202608100003_harden_account_deletion_runtime.sql` menutup mutation
+bypass setelah privacy lock, menjaga membership/RSVP aktif sebagai tombstone,
+menolak Auth deletion sebelum database cleanup, memberi claim by-request-id
+untuk operasi terkontrol, dan membatasi retention metadata deletion. Ketiga
+migration telah sinkron dengan project `ctbqudtvrfezuoqcecyj`; audit live A/B/D,
+worker exact-request, cleanup, dan browser lima viewport lulus pada 10 Agustus
+2026.
 Mahasiswa tetap hanya dapat request self dan membaca status sendiri.
-Kedua migration Account/Privacy belum diterapkan remote.
 
 ## 13. Staff authorization v1
 

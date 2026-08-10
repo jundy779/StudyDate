@@ -1,4 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
+import { existsSync, readFileSync } from "node:fs";
+
+if (existsSync(".env.local")) {
+  for (const line of readFileSync(".env.local", "utf8").split(/\r?\n/)) {
+    if (!line || line.startsWith("#") || !line.includes("=")) continue;
+    const separator = line.indexOf("=");
+    const name = line.slice(0, separator).trim();
+    process.env[name] ??= line
+      .slice(separator + 1)
+      .trim()
+      .replace(/^["']|["']$/g, "");
+  }
+}
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -10,6 +23,18 @@ const limitArgument = process.argv.find((argument) => argument.startsWith("--lim
 const limit = Number(limitArgument?.split("=")[1] ?? "10");
 if (!Number.isInteger(limit) || limit < 1 || limit > 25) {
   throw new Error("--limit must be an integer between 1 and 25.");
+}
+const requestArgument = process.argv.find((argument) =>
+  argument.startsWith("--request-id="),
+);
+const requestId = requestArgument?.split("=")[1] ?? null;
+if (
+  requestId &&
+  !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    requestId,
+  )
+) {
+  throw new Error("--request-id must be a UUID.");
 }
 
 const admin = createClient(url, serviceRoleKey, {
@@ -37,7 +62,11 @@ async function markFailed(job, failureCode) {
 }
 
 async function claimJob() {
-  const { data, error } = await admin.rpc("claim_account_deletion_job");
+  const { data, error } = requestId
+    ? await admin.rpc("claim_account_deletion_job_by_id", {
+        p_request_id: requestId,
+      })
+    : await admin.rpc("claim_account_deletion_job");
   if (error) throw Object.assign(new Error("Claim failed."), { stage: "database" });
   return firstRow(data) ?? null;
 }
@@ -124,6 +153,7 @@ for (let index = 0; index < limit; index += 1) {
     const stage = typeof error?.stage === "string" ? error.stage : "database";
     await markFailed(job, failureCodes[stage] ?? failureCodes.database);
   }
+  if (requestId) break;
 }
 
 const { data: purged, error: purgeError } = await admin.rpc(
@@ -134,7 +164,16 @@ if (purgeError) {
   process.stderr.write("Retention cleanup unavailable.\n");
   process.exitCode = 1;
 }
+const { data: purgedRequests, error: requestPurgeError } = await admin.rpc(
+  "purge_expired_account_deletion_requests",
+  { p_limit: 100 },
+);
+if (requestPurgeError) {
+  process.stderr.write("Deletion request retention cleanup unavailable.\n");
+  process.exitCode = 1;
+}
+if (failed > 0) process.exitCode = 1;
 
 process.stdout.write(
-  `Account deletion jobs: ${completed} completed, ${failed} failed; ${Number(purged ?? 0)} retention rows purged.\n`,
+  `Account deletion jobs: ${completed} completed, ${failed} failed; ${Number(purged ?? 0)} retention rows and ${Number(purgedRequests ?? 0)} completed requests purged.\n`,
 );

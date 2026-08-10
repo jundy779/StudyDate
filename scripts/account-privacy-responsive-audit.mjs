@@ -170,12 +170,14 @@ async function main() {
       returnByValue: true,
       awaitPromise: true,
       expression: `(async () => {
-        const trigger = [...document.querySelectorAll('button')].find(
-          button => button.textContent?.trim() === 'Minta penghapusan akun'
-        );
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        let trigger = document.querySelector('#delete-account-trigger');
         trigger?.click();
-        await new Promise(resolve => setTimeout(resolve, 0));
-        const dialog = document.querySelector('[role="dialog"]');
+        let dialog = null;
+        for (let attempt = 0; attempt < 20 && !dialog; attempt += 1) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          dialog = document.querySelector('[role="dialog"]');
+        }
         const cancel = [...(dialog?.querySelectorAll('button') ?? [])].find(
           button => button.textContent?.trim() === 'Batal'
         );
@@ -191,16 +193,42 @@ async function main() {
           submitDisabled: Boolean(submit?.disabled),
         };
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-        await new Promise(resolve => setTimeout(resolve, 0));
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          await new Promise(resolve => requestAnimationFrame(
+            () => setTimeout(resolve, 50)
+          ));
+          trigger = document.querySelector('#delete-account-trigger');
+          if (
+            !document.querySelector('[role="dialog"]') &&
+            document.activeElement === trigger
+          ) break;
+        }
         return {
           ...opened,
           closedWithEscape: !document.querySelector('[role="dialog"]'),
           focusRestored: document.activeElement === trigger,
+          activeText: document.activeElement?.textContent?.trim() ?? "",
+          activeTag: document.activeElement?.tagName ?? "",
+          triggerConnected: Boolean(trigger?.isConnected),
         };
       })()`,
     }, sessionId);
-    for (const [check, passed] of Object.entries(dialogState.result.value)) {
-      assert.equal(passed, true, `${width}x${height}: dialog ${check}`);
+    for (const check of [
+      "triggerFound",
+      "dialogFound",
+      "labelled",
+      "described",
+      "cancelFocused",
+      "submitDisabled",
+      "closedWithEscape",
+      "focusRestored",
+      "triggerConnected",
+    ]) {
+      assert.equal(
+        dialogState.result.value[check],
+        true,
+        `${width}x${height}: dialog ${check}; active=${dialogState.result.value.activeTag}:${dialogState.result.value.activeText}`,
+      );
     }
 
     const screenshot = await send("Page.captureScreenshot", {

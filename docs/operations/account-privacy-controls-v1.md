@@ -1,4 +1,11 @@
-# Account & Privacy Controls v1 — LOCAL-ONLY / READY FOR DEPLOYMENT PREFLIGHT
+# Account & Privacy Controls v1 — DEPLOYED / LIVE-VERIFIED
+
+Deployed 10 Agustus 2026 ke project `ctbqudtvrfezuoqcecyj` melalui migrations
+`202608100001`–`202608100003`. Post-deploy migration list sinkron dan dry-run
+kosong. Audit sintetis exact-ID membuktikan settings/RLS, privacy lock,
+Identity/Contact suppression, Storage/DB/Auth-last cleanup, tombstone
+conversation/Circle/Event, retention, dan cleanup fixture. Browser audit
+terautentikasi lulus pada 320, 375, 768, 1024, dan 1440 px.
 
 Route utama: `/app/settings` dengan section Profil, Privasi, Blokir, dan Akun.
 `/app/profile` redirect ke section Profil.
@@ -39,6 +46,8 @@ Route utama: `/app/settings` dengan section Profil, Privasi, Blokir, dan Akun.
 `npm run account-deletions:process -- --limit=10` menjalankan executor
 server-only dengan `SUPABASE_SERVICE_ROLE_KEY`. Jalankan dari scheduler/runner
 operasi tepercaya setelah deployment; browser tidak memicu worker.
+Operasi terkontrol dapat memakai `--request-id=<uuid>`; nilai request internal
+tidak boleh dicetak atau dikirim ke client.
 
 Urutan per job:
 
@@ -52,6 +61,8 @@ Urutan per job:
 5. `complete_account_deletion_job` hanya berhasil bila cleanup database tercatat
    dan FK Auth telah mengosongkan `account_deletion_requests.user_id`.
 
-Kegagalan memakai kategori tersanitasi, mempertahankan privacy lock, dan dapat
-diklaim ulang. `purge_expired_account_deletion_retention` menjalankan cleanup
-retensi bounded pada akhir setiap run.
+Kegagalan memakai kategori tersanitasi, mempertahankan privacy lock, dapat
+diklaim ulang, dan menghasilkan exit code gagal untuk scheduler.
+`purge_expired_account_deletion_retention` serta
+`purge_expired_account_deletion_requests` menjalankan cleanup retensi bounded
+pada akhir setiap run.

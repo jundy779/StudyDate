@@ -49,10 +49,14 @@ Sumber migration:
     forward fix urutan projection RPC detail; diterapkan remote setelah live defect
     terkonfirmasi
 22. `supabase/migrations/202608100001_account_privacy_controls_v1.sql` —
-    Account & Privacy Controls v1; **LOCAL-ONLY, belum diterapkan remote**
+    Account & Privacy Controls v1; **deployed**
 23. `supabase/migrations/202608100002_finalize_account_deletion_lifecycle.sql` —
     final deletion worker contracts, tombstone-safe shared history, dan
-    centralized retention; **LOCAL-ONLY, belum diterapkan remote**
+    centralized retention; **deployed**
+24. `supabase/migrations/202608100003_harden_account_deletion_runtime.sql` —
+    deletion-lock mutation guard, durable membership/RSVP tombstone,
+    cleanup-before-Auth enforcement, scoped job claim, dan bounded request
+    retention; **deployed**
 
 ### `early_access_waitlist`
 
@@ -130,7 +134,7 @@ revoked_at timestamptz null
 
 Consent types: terms, privacy, community_guidelines. Normal client tidak boleh menulis ulang consent timestamp.
 
-### `account_deletion_requests` (LOCAL-ONLY)
+### `account_deletion_requests`
 
 Antrean internal idempotent per user dengan status `pending | processing |
 completed | failed`, timestamp lifecycle, retry count, dan sanitized
@@ -139,7 +143,7 @@ dapat memanggil request/status wrapper miliknya; processing/cleanup worker tidak
 diberikan kepada `authenticated`. Forward migration menambahkan lease 15 menit,
 database/Auth cleanup checkpoints, dan audit operasi tersanitasi.
 
-### `account_privacy_policy` / `account_deletion_audit_events` (LOCAL-ONLY)
+### `account_privacy_policy` / `account_deletion_audit_events`
 
 Policy singleton menjadi satu sumber durasi retensi moderation/security
 limited-rollout (180 hari). Audit deletion hanya menyimpan request reference,
@@ -232,7 +236,7 @@ Requirements:
 Ketiga RPC memakai `SECURITY DEFINER`, fixed empty `search_path`, revoke dari `public`/`anon`, dan execute grant hanya
 untuk `authenticated`. Migration menambahkan partial alias index dan GIN indexes untuk interest serta connection goal.
 
-### Account & Privacy Controls RPC (LOCAL-ONLY)
+### Account & Privacy Controls RPC
 
 - `update_my_student_profile_settings`: actor `auth.uid()`, hanya field profil
   belajar yang diizinkan, katalog campus/program approved, tanpa nama privat,
