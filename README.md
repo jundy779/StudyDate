@@ -36,7 +36,7 @@ locations.
 
 ### Technology stack
 
-- Next.js 16.2.12 with the App Router
+- Next.js 16.3.0 with the App Router
 - React and React DOM 19.2.8
 - TypeScript 5
 - Tailwind CSS 3.4.1
@@ -120,7 +120,7 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3010](http://localhost:3010).
 
 If `.env.local` already exists, do not overwrite it. Verify the required variable names and fill only missing values.
 
@@ -296,6 +296,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
 | `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, and lifecycle tests |
 | `npm run test:account-privacy` | Run Account & Privacy settings, block, projection, deletion-gate, and lifecycle tests |
+| `npm run test:account-privacy:browser` | Audit authenticated settings responsiveness and deletion-dialog accessibility; requires `ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE` |
 | `npm run account-deletions:process -- --limit=10` | Process bounded account-deletion jobs from a trusted server runner |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |

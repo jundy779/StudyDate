@@ -1,4 +1,7 @@
-import { PUBLIC_DOC_LAST_UPDATED_LABEL } from "@/lib/marketing/public-routes";
+import {
+  PUBLIC_DOC_LAST_UPDATED_ISO,
+  PUBLIC_DOC_LAST_UPDATED_LABEL,
+} from "@/lib/marketing/public-routes";
 
 export type PublicDocBlock =
   | { type: "p"; text: string }
@@ -37,7 +40,9 @@ export function PublicDocArticle({
         </p>
         <p className="mt-5 text-sm text-brand-muted">
           Terakhir diperbarui:{" "}
-          <time dateTime="2026-08-07">{PUBLIC_DOC_LAST_UPDATED_LABEL}</time>
+          <time dateTime={PUBLIC_DOC_LAST_UPDATED_ISO}>
+            {PUBLIC_DOC_LAST_UPDATED_LABEL}
+          </time>
         </p>
 
         <nav

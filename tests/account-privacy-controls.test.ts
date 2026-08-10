@@ -44,6 +44,10 @@ const pendingPage = readFileSync(
   join(root, "app/account/deletion-pending/page.tsx"),
   "utf8",
 );
+const browserAudit = readFileSync(
+  join(root, "scripts/account-privacy-responsive-audit.mjs"),
+  "utf8",
+);
 
 test("profile settings mutation is actor-scoped and excludes protected identity", () => {
   assert.match(migration, /update_my_student_profile_settings/);
@@ -303,6 +307,21 @@ test("settings projection and copy contain no forbidden privacy fields", () => {
     /service_role|auth token|cookie|magic link|nim_ciphertext|contact_ciphertext|photo_object_key|one-sided consent|UUID/,
   );
   assert.match(settingsPage, /maskEmail/);
+});
+
+test("responsive audit requires authenticated settings and opens the deletion dialog", () => {
+  assert.match(
+    browserAudit,
+    /ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE is required/,
+  );
+  assert.match(browserAudit, /settings heading/);
+  assert.match(browserAudit, /Minta penghapusan akun/);
+  assert.match(browserAudit, /closedWithEscape/);
+  assert.match(browserAudit, /focusRestored/);
+  assert.doesNotMatch(
+    browserAudit,
+    /unauthenticated settings must redirect to login/,
+  );
 });
 
 test("Student Verification remains globally disabled by default", () => {

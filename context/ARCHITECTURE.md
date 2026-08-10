@@ -2,7 +2,7 @@
 
 ## 1. Current stack
 
-Periksa `package.json` sebelum bekerja. Arsitektur saat ini menggunakan Next.js 16.2.12 App Router, React 19.2.8,
+Periksa `package.json` sebelum bekerja. Arsitektur saat ini menggunakan Next.js 16.3.0 App Router, React 19.2.8,
 TypeScript, Tailwind CSS 3.4.1, `@supabase/ssr` 0.12.4, `@supabase/supabase-js` 2.111.0, Zod 4.4.3,
 existing accessible UI primitives, Route Handlers, dan Server Actions.
 

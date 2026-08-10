@@ -16,6 +16,10 @@ const settingsMigration = readFileSync(
   "utf8",
 );
 const lifecycle = readFileSync(join(root, "lib/account/lifecycle.ts"), "utf8");
+const accountActions = readFileSync(
+  join(root, "app/app/profile/account-actions.ts"),
+  "utf8",
+);
 const danger = readFileSync(
   join(root, "components/profile/account-danger-zone.tsx"),
   "utf8",
@@ -39,6 +43,16 @@ test("deletion request privacy-locks before server-only cleanup", () => {
   assert.match(lifecycle, /ACCOUNT_DELETE_CONFIRMATION/);
   assert.match(lifecycle, /getCurrentStaffAccess/);
   assert.doesNotMatch(lifecycle, /auth\.admin\.deleteUser|storage\.from/);
+  assert.doesNotMatch(
+    lifecycle.match(
+      /export async function requestMyStudentAccountDeletion[\s\S]*$/,
+    )?.[0] ?? "",
+    /signOut/,
+  );
+  assert.match(
+    accountActions,
+    /redirect\("\/account\/deletion-pending"\)/,
+  );
   assert.match(settingsMigration, /account_deletion_requests/);
   assert.match(settingsMigration, /is_discoverable = false/);
 });
@@ -48,6 +62,7 @@ test("profile danger zone exposes student-only account controls", () => {
   assert.match(danger, /Nonaktifkan akun/);
   assert.match(danger, /Minta penghapusan akun/);
   assert.match(danger, /ACCOUNT_DELETE_CONFIRMATION/);
+  assert.doesNotMatch(danger, /menunggu kebijakan|ditinjau Owner/i);
 });
 
 test("privacy documents self-service deactivation and deletion lifecycle", () => {

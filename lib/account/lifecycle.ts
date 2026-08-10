@@ -77,5 +77,4 @@ export async function requestMyStudentAccountDeletion(confirmation: string) {
   if (error) {
     throw new Error("Deletion request failed.");
   }
-  await supabase.auth.signOut();
 }

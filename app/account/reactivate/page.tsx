@@ -42,8 +42,8 @@ async function ReactivateContent({ searchParams }: ReactivatePageProps) {
         </h1>
         <p className="mt-5 text-lg leading-8 text-brand-muted">
           Akun mahasiswamu dinonaktifkan. Data masih ada di server. Aktifkan
-          kembali untuk masuk ke aplikasi, atau ajukan penghapusan akun.
-          Cleanup final menunggu kebijakan retensi yang disetujui.
+          kembali untuk masuk ke aplikasi, atau ajukan penghapusan permanen
+          yang tidak dapat dibatalkan melalui aplikasi.
         </p>
         {errorCode === "reactivate" ? (
           <p role="alert" className="mt-4 text-sm font-semibold text-brand-error">

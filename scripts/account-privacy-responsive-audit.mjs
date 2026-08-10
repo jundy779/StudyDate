@@ -8,6 +8,7 @@ import process from "node:process";
 const baseUrl = process.env.AUDIT_BASE_URL ?? "http://localhost:3010";
 const targetUrl =
   process.env.ACCOUNT_PRIVACY_AUDIT_URL ?? `${baseUrl}/app/settings`;
+const storageState = process.env.ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE?.trim();
 const artifactDir = join(
   process.cwd(),
   "audit-artifacts",
@@ -110,6 +111,32 @@ async function main() {
 
   await send("Page.enable", {}, sessionId);
   await send("Runtime.enable", {}, sessionId);
+  if (!storageState) {
+    throw new Error(
+      "ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE is required; this audit must exercise authenticated settings.",
+    );
+  }
+  await send(
+    "Network.enable",
+    {},
+    sessionId,
+  );
+  const cookies = JSON.parse(storageState).cookies;
+  assert.ok(Array.isArray(cookies), "storage-state cookies required");
+  for (const cookie of cookies) {
+    await send(
+      "Network.setCookie",
+      {
+        name: cookie.name,
+        value: cookie.value,
+        url: new URL(cookie.path ?? "/", baseUrl).href,
+        secure: cookie.secure ?? baseUrl.startsWith("https:"),
+        httpOnly: cookie.httpOnly ?? false,
+        ...(cookie.sameSite ? { sameSite: cookie.sameSite } : {}),
+      },
+      sessionId,
+    );
+  }
 
   for (const [width, height] of viewports) {
     await send("Emulation.setDeviceMetricsOverride", {
@@ -132,25 +159,48 @@ async function main() {
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
         settings: Boolean(document.querySelector('h1')?.textContent?.includes('Pengaturan')),
         labelsWithoutControls: [...document.querySelectorAll('label')].filter(label => !label.control && !label.querySelector('input,select,textarea')).length,
-        dialogs: [...document.querySelectorAll('[role="dialog"]')].map(dialog => ({
-          labelled: Boolean(dialog.getAttribute('aria-labelledby')),
-          described: Boolean(dialog.getAttribute('aria-describedby')),
-        })),
       }))()`,
     }, sessionId);
     const state = evaluated.result.value;
     assert.equal(state.overflow, false, `${width}x${height}: horizontal overflow`);
-    if (!state.settings) {
-      assert.match(
-        state.href,
-        /\/login(?:$|\?)/,
-        `${width}x${height}: unauthenticated settings must redirect to login`,
-      );
-    }
+    assert.equal(state.settings, true, `${width}x${height}: settings heading`);
     assert.equal(state.labelsWithoutControls, 0, `${width}x${height}: orphan label`);
-    for (const dialog of state.dialogs) {
-      assert.equal(dialog.labelled, true, `${width}x${height}: dialog title`);
-      assert.equal(dialog.described, true, `${width}x${height}: dialog description`);
+
+    const dialogState = await send("Runtime.evaluate", {
+      returnByValue: true,
+      awaitPromise: true,
+      expression: `(async () => {
+        const trigger = [...document.querySelectorAll('button')].find(
+          button => button.textContent?.trim() === 'Minta penghapusan akun'
+        );
+        trigger?.click();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const dialog = document.querySelector('[role="dialog"]');
+        const cancel = [...(dialog?.querySelectorAll('button') ?? [])].find(
+          button => button.textContent?.trim() === 'Batal'
+        );
+        const submit = [...(dialog?.querySelectorAll('button') ?? [])].find(
+          button => button.textContent?.trim() === 'Kirim permintaan'
+        );
+        const opened = {
+          triggerFound: Boolean(trigger),
+          dialogFound: Boolean(dialog),
+          labelled: Boolean(dialog?.getAttribute('aria-labelledby')),
+          described: Boolean(dialog?.getAttribute('aria-describedby')),
+          cancelFocused: document.activeElement === cancel,
+          submitDisabled: Boolean(submit?.disabled),
+        };
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        await new Promise(resolve => setTimeout(resolve, 0));
+        return {
+          ...opened,
+          closedWithEscape: !document.querySelector('[role="dialog"]'),
+          focusRestored: document.activeElement === trigger,
+        };
+      })()`,
+    }, sessionId);
+    for (const [check, passed] of Object.entries(dialogState.result.value)) {
+      assert.equal(passed, true, `${width}x${height}: dialog ${check}`);
     }
 
     const screenshot = await send("Page.captureScreenshot", {

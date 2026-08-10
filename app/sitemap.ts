@@ -1,10 +1,13 @@
 import type { MetadataRoute } from "next";
-import { PUBLIC_DOC_ROUTES } from "@/lib/marketing/public-routes";
+import {
+  PUBLIC_DOC_LAST_UPDATED_ISO,
+  PUBLIC_DOC_ROUTES,
+} from "@/lib/marketing/public-routes";
 import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const origin = getPublicSiteOrigin();
-  const lastModified = new Date("2026-08-07T00:00:00.000Z");
+  const lastModified = new Date(`${PUBLIC_DOC_LAST_UPDATED_ISO}T00:00:00.000Z`);
 
   const home: MetadataRoute.Sitemap[number] = {
     url: `${origin}/`,

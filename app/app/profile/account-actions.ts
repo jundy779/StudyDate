@@ -45,5 +45,5 @@ export async function requestStudentAccountDeletionAction(
         : "Permintaan penghapusan belum dapat diproses. Coba lagi atau hubungi Bantuan.";
     return { ok: false as const, message };
   }
-  redirect("/?account=deletion-requested");
+  redirect("/account/deletion-pending");
 }

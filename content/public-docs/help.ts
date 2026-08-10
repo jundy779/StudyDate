@@ -10,7 +10,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID adalah platform koneksi mahasiswa untuk menemukan orang dengan konteks belajar dan kampus. Kamu mulai anonim, saling berkenalan, lalu membuka identitas dan kontak hanya jika keduanya setuju. Groups dan Campus Events masih dalam rencana produk dan belum menjadi fitur penuh di aplikasi saat ini.",
+        text: "StudyDate ID adalah platform koneksi mahasiswa untuk menemukan orang, Study Circle, dan Campus Events dengan konteks belajar dan kampus. Kamu mulai anonim, saling berkenalan, lalu membuka identitas dan kontak hanya jika keduanya setuju.",
       },
     ],
   },

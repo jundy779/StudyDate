@@ -37,8 +37,8 @@ export const PUBLIC_DOC_ROUTES = [
   },
 ] as const;
 
-export const PUBLIC_DOC_LAST_UPDATED_ISO = "2026-08-07";
-export const PUBLIC_DOC_LAST_UPDATED_LABEL = "7 Agustus 2026";
+export const PUBLIC_DOC_LAST_UPDATED_ISO = "2026-08-10";
+export const PUBLIC_DOC_LAST_UPDATED_LABEL = "10 Agustus 2026";
 
 /** Intended production URLs for Search Console / OAuth readiness (documentation). */
 export const PRODUCTION_PUBLIC_URLS = [

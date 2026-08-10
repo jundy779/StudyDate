@@ -15,15 +15,19 @@ Intended production origin: `https://studydate.id`
 
 Legacy Indonesian slugs redirect permanently to the English paths above (`/privasi` → `/privacy`, etc.).
 
-## Google Search Console / OAuth readiness (no OAuth implemented)
+## Google Search Console / OAuth readiness
 
 - Homepage and Privacy Policy are public and linked from the footer.
 - Stable URLs relative to `studydate.id` as listed above.
 - `app/sitemap.ts` and `app/robots.ts` expose crawlable public docs; authenticated areas are disallowed in robots.
 - Canonical / `metadataBase` follow `NEXT_PUBLIC_SITE_URL` when set (use `https://studydate.id` in production).
-- **Google Sign-In / Google OAuth is not active.** Privacy Policy includes a forward-looking section only.
+- Google Sign-In aktif melalui Supabase Auth; callback teknis provider tetap
+  berakhir pada route StudyDate `/auth/callback`.
+- Domain email student tetap dibatasi ke `@gmail.com`, `@vk.com`, `.ac.id`, dan
+  `.sch.id`.
 
-Do not configure Google Cloud Console as part of routine product commits; Owner configures production OAuth separately when ready.
+Jangan mengubah konfigurasi Google Cloud Console sebagai bagian dari commit
+produk rutin; perubahan OAuth tetap operasi Owner yang terpisah.
 
 ## Support contact
 

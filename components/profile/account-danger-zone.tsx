@@ -98,8 +98,8 @@ export function AccountDangerZone({
           </h2>
           <p className="mt-2 text-sm leading-6 text-brand-muted">
             Kamu dapat berhenti sementara atau meminta penghapusan akun.
-            Penghapusan final menunggu kebijakan retensi dan shared history yang
-            sedang ditinjau Owner.
+            Permintaan penghapusan langsung menonaktifkan akun dan tidak dapat
+            dibatalkan melalui aplikasi.
           </p>
         </div>
       </div>
@@ -149,10 +149,11 @@ export function AccountDangerZone({
               Minta penghapusan akun?
             </h3>
             <p id="delete-account-description" className="mt-2 text-sm leading-6 text-brand-muted">
-              Setelah dikonfirmasi, profil langsung disembunyikan dan akses
-              sosial dinonaktifkan. Permintaan bersifat idempotent. Cleanup
-              final tidak dijalankan sampai kebijakan retensi, Reveal,
-              Circle, Event, dan bukti moderasi disetujui.
+              Setelah dikonfirmasi, profil dan akses akun langsung
+              dinonaktifkan. Data privat serta Reveal milikmu akan dihapus,
+              Circle milikmu diarsipkan, dan Event mendatang yang kamu
+              selenggarakan dibatalkan. Riwayat bersama yang perlu dipertahankan
+              akan tampil sebagai “Akun dihapus”.
             </p>
             <div className="mt-4 space-y-3 rounded-2xl border border-red-200 bg-red-50/50 p-4">
             <p className="text-sm font-semibold text-brand-navy">
