@@ -11,7 +11,7 @@ const states: TelegramSafeState["state"][] = [
   "switch_required",
 ];
 
-export default async function TelegramCompanionAuditPage({
+async function TelegramCompanionAuditContent({
   searchParams,
 }: {
   searchParams: Promise<{ state?: string }>;
@@ -49,3 +49,13 @@ export default async function TelegramCompanionAuditPage({
     </main>
   );
 }
+
+export default function TelegramCompanionAuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ state?: string }>;
+}) {
+  return <TelegramCompanionAuditContent searchParams={searchParams} />;
+}
+
+export const instant = false;

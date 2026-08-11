@@ -176,18 +176,30 @@ try {
           returnByValue: true,
           awaitPromise: true,
           expression: `(async () => {
+            await new Promise(resolve => setTimeout(resolve, 250));
             const label = ${JSON.stringify(
               state === "connected"
                 ? "Putuskan"
                 : "Hubungkan ke percakapan ini",
             )};
-            let trigger = [...document.querySelectorAll('button')].find(
-              button => button.textContent?.trim() === label
-            );
+            let trigger = null;
+            for (let attempt = 0; attempt < 20 && !trigger; attempt += 1) {
+              trigger = [...document.querySelectorAll('button')].find(
+                button => button.textContent?.trim() === label
+              );
+              if (!trigger) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+              }
+            }
             trigger?.focus();
             trigger?.click();
-            await new Promise(resolve => setTimeout(resolve, 100));
-            const dialog = document.querySelector('dialog[open]');
+            let dialog = null;
+            for (let attempt = 0; attempt < 20 && !dialog; attempt += 1) {
+              dialog = document.querySelector('dialog[open]');
+              if (!dialog) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+              }
+            }
             const result = {
               open: Boolean(dialog),
               labelled: Boolean(dialog?.getAttribute('aria-labelledby')),
