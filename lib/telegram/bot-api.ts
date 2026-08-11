@@ -47,6 +47,14 @@ export function hasTelegramBotConfiguration(
   );
 }
 
+export function hasTelegramDeliveryConfiguration(
+  env: NodeJS.ProcessEnv = process.env,
+) {
+  return Boolean(
+    env.TELEGRAM_BOT_TOKEN?.trim() && isTelegramCompanionEnabled(env),
+  );
+}
+
 export async function sendTelegramText(
   chatId: string,
   text: string,

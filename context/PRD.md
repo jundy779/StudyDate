@@ -409,8 +409,9 @@ staff, dan deletion gate Anonymous Chat existing. Mutual Interest, Identity
 Reveal, dan Contact Reveal tetap web-only. Relay hanya teks; group/media
 ditolak.
 
-Outbound memakai outbox durable dan executor server-only dengan lease/retry,
-tetapi production scheduler/runner belum dipilih. Migration
+Outbound memakai outbox durable dan executor server-only dengan lease/retry.
+Vercel Cron memanggil protected runner endpoint sekali per menit untuk bounded
+batch maksimal 25 delivery. Migration
 `202608110001_create_telegram_anonymous_chat_companion_v1.sql` tetap
 **LOCAL-ONLY**, kill switch default OFF, BotFather/webhook production belum
 dikonfigurasi, dan fitur belum deployed/live.

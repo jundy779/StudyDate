@@ -531,10 +531,11 @@ Privacy lock mencabut relay/session langsung; final profile cleanup menghapus
 semua data routing Telegram.
 
 `TELEGRAM_COMPANION_ENABLED` hanya aktif saat exact `true` dan default OFF.
-Repository belum memiliki Vercel Cron, queue host, atau trusted scheduler
-durable untuk `scripts/process-telegram-outbox.mjs`; karena itu implementasi
-belum deploy-ready sampai Owner memilih delivery runner. BotFather, webhook
-production, dan real Bot API test tidak dilakukan pada fase lokal ini.
+Delivery runner produksi adalah Vercel Cron sekali per menit menuju endpoint
+server-only `/api/internal/telegram/delivery`, diautentikasi bearer
+`CRON_SECRET`, dan memproses batch maksimal 25 claim memakai lease/retry
+database existing. Endpoint hanya mengembalikan aggregate counts tersanitasi.
+BotFather, webhook production, dan real Bot API test belum dilakukan.
 
 ## 16. Logging
 

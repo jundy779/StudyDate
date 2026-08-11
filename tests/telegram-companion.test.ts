@@ -41,6 +41,15 @@ const worker = readFileSync(
   join(root, "scripts/process-telegram-outbox.mjs"),
   "utf8",
 );
+const runner = readFileSync(
+  join(root, "lib/telegram/delivery-runner.ts"),
+  "utf8",
+);
+const runnerRoute = readFileSync(
+  join(root, "app/api/internal/telegram/delivery/route.ts"),
+  "utf8",
+);
+const vercelConfig = readFileSync(join(root, "vercel.json"), "utf8");
 const deletionMigration = readFileSync(
   join(
     root,
@@ -220,6 +229,31 @@ test("delivery worker rechecks eligibility and uses leased bounded retries", () 
   assert.doesNotMatch(
     worker,
     /process\.stdout\.write\([\s\S]*?(message_body|chatId|botToken)/,
+  );
+});
+
+test("protected scheduled runner claims one bounded batch without exposing secrets", () => {
+  assert.match(vercelConfig, /"path": "\/api\/internal\/telegram\/delivery"/);
+  assert.match(vercelConfig, /"schedule": "\* \* \* \* \*"/);
+  assert.match(runnerRoute, /export async function GET/);
+  assert.match(runnerRoute, /process\.env\.CRON_SECRET/);
+  assert.match(runnerRoute, /authorization/);
+  assert.match(runnerRoute, /timingSafeEqual/);
+  assert.match(runnerRoute, /!isTelegramCompanionEnabled\(\)/);
+  assert.match(runnerRoute, /!hasTelegramDeliveryConfiguration\(\)/);
+  assert.match(runnerRoute, /Cache-Control": "no-store"/);
+  assert.match(runner, /TELEGRAM_DELIVERY_BATCH_SIZE = 25/);
+  assert.match(
+    runner,
+    /index < TELEGRAM_DELIVERY_BATCH_SIZE/,
+  );
+  assert.match(runner, /claim_telegram_delivery/);
+  assert.match(runner, /complete_telegram_delivery/);
+  assert.match(runner, /fail_telegram_delivery/);
+  assert.doesNotMatch(runnerRoute + runner, /console\.(log|error|warn)/);
+  assert.doesNotMatch(
+    runnerRoute,
+    /message_body|chatId|botToken|lease_token|outbox_id/,
   );
 });
 

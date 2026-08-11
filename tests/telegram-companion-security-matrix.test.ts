@@ -12,6 +12,9 @@ const route = read("app/api/integrations/telegram/webhook/route.ts");
 const webhook = read("lib/telegram/webhook.ts");
 const botApi = read("lib/telegram/bot-api.ts");
 const worker = read("scripts/process-telegram-outbox.mjs");
+const runner = read("lib/telegram/delivery-runner.ts");
+const runnerRoute = read("app/api/internal/telegram/delivery/route.ts");
+const vercelConfig = read("vercel.json");
 const panel = read("components/messages/telegram-companion-panel.tsx");
 const setting = read("components/settings/telegram-companion-setting.tsx");
 
@@ -132,6 +135,18 @@ const deliveryChecks: [string, () => void][] = [
   ["handles Telegram 5xx as retryable unavailable", () => assert.match(worker, /response\.status >= 500[\s\S]*telegram_unavailable/)],
   ["never rolls back StudyDate message on network failure", () => assert.doesNotMatch(functionBody("queue_telegram_delivery"), /api\.telegram\.org|sendMessage/)],
   ["suppresses rich link previews", () => assert.match(worker + botApi, /link_preview_options: \{ is_disabled: true \}/)],
+  ["uses a protected production scheduler endpoint", () => {
+    assert.match(vercelConfig, /\/api\/internal\/telegram\/delivery/);
+    assert.match(runnerRoute, /process\.env\.CRON_SECRET/);
+    assert.match(runnerRoute, /authorization/);
+    assert.match(runnerRoute, /timingSafeEqual/);
+    assert.match(runnerRoute, /hasTelegramDeliveryConfiguration/);
+  }],
+  ["claims a bounded batch per scheduler invocation", () => {
+    assert.match(runner, /TELEGRAM_DELIVERY_BATCH_SIZE = 25/);
+    assert.match(runner, /index < TELEGRAM_DELIVERY_BATCH_SIZE/);
+    assert.match(runner, /claim_telegram_delivery/);
+  }],
 ];
 
 for (const [name, check] of deliveryChecks) {
