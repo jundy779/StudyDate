@@ -22,6 +22,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const claimFixMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608110002_fix_telegram_delivery_claim_ambiguity.sql",
+  ),
+  "utf8",
+);
 const webhookRoute = readFileSync(
   join(root, "app/api/integrations/telegram/webhook/route.ts"),
   "utf8",
@@ -229,6 +236,47 @@ test("delivery worker rechecks eligibility and uses leased bounded retries", () 
   assert.doesNotMatch(
     worker,
     /process\.stdout\.write\([\s\S]*?(message_body|chatId|botToken)/,
+  );
+});
+
+test("forward fix preserves the delivery claim contract with qualified references", () => {
+  assert.match(
+    claimFixMigration,
+    /create or replace function public\.claim_telegram_delivery\(\)/,
+  );
+  assert.match(
+    claimFixMigration,
+    /returns table \([\s\S]*outbox_id uuid[\s\S]*lease_token uuid[\s\S]*route_ciphertext bytea[\s\S]*route_iv bytea[\s\S]*route_auth_tag bytea[\s\S]*encryption_key_version smallint[\s\S]*message_body text[\s\S]*attempt_count integer/,
+  );
+  assert.match(
+    claimFixMigration,
+    /attempt_count = outbox\.attempt_count \+ 1/,
+  );
+  assert.match(
+    claimFixMigration,
+    /outbox\.available_at <= timezone\('utc', now\(\)\)[\s\S]*outbox\.attempt_count < 5/,
+  );
+  assert.match(
+    claimFixMigration,
+    /outbox\.status = 'processing'[\s\S]*outbox\.lease_expires_at < timezone\('utc', now\(\)\)/,
+  );
+  assert.match(claimFixMigration, /for update of outbox skip locked/);
+  assert.match(claimFixMigration, /interval '2 minutes'/);
+  assert.match(
+    claimFixMigration,
+    /public\.is_telegram_conversation_eligible\([\s\S]*target_outbox\.recipient_user_id[\s\S]*target_outbox\.conversation_id/,
+  );
+  assert.match(
+    claimFixMigration,
+    /revoke all on function public\.claim_telegram_delivery\(\)[\s\S]*from public, anon, authenticated/,
+  );
+  assert.match(
+    claimFixMigration,
+    /grant execute on function public\.claim_telegram_delivery\(\)[\s\S]*to service_role/,
+  );
+  assert.doesNotMatch(
+    claimFixMigration,
+    /grant execute[\s\S]*to (anon|authenticated)/,
   );
 });
 

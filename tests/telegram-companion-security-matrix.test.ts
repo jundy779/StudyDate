@@ -8,6 +8,9 @@ const read = (path: string) => readFileSync(join(root, path), "utf8");
 const migration = read(
   "supabase/migrations/202608110001_create_telegram_anonymous_chat_companion_v1.sql",
 );
+const claimFixMigration = read(
+  "supabase/migrations/202608110002_fix_telegram_delivery_claim_ambiguity.sql",
+);
 const route = read("app/api/integrations/telegram/webhook/route.ts");
 const webhook = read("lib/telegram/webhook.ts");
 const botApi = read("lib/telegram/bot-api.ts");
@@ -151,6 +154,51 @@ const deliveryChecks: [string, () => void][] = [
 
 for (const [name, check] of deliveryChecks) {
   test(`delivery reliability: ${name}`, check);
+}
+
+const claimFixChecks: [string, () => void][] = [
+  ["keeps service-role-only authorization", () => {
+    assert.match(claimFixMigration, /auth\.role\(\) <> 'service_role'/);
+    assert.match(
+      claimFixMigration,
+      /revoke all on function public\.claim_telegram_delivery\(\)[\s\S]*from public, anon, authenticated/,
+    );
+    assert.match(
+      claimFixMigration,
+      /grant execute on function public\.claim_telegram_delivery\(\)[\s\S]*to service_role/,
+    );
+  }],
+  ["uses a fixed empty search path and no dynamic SQL", () => {
+    assert.match(claimFixMigration, /set search_path = ''/);
+    assert.doesNotMatch(claimFixMigration, /execute\s+format|execute\s+immediate/i);
+  }],
+  ["qualifies attempt and lease columns", () => {
+    assert.match(
+      claimFixMigration,
+      /attempt_count = outbox\.attempt_count \+ 1/,
+    );
+    assert.match(claimFixMigration, /outbox\.attempt_count < 5/);
+    assert.match(claimFixMigration, /outbox\.lease_expires_at/);
+  }],
+  ["preserves bounded exclusive claim semantics", () => {
+    assert.match(claimFixMigration, /for update of outbox skip locked/);
+    assert.match(claimFixMigration, /limit 1/);
+    assert.match(claimFixMigration, /interval '2 minutes'/);
+  }],
+  ["preserves the private worker projection only", () => {
+    assert.match(
+      claimFixMigration,
+      /target_binding\.route_ciphertext[\s\S]*target_binding\.route_iv[\s\S]*target_binding\.route_auth_tag/,
+    );
+    assert.doesNotMatch(
+      claimFixMigration,
+      /username|first_name|last_name|language_code|identity_fingerprint/,
+    );
+  }],
+];
+
+for (const [name, check] of claimFixChecks) {
+  test(`delivery claim forward fix: ${name}`, check);
 }
 
 const privateProjectionFields: [string, RegExp][] = [
