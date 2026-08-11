@@ -64,6 +64,20 @@ export const termsSections: PublicDocSection[] = [
     ],
   },
   {
+    id: "telegram-companion",
+    title: "Telegram Companion",
+    blocks: [
+      {
+        type: "p",
+        text: "Telegram Companion adalah kanal pihak ketiga opsional untuk satu Anonymous Chat StudyDate yang sudah ada. StudyDate tetap menjadi sumber riwayat dan aturan: pengguna tidak boleh memakai bot untuk melewati filter kontak, consent, block, akhir percakapan, atau pembatasan akun.",
+      },
+      {
+        type: "p",
+        text: "Kamu bertanggung jawab menjaga akses akun Telegram. Delivery melalui Telegram dapat terlambat, gagal, atau tetap terlihat pada perangkat dan layanan Telegram. Memutuskan companion tidak menghapus riwayat StudyDate dan tidak mengubah Contact Reveal.",
+      },
+    ],
+  },
+  {
     id: "larangan",
     title: "Perilaku yang dilarang",
     blocks: [

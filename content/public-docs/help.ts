@@ -45,6 +45,25 @@ export const helpSections: PublicDocSection[] = [
     ],
   },
   {
+    id: "telegram-companion",
+    title: "Telegram Companion",
+    blocks: [
+      {
+        type: "p",
+        text: "Dari Anonymous Chat yang masih aktif, kamu dapat memilih Lanjut di Telegram, membuka @StudyDateBot, lalu kembali ke StudyDate untuk mengonfirmasi koneksi. Bot hanya mendukung pesan teks dan satu percakapan aktif per akun pada v1.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Detail akun Telegram tidak ditampilkan kepada counterpart.",
+          "Mutual Interest, Identity Reveal, Contact Reveal, dan pengaturan privasi tetap dilakukan di web StudyDate.",
+          "Gunakan /unlink di bot atau Putuskan di Pengaturan untuk berhenti. Riwayat StudyDate tidak terhapus.",
+          "Delivery Telegram dapat tertunda atau gagal; Anonymous Chat web tetap menjadi sumber riwayat.",
+        ],
+      },
+    ],
+  },
+  {
     id: "mutual",
     title: "Mutual Interest",
     blocks: [

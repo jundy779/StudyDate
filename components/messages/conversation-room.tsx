@@ -40,7 +40,9 @@ import { MutualInterestPanel } from "@/components/messages/mutual-interest-panel
 import { IdentityRevealPanel } from "@/components/messages/identity-reveal-panel";
 import { ContactRevealPanel } from "@/components/messages/contact-reveal-panel";
 import { CounterpartPrivacyCard } from "@/components/messages/counterpart-privacy-card";
+import { TelegramCompanionPanel } from "@/components/messages/telegram-companion-panel";
 import { getMascotForAlias } from "@/lib/people/constants";
+import type { TelegramSafeState } from "@/lib/telegram/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -71,6 +73,7 @@ type ConversationRoomProps = {
     Record<ContactRevealChannel, ContactRevealCompletedChannel | null>
   >;
   profileContactDefaults?: Partial<Record<ContactRevealChannel, string>>;
+  initialTelegramCompanion: TelegramSafeState;
   notice?: string | null;
   state?: string | null;
 };
@@ -108,6 +111,7 @@ export function ConversationRoom({
   initialContactPreviews,
   initialContactCompleted,
   profileContactDefaults,
+  initialTelegramCompanion,
   notice,
   state,
 }: ConversationRoomProps) {
@@ -623,6 +627,10 @@ export function ConversationRoom({
             identityCompleted={identityRevealCompleted}
             contactReveal={contactReveal}
             contactCompleted={contactCompleted}
+          />
+          <TelegramCompanionPanel
+            publicId={conversation.public_id}
+            initialState={initialTelegramCompanion}
           />
           <MutualInterestPanel
             publicId={conversation.public_id}

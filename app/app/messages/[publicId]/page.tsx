@@ -24,6 +24,7 @@ import {
   getContactRevealPreview,
   getContactRevealState,
 } from "@/lib/contact-reveal/service";
+import { getMyTelegramCompanionState } from "@/lib/telegram/service";
 import { getMyStudentSocialContacts } from "@/lib/profile/social-service";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -54,6 +55,7 @@ async function ConversationContent({
     identityReveal,
     identityRevealPreview,
     contactReveal,
+    telegramCompanion,
   ] = await Promise.all([
     getConversationByPublicId(parsed.data),
     listConversationMessages(parsed.data, { limit: 50 }),
@@ -62,6 +64,7 @@ async function ConversationContent({
     getIdentityRevealState(parsed.data),
     getIdentityRevealProfilePreview(parsed.data),
     getContactRevealState(parsed.data),
+    getMyTelegramCompanionState(parsed.data),
   ]);
 
   if (!conversation) notFound();
@@ -130,6 +133,7 @@ async function ConversationContent({
           initialContactPreviews={contactPreviews}
           initialContactCompleted={contactCompleted}
           profileContactDefaults={profileContactDefaults}
+          initialTelegramCompanion={telegramCompanion}
           notice={notice}
           state={query.state ?? null}
         />

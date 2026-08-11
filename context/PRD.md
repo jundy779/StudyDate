@@ -391,6 +391,30 @@ maksimum 180 hari. Migrations `202608100001`–`202608100003` telah diterapkan
 dan live-verified pada project StudyDate. Student Verification tetap
 dinonaktifkan.
 
+## 13c. Local-only — Telegram Anonymous Chat Companion v1
+
+Telegram Companion adalah transport teks opsional untuk satu Anonymous Chat
+existing, bukan login, discovery, matching, DM baru, atau Contact Reveal.
+Alur link memakai token opaque HMAC-hashed berumur 10 menit:
+StudyDate membuat sesi → `/start <token>` di @StudyDateBot hanya menghasilkan
+`telegram_pending` → user wajib kembali ke sesi StudyDate dan mengonfirmasi
+sebelum binding/relay aktif.
+
+V1 membatasi satu relay percakapan aktif per user. Switch harus dikonfirmasi,
+tidak menghapus chat lama, dan tidak memberi sinyal kepada counterpart.
+Telegram identity tidak diproyeksikan; binding memakai keyed fingerprint serta
+AES-256-GCM route ciphertext dengan key khusus Telegram. Ingress memakai
+normalisasi, panjang, rate limit, idempotency, filter kontak, block, lifecycle,
+staff, dan deletion gate Anonymous Chat existing. Mutual Interest, Identity
+Reveal, dan Contact Reveal tetap web-only. Relay hanya teks; group/media
+ditolak.
+
+Outbound memakai outbox durable dan executor server-only dengan lease/retry,
+tetapi production scheduler/runner belum dipilih. Migration
+`202608110001_create_telegram_anonymous_chat_companion_v1.sql` tetap
+**LOCAL-ONLY**, kill switch default OFF, BotFather/webhook production belum
+dikonfigurasi, dan fitur belum deployed/live.
+
 ## 14. Planned — Safety flows
 
 Landing page memakai pesan positif dan ringkas. Detail safety tersedia pada **Pusat Keamanan publik**

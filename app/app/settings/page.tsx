@@ -3,11 +3,13 @@ import { AppShell } from "@/components/app/app-shell";
 import { AccountDangerZone } from "@/components/profile/account-danger-zone";
 import { ProfileEditForm } from "@/components/profile/profile-edit-form";
 import { BlockedStudentsList } from "@/components/settings/blocked-students-list";
+import { TelegramCompanionSetting } from "@/components/settings/telegram-companion-setting";
 import { listMyBlockedStudents } from "@/lib/account/blocks";
 import { getAuthenticatedUser } from "@/lib/auth/session";
 import { loadApprovedCampusOptions } from "@/lib/campus/service";
 import { getEditableStudentProfile } from "@/lib/profile/service";
 import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
+import { getMyTelegramCompanionState } from "@/lib/telegram/service";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -52,12 +54,19 @@ async function SettingsContent() {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
 
-  const [profile, blockedStudents, campusOptions, studyProgramOptions] =
+  const [
+    profile,
+    blockedStudents,
+    campusOptions,
+    studyProgramOptions,
+    telegramCompanion,
+  ] =
     await Promise.all([
       getEditableStudentProfile(user.id),
       listMyBlockedStudents(),
       loadApprovedCampusOptions(),
       loadApprovedStudyProgramOptions(),
+      getMyTelegramCompanionState(),
     ]);
   if (!profile) redirect("/onboarding");
 
@@ -200,6 +209,7 @@ async function SettingsContent() {
                 berlaku sampai kedaluwarsa; StudyDate tidak membuat revocation
                 buatan sendiri.
               </p>
+              <TelegramCompanionSetting initialState={telegramCompanion} />
               <AccountDangerZone />
             </SettingsSection>
           </div>

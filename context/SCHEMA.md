@@ -57,6 +57,10 @@ Sumber migration:
     deletion-lock mutation guard, durable membership/RSVP tombstone,
     cleanup-before-Auth enforcement, scoped job claim, dan bounded request
     retention; **deployed**
+25. `supabase/migrations/202608110001_create_telegram_anonymous_chat_companion_v1.sql` —
+    private two-step Telegram binding, one-conversation relay, update dedupe,
+    shared Anonymous Chat ingress, durable delivery outbox, dan deletion
+    integration; **LOCAL-ONLY / NOT APPLIED**
 
 ### `early_access_waitlist`
 
@@ -150,6 +154,32 @@ limited-rollout (180 hari). Audit deletion hanya menyimpan request reference,
 event category, dan waktu—tanpa user ID, email, object path, isi privat, atau
 raw error. Shared history memakai nullable Auth FK agar Auth dapat dihapus
 terakhir tanpa menghapus pesan, Circle, Event, RSVP, atau report.
+
+### Telegram Companion v1 (LOCAL-ONLY)
+
+- `telegram_link_sessions` — sesi 10 menit
+  `created | telegram_pending | confirmed | expired | revoked`; token plaintext
+  tidak disimpan, hanya keyed HMAC hash. Pending route dienkripsi sampai web
+  confirmation.
+- `telegram_account_bindings` — satu row per StudyDate user; keyed Telegram
+  identity fingerprint unik untuk binding aktif, AES-256-GCM route ciphertext,
+  key version, linked/revoked timestamp. Tidak ada username/nama/foto/language.
+- `telegram_conversation_relays` — satu primary-key row per user sehingga hanya
+  satu percakapan relay aktif pada v1. Switch mengganti target atomik.
+- `telegram_update_receipts` — Telegram `update_id` sebagai idempotency boundary,
+  dengan cleanup bounded tujuh hari.
+- `telegram_delivery_outbox` — referensi message/recipient/conversation,
+  lease/retry/delivery state; tidak menduplikasi message body.
+- `telegram_companion_rate_limits` dan `telegram_companion_audit_events` —
+  bounded counters serta event category tersanitasi tanpa token, route,
+  identifier Telegram, atau isi pesan.
+
+Seluruh tabel RLS-enabled dan direct access `public`/`anon`/`authenticated`
+dicabut. Safe Student RPC hanya create/state/confirm/cancel/switch/unlink.
+Webhook/outbox RPC service-role only. `send_anonymous_message` web dan ingress
+Telegram berbagi `insert_anonymous_message_for_actor`, sehingga normalisasi,
+panjang 1–1000, filter kontak, rate limit 20/menit + 300/hari, duplicate
+window, lifecycle, block, staff, dan deletion gate sama.
 
 ### `staff_members`
 

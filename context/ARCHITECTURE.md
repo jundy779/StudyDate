@@ -497,11 +497,44 @@ Entities lanjutan: reveal requests. Anonymous Chat v1 sudah menyediakan `anonymo
 
 ## 15. Future Telegram architecture
 
-Bot adalah companion untuk notification, short reply, reminder, check-in, safety action, dan Mini App deep link.
-Website/Mini App tetap source of truth untuk discovery, full profile, group/event management, privacy settings, dan
-report detail.
+### Local-only — Telegram Anonymous Chat Companion v1
 
-Bot harus mengirim message baru dari server, bukan forward message user.
+```text
+eligible Anonymous Chat
+ -> authenticated create link session (opaque token; HMAC hash stored)
+ -> /start token in private @StudyDateBot chat
+ -> telegram_pending (encrypted route + keyed identity fingerprint)
+ -> authenticated StudyDate confirmation
+ -> one active conversation relay per user
+
+anonymous_messages insert
+ -> same-transaction durable outbox reference
+ -> trusted server-only executor claims lease
+ -> eligibility recheck
+ -> decrypt route with Telegram-only AES-256-GCM key
+ -> Telegram sendMessage with link preview disabled
+ -> delivered | bounded retry | cancelled
+```
+
+Migration `202608110001` tetap LOCAL-ONLY. Webhook route adalah
+`/api/integrations/telegram/webhook`, POST-only, bounded JSON, verified dengan
+official `X-Telegram-Bot-Api-Secret-Token`, dan update dedupe memakai
+`update_id`. Bot menerima private chat, teks, `/start`, `/help`, dan `/unlink`
+saja. Ingress service-role menurunkan actor dari binding privat lalu memanggil
+shared database insertion policy yang juga dipakai web.
+
+Binding tidak menyimpan username/nama/foto/language. Routing chat ID dienkripsi
+AES-256-GCM, lookup identity memakai HMAC key terpisah, dan key/version/cipher
+tidak keluar ke browser. Mutual Interest, Identity Reveal, Contact Reveal,
+block reason, report status, serta seluruh one-sided state tetap web-only.
+Privacy lock mencabut relay/session langsung; final profile cleanup menghapus
+semua data routing Telegram.
+
+`TELEGRAM_COMPANION_ENABLED` hanya aktif saat exact `true` dan default OFF.
+Repository belum memiliki Vercel Cron, queue host, atau trusted scheduler
+durable untuk `scripts/process-telegram-outbox.mjs`; karena itu implementasi
+belum deploy-ready sampai Owner memilih delivery runner. BotFather, webhook
+production, dan real Bot API test tidak dilakukan pada fase lokal ini.
 
 ## 16. Logging
 

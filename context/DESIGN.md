@@ -132,6 +132,15 @@ saluran Contact Reveal selesai, `Akhiri` mempertahankan akses yang sudah dibuka;
 mengklaim bahwa konten yang sudah dilihat terhapus. Jangan menampilkan online status,
 typing palsu, atau dekorasi dating.
 
+Telegram Companion v1 tampil sebagai kontrol kecil di area privasi Anonymous
+Chat, bukan panel hero atau redesign Telegram-blue. State wajib memakai teks:
+unavailable, connect, link dibuat, menunggu bot, konfirmasi, connected, switch,
+unlink, dan error. Jangan tampilkan username, avatar, ID, metadata Telegram,
+atau one-sided reveal. Dialog switch/unlink memakai accessible name,
+description, Escape native, focus restore, touch target, dan copy panjang yang
+wrap. Settings hanya menunjukkan connected/not connected + disconnect;
+aktivasi percakapan tetap di Anonymous Chat.
+
 ### Notifications v1
 
 Student navigation mempertahankan struktur global yang sudah ada dan menambahkan

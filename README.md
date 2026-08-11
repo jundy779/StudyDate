@@ -80,13 +80,19 @@ Implemented:
   `202608100003` are deployed and live-verified; they implement retryable
   server-only cleanup, shared-history tombstones, Circle/Event policy, and
   Auth-last finalization.
+- Telegram Anonymous Chat Companion v1 is implemented **LOCAL-ONLY** behind
+  `TELEGRAM_COMPANION_ENABLED=false`: two-step web-confirmed linking,
+  private text-only bot ingress, one active relay conversation per user,
+  encrypted routing, update dedupe, and durable outbox. Migration
+  `202608110001` is not applied; production webhook and delivery scheduler are
+  not configured.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
 Not implemented yet:
 
 - WhatsApp, phone, email, X/Twitter, Discord, Facebook contact reveal
-- Telegram bot linking
+- Production Telegram webhook and durable outbox scheduler
 - Full moderation dashboard
 - Push, browser Web Push, email, SMS, WhatsApp, Telegram bot, or native notifications
 - Supabase Realtime chat delivery (v1 uses authenticated RPC polling)
@@ -297,8 +303,11 @@ serving large or horizontally scaled production traffic.
 | `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
 | `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, and lifecycle tests |
 | `npm run test:account-privacy` | Run Account & Privacy settings, block, projection, deletion-gate, and lifecycle tests |
+| `npm run test:telegram` | Run Telegram Companion webhook, linking, relay, delivery, privacy, unlink, and deletion contracts |
+| `npm run test:telegram:browser` | Audit local Telegram Companion states and dialog accessibility across five viewports |
 | `npm run test:account-privacy:browser` | Audit authenticated settings responsiveness and deletion-dialog accessibility; requires `ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE` |
 | `npm run account-deletions:process -- --limit=10` | Process bounded account-deletion jobs from a trusted server runner |
+| `npm run telegram-outbox:process -- --limit=25` | Process bounded Telegram outbox jobs from a trusted server runner; no production runner is configured yet |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |

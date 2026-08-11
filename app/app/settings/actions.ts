@@ -1,6 +1,11 @@
 "use server";
 
 import { unblockMyBlockedStudent } from "@/lib/account/blocks";
+import { requireActiveStudentAppAccess } from "@/lib/account/guard";
+import {
+  getMyTelegramCompanionState,
+  unlinkMyTelegramCompanion,
+} from "@/lib/telegram/service";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -28,4 +33,11 @@ export async function unblockStudentAction(
 
   revalidatePath("/app/settings");
   return { ok: true, message: "Blokir dibuka." };
+}
+
+export async function unlinkTelegramFromSettingsAction() {
+  await requireActiveStudentAppAccess();
+  await unlinkMyTelegramCompanion();
+  revalidatePath("/app/settings");
+  return getMyTelegramCompanionState();
 }

@@ -118,6 +118,25 @@ export const privacySections: PublicDocSection[] = [
     ],
   },
   {
+    id: "telegram-companion",
+    title: "Telegram Companion",
+    blocks: [
+      {
+        type: "p",
+        text: "Telegram Companion adalah pilihan tambahan untuk meneruskan pesan teks dari satu Anonymous Chat StudyDate yang sudah ada melalui @StudyDateBot. Menggunakannya tidak membuka username, ID, nama, foto, atau metadata akun Telegram kepada counterpart dan tidak sama dengan Contact Reveal Telegram.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Koneksi memerlukan langkah di bot lalu konfirmasi eksplisit pada sesi StudyDate yang sudah masuk.",
+          "StudyDate memproses pengenal Telegram privat untuk routing, status koneksi, dan metadata delivery minimum. Nilai routing disimpan terlindungi dan tidak diproyeksikan ke browser.",
+          "Pesan yang dikirim atau diterima melalui Telegram juga diproses oleh Telegram sebagai penyedia pihak ketiga. StudyDate tidak mengklaim enkripsi end-to-end untuk jalur ini.",
+          "Memutuskan Telegram menghentikan relay tetapi tidak menghapus riwayat Anonymous Chat. Permintaan penghapusan akun langsung mencabut relay dan proses cleanup menghapus data routing privat.",
+        ],
+      },
+    ],
+  },
+  {
     id: "mutual-interest",
     title: "Mutual Interest (“Kenal Lebih Jauh”)",
     blocks: [
@@ -256,6 +275,7 @@ export const privacySections: PublicDocSection[] = [
           "Supabase — autentikasi, basis data, dan penyimpanan file privat sesuai konfigurasi layanan.",
           "Pengiriman email produk (SMTP atau penyedia email transaksi) — untuk mengirim tautan masuk bermerek StudyDate.",
           "Hosting aplikasi web — untuk menyajikan situs dan API StudyDate.",
+          "Telegram — hanya bila pengguna memilih Telegram Companion; untuk menerima dan mengirim salinan pesan teks Anonymous Chat melalui @StudyDateBot.",
         ],
       },
       {
