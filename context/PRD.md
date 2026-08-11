@@ -94,6 +94,11 @@ Diimplementasikan pada code dan migration repository saat ini:
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
   status nyata, dan workflow review manual;
 - fondasi manual PDDikti review tanpa scraping atau klaim integrasi API resmi.
+- PDDIKTI Academic Lookup + Manual Verification Fallback v1 **LOCAL-ONLY**:
+  adapter pihak ketiga server-only dan replaceable untuk membantu academic
+  match exact, dengan fallback screenshot privat. Provider match maupun
+  screenshot approval tidak menggantikan ownership proof; Student Verification
+  tetap globally disabled dan migration belum diterapkan remote.
 
 Live Supabase verification tetap merupakan gate terpisah dan tidak boleh dianggap lulus hanya karena implementasi
 lokal ada.
@@ -118,7 +123,7 @@ Jangan menganggap fitur berikut tersedia:
 
 **Future:**
 
-- official PDDikti API adapter, bila endpoint dan otorisasi resmi tersedia;
+- adapter sumber akademik resmi, bila endpoint dan otorisasi resmi tersedia;
 - Telegram linking;
 - moderation dashboard;
 - payment/ticketing;
@@ -138,6 +143,12 @@ Kedaluwarsa. Verifikasi bersifat opsional dan tidak menjamin perilaku atau keama
 
 Pengajuan verification mencakup screenshot PDDikti sebagai bukti akademik terpisah dari bukti ownership. Screenshot
 disimpan privat, hanya tersedia melalui review access yang terotorisasi, dan mengikuti jadwal penghapusan.
+
+Lookup pihak ketiga v1 hanya membantu academic match dan tidak menjadi sumber
+profil. Auto-match membutuhkan NIM, nama legal, kampus, dan program exact setelah
+normalisasi. `not_found`, mismatch, timeout, dan provider unavailable dapat
+masuk manual fallback tanpa membuka candidate lain. Seluruh alur masih terbatas
+pada controlled test allowlist selama flag global OFF.
 
 ## 7. Onboarding
 

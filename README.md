@@ -86,6 +86,12 @@ Implemented:
   encrypted routing, update dedupe, durable outbox, and a protected Vercel Cron
   delivery runner. Migration `202608110001` is not applied; production secrets
   and webhook are not configured.
+- PDDIKTI Academic Lookup + Manual Verification Fallback v1 is implemented
+  **LOCAL-ONLY** behind both `STUDENT_VERIFICATION_ENABLED=false` and
+  `PDDIKTI_LOOKUP_PROVIDER_ENABLED=false`. It adds a replaceable server-only
+  provider adapter, exact academic matching, private/re-encoded screenshot
+  fallback, and academic-only reviewer actions. Migration `202608110003` is not
+  applied and automated tests do not call the real provider.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
@@ -292,6 +298,8 @@ serving large or horizontally scaled production traffic.
 | `npm run typecheck` | Run TypeScript without emitting files |
 | `npm run test:auth` | Run auth, onboarding, migration, and security unit/static tests |
 | `npm run test:verification` | Run Student Verification security and readiness tests |
+| `npm run test:pddikti` | Run PDDIKTI provider, exact-match, upload, and privacy contracts without network calls |
+| `npm run test:pddikti:browser` | Audit local verification lookup UI across five viewports |
 | `npm run test:people` | Run People Discovery validation, projection, and authorization tests |
 | `npm run test:staff` | Run staff-role, bootstrap, route-guard, audit, and reviewer authorization tests |
 | `npm run test:introductions` | Run Introduction Requests validation, projection, and authorization tests |
@@ -308,6 +316,7 @@ serving large or horizontally scaled production traffic.
 | `npm run test:account-privacy:browser` | Audit authenticated settings responsiveness and deletion-dialog accessibility; requires `ACCOUNT_PRIVACY_AUDIT_STORAGE_STATE` |
 | `npm run account-deletions:process -- --limit=10` | Process bounded account-deletion jobs from a trusted server runner |
 | `npm run telegram-outbox:process -- --limit=25` | Manually recover bounded Telegram outbox jobs; production uses the protected Vercel Cron runner |
+| `npm run pddikti-provider:smoke -- <query>` | Optional Owner-approved real-provider smoke; never run in automated tests |
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |

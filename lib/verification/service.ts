@@ -6,7 +6,6 @@ import {
   CODE_EXPIRY_MINUTES,
   CODE_RESEND_SECONDS,
   MAX_CODE_ATTEMPTS,
-  MAX_EVIDENCE_BYTES,
   VERIFICATION_BUCKET,
   VERIFICATION_CONSENT_VERSION,
 } from "./constants";
@@ -15,6 +14,7 @@ import {
   fingerprintNim,
   hashCampusEmailCode,
 } from "./crypto";
+import { processVerificationEvidence } from "./evidence";
 import {
   campusVerificationEmailSender,
   type CampusVerificationEmailSender,
@@ -22,27 +22,30 @@ import {
 import { normalizeNim } from "./validation";
 import { isVerificationRequestAllowed } from "./readiness";
 
-const SUPPORTED_FILES = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-]);
-
 export type SubmissionInput = {
-  nim: string;
-  legalName: string;
-  campus: string;
-  studyProgram: string;
-  degreeLevel:
-    | "diploma"
-    | "sarjana"
-    | "magister"
-    | "doktor"
-    | "profesi"
-    | "spesialis";
-  semester: number | null;
   method: "campus_email" | "student_card";
-};
+} & (
+  | {
+      flow: "academic_matched";
+      requestId: string;
+    }
+  | {
+      flow: "manual";
+      requestId: null;
+      nim: string;
+      legalName: string;
+      campus: string;
+      studyProgram: string;
+      degreeLevel:
+        | "diploma"
+        | "sarjana"
+        | "magister"
+        | "doktor"
+        | "profesi"
+        | "spesialis";
+      semester: number | null;
+    }
+);
 
 export class VerificationServiceError extends Error {
   constructor(
@@ -71,41 +74,28 @@ export async function submitVerificationRequest(
   const admin = createServerAdminClient();
   if (!admin) throw new VerificationServiceError("configuration");
   const verificationAdmin = admin;
+  const requestId =
+    input.flow === "academic_matched" ? input.requestId : randomUUID();
 
   let evidencePath: string | null = null;
   let pddiktiEvidencePath: string | null = null;
-  const requestId = randomUUID();
-  const normalizedNim = normalizeNim(input.nim);
-  const encryptedNim = encryptVerificationValue(normalizedNim);
-  const encryptedName = encryptVerificationValue(input.legalName);
 
-  function isSupportedEvidence(file: File | null): file is File {
-    return Boolean(
-      file &&
-        file.size >= 1 &&
-        file.size <= MAX_EVIDENCE_BYTES &&
-        SUPPORTED_FILES.has(file.type),
-    );
-  }
-
-  if (!isSupportedEvidence(pddiktiEvidence)) {
-    throw new VerificationServiceError("evidence");
-  }
   if (
-    (input.method === "student_card" &&
-      !isSupportedEvidence(studentCardEvidence)) ||
+    (input.flow === "manual" && !pddiktiEvidence) ||
+    (input.flow === "academic_matched" && pddiktiEvidence) ||
+    (input.method === "student_card" && !studentCardEvidence) ||
     (input.method === "campus_email" && studentCardEvidence)
   ) {
     throw new VerificationServiceError("evidence");
   }
 
   async function uploadEvidence(file: File, category: string) {
-    const extension = SUPPORTED_FILES.get(file.type);
-    const path = `${userId}/${requestId}/${category}/${randomUUID()}.${extension}`;
+    const processed = await processVerificationEvidence(file);
+    const path = `${userId}/${requestId}/${category}/${randomUUID()}.${processed.extension}`;
     const { error } = await verificationAdmin.storage
       .from(VERIFICATION_BUCKET)
-      .upload(path, await file.arrayBuffer(), {
-        contentType: file.type,
+      .upload(path, processed.buffer, {
+        contentType: processed.contentType,
         cacheControl: "private, max-age=0",
         upsert: false,
       });
@@ -114,10 +104,9 @@ export async function submitVerificationRequest(
   }
 
   try {
-    pddiktiEvidencePath = await uploadEvidence(
-      pddiktiEvidence,
-      "pddikti",
-    );
+    if (pddiktiEvidence) {
+      pddiktiEvidencePath = await uploadEvidence(pddiktiEvidence, "pddikti");
+    }
     if (input.method === "student_card" && studentCardEvidence) {
       evidencePath = await uploadEvidence(studentCardEvidence, "student-card");
     }
@@ -131,7 +120,26 @@ export async function submitVerificationRequest(
     throw error;
   }
 
-  const { error } = await admin.rpc("create_student_verification_request_v2", {
+  if (input.flow === "academic_matched") {
+    const { error } = await admin.rpc("complete_student_verification_ownership", {
+      p_user_id: userId,
+      p_request_id: requestId,
+      p_method: input.method,
+      p_evidence_path: evidencePath,
+    });
+    if (error) {
+      if (evidencePath) {
+        await admin.storage.from(VERIFICATION_BUCKET).remove([evidencePath]);
+      }
+      throw new VerificationServiceError("database");
+    }
+    return { requestId };
+  }
+
+  const normalizedNim = normalizeNim(input.nim);
+  const encryptedNim = encryptVerificationValue(normalizedNim);
+  const encryptedName = encryptVerificationValue(input.legalName);
+  const { error } = await admin.rpc("create_manual_academic_review_request", {
     p_user_id: userId,
     p_request_id: requestId,
     p_method: input.method,
@@ -185,6 +193,7 @@ export async function sendCampusEmailCode(
       .select("id, user_id, method, status, campus_claim")
       .eq("id", requestId)
       .eq("user_id", userId)
+    .eq("pddikti_match_status", "matched")
       .maybeSingle(),
     admin
       .from("campus_email_domains")
@@ -197,7 +206,7 @@ export async function sendCampusEmailCode(
   if (
     !request ||
     request.method !== "campus_email" ||
-    !["pending", "needs_action"].includes(request.status) ||
+    !["pending", "under_review", "needs_action"].includes(request.status) ||
     !domainRecord ||
     request.campus_claim.trim().toLocaleLowerCase("id-ID") !==
       domainRecord.campus_name.trim().toLocaleLowerCase("id-ID")
@@ -229,9 +238,14 @@ export async function sendCampusEmailCode(
     resend_available_at: new Date(now + CODE_RESEND_SECONDS * 1_000).toISOString(),
     verified_at: null,
   };
-  const { error } = await admin
-    .from("campus_email_verifications")
-    .upsert(challenge, { onConflict: "request_id" });
+  const { error } = await admin.rpc("prepare_student_campus_email_challenge", {
+    p_user_id: userId,
+    p_request_id: requestId,
+    p_normalized_email: challenge.normalized_email,
+    p_code_hash: challenge.code_hash,
+    p_expires_at: challenge.expires_at,
+    p_resend_available_at: challenge.resend_available_at,
+  });
   if (error) throw new VerificationServiceError("database");
 
   try {
@@ -239,6 +253,13 @@ export async function sendCampusEmailCode(
       recipient: email,
       code,
       expiresInMinutes: CODE_EXPIRY_MINUTES,
+      authorizeDelivery: async () => {
+        const { error: authorizationError } = await admin.rpc(
+          "authorize_student_campus_email_delivery",
+          { p_user_id: userId, p_request_id: requestId },
+        );
+        if (authorizationError) throw new VerificationServiceError("challenge");
+      },
     });
   } catch {
     await admin

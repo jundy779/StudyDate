@@ -28,6 +28,7 @@ export type VerificationQueueItem = {
   submitted_at: string;
   reviewed_at: string | null;
   rejection_reason_code: string | null;
+  academic_match_source: "provider" | "manual";
 };
 
 export async function listStaffMembers() {
@@ -81,4 +82,17 @@ export async function finalizeStaffVerificationReview(input: {
     p_rejection_reason_code: input.rejectionReasonCode ?? null,
   });
   if (error) throw new Error("Review verifikasi belum dapat disimpan.");
+}
+
+export async function reviewManualAcademicMatch(input: {
+  requestId: string;
+  decision: "approve" | "reject" | "needs_action";
+}) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("approve_manual_academic_match", {
+    p_request_id: input.requestId,
+    p_approved: input.decision === "approve",
+    p_needs_action: input.decision === "needs_action",
+  });
+  if (error) throw new Error("Review akademik belum dapat disimpan.");
 }

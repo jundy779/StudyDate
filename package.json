@@ -9,6 +9,8 @@
     "check": "npm run lint && npm run typecheck && npm run build",
     "test:auth": "node --experimental-strip-types --test tests/auth-onboarding.test.ts tests/migration-security.test.ts tests/studydate-email.test.ts tests/campus-options.test.ts tests/study-program-options.test.ts tests/profile-edit.test.ts tests/account-lifecycle.test.ts",
     "test:verification": "node --experimental-strip-types --test tests/verification.test.ts tests/verification-readiness.test.ts",
+    "test:pddikti": "node --experimental-strip-types --test tests/pddikti-provider.test.ts tests/pddikti-verification-security.test.ts tests/verification-evidence.test.ts",
+    "test:pddikti:browser": "node scripts/pddikti-verification-responsive-audit.mjs",
     "test:people": "node --experimental-strip-types --test tests/people-discovery.test.ts",
     "test:staff": "node --experimental-strip-types --test tests/staff-authorization.test.ts tests/moderation-triage.test.ts",
     "test:moderation": "node --experimental-strip-types --test tests/moderation-triage.test.ts",
@@ -30,7 +32,8 @@
     "test:account-privacy:live": "node scripts/live-account-privacy-audit.mjs",
     "staff:bootstrap-owner": "node scripts/bootstrap-owner.mjs",
     "account-deletions:process": "node scripts/process-account-deletions.mjs",
-    "telegram-outbox:process": "node scripts/process-telegram-outbox.mjs"
+    "telegram-outbox:process": "node scripts/process-telegram-outbox.mjs",
+    "pddikti-provider:smoke": "node scripts/pddikti-provider-smoke.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",

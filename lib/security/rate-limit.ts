@@ -9,7 +9,10 @@ export type RateLimitBucket =
   | "magic_link_ip"
   | "magic_link_email"
   | "staff_magic_link_ip"
-  | "staff_magic_link_email";
+  | "staff_magic_link_email"
+  | "verification_lookup_hour"
+  | "verification_lookup_day"
+  | "verification_manual_day";
 
 type MemoryEntry = {
   count: number;

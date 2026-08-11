@@ -125,6 +125,26 @@ export function fingerprintNim(nim: string) {
     .digest("hex");
 }
 
+export function fingerprintAcademicClaim(values: {
+  nim: string;
+  legalName: string;
+  campus: string;
+  studyProgram: string;
+}) {
+  const normalized = [
+    normalizeNim(values.nim),
+    values.legalName.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("id-ID"),
+    values.campus.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("id-ID"),
+    values.studyProgram.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("id-ID"),
+  ].join("\u001f");
+  return createHmac(
+    "sha256",
+    readKey("STUDENT_VERIFICATION_HMAC_KEY"),
+  )
+    .update(normalized)
+    .digest("hex");
+}
+
 export function hashCampusEmailCode(
   requestId: string,
   email: string,

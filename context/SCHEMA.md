@@ -61,6 +61,13 @@ Sumber migration:
     private two-step Telegram binding, one-conversation relay, update dedupe,
     shared Anonymous Chat ingress, durable delivery outbox, dan deletion
     integration; **LOCAL-ONLY / NOT APPLIED**
+26. `supabase/migrations/202608110002_fix_telegram_delivery_claim_ambiguity.sql` —
+    forward-only qualification fix untuk worker claim Telegram yang sudah deployed;
+    **LOCAL-ONLY / NOT APPLIED**
+27. `supabase/migrations/202608110003_extend_student_verification_pddikti_lookup_v1.sql` —
+    provider-assisted academic match, manual fallback, minimal provider
+    metadata, ownership completion, dan reviewer academic-only action;
+    **LOCAL-ONLY / NOT APPLIED**
 
 ### `early_access_waitlist`
 
@@ -204,6 +211,13 @@ Ownership result: not_checked, campus_email_verified, document_verified, failed.
 
 Constraint database menolak status `verified` kecuali PDDikti `matched` dan ownership telah diverifikasi.
 
+Extension `202608110003` menambahkan `academic_match_source` (`provider |
+manual`), provider identifier generik, checked timestamp, outcome, dan keyed
+academic claim fingerprint. Response provider/candidate tidak disimpan.
+`academic_pending` menandai provider match yang belum memilih ownership method;
+status request tetap `under_review`, ownership `not_checked`, dan profile tidak
+verified.
+
 Academic refinement menambahkan optional `semester_claim` serta `pddikti_evidence_path`,
 `pddikti_evidence_deletion_at`, dan `pddikti_evidence_deleted_at`. Screenshot PDDikti merupakan evidence akademik,
 bukan pengganti ownership proof.
@@ -227,6 +241,11 @@ document path, reviewer note, atau respons mentah PDDikti.
 
 Bucket `student-verification-evidence` bersifat private, membatasi JPG/PNG/WebP sampai 5 MB, memakai path milik user,
 signed URL review lima menit, serta lifecycle `evidence_deletion_at` dan `evidence_deleted_at`.
+
+Next server kini decode input evidence, menolak format/dimensi tidak valid,
+auto-orient, re-encode JPEG, dan strip metadata sebelum upload. Reviewer browser
+memakai no-store authenticated media proxy sehingga object path dan signed URL
+tidak diproyeksikan.
 
 ## 3. Implemented RPC
 

@@ -4,6 +4,7 @@ export type CampusVerificationEmail = {
   recipient: string;
   code: string;
   expiresInMinutes: number;
+  authorizeDelivery: () => Promise<void>;
 };
 
 export interface CampusVerificationEmailSender {
@@ -20,13 +21,18 @@ class WebhookCampusVerificationEmailSender
       throw new Error("Campus verification email delivery is unavailable.");
     }
 
+    await message.authorizeDelivery();
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         authorization: `Bearer ${token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify(message),
+      body: JSON.stringify({
+        recipient: message.recipient,
+        code: message.code,
+        expiresInMinutes: message.expiresInMinutes,
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(10_000),
     });

@@ -21,9 +21,24 @@ export async function GET(request: NextRequest, { params }: Context) {
     const url = kind === "pddikti"
       ? await service.createPddiktiEvidenceReviewUrl(parsedId.data, user.id)
       : await service.createEvidenceReviewUrl(parsedId.data, user.id);
-    const response = NextResponse.redirect(url, 302);
-    response.headers.set("cache-control", "no-store, private");
-    return response;
+    const upstream = await fetch(url, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!upstream.ok) throw new Error("Evidence unavailable.");
+    const contentType = upstream.headers.get("content-type");
+    if (!contentType?.startsWith("image/")) {
+      throw new Error("Evidence unavailable.");
+    }
+    return new NextResponse(await upstream.arrayBuffer(), {
+      status: 200,
+      headers: {
+        "content-type": contentType,
+        "cache-control": "no-store, private",
+        "content-disposition": "inline",
+        "x-content-type-options": "nosniff",
+      },
+    });
   } catch {
     return NextResponse.json({ message: "Evidence tidak tersedia." }, { status: 404 });
   }

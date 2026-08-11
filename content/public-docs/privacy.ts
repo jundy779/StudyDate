@@ -318,7 +318,11 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "note",
-        text: "Pusat Verifikasi Mahasiswa saat ini dinonaktifkan secara global. StudyDate tidak mengoperasikan pengajuan verifikasi aktif untuk pengguna umum pada konfigurasi ini. Jika fitur diaktifkan nanti, kebijakan ini akan diperbarui agar mencerminkan data bukti, review, dan retensi yang benar-benar berlaku.",
+        text: "Pusat Verifikasi Mahasiswa saat ini dinonaktifkan secara global. StudyDate tidak mengoperasikan pengajuan verifikasi aktif untuk pengguna umum pada konfigurasi ini.",
+      },
+      {
+        type: "p",
+        text: "Dalam pengujian terkontrol, StudyDate dapat memakai layanan pencarian data akademik pihak ketiga untuk membandingkan NIM, nama legal, kampus, dan program yang dikirim pengguna. Hasil mentah dan kandidat lain tidak menjadi data profil. Bila pencarian tidak tersedia atau tidak cocok, pengguna dapat mengirim screenshot PDDIKTI sebagai bukti pendukung academic match. Screenshot tidak membuktikan kepemilikan identitas; email kampus atau kartu mahasiswa tetap diperlukan secara terpisah. Bukti disimpan privat dan dihapus bersama data verifikasi saat akun dihapus.",
       },
     ],
   },

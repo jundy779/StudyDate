@@ -9,6 +9,8 @@ import { takeVerificationRateLimit } from "@/lib/verification/rate-limit";
 import { verificationSubmissionSchema } from "@/lib/verification/validation";
 import { createClient } from "@/lib/supabase/server";
 import { isVerificationRequestAllowed } from "@/lib/verification/readiness";
+import { consumeApiRateLimit } from "@/lib/security/rate-limit";
+import { createHash } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 
 const GENERIC_ERROR =
@@ -28,7 +30,19 @@ export async function POST(request: NextRequest) {
   if (!(await isVerificationRequestAllowed(user.id))) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 503 });
   }
-  if (!takeVerificationRateLimit(`submit:${user.id}`, 3, 24 * 60 * 60_000)) {
+  const subjectHash = createHash("sha256")
+    .update(`verification:${user.id}`)
+    .digest("hex");
+  const durableAllowed = await consumeApiRateLimit({
+    bucket: "verification_manual_day",
+    subjectHash,
+    limit: 2,
+    windowSeconds: 24 * 60 * 60,
+  });
+  if (
+    !durableAllowed ||
+    !takeVerificationRateLimit(`submit:${user.id}`, 3, 24 * 60 * 60_000)
+  ) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 429 });
   }
 
@@ -38,10 +52,23 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 400 });
   }
-  const raw = Object.fromEntries(
-    ["nim", "legalName", "campus", "studyProgram", "degreeLevel", "semester", "method", "consent"]
-      .map((key) => [key, formData.get(key)]),
-  );
+  const flow = formData.get("flow");
+  const keys =
+    flow === "academic_matched"
+      ? ["method", "consent", "flow", "requestId"]
+      : [
+          "nim",
+          "legalName",
+          "campus",
+          "studyProgram",
+          "degreeLevel",
+          "semester",
+          "method",
+          "consent",
+          "flow",
+          "requestId",
+        ];
+  const raw = Object.fromEntries(keys.map((key) => [key, formData.get(key)]));
   const parsed = verificationSubmissionSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 400 });

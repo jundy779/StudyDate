@@ -1,8 +1,14 @@
 "use server";
 
 import { requireVerificationReviewer } from "@/lib/staff/authorization";
-import { finalizeStaffVerificationReview } from "@/lib/staff/service";
-import { verificationReviewSchema } from "@/lib/staff/validation";
+import {
+  finalizeStaffVerificationReview,
+  reviewManualAcademicMatch,
+} from "@/lib/staff/service";
+import {
+  manualAcademicReviewSchema,
+  verificationReviewSchema,
+} from "@/lib/staff/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -18,6 +24,22 @@ export async function submitVerificationReview(formData: FormData) {
   if (!parsed.success) redirect("/admin/verifications?state=invalid");
   try {
     await finalizeStaffVerificationReview(parsed.data);
+  } catch {
+    redirect(`/admin/verifications/${parsed.data.requestId}?state=error`);
+  }
+  revalidatePath("/admin/verifications");
+  redirect("/admin/verifications?state=saved");
+}
+
+export async function submitManualAcademicReview(formData: FormData) {
+  await requireVerificationReviewer();
+  const parsed = manualAcademicReviewSchema.safeParse({
+    requestId: formData.get("requestId"),
+    decision: formData.get("decision"),
+  });
+  if (!parsed.success) redirect("/admin/verifications?state=invalid");
+  try {
+    await reviewManualAcademicMatch(parsed.data);
   } catch {
     redirect(`/admin/verifications/${parsed.data.requestId}?state=error`);
   }

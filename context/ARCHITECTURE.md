@@ -50,6 +50,9 @@ Server-only:
   (`STUDYDATE_SMTP_*`) for StudyDate-branded magic-link delivery (never Supabase Auth mailer)
 - `STUDENT_VERIFICATION_ENCRYPTION_KEY`
 - `STUDENT_VERIFICATION_HMAC_KEY`
+- `PDDIKTI_LOOKUP_PROVIDER_ENABLED` (default OFF)
+- `PDDIKTI_PROVIDER_BASE_URL`
+- `PDDIKTI_PROVIDER_ACCESS_KEY`
 - `CONTACT_REVEAL_ENCRYPTION_KEY` (AES-256-GCM; see `docs/operations/contact-reveal-key-recovery.md`)
 - optional `CONTACT_REVEAL_KEY_VERSION` and `CONTACT_REVEAL_ENCRYPTION_KEY_V{n}` during rotation
 - optional campus-email delivery webhook URL dan token.
@@ -158,6 +161,21 @@ Trust boundaries:
 `StudentRegistryVerifier` memisahkan result model dari sumber registry. Implementasi saat ini manual dan mengembalikan
 `unavailable` sampai reviewer memasukkan hasil. Adapter API resmi adalah Future dan tidak boleh memakai scraping,
 endpoint tidak terdokumentasi, atau kredensial palsu.
+
+PDDIKTI lookup v1 menambahkan `AcademicLookupProvider` dan adapter pihak ketiga
+server-only yang dapat diganti. Adapter menerima current-user claim saja,
+memeriksa seluruh candidate, dan auto-match hanya pada NIM + nama legal +
+kampus + program exact setelah normalisasi. Response mentah dan candidate lain
+tidak melewati server boundary. Timeout 5 detik/attempt, maksimal dua attempt,
+response 256 KB, serta rate limit durable 3/jam dan 6/hari per akun.
+
+Provider match membuat request `academic_pending` dengan ownership
+`not_checked`, tidak membuat badge. Request yang sama kemudian dilengkapi
+ownership email kampus atau kartu mahasiswa. Manual fallback memakai screenshot
+PDDIKTI private/re-encoded sebagai academic supporting evidence dan reviewer
+hanya menyetujui academic match. Badge tetap diturunkan atomik setelah academic
+dan ownership sama-sama approved. Migration `202608110003` LOCAL-ONLY dan kedua
+feature flag default OFF.
 
 Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewer = true`, domain kampus berstatus
 `approved`, delivery webhook email server-to-server, dan job terjadwal yang memanggil evidence cleanup service. Tidak

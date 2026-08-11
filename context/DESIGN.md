@@ -239,6 +239,14 @@ Academic step memakai urutan Nama lengkap sesuai PDDikti, NIM, Kampus/Universita
 dan optional Semester. Tampilkan blok “Upload bukti PDDikti” yang tenang dengan selected-file state, format/size hint,
 serta privacy note. Bukti PDDikti dan kartu mahasiswa harus terlihat sebagai dua evidence dengan tujuan berbeda.
 
+Lookup extension v1 mempertahankan struktur existing: `Periksa data akademik`,
+loading, hasil match/not-found/mismatch/unavailable, lalu ownership atau manual
+fallback. Upload screenshot hanya muncul pada fallback manual dan menjelaskan
+bahwa screenshot adalah supporting evidence, bukan proof of ownership.
+Reviewer membedakan `AUTO LOOKUP MATCH` dan `MANUAL ACADEMIC REVIEW`; primary
+manual action adalah `Setujui data akademik`, bukan `Verify user`. Jangan pakai
+logo pemerintah/PDDIKTI atau visual KYC.
+
 ### Staff shell
 
 `/staff/login` memakai AuthShell StudyDate tetapi jelas sebagai restricted access tanpa self-registration. Owner dan

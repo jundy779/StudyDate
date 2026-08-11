@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
+  academicLookupSchema,
   campusEmailCodeSchema,
   campusEmailSchema,
   normalizeNim,
@@ -52,13 +53,33 @@ const validSubmission = {
   semester: "6",
   method: "campus_email",
   consent: "true",
+  flow: "manual",
+  requestId: "",
 };
 
 test("submission validation normalizes acceptable academic data", () => {
   const result = verificationSubmissionSchema.parse(validSubmission);
+  assert.equal(result.flow, "manual");
+  if (result.flow !== "manual") assert.fail("manual flow expected");
   assert.equal(normalizeNim(result.nim), "12345678");
   assert.equal(result.legalName, "Nadia Putri");
   assert.equal(result.semester, 6);
+});
+
+test("academic lookup requires explicit third-party provider consent", () => {
+  const lookup = {
+    nim: "00123456",
+    legalName: "Nadia Putri",
+    campus: "Universitas Nusantara",
+    studyProgram: "Teknik Informatika",
+    degreeLevel: "sarjana",
+    semester: "6",
+  };
+  assert.equal(academicLookupSchema.safeParse(lookup).success, false);
+  assert.equal(
+    academicLookupSchema.safeParse({ ...lookup, providerConsent: "true" }).success,
+    true,
+  );
 });
 
 test("invalid NIM, unknown enums, extra fields, and missing consent fail", () => {
@@ -239,6 +260,18 @@ test("student-card evidence is private, limited, and scheduled for deletion", ()
   assert.match(review, /deleteExpiredVerificationEvidence/);
   assert.match(review, /app_metadata\?\.verification_reviewer !== true/);
   assert.doesNotMatch(service, /\/public/);
+});
+
+test("verification evidence is decoded and re-encoded before private upload", () => {
+  const evidence = readFileSync(
+    new URL("../lib/verification/evidence-core.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(service, /processVerificationEvidence/);
+  assert.match(evidence, /sharp\(input/);
+  assert.match(evidence, /limitInputPixels/);
+  assert.match(evidence, /\.jpeg\(/);
+  assert.doesNotMatch(evidence, /withMetadata/);
 });
 
 test("cleanup is terminal-only, atomic, audited, and service-role controlled", () => {

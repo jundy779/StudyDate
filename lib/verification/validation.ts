@@ -20,13 +20,14 @@ export const nimInputSchema = z
   .regex(/^[A-Za-z0-9./-]+$/)
   .refine((value) => normalizeNim(value).length >= 4);
 
-export const verificationSubmissionSchema = z
+export const academicLookupSchema = z
   .object({
     nim: nimInputSchema,
     legalName: trimmed(2, 160),
     campus: trimmed(2, 120),
     studyProgram: trimmed(2, 120),
     degreeLevel: z.enum(degreeLevels),
+    providerConsent: z.literal("true"),
     semester: z
       .union([
         z.literal("").transform(() => null),
@@ -37,10 +38,37 @@ export const verificationSubmissionSchema = z
           .pipe(z.number().int().min(1).max(16)),
       ])
       .default(null),
-    method: z.enum(["campus_email", "student_card"]),
-    consent: z.literal("true"),
   })
   .strict();
+
+const manualVerificationSubmissionSchema = z
+  .object({
+    nim: nimInputSchema,
+    legalName: trimmed(2, 160),
+    campus: trimmed(2, 120),
+    studyProgram: trimmed(2, 120),
+    degreeLevel: z.enum(degreeLevels),
+    semester: academicLookupSchema.shape.semester,
+    method: z.enum(["campus_email", "student_card"]),
+    consent: z.literal("true"),
+    flow: z.literal("manual"),
+    requestId: z.union([z.literal("").transform(() => null), z.null()]).default(null),
+  })
+  .strict();
+
+const matchedOwnershipSubmissionSchema = z
+  .object({
+    method: z.enum(["campus_email", "student_card"]),
+    consent: z.literal("true"),
+    flow: z.literal("academic_matched"),
+    requestId: z.uuid(),
+  })
+  .strict();
+
+export const verificationSubmissionSchema = z.union([
+  manualVerificationSubmissionSchema,
+  matchedOwnershipSubmissionSchema,
+]);
 
 export const campusEmailSchema = z
   .object({

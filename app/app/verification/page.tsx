@@ -17,7 +17,13 @@ async function VerificationContent() {
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
   const verificationAllowed = await isVerificationRequestAllowed(user.id);
   const request = await getLatestVerificationStatus(user.id);
-  const active = request && !["cancelled", "expired", "rejected"].includes(request.status);
+  const awaitingOwnership =
+    request?.method === "academic_pending" &&
+    request.pddikti_match_status === "matched";
+  const active =
+    request &&
+    !awaitingOwnership &&
+    !["cancelled", "expired", "rejected"].includes(request.status);
 
   return (
     <AppShell current="verification">
@@ -68,7 +74,9 @@ async function VerificationContent() {
             tambahan, status akan diperbarui tanpa membuka data sensitifmu.
           </p>
         ) : (
-          <VerificationForm />
+          <VerificationForm
+            matchedRequestId={awaitingOwnership ? request.id : undefined}
+          />
         )}
       </div>
       </main>

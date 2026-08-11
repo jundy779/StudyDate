@@ -42,8 +42,20 @@ const SUPPORTED_EVIDENCE_TYPES = [
   "image/webp",
 ];
 
-export function VerificationForm() {
-  const [step, setStep] = useState(0);
+type LookupOutcome =
+  | "idle"
+  | "academic_match"
+  | "not_found"
+  | "mismatch"
+  | "provider_unavailable"
+  | "provider_invalid_response";
+
+export function VerificationForm({
+  matchedRequestId,
+}: {
+  matchedRequestId?: string;
+}) {
+  const [step, setStep] = useState(matchedRequestId ? 1 : 0);
   const [academic, setAcademic] = useState(initialAcademicData);
   const [method, setMethod] = useState<"campus_email" | "student_card">(
     "campus_email",
@@ -57,31 +69,52 @@ export function VerificationForm() {
   const [studyProgramMode, setStudyProgramMode] =
     useState<ComboboxEntryMode>("list");
   const [consent, setConsent] = useState(false);
-  const [requestId, setRequestId] = useState("");
+  const [providerConsent, setProviderConsent] = useState(false);
+  const [requestId, setRequestId] = useState(matchedRequestId ?? "");
+  const [lookupOutcome, setLookupOutcome] = useState<LookupOutcome>(
+    matchedRequestId ? "academic_match" : "idle",
+  );
+  const [manualFlow, setManualFlow] = useState(false);
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState<"info" | "error">("info");
   const [isBusy, setIsBusy] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
   function updateAcademic(field: keyof AcademicData, value: string) {
     setAcademic((current) => ({ ...current, [field]: value }));
+    setLookupOutcome("idle");
+    setRequestId("");
+    setManualFlow(false);
     setMessage("");
+    setMessageTone("info");
   }
 
   function nextStep() {
     setMessage("");
+    setMessageTone("info");
     if (
       step === 0 &&
       (!academic.nim.trim() ||
         !academic.legalName.trim() ||
         !academic.campus.trim() ||
         !academic.studyProgram.trim() ||
-        !academic.degreeLevel ||
-        !pddiktiEvidence)
+        !academic.degreeLevel)
     ) {
       setMessage(
-        "Lengkapi data akademik dan unggah bukti PDDikti sebelum melanjutkan.",
+        "Lengkapi data akademik sebelum melakukan pemeriksaan.",
       );
+      setMessageTone("error");
+      return;
+    }
+    if (step === 0 && lookupOutcome !== "academic_match" && !manualFlow) {
+      setMessage("Periksa data akademik atau pilih verifikasi manual.");
+      setMessageTone("error");
+      return;
+    }
+    if (step === 0 && manualFlow && !pddiktiEvidence) {
+      setMessage("Unggah screenshot PDDIKTI untuk verifikasi manual.");
+      setMessageTone("error");
       return;
     }
     if (
@@ -91,15 +124,18 @@ export function VerificationForm() {
         !SUPPORTED_EVIDENCE_TYPES.includes(pddiktiEvidence.type))
     ) {
       setMessage("Bukti PDDikti harus berupa JPG, PNG, atau WebP maksimal 5 MB.");
+      setMessageTone("error");
       return;
     }
     if (step === 1) {
       if (method === "campus_email" && !campusEmail.trim()) {
         setMessage("Masukkan email kampus sebelum melanjutkan.");
+        setMessageTone("error");
         return;
       }
       if (method === "student_card" && !studentCardEvidence) {
         setMessage("Pilih foto kartu mahasiswa sebelum melanjutkan.");
+        setMessageTone("error");
         return;
       }
       if (
@@ -109,6 +145,7 @@ export function VerificationForm() {
           !SUPPORTED_EVIDENCE_TYPES.includes(studentCardEvidence.type))
       ) {
         setMessage("Foto kartu mahasiswa harus berupa JPG, PNG, atau WebP maksimal 5 MB.");
+        setMessageTone("error");
         return;
       }
     }
@@ -119,19 +156,27 @@ export function VerificationForm() {
     event.preventDefault();
     if (!consent) {
       setMessage("Persetujuan verifikasi harus diberikan secara terpisah.");
-      return;
-    }
-    if (!pddiktiEvidence) {
-      setMessage("Bukti PDDikti perlu diunggah sebelum permintaan dikirim.");
+      setMessageTone("error");
       return;
     }
     setIsBusy(true);
     setMessage("");
+    setMessageTone("info");
+    setMessageTone("info");
     const body = new FormData();
-    Object.entries(academic).forEach(([key, value]) => body.set(key, value));
+    if (manualFlow) {
+      Object.entries(academic).forEach(([key, value]) => body.set(key, value));
+    }
     body.set("method", method);
     body.set("consent", "true");
-    body.set("pddiktiEvidence", pddiktiEvidence);
+    body.set(
+      "flow",
+      manualFlow || lookupOutcome !== "academic_match"
+        ? "manual"
+        : "academic_matched",
+    );
+    body.set("requestId", requestId);
+    if (pddiktiEvidence) body.set("pddiktiEvidence", pddiktiEvidence);
     if (studentCardEvidence) {
       body.set("studentCardEvidence", studentCardEvidence);
     }
@@ -150,6 +195,7 @@ export function VerificationForm() {
           result.message ??
             "Permintaan verifikasi belum dapat dikirim. Coba lagi.",
         );
+        setMessageTone("error");
         return;
       }
       setRequestId(result.requestId);
@@ -163,6 +209,62 @@ export function VerificationForm() {
       }
     } catch {
       setMessage("Permintaan verifikasi belum dapat dikirim. Coba lagi.");
+      setMessageTone("error");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function lookupAcademicData() {
+    if (!providerConsent) {
+      setMessage(
+        "Berikan persetujuan pencocokan melalui layanan data akademik eksternal sebelum memeriksa data.",
+      );
+      setMessageTone("error");
+      return;
+    }
+    setIsBusy(true);
+    setMessage("Memeriksa data akademik...");
+    setMessageTone("info");
+    try {
+      const response = await fetch("/api/verification/academic-lookup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...academic, providerConsent: "true" }),
+      });
+      const result = (await response.json()) as {
+        outcome?: LookupOutcome;
+        requestId?: string;
+        message?: string;
+      };
+      if (!response.ok || !result.outcome) {
+        setMessage(result.message ?? "Data akademik belum dapat diperiksa.");
+        setMessageTone("error");
+        return;
+      }
+      setLookupOutcome(result.outcome);
+      setRequestId(result.requestId ?? "");
+      setManualFlow(false);
+      setMessageTone(
+        result.outcome === "academic_match" ||
+          result.outcome === "not_found" ||
+          result.outcome === "mismatch"
+          ? "info"
+          : "error",
+      );
+      setMessage(
+        result.outcome === "academic_match"
+          ? "Data akademik ditemukan."
+          : result.outcome === "not_found"
+            ? "Data mahasiswa belum berhasil ditemukan."
+            : result.outcome === "mismatch"
+              ? "Data yang ditemukan belum cocok dengan informasi yang kamu masukkan."
+              : "Layanan pengecekan akademik sedang tidak tersedia.",
+      );
+    } catch {
+      setMessage("Layanan pengecekan akademik sedang tidak tersedia.");
+      setLookupOutcome("provider_unavailable");
+      setMessageTone("error");
     } finally {
       setIsBusy(false);
     }
@@ -171,6 +273,7 @@ export function VerificationForm() {
   async function sendCode() {
     setIsBusy(true);
     setMessage("");
+    setMessageTone("info");
     try {
       const response = await fetch("/api/verification/campus-email/send", {
         method: "POST",
@@ -183,8 +286,10 @@ export function VerificationForm() {
           ? "Jika domain kampus didukung, kode telah dikirim. Kode berlaku 10 menit."
           : (result.message ?? "Kode belum dapat dikirim."),
       );
+      setMessageTone(response.ok ? "info" : "error");
     } catch {
       setMessage("Kode belum dapat dikirim. Coba lagi.");
+      setMessageTone("error");
     } finally {
       setIsBusy(false);
     }
@@ -193,6 +298,7 @@ export function VerificationForm() {
   async function confirmCode() {
     setIsBusy(true);
     setMessage("");
+    setMessageTone("info");
     try {
       const response = await fetch("/api/verification/campus-email/confirm", {
         method: "POST",
@@ -202,6 +308,7 @@ export function VerificationForm() {
       const result = (await response.json()) as { message?: string };
       if (!response.ok) {
         setMessage(result.message ?? "Kode belum dapat dikonfirmasi.");
+        setMessageTone("error");
         return;
       }
       setIsComplete(true);
@@ -210,6 +317,7 @@ export function VerificationForm() {
       );
     } catch {
       setMessage("Kode belum dapat dikonfirmasi. Coba lagi.");
+      setMessageTone("error");
     } finally {
       setIsBusy(false);
     }
@@ -301,7 +409,7 @@ export function VerificationForm() {
       onSubmit={submit}
       className="rounded-[24px] border border-brand-border bg-white p-5 shadow-[0_22px_60px_rgba(15,27,51,0.07)] sm:p-9"
     >
-      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4">
         <p className="text-sm font-semibold text-brand-blue">
           Langkah {step + 1} dari 3
         </p>
@@ -319,7 +427,7 @@ export function VerificationForm() {
       {step === 0 ? (
         <fieldset className="mt-8">
           <legend className="font-heading text-2xl font-semibold">
-            Data akademik
+            Verifikasi data akademik
           </legend>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
             Cocokkan isian dengan data PDDikti. Nama lengkap dan NIM tetap
@@ -341,6 +449,7 @@ export function VerificationForm() {
               maxLength={32}
               autoComplete="off"
               helperText="Digunakan hanya untuk pencocokan data mahasiswa."
+              errorText={message && !academic.nim.trim() ? message : undefined}
               onChange={(value) => updateAcademic("nim", value)}
             />
             <SearchableCreatableCombobox
@@ -419,6 +528,52 @@ export function VerificationForm() {
               </select>
             </label>
           </div>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={lookupAcademicData}
+              className="focus-ring min-h-12 rounded-xl bg-brand-blue px-5 font-semibold text-white disabled:opacity-60"
+            >
+              {isBusy ? "Memeriksa data akademik..." : "Periksa data akademik"}
+            </button>
+            {["not_found", "mismatch", "provider_unavailable", "provider_invalid_response"].includes(lookupOutcome) ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setManualFlow(true);
+                  setMessage("Isi data akademikmu dan unggah screenshot PDDIKTI sebagai bukti pendukung.");
+                  setMessageTone("info");
+                }}
+                className="focus-ring min-h-12 rounded-xl border border-brand-border px-5 font-semibold"
+              >
+                Lanjutkan verifikasi manual
+              </button>
+            ) : null}
+          </div>
+          <label className="mt-5 flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={providerConsent}
+              onChange={(event) => setProviderConsent(event.target.checked)}
+              className="mt-1 h-5 w-5 accent-brand-blue"
+            />
+            <span className="text-sm leading-6 text-brand-muted">
+              Saya setuju StudyDate mengirim NIM, nama legal, kampus, dan program
+              studi yang saya isi ke layanan data akademik eksternal hanya untuk
+              pencocokan verifikasi ini.
+            </span>
+          </label>
+          <p
+            className={`mt-4 text-sm leading-6 ${
+              messageTone === "error" ? "text-brand-error" : "text-brand-muted"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {message}
+          </p>
+          {manualFlow ? (
           <div className="mt-7 rounded-[20px] border border-brand-border bg-brand-surface/60 p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue shadow-sm">
@@ -426,11 +581,11 @@ export function VerificationForm() {
               </div>
               <div>
                 <h3 className="font-heading text-lg font-semibold">
-                  Upload bukti PDDikti
+                  Screenshot PDDIKTI
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-brand-muted">
-                  Unggah screenshot halaman PDDikti yang memperlihatkan data
-                  akademikmu dengan jelas.
+                  Unggah screenshot halaman PDDIKTI yang menampilkan data
+                  akademik yang ingin kamu verifikasi.
                 </p>
               </div>
             </div>
@@ -458,7 +613,7 @@ export function VerificationForm() {
                     aria-hidden="true"
                   />
                   <span className="mt-3 text-sm font-semibold text-brand-navy">
-                    Pilih screenshot PDDikti
+                    Pilih screenshot PDDIKTI
                   </span>
                   <span className="mt-1 text-xs text-brand-muted">
                     JPG, PNG, atau WebP · maksimal 5 MB
@@ -474,6 +629,7 @@ export function VerificationForm() {
                 onChange={(event) => {
                   setPddiktiEvidence(event.target.files?.[0] ?? null);
                   setMessage("");
+                  setMessageTone("info");
                 }}
                 className="sr-only"
               />
@@ -486,10 +642,12 @@ export function VerificationForm() {
                 className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue"
                 aria-hidden="true"
               />
-              Bukti disimpan secara privat, hanya digunakan untuk review
-              verifikasi, dan dijadwalkan untuk dihapus.
+              Pastikan screenshot hanya memuat informasi yang diperlukan.
+              Hindari menyertakan data lain yang tidak berkaitan dengan verifikasi.
+              Bukti ini hanya mendukung pencocokan akademik, bukan bukti kepemilikan.
             </p>
           </div>
+          ) : null}
         </fieldset>
       ) : null}
 
@@ -533,8 +691,9 @@ export function VerificationForm() {
           <div className="mt-5 rounded-xl bg-brand-surface p-5 text-sm leading-6 text-brand-muted">
             <p>
               Proses ini menggunakan NIM, nama legal, data kampus, dan bukti
-              kepemilikan untuk pemeriksaan manual terhadap PDDikti. Bukti
-              disimpan sementara dan dijadwalkan untuk dihapus.
+              kepemilikan. Pencocokan otomatis dapat memakai layanan data
+              akademik eksternal; provider tidak menerima akses ke profil publikmu.
+              Bukti disimpan sementara dan dijadwalkan untuk dihapus.
             </p>
             <p className="mt-3">
               Verifikasi bersifat opsional dan badge tidak menjamin perilaku
@@ -548,11 +707,16 @@ export function VerificationForm() {
         </fieldset>
       ) : null}
 
-      <p className="mt-6 text-sm leading-6 text-brand-error" aria-live="assertive">
+      <p
+        className={`mt-6 text-sm leading-6 ${
+          messageTone === "error" ? "text-brand-error" : "text-brand-muted"
+        }`}
+        aria-live={messageTone === "error" ? "assertive" : "polite"}
+      >
         {message}
       </p>
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-        <button type="button" onClick={() => setStep((current) => Math.max(current - 1, 0))} disabled={step === 0 || isBusy} className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-border px-5 font-semibold disabled:invisible">
+          <button type="button" onClick={() => setStep((current) => Math.max(current - 1, 0))} disabled={step === 0 || isBusy} className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-border px-5 font-semibold disabled:invisible">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Kembali
         </button>
         {step < 2 ? (
@@ -573,6 +737,7 @@ function Field({
   id,
   label,
   helperText,
+  errorText,
   onChange,
   className = "",
   ...props
@@ -580,6 +745,7 @@ function Field({
   id: string;
   label: string;
   helperText?: string;
+  errorText?: string;
   onChange: (value: string) => void;
   className?: string;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "onChange">) {
@@ -591,7 +757,12 @@ function Field({
       <input
         id={id}
         required
-        aria-describedby={helperText ? `${id}-helper` : undefined}
+        aria-describedby={
+          [helperText ? `${id}-helper` : null, errorText ? `${id}-error` : null]
+            .filter(Boolean)
+            .join(" ") || undefined
+        }
+        aria-invalid={Boolean(errorText)}
         onChange={(event) => onChange(event.target.value)}
         className="focus-ring mt-2 h-12 w-full rounded-xl border border-brand-border px-4"
         {...props}
@@ -602,6 +773,11 @@ function Field({
           className="mt-2 text-xs leading-5 text-brand-muted"
         >
           {helperText}
+        </p>
+      ) : null}
+      {errorText ? (
+        <p id={`${id}-error`} className="mt-2 text-xs leading-5 text-brand-error">
+          {errorText}
         </p>
       ) : null}
     </div>

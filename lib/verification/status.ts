@@ -5,7 +5,7 @@ import type { VerificationRequestStatus } from "./constants";
 
 export type VerificationStatus = {
   id: string;
-  method: "campus_email" | "student_card";
+  method: "academic_pending" | "campus_email" | "student_card";
   status: VerificationRequestStatus;
   pddikti_match_status:
     | "not_checked"

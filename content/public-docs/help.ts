@@ -119,7 +119,7 @@ export const helpSections: PublicDocSection[] = [
       },
       {
         type: "note",
-        text: "Verifikasi mahasiswa saat ini tidak tersedia secara global. Halaman verifikasi dapat menyatakan bahwa fitur belum dibuka.",
+        text: "Verifikasi mahasiswa saat ini tidak tersedia secara global. Pada pengujian terkontrol, pengecekan akademik dapat memakai layanan pihak ketiga dan menyediakan fallback manual. Pencocokan data atau screenshot saja tidak membuat akun terverifikasi; bukti kepemilikan tetap wajib.",
       },
     ],
   },

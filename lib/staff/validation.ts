@@ -38,3 +38,10 @@ export const verificationReviewSchema = z.object({
     ])
     .optional(),
 }).strict();
+
+export const manualAcademicReviewSchema = z
+  .object({
+    requestId: z.string().uuid(),
+    decision: z.enum(["approve", "reject", "needs_action"]),
+  })
+  .strict();
