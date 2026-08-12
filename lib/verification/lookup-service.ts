@@ -21,6 +21,7 @@ import { isVerificationRequestAllowed } from "./readiness";
 import { normalizeNim } from "./validation";
 
 export type AcademicLookupInput = AcademicLookupClaim & {
+  providerConsent: "true";
   degreeLevel:
     | "diploma"
     | "sarjana"
@@ -57,24 +58,21 @@ export async function lookupAcademicIdentity(
   if (!(await isVerificationRequestAllowed(userId))) {
     throw new AcademicLookupServiceError("configuration");
   }
-  if (!(options.providerReady ?? isPddiktiProviderEnabled())) {
-    return safeOutcome("provider_unavailable");
-  }
   const admin = createServerAdminClient();
   if (!admin) throw new AcademicLookupServiceError("configuration");
 
   const { data: eligible, error: eligibleError } = await admin.rpc(
-    "is_eligible_introduction_student",
+    "is_eligible_verification_student",
     { p_user_id: userId },
   );
-  const { data: staff } = await admin
-    .from("staff_members")
-    .select("user_id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .maybeSingle();
-  if (eligibleError || eligible !== true || staff) {
+  if (eligibleError || eligible !== true) {
     throw new AcademicLookupServiceError("authorization");
+  }
+  if (input.providerConsent !== "true") {
+    throw new AcademicLookupServiceError("authorization");
+  }
+  if (!(options.providerReady ?? isPddiktiProviderEnabled())) {
+    return safeOutcome("provider_unavailable");
   }
 
   const result = await provider.lookup(input);

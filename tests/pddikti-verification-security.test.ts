@@ -37,8 +37,8 @@ test("student endpoint is authenticated, bounded, self-scoped, and rate limited"
   assert.match(lookupRoute, /verification_lookup_hour[\s\S]*limit: 3/);
   assert.match(lookupRoute, /verification_lookup_day[\s\S]*limit: 6/);
   assert.doesNotMatch(lookupRoute, /p_user_id|userId:\s*payload/);
-  assert.match(lookupService, /is_eligible_introduction_student/);
-  assert.match(lookupService, /\.from\("staff_members"\)/);
+  assert.match(lookupService, /is_eligible_verification_student/);
+  assert.doesNotMatch(lookupService, /is_eligible_introduction_student/);
   assert.match(
     migration,
     /perform public\.lock_eligible_verification_student\(p_user_id\)/,
@@ -46,6 +46,47 @@ test("student endpoint is authenticated, bounded, self-scoped, and rate limited"
   assert.match(lookupRoute, /academicLookupSchema\.safeParse\(payload\)/);
   assert.match(studentUi, /providerConsent/);
   assert.match(studentUi, /layanan data akademik eksternal/);
+});
+
+test("verification precheck is service-only and checks only current student eligibility", () => {
+  const precheck = migration.slice(
+    migration.indexOf("is_eligible_verification_student"),
+    migration.indexOf("lock_eligible_verification_student"),
+  );
+  assert.match(precheck, /security invoker/);
+  assert.match(precheck, /set search_path = ''/);
+  assert.match(precheck, /auth\.role\(\) <> 'service_role'/);
+  assert.match(precheck, /p_user_id is null[\s\S]*return false/);
+  assert.match(precheck, /profile\.onboarding_completed_at is not null/);
+  assert.match(precheck, /profile\.deactivated_at is null/);
+  assert.match(precheck, /staff\.status = 'active'/);
+  assert.match(precheck, /deletion\.status in \('pending', 'processing', 'failed'\)/);
+  assert.doesNotMatch(precheck, /block|cooldown|conversation|discoverable|introduction/);
+  assert.match(
+    precheck,
+    /revoke all on function public\.is_eligible_verification_student\(uuid\)[\s\S]*from public, anon, authenticated/,
+  );
+  assert.match(
+    precheck,
+    /grant execute on function public\.is_eligible_verification_student\(uuid\)[\s\S]*to service_role/,
+  );
+  assert.doesNotMatch(
+    precheck,
+    /grant execute on function public\.is_eligible_verification_student\(uuid\)[\s\S]*to (?:public|anon|authenticated)/,
+  );
+});
+
+test("consent, provider flag, and eligibility all gate the mocked provider path", () => {
+  assert.match(lookupRoute, /academicLookupSchema\.safeParse\(payload\)/);
+  assert.match(
+    lookupRoute,
+    /academicLookupSchema\.safeParse\(payload\)[\s\S]*lookupAcademicIdentity\(user\.id, parsed\.data\)/,
+  );
+  assert.match(
+    lookupService,
+    /is_eligible_verification_student[\s\S]*input\.providerConsent !== "true"[\s\S]*isPddiktiProviderEnabled\(\)[\s\S]*provider\.lookup\(input\)/,
+  );
+  assert.doesNotMatch(lookupRoute, /payload\.(?:userId|user_id)/);
 });
 
 test("global verification and provider flags remain disabled by default", () => {
@@ -164,6 +205,31 @@ test("all trusted verification transitions serialize against the target privacy 
     finalize,
     /perform public\.lock_eligible_verification_student\(target\.user_id\)/,
   );
+});
+
+test("mid-provider deletion or deactivation rejects persistence without changing ownership or badge", () => {
+  assert.match(
+    lookupService,
+    /provider\.lookup\(input\)[\s\S]*create_pddikti_academic_match_request/,
+  );
+  const lock = migration.slice(
+    migration.indexOf("lock_eligible_verification_student"),
+    migration.indexOf("create_pddikti_academic_match_request"),
+  );
+  assert.match(lock, /from public\.profiles as profile[\s\S]*for update/);
+  assert.match(lock, /target_profile\.deactivated_at is not null/);
+  assert.match(lock, /public\.is_account_deletion_locked\(p_user_id\)/);
+
+  const persistence = migration.slice(
+    migration.indexOf("create_pddikti_academic_match_request"),
+    migration.indexOf("complete_student_verification_ownership"),
+  );
+  assert.match(
+    persistence,
+    /perform public\.lock_eligible_verification_student\(p_user_id\)[\s\S]*insert into public\.student_verification_requests/,
+  );
+  assert.match(persistence, /ownership_status[\s\S]*'not_checked'/);
+  assert.doesNotMatch(persistence, /verification_status = 'verified'/);
 });
 
 test("request identifiers remain target-scoped for ownership and evidence association", () => {

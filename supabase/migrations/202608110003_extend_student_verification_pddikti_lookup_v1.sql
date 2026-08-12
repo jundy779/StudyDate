@@ -52,6 +52,50 @@ create unique index student_verification_provider_claim_idx
 revoke select (nim_last_four) on table public.student_verification_requests
   from authenticated;
 
+create or replace function public.is_eligible_verification_student(
+  p_user_id uuid
+)
+returns boolean
+language plpgsql
+stable
+security invoker
+set search_path = ''
+as $$
+begin
+  if auth.role() <> 'service_role' then
+    raise exception 'service role required' using errcode = '42501';
+  end if;
+  if p_user_id is null then
+    return false;
+  end if;
+
+  return exists (
+    select 1
+    from public.profiles as profile
+    where profile.user_id = p_user_id
+      and profile.onboarding_completed_at is not null
+      and profile.deactivated_at is null
+      and not exists (
+        select 1
+        from public.staff_members as staff
+        where staff.user_id = p_user_id
+          and staff.status = 'active'
+      )
+      and not exists (
+        select 1
+        from public.account_deletion_requests as deletion
+        where deletion.user_id = p_user_id
+          and deletion.status in ('pending', 'processing', 'failed')
+      )
+  );
+end;
+$$;
+
+revoke all on function public.is_eligible_verification_student(uuid)
+  from public, anon, authenticated;
+grant execute on function public.is_eligible_verification_student(uuid)
+  to service_role;
+
 create or replace function public.lock_eligible_verification_student(
   p_user_id uuid
 )
