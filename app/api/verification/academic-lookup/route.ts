@@ -9,7 +9,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const MAX_BYTES = 2_048;
 const GENERIC_ERROR = "Data akademik belum dapat diperiksa. Coba lagi.";
 
-export const maxDuration = 30;
+export const maxDuration = 40;
 
 export async function POST(request: NextRequest) {
   const contentLength = Number(request.headers.get("content-length") ?? "0");
@@ -65,7 +65,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await lookupAcademicIdentity(user.id, parsed.data);
+    const result = await lookupAcademicIdentity(
+      user.id,
+      parsed.data,
+      undefined,
+      request.signal,
+    );
     return NextResponse.json(result);
   } catch {
     return NextResponse.json({ message: GENERIC_ERROR }, { status: 503 });

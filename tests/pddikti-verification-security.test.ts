@@ -81,7 +81,7 @@ test("source ordering keeps consent, provider flag, and eligibility before provi
   assert.match(lookupRoute, /academicLookupSchema\.safeParse\(payload\)/);
   assert.match(
     lookupRoute,
-    /academicLookupSchema\.safeParse\(payload\)[\s\S]*lookupAcademicIdentity\(user\.id, parsed\.data\)/,
+    /academicLookupSchema\.safeParse\(payload\)[\s\S]*lookupAcademicIdentity\([\s\S]*user\.id,[\s\S]*parsed\.data,[\s\S]*request\.signal/,
   );
   assert.match(
     lookupService,
@@ -89,7 +89,7 @@ test("source ordering keeps consent, provider flag, and eligibility before provi
   );
   assert.match(
     lookupCore,
-    /gate\.eligible[\s\S]*input\.providerConsent !== "true"[\s\S]*gate\.providerReady[\s\S]*provider\.lookup\(input\)/,
+    /gate\.eligible[\s\S]*input\.providerConsent !== "true"[\s\S]*gate\.providerReady[\s\S]*provider\.lookup\(input, signal\)/,
   );
   assert.doesNotMatch(lookupRoute, /payload\.(?:userId|user_id)/);
 });
@@ -104,7 +104,7 @@ test("global verification and provider flags remain disabled by default", () => 
 
 test("provider call is server-only, bounded, sanitized, and never returns raw candidates", () => {
   assert.match(provider, /AbortSignal\.timeout\(TIMEOUT_MS\)/);
-  assert.match(provider, /MAX_ATTEMPTS = 2/);
+  assert.match(provider, /MAX_ATTEMPTS = 1/);
   assert.match(provider, /MAX_RESPONSE_BYTES = 256_000/);
   assert.match(provider, /cache: "no-store"/);
   assert.doesNotMatch(provider, /console\./);
@@ -217,7 +217,7 @@ test("mid-provider deletion or deactivation rejects persistence without changing
     lookupService,
     /runAcademicLookupProvider\(input, provider[\s\S]*create_pddikti_academic_match_request/,
   );
-  assert.match(lookupCore, /provider\.lookup\(input\)/);
+  assert.match(lookupCore, /provider\.lookup\(input, signal\)/);
   const lock = migration.slice(
     migration.indexOf("lock_eligible_verification_student"),
     migration.indexOf("create_pddikti_academic_match_request"),

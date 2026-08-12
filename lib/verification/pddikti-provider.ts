@@ -8,7 +8,7 @@ import {
 import { TextDecoder } from "node:util";
 
 const TIMEOUT_MS = 25_000;
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 1;
 const MAX_RESPONSE_BYTES = 256_000;
 
 export function isPddiktiProviderEnabled() {
@@ -72,9 +72,6 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
             : AbortSignal.timeout(TIMEOUT_MS),
         });
         if (!response.ok) {
-          if (attempt < MAX_ATTEMPTS && (response.status === 429 || response.status >= 500)) {
-            continue;
-          }
           return unavailable(Date.now() - startedAt);
         }
 

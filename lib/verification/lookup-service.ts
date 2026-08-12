@@ -62,6 +62,7 @@ export async function lookupAcademicIdentity(
   userId: string,
   input: AcademicLookupInput,
   provider: AcademicLookupProvider = new PddiktiAcademicLookupProvider(),
+  signal?: AbortSignal,
 ) {
   if (!(await isVerificationRequestAllowed(userId))) {
     throw new AcademicLookupServiceError("configuration");
@@ -73,15 +74,8 @@ export async function lookupAcademicIdentity(
     "is_eligible_verification_student",
     { p_user_id: userId },
   );
-  const outcome = await runAcademicLookupProvider(input, provider, {
-    eligible: !eligibleError && eligible === true,
-    providerReady: isPddiktiProviderEnabled(),
-  });
-  if (outcome === null) {
+  if (eligibleError || eligible !== true) {
     throw new AcademicLookupServiceError("authorization");
-  }
-  if (outcome !== "academic_match") {
-    return safeOutcome(outcome);
   }
 
   const normalizedNim = normalizeNim(input.nim);
@@ -98,7 +92,18 @@ export async function lookupAcademicIdentity(
     .eq("academic_claim_fingerprint", academicClaimFingerprint)
     .maybeSingle<{ id: string }>();
   if (reusable) {
-    return { outcome, requestId: reusable.id };
+    return { outcome: "academic_match" as const, requestId: reusable.id };
+  }
+
+  const outcome = await runAcademicLookupProvider(input, provider, {
+    eligible: !eligibleError && eligible === true,
+    providerReady: isPddiktiProviderEnabled(),
+  }, signal);
+  if (outcome === null) {
+    throw new AcademicLookupServiceError("authorization");
+  }
+  if (outcome !== "academic_match") {
+    return safeOutcome(outcome);
   }
 
   const encryptedNim = encryptVerificationValue(normalizedNim);

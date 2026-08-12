@@ -188,8 +188,7 @@ const providerSource = readFileSync(
 test("adapter contract handles exact match, malformed responses, status classes, timeout, and abort", () => {
   assert.match(providerSource, /matchAcademicClaim\(claim, parsed\.candidates\)/);
   assert.match(providerSource, /provider_invalid_response/);
-  assert.match(providerSource, /response\.status === 429 \|\| response\.status >= 500/);
-  assert.match(providerSource, /MAX_ATTEMPTS = 2/);
+  assert.match(providerSource, /MAX_ATTEMPTS = 1/);
   assert.match(providerSource, /TIMEOUT_MS = 25_000/);
   assert.match(providerSource, /AbortSignal\.timeout\(TIMEOUT_MS\)/);
   assert.match(providerSource, /externalSignal\?\.aborted/);
@@ -267,15 +266,15 @@ test("adapter rejects streamed bodies that exceed the limit without content-leng
   });
 });
 
-test("adapter handles 4xx, retryable 5xx, invalid JSON, and abort", async () => {
+test("adapter handles 4xx/5xx, invalid JSON, and abort without duplicate calls", async () => {
   await withProviderEnv(async () => {
     let calls = 0;
     const unavailable = new PddiktiAcademicLookupProvider(async () => {
       calls += 1;
-      return new Response(null, { status: calls === 1 ? 503 : 429 });
+      return new Response(null, { status: 503 });
     });
     assert.equal((await unavailable.lookup(claim)).outcome, "provider_unavailable");
-    assert.equal(calls, 2);
+    assert.equal(calls, 1);
 
     calls = 0;
     const clientError = new PddiktiAcademicLookupProvider(async () => {

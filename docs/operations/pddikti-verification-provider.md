@@ -52,9 +52,9 @@ menjadi academic rejection.
 
 ## Timeout, retry, dan rate limit
 
-- Timeout: 25 detik per attempt; route lookup memiliki `maxDuration` 30 detik.
-- Maksimal dua attempt; retry hanya untuk gangguan network, timeout, HTTP 429,
-  atau HTTP 5xx.
+- Timeout: 25 detik; route lookup memiliki `maxDuration` 40 detik.
+- Satu attempt per logical lookup. Gangguan network, timeout, HTTP 429, atau
+  HTTP 5xx gagal aman ke fallback manual tanpa menggandakan request lambat.
 - Response dibatasi 256 KB dan maksimal 50 candidate.
 - Lookup: 3/account/jam dan 6/account/hari.
 - Submission manual/ownership: 2/account/hari.
