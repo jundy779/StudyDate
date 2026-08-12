@@ -21,6 +21,19 @@ const exact = {
   nama_pt: "UNIVERSITAS NUSANTARA",
   nama_prodi: "Teknik   Informatika",
 };
+const wrapped = (
+  list: unknown[],
+  details: unknown[] | undefined = [],
+) => ({
+  status: true,
+  creator: "synthetic-provider",
+  result: {
+    endpoint: "synthetic",
+    query: "ignored-provider-query",
+    list,
+    ...(details === undefined ? {} : { details }),
+  },
+});
 
 test("normalization preserves NIM leading zeroes and normalizes Unicode spacing", () => {
   assert.equal(normalizeProviderNim(" 0012-3456 "), "00123456");
@@ -35,18 +48,44 @@ test("normalization preserves NIM leading zeroes and normalizes Unicode spacing"
   );
 });
 
-test("provider payload supports no result, many candidates, and exact candidate not first", () => {
-  const empty = parseProviderCandidates({ status: true, data: [] });
-  assert.deepEqual(empty, { valid: true, candidates: [] });
+test("approved campus catalog aliases match deterministically without fuzzy matching", () => {
+  const parsed = parseProviderCandidates(
+    wrapped([
+      {
+        ...exact,
+        nama_pt: "Sekolah Tinggi Teknologi Terpadu Nurul Fikri",
+      },
+    ]),
+  );
+  const aliasClaim = {
+    ...claim,
+    campus: "STT Terpadu Nurul Fikri",
+  };
+  assert.equal(
+    matchAcademicClaim(aliasClaim, parsed.candidates).exactMatchFound,
+    true,
+  );
+  assert.equal(
+    matchAcademicClaim(
+      { ...aliasClaim, campus: "STT Nurul Fikri Lain" },
+      parsed.candidates,
+    ).exactMatchFound,
+    false,
+  );
+});
 
-  const parsed = parseProviderCandidates({
-    status: true,
-    data: [
+test("real wrapper accepts empty/list-only results and exact candidate not first", () => {
+  const empty = parseProviderCandidates(wrapped([]));
+  assert.deepEqual(empty, { valid: true, candidates: [] });
+  assert.equal(parseProviderCandidates(wrapped([], undefined)).valid, true);
+
+  const parsed = parseProviderCandidates(
+    wrapped([
       { ...exact, nim: "99999999" },
       exact,
       { ...exact, nim: "88888888" },
-    ],
-  });
+    ]),
+  );
   assert.equal(parsed.valid, true);
   const result = matchAcademicClaim(claim, parsed.candidates);
   assert.equal(result.outcome, "academic_match");
@@ -54,43 +93,117 @@ test("provider payload supports no result, many candidates, and exact candidate 
   assert.equal(result.candidateCount, 3);
 });
 
-test("same NIM with name, campus, or program mismatch never auto-matches", () => {
+test("same NIM with any materially mismatched identity field never auto-matches", () => {
   for (const candidate of [
     { ...exact, nama: "Nama Berbeda" },
     { ...exact, nama_pt: "Kampus Berbeda" },
     { ...exact, nama_prodi: "Program Berbeda" },
   ]) {
-    const parsed = parseProviderCandidates({ status: true, data: [candidate] });
+    const parsed = parseProviderCandidates(wrapped([candidate]));
     assert.equal(matchAcademicClaim(claim, parsed.candidates).outcome, "mismatch");
   }
 });
 
 test("unrelated candidates become not_found and are not projected", () => {
-  const parsed = parseProviderCandidates({
-    status: true,
-    data: [{ ...exact, nim: "77777777", nama: "Orang Lain" }],
-  });
+  const parsed = parseProviderCandidates(
+    wrapped([{ ...exact, nim: "77777777", nama: "Orang Lain" }]),
+  );
   const result = matchAcademicClaim(claim, parsed.candidates);
-  assert.deepEqual(result, {
-    outcome: "not_found",
-    candidateCount: 1,
-    exactMatchFound: false,
-    schemaValid: true,
-  });
+  assert.equal(result.outcome, "not_found");
+  assert.equal(result.candidateCount, 1);
+  assert.equal(result.exactMatchFound, false);
+  assert.equal(result.schemaValid, true);
   assert.equal("candidates" in result, false);
 });
 
-test("status false and malformed payload are invalid", () => {
-  assert.equal(parseProviderCandidates({ status: false, data: [] }).valid, false);
+test("missing result, non-array list, status false, and malformed candidates are invalid", () => {
+  assert.equal(parseProviderCandidates({ status: false }).valid, false);
   assert.equal(parseProviderCandidates("invalid").valid, false);
+  assert.equal(parseProviderCandidates({ status: true }).valid, false);
   assert.equal(
-    parseProviderCandidates({ status: true, data: [{ nama: "Incomplete" }] }).valid,
+    parseProviderCandidates({ status: true, result: { list: {} } }).valid,
     false,
   );
   assert.equal(
-    parseProviderCandidates({ status: true, data: [{ ...exact, nim: 123456 }] }).valid,
+    parseProviderCandidates(wrapped([{ nama: "Incomplete" }])).valid,
     false,
   );
+  assert.equal(
+    parseProviderCandidates(wrapped([{ ...exact, nim: 123456 }])).valid,
+    false,
+  );
+});
+
+test("list fields canonicalize and detail fields enrich by academic identity", () => {
+  const parsed = parseProviderCandidates(
+    wrapped(
+      [{ ...exact, sinkatan_pt: "UN", id: "list-opaque" }],
+      [
+        {
+          id: "different-detail-opaque",
+          nama: " SINTA PRATAMA ",
+          nim: "0012-3456   ",
+          nama_pt: " UNIVERSITAS NUSANTARA ",
+          prodi: "TEKNIK INFORMATIKA",
+          kode_pt: " PT-01 ",
+          kode_prodi: " SI-01 ",
+          jenjang: " S1 ",
+          status_saat_ini: " Aktif ",
+        },
+      ],
+    ),
+  );
+  assert.equal(parsed.valid, true);
+  assert.deepEqual(parsed.candidates[0], {
+    nim: exact.nim,
+    name: exact.nama,
+    campus: exact.nama_pt,
+    program: exact.nama_prodi,
+    campusShortName: "UN",
+    level: "S1",
+    academicStatus: "Aktif",
+    campusCode: "PT-01",
+    programCode: "SI-01",
+  });
+  const result = matchAcademicClaim(claim, parsed.candidates);
+  assert.equal(result.academicStatusPresent, true);
+  assert.equal(result.exactMatchFound, true);
+});
+
+test("details are optional and unrelated opaque IDs never drive enrichment", () => {
+  const listOnly = parseProviderCandidates(wrapped([exact], undefined));
+  assert.equal(listOnly.valid, true);
+  assert.equal(listOnly.candidates[0].academicStatus, undefined);
+
+  const unrelatedDetail = parseProviderCandidates(
+    wrapped([exact], [
+      {
+        id: "same-opaque-id",
+        nama: "Nama Berbeda",
+        nim: exact.nim,
+        nama_pt: exact.nama_pt,
+        prodi: exact.nama_prodi,
+        status_saat_ini: "Synthetic",
+      },
+    ]),
+  );
+  assert.equal(unrelatedDetail.candidates[0].academicStatus, undefined);
+});
+
+test("provider query is ignored and candidate processing is bounded to fifty", () => {
+  const candidates = Array.from({ length: 55 }, (_, index) => ({
+    ...exact,
+    nim: String(index).padStart(8, "0"),
+  }));
+  const parsed = parseProviderCandidates({
+    ...wrapped(candidates),
+    result: {
+      ...wrapped(candidates).result,
+      query: exact.nim,
+    },
+  });
+  assert.equal(parsed.valid, true);
+  assert.equal(parsed.candidates.length, 50);
 });
 
 const providerSource = readFileSync(
@@ -139,14 +252,43 @@ test("adapter executes exact matching without projecting candidate data", async 
     let requestedUrl = "";
     const provider = new PddiktiAcademicLookupProvider(async (input) => {
       requestedUrl = String(input);
-      return jsonResponse({ status: true, data: [{ ...exact, nim: "99999999" }, exact] });
+      return jsonResponse(wrapped([{ ...exact, nim: "99999999" }, exact]));
     });
     const result = await provider.lookup(claim);
     assert.equal(result.outcome, "academic_match");
     assert.equal(result.exactMatchFound, true);
     assert.equal(result.candidateCount, 2);
     assert.equal("candidates" in result, false);
+    assert.equal("academicStatus" in result, false);
     assert.equal(new URL(requestedUrl).searchParams.get("query"), claim.nim.trim());
+  });
+});
+
+test("adapter preserves the streaming 256 KB response limit", async () => {
+  await withProviderEnv(async () => {
+    const provider = new PddiktiAcademicLookupProvider(
+      async () =>
+        new Response(JSON.stringify(wrapped([exact])), {
+          status: 200,
+          headers: { "content-length": "256001" },
+        }),
+    );
+    assert.equal(
+      (await provider.lookup(claim)).outcome,
+      "provider_invalid_response",
+    );
+  });
+});
+
+test("adapter rejects streamed bodies that exceed the limit without content-length", async () => {
+  await withProviderEnv(async () => {
+    const provider = new PddiktiAcademicLookupProvider(
+      async () => new Response("x".repeat(256_001), { status: 200 }),
+    );
+    assert.equal(
+      (await provider.lookup(claim)).outcome,
+      "provider_invalid_response",
+    );
   });
 });
 

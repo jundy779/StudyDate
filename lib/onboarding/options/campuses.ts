@@ -39,6 +39,12 @@ export const SEED_CAMPUS_LABELS = [
   "Universitas Trisakti",
 ] as const;
 
+export const CAMPUS_PROVIDER_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  "Sekolah Tinggi Teknologi Terpadu Nurul Fikri": [
+    "STT Terpadu Nurul Fikri",
+  ],
+};
+
 /** @deprecated Prefer loadApprovedCampusOptions(); kept for tests/fallback. */
 export const CAMPUS_OPTIONS = createOnboardingOptions(SEED_CAMPUS_LABELS);
 

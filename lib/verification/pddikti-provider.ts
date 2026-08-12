@@ -35,6 +35,8 @@ function unavailable(latencyMs: number): AcademicLookupResult {
     candidateCount: 0,
     exactMatchFound: false,
     schemaValid: false,
+    academicStatusPresent: false,
+    matchComponents: null,
     latencyMs,
   };
 }
@@ -83,6 +85,8 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
             candidateCount: 0,
             exactMatchFound: false,
             schemaValid: false,
+            academicStatusPresent: false,
+            matchComponents: null,
             latencyMs: Date.now() - startedAt,
           };
         }
@@ -111,6 +115,8 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
             candidateCount: 0,
             exactMatchFound: false,
             schemaValid: false,
+            academicStatusPresent: false,
+            matchComponents: null,
             latencyMs: Date.now() - startedAt,
           };
         }
@@ -121,6 +127,8 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
             candidateCount: 0,
             exactMatchFound: false,
             schemaValid: false,
+            academicStatusPresent: false,
+            matchComponents: null,
             latencyMs: Date.now() - startedAt,
           };
         }

@@ -21,6 +21,8 @@ function countingProvider() {
         candidateCount: 0,
         exactMatchFound: false,
         schemaValid: true,
+        academicStatusPresent: false,
+        matchComponents: null,
         latencyMs: 1,
       };
     },
