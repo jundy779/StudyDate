@@ -12,6 +12,7 @@ import {
   isPddiktiProviderEnabled,
   PddiktiAcademicLookupProvider,
 } from "./pddikti-provider";
+import { runAcademicLookupProvider } from "./lookup-core";
 import type {
   AcademicLookupClaim,
   AcademicLookupOutcome,
@@ -33,8 +34,15 @@ export type AcademicLookupInput = AcademicLookupClaim & {
 };
 
 export class AcademicLookupServiceError extends Error {
+  public readonly category:
+    | "configuration"
+    | "authorization"
+    | "rate_limit"
+    | "duplicate"
+    | "database";
+
   constructor(
-    public readonly category:
+    category:
       | "configuration"
       | "authorization"
       | "rate_limit"
@@ -42,6 +50,7 @@ export class AcademicLookupServiceError extends Error {
       | "database",
   ) {
     super("Academic lookup could not be completed.");
+    this.category = category;
   }
 }
 
@@ -53,7 +62,6 @@ export async function lookupAcademicIdentity(
   userId: string,
   input: AcademicLookupInput,
   provider: AcademicLookupProvider = new PddiktiAcademicLookupProvider(),
-  options: { providerReady?: boolean } = {},
 ) {
   if (!(await isVerificationRequestAllowed(userId))) {
     throw new AcademicLookupServiceError("configuration");
@@ -65,19 +73,15 @@ export async function lookupAcademicIdentity(
     "is_eligible_verification_student",
     { p_user_id: userId },
   );
-  if (eligibleError || eligible !== true) {
+  const outcome = await runAcademicLookupProvider(input, provider, {
+    eligible: !eligibleError && eligible === true,
+    providerReady: isPddiktiProviderEnabled(),
+  });
+  if (outcome === null) {
     throw new AcademicLookupServiceError("authorization");
   }
-  if (input.providerConsent !== "true") {
-    throw new AcademicLookupServiceError("authorization");
-  }
-  if (!(options.providerReady ?? isPddiktiProviderEnabled())) {
-    return safeOutcome("provider_unavailable");
-  }
-
-  const result = await provider.lookup(input);
-  if (result.outcome !== "academic_match") {
-    return safeOutcome(result.outcome);
+  if (outcome !== "academic_match") {
+    return safeOutcome(outcome);
   }
 
   const normalizedNim = normalizeNim(input.nim);
@@ -94,7 +98,7 @@ export async function lookupAcademicIdentity(
     .eq("academic_claim_fingerprint", academicClaimFingerprint)
     .maybeSingle<{ id: string }>();
   if (reusable) {
-    return { outcome: result.outcome, requestId: reusable.id };
+    return { outcome, requestId: reusable.id };
   }
 
   const encryptedNim = encryptVerificationValue(normalizedNim);
@@ -123,5 +127,5 @@ export async function lookupAcademicIdentity(
       error.code === "23505" ? "duplicate" : "database",
     );
   }
-  return { outcome: result.outcome, requestId };
+  return { outcome, requestId };
 }

@@ -9,6 +9,7 @@ const migration = read(
 const lookupRoute = read("../app/api/verification/academic-lookup/route.ts");
 const submitRoute = read("../app/api/verification/submit/route.ts");
 const lookupService = read("../lib/verification/lookup-service.ts");
+const lookupCore = read("../lib/verification/lookup-core.ts");
 const verificationService = read("../lib/verification/service.ts");
 const emailSender = read("../lib/verification/email-sender.ts");
 const studentStatus = read("../lib/verification/status.ts");
@@ -76,7 +77,7 @@ test("verification precheck is service-only and checks only current student elig
   );
 });
 
-test("consent, provider flag, and eligibility all gate the mocked provider path", () => {
+test("source ordering keeps consent, provider flag, and eligibility before provider lookup", () => {
   assert.match(lookupRoute, /academicLookupSchema\.safeParse\(payload\)/);
   assert.match(
     lookupRoute,
@@ -84,7 +85,11 @@ test("consent, provider flag, and eligibility all gate the mocked provider path"
   );
   assert.match(
     lookupService,
-    /is_eligible_verification_student[\s\S]*input\.providerConsent !== "true"[\s\S]*isPddiktiProviderEnabled\(\)[\s\S]*provider\.lookup\(input\)/,
+    /is_eligible_verification_student[\s\S]*runAcademicLookupProvider/,
+  );
+  assert.match(
+    lookupCore,
+    /gate\.eligible[\s\S]*input\.providerConsent !== "true"[\s\S]*gate\.providerReady[\s\S]*provider\.lookup\(input\)/,
   );
   assert.doesNotMatch(lookupRoute, /payload\.(?:userId|user_id)/);
 });
@@ -210,8 +215,9 @@ test("all trusted verification transitions serialize against the target privacy 
 test("mid-provider deletion or deactivation rejects persistence without changing ownership or badge", () => {
   assert.match(
     lookupService,
-    /provider\.lookup\(input\)[\s\S]*create_pddikti_academic_match_request/,
+    /runAcademicLookupProvider\(input, provider[\s\S]*create_pddikti_academic_match_request/,
   );
+  assert.match(lookupCore, /provider\.lookup\(input\)/);
   const lock = migration.slice(
     migration.indexOf("lock_eligible_verification_student"),
     migration.indexOf("create_pddikti_academic_match_request"),
