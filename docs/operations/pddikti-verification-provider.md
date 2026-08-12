@@ -3,9 +3,9 @@
 ## Status
 
 Migration database `202608110003` sudah **DEPLOYED** dan live-verified dengan
-akun sintetis. Student Verification tetap dinonaktifkan secara global,
-provider tetap disabled, controlled rollout belum dimulai, dan real provider
-smoke belum dijalankan.
+akun sintetis. Student Verification tetap dinonaktifkan secara global dan
+provider tetap disabled sampai credential yang terekspos dirotasi serta
+controlled production audit lulus.
 
 Provider berperan sebagai layanan pihak ketiga yang membantu academic match.
 Provider bukan database authoritative StudyDate, bukan bukti kepemilikan
@@ -52,7 +52,7 @@ menjadi academic rejection.
 
 ## Timeout, retry, dan rate limit
 
-- Timeout: 5 detik per attempt.
+- Timeout: 25 detik per attempt; route lookup memiliki `maxDuration` 30 detik.
 - Maksimal dua attempt; retry hanya untuk gangguan network, timeout, HTTP 429,
   atau HTTP 5xx.
 - Response dibatasi 256 KB dan maksimal 50 candidate.
@@ -101,9 +101,9 @@ matching yang sama, dan lulus test provider/security existing.
 Automated test tidak melakukan network nyata. Setelah persetujuan Owner, operator
 dapat menjalankan:
 
-```text
-npm run pddikti-provider:smoke -- <Owner-approved-query> [expected-nim]
-```
+Script menerima claim Owner-approved sebagai JSON privat melalui stdin dan
+menjalankan production adapter langsung. Jangan menyimpan claim dalam file
+tracked atau shell history.
 
 Script hanya mencetak status, latency, candidate count, exact-match status, dan
 schema validity. Script tidak mencetak key, request URL, candidate payload,

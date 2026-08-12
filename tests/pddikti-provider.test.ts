@@ -190,6 +190,7 @@ test("adapter contract handles exact match, malformed responses, status classes,
   assert.match(providerSource, /provider_invalid_response/);
   assert.match(providerSource, /response\.status === 429 \|\| response\.status >= 500/);
   assert.match(providerSource, /MAX_ATTEMPTS = 2/);
+  assert.match(providerSource, /TIMEOUT_MS = 25_000/);
   assert.match(providerSource, /AbortSignal\.timeout\(TIMEOUT_MS\)/);
   assert.match(providerSource, /externalSignal\?\.aborted/);
 });
@@ -317,6 +318,6 @@ test("stream timeout is unavailable rather than invalid schema", async () => {
       return new Response(stream, { status: 200 });
     });
     assert.equal((await timedOut.lookup(claim)).outcome, "provider_unavailable");
-    assert.equal(calls, 2);
+    assert.equal(calls, 1);
   });
 });

@@ -9,6 +9,8 @@ import { NextResponse, type NextRequest } from "next/server";
 const MAX_BYTES = 2_048;
 const GENERIC_ERROR = "Data akademik belum dapat diperiksa. Coba lagi.";
 
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (

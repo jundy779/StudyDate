@@ -7,7 +7,7 @@ import {
 } from "./provider-core.ts";
 import { TextDecoder } from "node:util";
 
-const TIMEOUT_MS = 5_000;
+const TIMEOUT_MS = 25_000;
 const MAX_ATTEMPTS = 2;
 const MAX_RESPONSE_BYTES = 256_000;
 
@@ -143,10 +143,13 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
           latencyMs: Date.now() - startedAt,
         };
       } catch (error) {
-        if (externalSignal?.aborted || attempt === MAX_ATTEMPTS) {
+        const timedOut =
+          error instanceof Error &&
+          (error.name === "TimeoutError" || error.name === "AbortError");
+        if (externalSignal?.aborted || timedOut || attempt === MAX_ATTEMPTS) {
           return unavailable(Date.now() - startedAt);
         }
-        if (!(error instanceof TypeError || (error instanceof Error && error.name === "TimeoutError"))) {
+        if (!(error instanceof TypeError)) {
           return unavailable(Date.now() - startedAt);
         }
       }

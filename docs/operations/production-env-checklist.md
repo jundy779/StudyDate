@@ -10,7 +10,7 @@ Do not commit secret values. Fill hosting env (Vercel/etc.) and keep `.env.local
 | `CONTACT_REVEAL_ENCRYPTION_KEY` (+ backup) | Required | Same key (backed up offline) |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3010` | `https://YOUR_DOMAIN` |
 | StudyDate email (`STUDYDATE_*`) | Required to test login mail | Required |
-| `STUDENT_VERIFICATION_ENABLED` | `false` | Keep `false` for limited rollout |
+| `STUDENT_VERIFICATION_ENABLED` | `false` | Enable only after controlled audit |
 
 ## Required production variables
 
@@ -33,9 +33,38 @@ STUDYDATE_SMTP_USER=
 STUDYDATE_SMTP_PASSWORD=
 
 STUDENT_VERIFICATION_ENABLED=false
+STUDENT_VERIFICATION_ENCRYPTION_KEY=
+STUDENT_VERIFICATION_HMAC_KEY=
+STUDENT_VERIFICATION_EMAIL_WEBHOOK_URL=
+STUDENT_VERIFICATION_EMAIL_WEBHOOK_TOKEN=
+STUDENT_VERIFICATION_REVIEWER_USER_ID=
+STUDENT_VERIFICATION_CLEANUP_SECRET=
+STUDENT_VERIFICATION_CLEANUP_SCHEDULED=false
+PDDIKTI_LOOKUP_PROVIDER_ENABLED=false
+PDDIKTI_PROVIDER_BASE_URL=
+PDDIKTI_PROVIDER_ACCESS_KEY=
 ```
 
 Verification crypto keys may remain set even while Verification stays disabled.
+
+## Student Verification production gate
+
+1. Rotate any provider access key that has appeared in chat, logs, screenshots,
+   or shell history.
+2. Configure all verification variables above in Production; use
+   `STUDENT_VERIFICATION_TEST_USER_IDS` only for the controlled audit.
+3. Configure the private evidence-cleanup scheduler, then set
+   `STUDENT_VERIFICATION_CLEANUP_SCHEDULED=true`.
+4. Confirm the dedicated reviewer remains active and has the server-managed
+   `verification_reviewer` metadata/role.
+5. Keep both public flags false while running the controlled end-to-end audit:
+   lookup, manual fallback, ownership proof, staff review, badge transition,
+   evidence access, cleanup, rate limits, and rollback.
+6. After the audit passes, remove controlled test IDs, enable
+   `PDDIKTI_LOOKUP_PROVIDER_ENABLED=true`, then enable
+   `STUDENT_VERIFICATION_ENABLED=true` and redeploy.
+7. Rollback immediately by setting both flags false. Existing requests remain
+   private and reviewable; no new student request is accepted.
 
 ## Supabase Dashboard (production)
 
