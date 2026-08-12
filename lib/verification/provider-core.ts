@@ -85,6 +85,42 @@ const responseSchema = z
   })
   .passthrough();
 
+export type ProviderStructureSummary = {
+  rootObject: boolean;
+  statusTrue: boolean;
+  resultObject: boolean;
+  listArray: boolean;
+  detailsArray: boolean;
+  listCount: number;
+  validListCandidateCount: number;
+};
+
+export function summarizeProviderStructure(
+  payload: unknown,
+): ProviderStructureSummary {
+  const root =
+    payload && typeof payload === "object" && !Array.isArray(payload)
+      ? (payload as Record<string, unknown>)
+      : null;
+  const result =
+    root?.result && typeof root.result === "object" && !Array.isArray(root.result)
+      ? (root.result as Record<string, unknown>)
+      : null;
+  const list = Array.isArray(result?.list) ? result.list : [];
+  return {
+    rootObject: Boolean(root),
+    statusTrue: root?.status === true,
+    resultObject: Boolean(result),
+    listArray: Array.isArray(result?.list),
+    detailsArray: Array.isArray(result?.details),
+    listCount: Math.min(list.length, 50),
+    validListCandidateCount: list
+      .slice(0, 50)
+      .filter((candidate) => listCandidateSchema.safeParse(candidate).success)
+      .length,
+  };
+}
+
 export function normalizeAcademicText(value: string) {
   return value.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("id-ID");
 }

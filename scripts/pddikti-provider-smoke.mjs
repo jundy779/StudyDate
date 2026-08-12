@@ -26,7 +26,14 @@ if (!endpoint || !accessKey) {
     provider_retry_used: false,
     provider_error_class: "network",
     academic_status_field_present: false,
-    academic_status_policy_decision_required: true,
+    academic_status_policy: "staff_review",
+    structure_root_object: false,
+    structure_status_true: false,
+    structure_result_object: false,
+    structure_list_array: false,
+    structure_details_array: false,
+    structure_list_count: 0,
+    structure_valid_candidate_count: 0,
   };
   let attempts = 0;
   let status = 0;
@@ -58,25 +65,37 @@ if (!endpoint || !accessKey) {
       normalizeProgramForMatch(` ${claim.studyProgram} `) ===
         normalizeProgramForMatch(claim.studyProgram);
     process.env.PDDIKTI_LOOKUP_PROVIDER_ENABLED = "true";
-    const provider = new PddiktiAcademicLookupProvider(async (input, init) => {
-      attempts += 1;
-      try {
-        const response = await fetch(input, init);
-        status = response.status;
-        metrics.provider_reachable = true;
-        metrics.http_success = response.ok;
-        metrics.response_within_limit =
-          Number(response.headers.get("content-length") ?? "0") <= 256_000;
-        return response;
-      } catch (error) {
-        transportError =
-          error instanceof Error &&
-          (error.name === "TimeoutError" || error.name === "AbortError")
-            ? "timeout"
-            : "network";
-        throw error;
-      }
-    });
+    const provider = new PddiktiAcademicLookupProvider(
+      async (input, init) => {
+        attempts += 1;
+        try {
+          const response = await fetch(input, init);
+          status = response.status;
+          metrics.provider_reachable = true;
+          metrics.http_success = response.ok;
+          metrics.response_within_limit =
+            Number(response.headers.get("content-length") ?? "0") <= 256_000;
+          return response;
+        } catch (error) {
+          transportError =
+            error instanceof Error &&
+            (error.name === "TimeoutError" || error.name === "AbortError")
+              ? "timeout"
+              : "network";
+          throw error;
+        }
+      },
+      (summary) => {
+        metrics.structure_root_object = summary.rootObject;
+        metrics.structure_status_true = summary.statusTrue;
+        metrics.structure_result_object = summary.resultObject;
+        metrics.structure_list_array = summary.listArray;
+        metrics.structure_details_array = summary.detailsArray;
+        metrics.structure_list_count = summary.listCount;
+        metrics.structure_valid_candidate_count =
+          summary.validListCandidateCount;
+      },
+    );
     const result = await provider.lookup(claim);
     metrics.latency_ms = Math.round(result.latencyMs);
     metrics.schema_valid = result.schemaValid;

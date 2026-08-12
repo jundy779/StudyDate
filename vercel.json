@@ -4,6 +4,10 @@
     {
       "path": "/api/internal/telegram/delivery",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/internal/verification/cleanup",
+      "schedule": "0 3 * * *"
     }
   ]
 }

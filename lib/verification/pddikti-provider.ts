@@ -1,9 +1,11 @@
 import {
   matchAcademicClaim,
   parseProviderCandidates,
+  summarizeProviderStructure,
   type AcademicLookupClaim,
   type AcademicLookupProvider,
   type AcademicLookupResult,
+  type ProviderStructureSummary,
 } from "./provider-core.ts";
 import { TextDecoder } from "node:util";
 
@@ -43,9 +45,14 @@ function unavailable(latencyMs: number): AcademicLookupResult {
 
 export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
   private readonly fetcher: typeof fetch;
+  private readonly onStructure?: (summary: ProviderStructureSummary) => void;
 
-  constructor(fetcher: typeof fetch = fetch) {
+  constructor(
+    fetcher: typeof fetch = fetch,
+    onStructure?: (summary: ProviderStructureSummary) => void,
+  ) {
     this.fetcher = fetcher;
+    this.onStructure = onStructure;
   }
 
   async lookup(
@@ -106,6 +113,7 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
           }
           body += decoder.decode();
           payload = JSON.parse(body);
+          this.onStructure?.(summarizeProviderStructure(payload));
         } catch (error) {
           if (
             error instanceof Error &&

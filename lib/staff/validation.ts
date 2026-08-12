@@ -45,3 +45,7 @@ export const manualAcademicReviewSchema = z
     decision: z.enum(["approve", "reject", "needs_action"]),
   })
   .strict();
+
+export const verificationInvalidationSchema = z
+  .object({ requestId: z.string().uuid() })
+  .strict();

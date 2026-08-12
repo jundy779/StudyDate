@@ -51,14 +51,20 @@ type LookupOutcome =
   | "provider_invalid_response";
 
 export function VerificationForm({
+  capabilities,
   matchedRequestId,
 }: {
+  capabilities: {
+    manualCard: boolean;
+    manualEmail: boolean;
+    provider: boolean;
+  };
   matchedRequestId?: string;
 }) {
   const [step, setStep] = useState(matchedRequestId ? 1 : 0);
   const [academic, setAcademic] = useState(initialAcademicData);
   const [method, setMethod] = useState<"campus_email" | "student_card">(
-    "campus_email",
+    capabilities.manualEmail ? "campus_email" : "student_card",
   );
   const [campusEmail, setCampusEmail] = useState("");
   const [studentCardEvidence, setStudentCardEvidence] = useState<File | null>(
@@ -74,7 +80,7 @@ export function VerificationForm({
   const [lookupOutcome, setLookupOutcome] = useState<LookupOutcome>(
     matchedRequestId ? "academic_match" : "idle",
   );
-  const [manualFlow, setManualFlow] = useState(false);
+  const [manualFlow, setManualFlow] = useState(!capabilities.provider);
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"info" | "error">("info");
@@ -85,7 +91,7 @@ export function VerificationForm({
     setAcademic((current) => ({ ...current, [field]: value }));
     setLookupOutcome("idle");
     setRequestId("");
-    setManualFlow(false);
+    setManualFlow(!capabilities.provider);
     setMessage("");
     setMessageTone("info");
   }
@@ -313,7 +319,7 @@ export function VerificationForm({
       }
       setIsComplete(true);
       setMessage(
-        "Email kampus terkonfirmasi. Pemeriksaan data akademik tetap dilakukan secara manual.",
+        "Email kampus terkonfirmasi. Reviewer akan memberi keputusan akhir setelah memeriksa seluruh bukti.",
       );
     } catch {
       setMessage("Kode belum dapat dikonfirmasi. Coba lagi.");
@@ -337,8 +343,8 @@ export function VerificationForm({
           Permintaan sedang diperiksa
         </h2>
         <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
-          {message} Status akan berubah hanya setelah pemeriksaan akademik dan
-          bukti kepemilikan sama-sama selesai.
+          {message} Badge hanya diterbitkan setelah data akademik dan bukti
+          kepemilikan selesai diperiksa oleh reviewer.
         </p>
       </section>
     );
@@ -528,6 +534,7 @@ export function VerificationForm({
               </select>
             </label>
           </div>
+          {capabilities.provider ? (
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
@@ -551,6 +558,13 @@ export function VerificationForm({
               </button>
             ) : null}
           </div>
+          ) : (
+            <p className="mt-7 rounded-xl border border-brand-border bg-brand-surface p-4 text-sm leading-6 text-brand-muted">
+              Pemeriksaan otomatis belum tersedia untuk pilot ini. Unggah
+              screenshot PDDIKTI agar reviewer memeriksa data akademikmu.
+            </p>
+          )}
+          {capabilities.provider ? (
           <label className="mt-5 flex cursor-pointer items-start gap-3">
             <input
               type="checkbox"
@@ -564,6 +578,7 @@ export function VerificationForm({
               pencocokan verifikasi ini.
             </span>
           </label>
+          ) : null}
           <p
             className={`mt-4 text-sm leading-6 ${
               messageTone === "error" ? "text-brand-error" : "text-brand-muted"
@@ -662,8 +677,12 @@ export function VerificationForm({
           </p>
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
             {[
-              ["campus_email", "Email kampus", "Kode ke domain kampus yang telah disetujui."],
-              ["student_card", "Kartu mahasiswa", "Foto diperiksa manual dan disimpan privat."],
+              ...(capabilities.manualEmail
+                ? [["campus_email", "Email kampus", "Kode ke domain kampus yang telah disetujui."]]
+                : []),
+              ...(capabilities.manualCard
+                ? [["student_card", "Kartu mahasiswa", "Foto diperiksa manual dan disimpan privat."]]
+                : []),
             ].map(([value, title, description]) => (
               <label key={value} className="flex cursor-pointer gap-3 rounded-xl border border-brand-border p-4">
                 <input type="radio" name="method" value={value} checked={method === value} onChange={() => setMethod(value as typeof method)} className="mt-1 accent-brand-blue" />

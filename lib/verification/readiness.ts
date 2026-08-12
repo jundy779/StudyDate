@@ -89,6 +89,38 @@ async function inspectReviewerConfiguration() {
   }
 }
 
+async function inspectCleanupHealth() {
+  const admin = createServerAdminClient();
+  if (!admin) return false;
+  try {
+    const { data, error } = await admin
+      .from("student_verification_cleanup_health")
+      .select("last_succeeded_at,last_status,last_failed_count,last_remaining_count")
+      .eq("singleton", true)
+      .maybeSingle<{
+        last_succeeded_at: string | null;
+        last_status: string;
+        last_failed_count: number;
+        last_remaining_count: number;
+      }>();
+    if (
+      error ||
+      !data?.last_succeeded_at ||
+      data.last_status !== "succeeded" ||
+      data.last_failed_count !== 0 ||
+      data.last_remaining_count !== 0
+    ) {
+      return false;
+    }
+    return (
+      Date.now() - new Date(data.last_succeeded_at).getTime() <=
+      36 * 60 * 60 * 1_000
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function getVerificationReadiness(): Promise<VerificationReadiness> {
   const encryptionConfigured = isVerificationKeyConfigured(
     "STUDENT_VERIFICATION_ENCRYPTION_KEY",
@@ -100,14 +132,23 @@ export async function getVerificationReadiness(): Promise<VerificationReadiness>
   const cleanupConfigured = Boolean(
     process.env.STUDENT_VERIFICATION_CLEANUP_SECRET &&
       process.env.STUDENT_VERIFICATION_CLEANUP_SECRET.length >= 32 &&
+      process.env.CRON_SECRET &&
+      process.env.CRON_SECRET.length >= 32 &&
       process.env.STUDENT_VERIFICATION_CLEANUP_SCHEDULED === "true",
   );
   const enabled = process.env.STUDENT_VERIFICATION_ENABLED === "true";
   const controlledTestUserIds = getControlledTestUserIds();
-  const [evidenceStorageConfigured, reviewerConfigured] = await Promise.all([
-    inspectEvidenceStorage(),
-    inspectReviewerConfiguration(),
-  ]);
+  const [evidenceStorageConfigured, cleanupHealthy, reviewerConfigured] =
+    await Promise.all([
+      inspectEvidenceStorage(),
+      inspectCleanupHealth(),
+      inspectReviewerConfiguration(),
+    ]);
+  const providerConfigured = Boolean(
+    process.env.PDDIKTI_LOOKUP_PROVIDER_ENABLED === "true" &&
+      process.env.PDDIKTI_PROVIDER_ACCESS_KEY &&
+      process.env.PDDIKTI_PROVIDER_BASE_URL?.startsWith("https://"),
+  );
 
   return buildVerificationReadiness({
     enabled,
@@ -117,7 +158,9 @@ export async function getVerificationReadiness(): Promise<VerificationReadiness>
     emailDeliveryConfigured,
     evidenceStorageConfigured,
     cleanupConfigured,
+    cleanupHealthy,
     reviewerConfigured,
+    providerConfigured,
     controlledTestUsersConfigured: controlledTestUserIds.size > 0,
   });
 }
@@ -133,18 +176,23 @@ export async function isVerificationRequestAllowed(userId: string) {
 
   const readiness = await getVerificationReadiness();
   if (readiness.enabled) {
-    return (
-      readiness.encryptionConfigured &&
-      readiness.hmacConfigured &&
-      readiness.keysSeparated &&
-      readiness.emailDeliveryConfigured &&
-      readiness.evidenceStorageConfigured &&
-      readiness.cleanupConfigured &&
-      readiness.reviewerConfigured
-    );
+    return readiness.manualCardReady;
   }
   return (
     readiness.readyForControlledTesting &&
     controlledTestUserIds.has(userId)
   );
+}
+
+export async function getVerificationCapabilities(userId: string) {
+  const allowed = await isVerificationRequestAllowed(userId);
+  if (!allowed) {
+    return { manualCard: false, manualEmail: false, provider: false };
+  }
+  const readiness = await getVerificationReadiness();
+  return {
+    manualCard: readiness.manualCardReady,
+    manualEmail: readiness.manualEmailReady,
+    provider: readiness.providerReady,
+  };
 }

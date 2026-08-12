@@ -3,10 +3,12 @@
 import { requireVerificationReviewer } from "@/lib/staff/authorization";
 import {
   finalizeStaffVerificationReview,
+  invalidateStudentVerification,
   reviewManualAcademicMatch,
 } from "@/lib/staff/service";
 import {
   manualAcademicReviewSchema,
+  verificationInvalidationSchema,
   verificationReviewSchema,
 } from "@/lib/staff/validation";
 import { revalidatePath } from "next/cache";
@@ -45,4 +47,19 @@ export async function submitManualAcademicReview(formData: FormData) {
   }
   revalidatePath("/admin/verifications");
   redirect("/admin/verifications?state=saved");
+}
+
+export async function invalidateVerification(formData: FormData) {
+  await requireVerificationReviewer();
+  const parsed = verificationInvalidationSchema.safeParse({
+    requestId: formData.get("requestId"),
+  });
+  if (!parsed.success) redirect("/admin/verifications?state=invalid");
+  try {
+    await invalidateStudentVerification(parsed.data.requestId);
+  } catch {
+    redirect(`/admin/verifications/${parsed.data.requestId}?state=error`);
+  }
+  revalidatePath("/admin/verifications");
+  redirect("/admin/verifications?state=invalidated");
 }

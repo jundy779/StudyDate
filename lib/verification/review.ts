@@ -127,7 +127,7 @@ export class StudentVerificationReviewService {
         "id, campus_claim, study_program_claim, degree_level_claim, semester_claim, nim_ciphertext, nim_iv, nim_auth_tag, legal_name_ciphertext, legal_name_iv, legal_name_auth_tag",
       )
       .eq("id", requestId)
-      .in("status", ["pending", "under_review", "needs_action"])
+      .in("status", ["pending", "under_review", "needs_action", "verified"])
       .maybeSingle();
     if (error || !data) throw new Error("Verification claim is unavailable.");
 
@@ -154,6 +154,10 @@ export class StudentVerificationReviewService {
 export async function deleteExpiredVerificationEvidence(nowIso: string) {
   const admin = createServerAdminClient();
   if (!admin) throw new Error("Evidence deletion is unavailable.");
+  const { error: expiryError } = await admin.rpc(
+    "expire_overdue_student_verification_requests",
+  );
+  if (expiryError) throw new Error("Evidence deletion is unavailable.");
   const { data, error } = await admin
     .from("student_verification_requests")
     .select(
@@ -166,6 +170,8 @@ export async function deleteExpiredVerificationEvidence(nowIso: string) {
     .limit(100);
   if (error) throw new Error("Evidence deletion is unavailable.");
 
+  let processedCount = 0;
+  let failedCount = 0;
   for (const request of data ?? []) {
     const dueStudentCard =
       request.evidence_path &&
@@ -184,7 +190,10 @@ export async function deleteExpiredVerificationEvidence(nowIso: string) {
     const { error: removalError } = await admin.storage
       .from(VERIFICATION_BUCKET)
       .remove(paths);
-    if (removalError) throw new Error("Evidence deletion is unavailable.");
+    if (removalError) {
+      failedCount += 1;
+      continue;
+    }
 
     const { error: recordError } = await admin.rpc(
       "record_student_verification_evidence_cleanup",
@@ -194,6 +203,42 @@ export async function deleteExpiredVerificationEvidence(nowIso: string) {
         p_pddikti_deleted: Boolean(duePddikti),
       },
     );
-    if (recordError) throw new Error("Evidence deletion is unavailable.");
+    if (recordError) {
+      failedCount += 1;
+      continue;
+    }
+    processedCount += 1;
   }
+  const { data: remainingCount, error: countError } = await admin.rpc(
+    "count_due_student_verification_evidence",
+    { p_now: nowIso },
+  );
+  if (countError) throw new Error("Evidence deletion is unavailable.");
+  return {
+    processedCount,
+    failedCount,
+    remainingCount: Number(remainingCount ?? 0),
+  };
+}
+
+export async function recordVerificationCleanupHealth(
+  status: "running" | "succeeded" | "failed",
+  counts: {
+    processedCount: number;
+    failedCount: number;
+    remainingCount: number;
+  },
+) {
+  const admin = createServerAdminClient();
+  if (!admin) throw new Error("Cleanup health is unavailable.");
+  const { error } = await admin.rpc(
+    "record_student_verification_cleanup_health",
+    {
+      p_status: status,
+      p_processed_count: counts.processedCount,
+      p_failed_count: counts.failedCount,
+      p_remaining_count: counts.remainingCount,
+    },
+  );
+  if (error) throw new Error("Cleanup health is unavailable.");
 }

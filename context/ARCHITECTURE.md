@@ -166,12 +166,14 @@ PDDIKTI lookup v1 menambahkan `AcademicLookupProvider` dan adapter pihak ketiga
 server-only yang dapat diganti. Adapter menerima current-user claim saja,
 memeriksa seluruh candidate, dan auto-match hanya pada NIM + nama legal +
 kampus + program exact setelah normalisasi. Response mentah dan candidate lain
-tidak melewati server boundary. Timeout 5 detik/attempt, maksimal dua attempt,
-response 256 KB, serta rate limit durable 3/jam dan 6/hari per akun.
+tidak melewati server boundary. Timeout provider 25 detik, satu attempt per
+lookup, route budget 40 detik, response 256 KB, serta rate limit durable 3/jam
+dan 6/hari per akun.
 
 Provider match membuat request `academic_pending` dengan ownership
 `not_checked`, tidak membuat badge. Request yang sama kemudian dilengkapi
-ownership email kampus atau kartu mahasiswa. Manual fallback memakai screenshot
+ownership email kampus atau kartu mahasiswa. Konfirmasi email hanya menyelesaikan
+ownership; badge selalu difinalisasi reviewer aktif. Manual fallback memakai screenshot
 PDDIKTI private/re-encoded sebagai academic supporting evidence dan reviewer
 hanya menyetujui academic match. Badge tetap diturunkan atomik setelah academic
 dan ownership sama-sama approved. Migration `202608110003` sudah deployed dan
@@ -179,8 +181,10 @@ live-verified dengan akun sintetis; kedua feature flag tetap default OFF,
 controlled rollout belum dimulai, dan provider nyata belum diuji.
 
 Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewer = true`, domain kampus berstatus
-`approved`, delivery webhook email server-to-server, dan job terjadwal yang memanggil evidence cleanup service. Tidak
-ada public admin route atau dashboard pada fase ini.
+`approved`, delivery webhook email server-to-server, dan Vercel Cron evidence
+cleanup dengan heartbeat sukses dalam 36 jam. Readiness dipisah menjadi manual
+kartu, email kampus, dan provider. Tidak ada public admin route atau dashboard
+pada fase ini.
 
 ## 11. People Discovery v1 architecture
 

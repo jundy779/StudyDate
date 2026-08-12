@@ -30,12 +30,34 @@ const cleanupMigration = readFileSync(
   ),
   "utf8",
 );
+const pilotMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202608120001_harden_student_verification_pilot.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const service = readFileSync(
   new URL("../lib/verification/service.ts", import.meta.url),
   "utf8",
 );
 const review = readFileSync(
   new URL("../lib/verification/review.ts", import.meta.url),
+  "utf8",
+);
+const cleanupRoute = readFileSync(
+  new URL(
+    "../app/api/internal/verification/cleanup/route.ts",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const vercelConfig = readFileSync(
+  new URL("../vercel.json", import.meta.url),
+  "utf8",
+);
+const verificationPage = readFileSync(
+  new URL("../app/app/verification/page.tsx", import.meta.url),
   "utf8",
 );
 const routes = [
@@ -260,6 +282,61 @@ test("student-card evidence is private, limited, and scheduled for deletion", ()
   assert.match(review, /deleteExpiredVerificationEvidence/);
   assert.match(review, /app_metadata\?\.verification_reviewer !== true/);
   assert.doesNotMatch(service, /\/public/);
+});
+
+test("verification cleanup is scheduled and protected for Vercel Cron", () => {
+  assert.match(vercelConfig, /\/api\/internal\/verification\/cleanup/);
+  assert.match(vercelConfig, /"schedule": "0 3 \* \* \*"/);
+  assert.match(cleanupRoute, /export const GET = cleanup/);
+  assert.match(cleanupRoute, /process\.env\.CRON_SECRET/);
+  assert.match(cleanupRoute, /authorization/);
+  assert.match(cleanupRoute, /timingSafeEqual/);
+});
+
+test("verified requests are terminal in the student UI", () => {
+  assert.match(
+    verificationPage,
+    /\["cancelled", "expired", "rejected", "verified"\]/,
+  );
+  assert.match(verificationPage, /request\?\.status === "verified" \? null/);
+});
+
+test("pilot requires staff finalization after campus email ownership", () => {
+  const confirmation = pilotMigration.slice(
+    pilotMigration.indexOf("public.confirm_student_campus_email_code"),
+    pilotMigration.indexOf("public.cancel_student_verification_request"),
+  );
+  assert.match(confirmation, /ownership_status = 'campus_email_verified'/);
+  assert.match(confirmation, /status = 'under_review'/);
+  assert.match(confirmation, /verification_status = 'pending'/);
+  assert.match(confirmation, /return 'ownership_verified'/);
+  assert.doesNotMatch(confirmation, /verification_status = 'verified'/);
+  const finalization = pilotMigration.slice(
+    pilotMigration.indexOf("public.finalize_staff_verification_review"),
+    pilotMigration.indexOf("public.cancel_student_verification_request"),
+  );
+  assert.match(
+    finalization,
+    /request\.status in \('pending', 'under_review', 'needs_action'\)/,
+  );
+  assert.match(
+    finalization,
+    /target\.method = 'campus_email'[\s\S]*p_ownership_status <> target\.ownership_status/,
+  );
+  assert.match(finalization, /combined verification required/);
+});
+
+test("pilot has bounded expiry, revocation, and cleanup health controls", () => {
+  assert.match(pilotMigration, /expire_overdue_student_verification_requests/);
+  assert.match(pilotMigration, /invalidate_student_verification/);
+  assert.match(pilotMigration, /verification_invalidated/);
+  assert.match(pilotMigration, /student_verification_cleanup_health/);
+  assert.match(pilotMigration, /record_student_verification_cleanup_health/);
+  assert.match(pilotMigration, /auth\.role\(\) <> 'service_role'/);
+  assert.match(
+    pilotMigration,
+    /revoke all on function public\.invalidate_student_verification/,
+  );
 });
 
 test("verification evidence is decoded and re-encoded before private upload", () => {

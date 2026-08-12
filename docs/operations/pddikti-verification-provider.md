@@ -76,9 +76,9 @@ browser normal.
 ## Verification rule
 
 `academic_match = approved` + `ownership_proof = approved` diperlukan untuk
-badge. Provider match atau approval screenshot saja tidak dapat membuat profile
-verified. Ownership tetap memakai email kampus approved atau review kartu
-mahasiswa existing.
+badge, lalu reviewer aktif memberi persetujuan akhir. Provider match, approval
+screenshot, atau konfirmasi email saja tidak dapat membuat profile verified.
+Status akademik provider hanya metadata untuk reviewer dan bukan auto-reject.
 
 ## Retensi, deletion, dan disable
 
@@ -105,7 +105,7 @@ Script menerima claim Owner-approved sebagai JSON privat melalui stdin dan
 menjalankan production adapter langsung. Jangan menyimpan claim dalam file
 tracked atau shell history.
 
-Script hanya mencetak status, latency, candidate count, exact-match status, dan
-schema validity. Script tidak mencetak key, request URL, candidate payload,
-nama, atau NIM. Jangan menjalankan smoke tanpa query sintetis atau yang disetujui
-Owner.
+Script hanya mencetak status, latency, candidate count, exact-match status,
+schema validity, serta ringkasan struktur berupa boolean/count. Script tidak
+mencetak key, request URL, nama field vendor, candidate payload, nama, atau NIM.
+Jangan menjalankan smoke tanpa query sintetis atau yang disetujui Owner.

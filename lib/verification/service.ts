@@ -20,7 +20,10 @@ import {
   type CampusVerificationEmailSender,
 } from "./email-sender";
 import { normalizeNim } from "./validation";
-import { isVerificationRequestAllowed } from "./readiness";
+import {
+  getVerificationCapabilities,
+  isVerificationRequestAllowed,
+} from "./readiness";
 
 export type SubmissionInput = {
   method: "campus_email" | "student_card";
@@ -69,6 +72,14 @@ export async function submitVerificationRequest(
   pddiktiEvidence: File | null,
 ) {
   if (!(await isVerificationRequestAllowed(userId))) {
+    throw new VerificationServiceError("configuration");
+  }
+  const capabilities = await getVerificationCapabilities(userId);
+  if (
+    (input.method === "campus_email" && !capabilities.manualEmail) ||
+    (input.method === "student_card" && !capabilities.manualCard) ||
+    (input.flow === "academic_matched" && !capabilities.provider)
+  ) {
     throw new VerificationServiceError("configuration");
   }
   const admin = createServerAdminClient();
@@ -310,7 +321,7 @@ export async function confirmCampusEmailCode(
       p_max_attempts: MAX_CODE_ATTEMPTS,
     },
   );
-  if (error || data !== "verified") {
+  if (error || data !== "ownership_verified") {
     throw new VerificationServiceError("challenge");
   }
 }

@@ -37,14 +37,14 @@ test("provider is not called when eligibility, consent, or provider gate fails",
     { gate: { eligible: true, providerReady: true }, consent: false },
   ]) {
     const counter = countingProvider();
-    const outcome = await runAcademicLookupProvider(
+    const result = await runAcademicLookupProvider(
       scenario.consent === false
         ? { ...input, providerConsent: "false" as "true" }
         : input,
       counter.provider,
       scenario.gate,
     );
-    assert.ok(outcome === null || outcome === "provider_unavailable");
+    assert.ok(result === null || result.outcome === "provider_unavailable");
     assert.equal(counter.calls(), 0);
   }
 });
@@ -56,6 +56,6 @@ test("eligible consented controlled lookup reaches only the mocked provider", as
     counter.provider,
     { eligible: true, providerReady: true },
   );
-  assert.equal(result, "not_found");
+  assert.equal(result?.outcome, "not_found");
   assert.equal(counter.calls(), 1);
 });

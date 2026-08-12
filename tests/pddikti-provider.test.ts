@@ -7,6 +7,7 @@ import {
   normalizeCampusForMatch,
   normalizeProviderNim,
   parseProviderCandidates,
+  summarizeProviderStructure,
 } from "../lib/verification/provider-core.ts";
 import { PddiktiAcademicLookupProvider } from "../lib/verification/pddikti-provider.ts";
 const claim = {
@@ -33,6 +34,24 @@ const wrapped = (
     list,
     ...(details === undefined ? {} : { details }),
   },
+});
+
+test("structural diagnostic reports types and counts without candidate values", () => {
+  const summary = summarizeProviderStructure(wrapped([exact]));
+  assert.deepEqual(summary, {
+    rootObject: true,
+    statusTrue: true,
+    resultObject: true,
+    listArray: true,
+    detailsArray: true,
+    listCount: 1,
+    validListCandidateCount: 1,
+  });
+  const serialized = JSON.stringify(summary);
+  for (const secret of Object.values(claim)) {
+    assert.doesNotMatch(serialized, new RegExp(secret.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+  }
+  assert.doesNotMatch(serialized, /nama|nim|nama_pt|nama_prodi/i);
 });
 
 test("normalization preserves NIM leading zeroes and normalizes Unicode spacing", () => {

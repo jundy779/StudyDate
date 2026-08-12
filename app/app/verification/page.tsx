@@ -1,11 +1,15 @@
 import { VerificationForm } from "@/components/verification/verification-form";
+import { cancelVerificationRequest } from "./actions";
 import { AppShell } from "@/components/app/app-shell";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   VERIFICATION_STATUS_LABELS,
 } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
-import { isVerificationRequestAllowed } from "@/lib/verification/readiness";
+import {
+  getVerificationCapabilities,
+  isVerificationRequestAllowed,
+} from "@/lib/verification/readiness";
 import { ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -15,15 +19,18 @@ async function VerificationContent() {
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
-  const verificationAllowed = await isVerificationRequestAllowed(user.id);
-  const request = await getLatestVerificationStatus(user.id);
+  const [verificationAllowed, capabilities, request] = await Promise.all([
+    isVerificationRequestAllowed(user.id),
+    getVerificationCapabilities(user.id),
+    getLatestVerificationStatus(user.id),
+  ]);
   const awaitingOwnership =
     request?.method === "academic_pending" &&
     request.pddikti_match_status === "matched";
   const active =
     request &&
     !awaitingOwnership &&
-    !["cancelled", "expired", "rejected"].includes(request.status);
+    !["cancelled", "expired", "rejected", "verified"].includes(request.status);
 
   return (
     <AppShell current="verification">
@@ -69,12 +76,22 @@ async function VerificationContent() {
             </p>
           </section>
         ) : active ? (
-          <p className="rounded-[20px] border border-brand-border bg-white p-6 leading-7 text-brand-muted">
-            Permintaan aktif sedang diproses. Jika diperlukan tindakan
-            tambahan, status akan diperbarui tanpa membuka data sensitifmu.
-          </p>
-        ) : (
+          <section className="rounded-[20px] border border-brand-border bg-white p-6">
+            <p className="leading-7 text-brand-muted">
+              {request.status === "needs_action"
+                ? "Reviewer meminta perbaikan bukti. Batalkan permintaan ini untuk mengirim pengajuan baru."
+                : "Permintaan aktif sedang diproses. Status akan diperbarui tanpa membuka data sensitifmu."}
+            </p>
+            <form action={cancelVerificationRequest} className="mt-5">
+              <input type="hidden" name="requestId" value={request.id} />
+              <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy">
+                Batalkan permintaan
+              </button>
+            </form>
+          </section>
+        ) : request?.status === "verified" ? null : (
           <VerificationForm
+            capabilities={capabilities}
             matchedRequestId={awaitingOwnership ? request.id : undefined}
           />
         )}

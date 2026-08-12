@@ -1,7 +1,7 @@
 import type {
   AcademicLookupClaim,
-  AcademicLookupOutcome,
   AcademicLookupProvider,
+  AcademicLookupResult,
 } from "./provider-core.ts";
 
 type ProviderLookupInput = AcademicLookupClaim & {
@@ -13,8 +13,16 @@ export async function runAcademicLookupProvider(
   provider: AcademicLookupProvider,
   gate: { eligible: boolean; providerReady: boolean },
   signal?: AbortSignal,
-): Promise<AcademicLookupOutcome | null> {
+): Promise<AcademicLookupResult | null> {
   if (!gate.eligible || input.providerConsent !== "true") return null;
-  if (!gate.providerReady) return "provider_unavailable";
-  return (await provider.lookup(input, signal)).outcome;
+  if (!gate.providerReady) return {
+    outcome: "provider_unavailable",
+    candidateCount: 0,
+    exactMatchFound: false,
+    schemaValid: false,
+    academicStatusPresent: false,
+    matchComponents: null,
+    latencyMs: 0,
+  };
+  return provider.lookup(input, signal);
 }

@@ -14,7 +14,9 @@ export default function VerificationAuditPage() {
           PDDIKTI lookup dan fallback manual
         </h1>
         <div className="mt-8 max-w-3xl">
-          <VerificationForm />
+          <VerificationForm
+            capabilities={{ manualCard: true, manualEmail: true, provider: true }}
+          />
         </div>
       </div>
     </main>

@@ -53,7 +53,9 @@ Verification crypto keys may remain set even while Verification stays disabled.
    or shell history.
 2. Configure all verification variables above in Production; use
    `STUDENT_VERIFICATION_TEST_USER_IDS` only for the controlled audit.
-3. Configure the private evidence-cleanup scheduler, then set
+3. Deploy the daily Vercel Cron for `/api/internal/verification/cleanup`,
+   configure `CRON_SECRET`, verify one successful heartbeat with zero failed and
+   remaining work, then set
    `STUDENT_VERIFICATION_CLEANUP_SCHEDULED=true`.
 4. Confirm the dedicated reviewer remains active and has the server-managed
    `verification_reviewer` metadata/role.

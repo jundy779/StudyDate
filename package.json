@@ -9,6 +9,7 @@
     "check": "npm run lint && npm run typecheck && npm run build",
     "test:auth": "node --experimental-strip-types --test tests/auth-onboarding.test.ts tests/migration-security.test.ts tests/studydate-email.test.ts tests/campus-options.test.ts tests/study-program-options.test.ts tests/profile-edit.test.ts tests/account-lifecycle.test.ts",
     "test:verification": "node --experimental-strip-types --test tests/verification.test.ts tests/verification-readiness.test.ts",
+    "test:verification:live": "node --env-file=.env.local scripts/live-student-verification-audit.mjs",
     "test:pddikti": "node --experimental-strip-types --test tests/pddikti-provider.test.ts tests/pddikti-lookup-service.test.ts tests/pddikti-verification-security.test.ts tests/verification-evidence.test.ts",
     "test:pddikti:browser": "node scripts/pddikti-verification-responsive-audit.mjs",
     "test:people": "node --experimental-strip-types --test tests/people-discovery.test.ts",

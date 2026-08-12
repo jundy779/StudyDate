@@ -18,8 +18,12 @@ import type {
   AcademicLookupOutcome,
   AcademicLookupProvider,
 } from "./provider-core";
-import { isVerificationRequestAllowed } from "./readiness";
+import {
+  getVerificationCapabilities,
+  isVerificationRequestAllowed,
+} from "./readiness";
 import { normalizeNim } from "./validation";
+import { recordProviderMetric } from "./telemetry";
 
 export type AcademicLookupInput = AcademicLookupClaim & {
   providerConsent: "true";
@@ -67,6 +71,10 @@ export async function lookupAcademicIdentity(
   if (!(await isVerificationRequestAllowed(userId))) {
     throw new AcademicLookupServiceError("configuration");
   }
+  const capabilities = await getVerificationCapabilities(userId);
+  if (!capabilities.provider) {
+    throw new AcademicLookupServiceError("configuration");
+  }
   const admin = createServerAdminClient();
   if (!admin) throw new AcademicLookupServiceError("configuration");
 
@@ -95,13 +103,15 @@ export async function lookupAcademicIdentity(
     return { outcome: "academic_match" as const, requestId: reusable.id };
   }
 
-  const outcome = await runAcademicLookupProvider(input, provider, {
+  const result = await runAcademicLookupProvider(input, provider, {
     eligible: !eligibleError && eligible === true,
-    providerReady: isPddiktiProviderEnabled(),
+    providerReady: capabilities.provider && isPddiktiProviderEnabled(),
   }, signal);
-  if (outcome === null) {
+  if (result === null) {
     throw new AcademicLookupServiceError("authorization");
   }
+  await recordProviderMetric(result);
+  const { outcome } = result;
   if (outcome !== "academic_match") {
     return safeOutcome(outcome);
   }

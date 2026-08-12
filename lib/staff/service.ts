@@ -96,3 +96,11 @@ export async function reviewManualAcademicMatch(input: {
   });
   if (error) throw new Error("Review akademik belum dapat disimpan.");
 }
+
+export async function invalidateStudentVerification(requestId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("invalidate_student_verification", {
+    p_request_id: requestId,
+  });
+  if (error) throw new Error("Verifikasi belum dapat dibatalkan.");
+}

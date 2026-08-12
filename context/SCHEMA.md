@@ -68,6 +68,9 @@ Sumber migration:
     provider-assisted academic match, manual fallback, minimal provider
     metadata, ownership completion, dan reviewer academic-only action;
     **DEPLOYED / LIVE-VERIFIED WITH SYNTHETIC DATA**
+28. `supabase/migrations/202608120001_harden_student_verification_pilot.sql` —
+    staff-finalized badge, cancellation/expiry/invalidation, cleanup heartbeat,
+    dan aggregate provider telemetry tanpa identifier; **LOCAL / NOT DEPLOYED**
 
 ### `early_access_waitlist`
 

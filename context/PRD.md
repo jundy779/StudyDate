@@ -137,7 +137,8 @@ UI tidak boleh menampilkan data palsu untuk fitur tersebut.
 
 Badge mahasiswa hanya diberikan bila dua syarat terpenuhi:
 1. data akademik cocok melalui pemeriksaan manual PDDikti;
-2. kepemilikan akun dibuktikan melalui email kampus yang domainnya disetujui atau review kartu mahasiswa.
+2. kepemilikan akun dibuktikan melalui email kampus yang domainnya disetujui atau review kartu mahasiswa;
+3. reviewer aktif memberi persetujuan akhir sebelum badge diterbitkan.
 
 Status UI: Belum terverifikasi, Sedang diperiksa, Perlu tindakan, Terverifikasi, Data belum dapat diverifikasi, dan
 Kedaluwarsa. Verifikasi bersifat opsional dan tidak menjamin perilaku atau keamanan pengguna.
@@ -149,7 +150,9 @@ Lookup pihak ketiga v1 hanya membantu academic match dan tidak menjadi sumber
 profil. Auto-match membutuhkan NIM, nama legal, kampus, dan program exact setelah
 normalisasi. `not_found`, mismatch, timeout, dan provider unavailable dapat
 masuk manual fallback tanpa membuka candidate lain. Seluruh alur masih terbatas
-pada controlled test allowlist selama flag global OFF.
+pada controlled test allowlist selama flag global OFF. Status akademik yang
+dikembalikan provider hanya menjadi metadata untuk reviewer, bukan keputusan
+otomatis.
 
 ## 7. Onboarding
 
