@@ -22,6 +22,7 @@ export const SEED_STUDY_PROGRAM_LABELS = [
   "Kimia",
   "Manajemen",
   "Matematika",
+  "Pendidikan Agama Islam",
   "Pendidikan Bahasa Inggris",
   "Pendidikan Guru Sekolah Dasar",
   "Perencanaan Wilayah dan Kota",
