@@ -48,32 +48,6 @@ test("normalization preserves NIM leading zeroes and normalizes Unicode spacing"
   );
 });
 
-test("approved campus catalog aliases match deterministically without fuzzy matching", () => {
-  const parsed = parseProviderCandidates(
-    wrapped([
-      {
-        ...exact,
-        nama_pt: "Sekolah Tinggi Teknologi Terpadu Nurul Fikri",
-      },
-    ]),
-  );
-  const aliasClaim = {
-    ...claim,
-    campus: "STT Terpadu Nurul Fikri",
-  };
-  assert.equal(
-    matchAcademicClaim(aliasClaim, parsed.candidates).exactMatchFound,
-    true,
-  );
-  assert.equal(
-    matchAcademicClaim(
-      { ...aliasClaim, campus: "STT Nurul Fikri Lain" },
-      parsed.candidates,
-    ).exactMatchFound,
-    false,
-  );
-});
-
 test("real wrapper accepts empty/list-only results and exact candidate not first", () => {
   const empty = parseProviderCandidates(wrapped([]));
   assert.deepEqual(empty, { valid: true, candidates: [] });

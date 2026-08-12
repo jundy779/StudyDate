@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { CAMPUS_PROVIDER_ALIASES } from "../onboarding/options/campuses.ts";
 
 export type AcademicLookupOutcome =
   | "academic_match"
@@ -107,21 +106,8 @@ export function normalizeCampusForMatch(value: string) {
   return normalizeAcademicLabel(value);
 }
 
-function campusLabels(value: string) {
-  const normalized = normalizeCampusForMatch(value);
-  const catalogEntry = Object.entries(CAMPUS_PROVIDER_ALIASES).find(
-    ([label, aliases]) =>
-      normalizeCampusForMatch(label) === normalized ||
-      aliases.some((alias) => normalizeCampusForMatch(alias) === normalized),
-  );
-  return (catalogEntry ? [catalogEntry[0], ...catalogEntry[1]] : [value]).map(
-    normalizeCampusForMatch,
-  );
-}
-
 function campusesMatch(left: string, right: string) {
-  const rightLabels = new Set(campusLabels(right));
-  return campusLabels(left).some((label) => rightLabels.has(label));
+  return normalizeCampusForMatch(left) === normalizeCampusForMatch(right);
 }
 
 export function normalizeProgramForMatch(value: string) {
