@@ -234,10 +234,7 @@ test("adapter executes exact matching without projecting candidate data", async 
     assert.equal(result.candidateCount, 2);
     assert.equal("candidates" in result, false);
     assert.equal("academicStatus" in result, false);
-    assert.equal(
-      new URL(requestedUrl).searchParams.get("query"),
-      claim.legalName.trim(),
-    );
+    assert.equal(new URL(requestedUrl).searchParams.get("query"), claim.nim.trim());
   });
 });
 

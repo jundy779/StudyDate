@@ -62,7 +62,7 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
       try {
         const url = endpoint();
         url.searchParams.set("aksesKey", accessKey);
-        url.searchParams.set("query", claim.legalName.trim());
+        url.searchParams.set("query", claim.nim.trim());
         const response = await this.fetcher(url, {
           method: "GET",
           headers: { accept: "application/json" },
