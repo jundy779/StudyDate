@@ -2,8 +2,10 @@
 
 ## Status
 
-Implementasi ini **LOCAL-ONLY**. Student Verification tetap dinonaktifkan
-secara global dan migration belum diterapkan ke remote.
+Migration database `202608110003` sudah **DEPLOYED** dan live-verified dengan
+akun sintetis. Student Verification tetap dinonaktifkan secara global,
+provider tetap disabled, controlled rollout belum dimulai, dan real provider
+smoke belum dijalankan.
 
 Provider berperan sebagai layanan pihak ketiga yang membantu academic match.
 Provider bukan database authoritative StudyDate, bukan bukti kepemilikan

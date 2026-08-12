@@ -60,14 +60,14 @@ Sumber migration:
 25. `supabase/migrations/202608110001_create_telegram_anonymous_chat_companion_v1.sql` —
     private two-step Telegram binding, one-conversation relay, update dedupe,
     shared Anonymous Chat ingress, durable delivery outbox, dan deletion
-    integration; **LOCAL-ONLY / NOT APPLIED**
+    integration; **DEPLOYED**
 26. `supabase/migrations/202608110002_fix_telegram_delivery_claim_ambiguity.sql` —
     forward-only qualification fix untuk worker claim Telegram yang sudah deployed;
-    **LOCAL-ONLY / NOT APPLIED**
+    **DEPLOYED**
 27. `supabase/migrations/202608110003_extend_student_verification_pddikti_lookup_v1.sql` —
     provider-assisted academic match, manual fallback, minimal provider
     metadata, ownership completion, dan reviewer academic-only action;
-    **LOCAL-ONLY / NOT APPLIED**
+    **DEPLOYED / LIVE-VERIFIED WITH SYNTHETIC DATA**
 
 ### `early_access_waitlist`
 

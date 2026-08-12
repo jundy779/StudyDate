@@ -174,8 +174,9 @@ Provider match membuat request `academic_pending` dengan ownership
 ownership email kampus atau kartu mahasiswa. Manual fallback memakai screenshot
 PDDIKTI private/re-encoded sebagai academic supporting evidence dan reviewer
 hanya menyetujui academic match. Badge tetap diturunkan atomik setelah academic
-dan ownership sama-sama approved. Migration `202608110003` LOCAL-ONLY dan kedua
-feature flag default OFF.
+dan ownership sama-sama approved. Migration `202608110003` sudah deployed dan
+live-verified dengan akun sintetis; kedua feature flag tetap default OFF,
+controlled rollout belum dimulai, dan provider nyata belum diuji.
 
 Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewer = true`, domain kampus berstatus
 `approved`, delivery webhook email server-to-server, dan job terjadwal yang memanggil evidence cleanup service. Tidak

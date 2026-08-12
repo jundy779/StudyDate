@@ -94,14 +94,15 @@ Diimplementasikan pada code dan migration repository saat ini:
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
   status nyata, dan workflow review manual;
 - fondasi manual PDDikti review tanpa scraping atau klaim integrasi API resmi.
-- PDDIKTI Academic Lookup + Manual Verification Fallback v1 **LOCAL-ONLY**:
+- PDDIKTI Academic Lookup + Manual Verification Fallback v1 **DATABASE DEPLOYED**:
   adapter pihak ketiga server-only dan replaceable untuk membantu academic
   match exact, dengan fallback screenshot privat. Provider match maupun
   screenshot approval tidak menggantikan ownership proof; Student Verification
-  tetap globally disabled dan migration belum diterapkan remote.
+  tetap globally disabled, provider tetap disabled, dan controlled rollout belum
+  dimulai.
 
-Live Supabase verification tetap merupakan gate terpisah dan tidak boleh dianggap lulus hanya karena implementasi
-lokal ada.
+Migration database telah live-verified dengan akun sintetis tanpa memanggil
+provider nyata. Status ini tidak berarti Student Verification sudah live.
 
 ### Staff authorization
 

@@ -86,12 +86,13 @@ Implemented:
   encrypted routing, update dedupe, durable outbox, and a protected Vercel Cron
   delivery runner. Migration `202608110001` is not applied; production secrets
   and webhook are not configured.
-- PDDIKTI Academic Lookup + Manual Verification Fallback v1 is implemented
-  **LOCAL-ONLY** behind both `STUDENT_VERIFICATION_ENABLED=false` and
+- PDDIKTI Academic Lookup + Manual Verification Fallback v1 database migration
+  is **DEPLOYED** behind both `STUDENT_VERIFICATION_ENABLED=false` and
   `PDDIKTI_LOOKUP_PROVIDER_ENABLED=false`. It adds a replaceable server-only
   provider adapter, exact academic matching, private/re-encoded screenshot
-  fallback, and academic-only reviewer actions. Migration `202608110003` is not
-  applied and automated tests do not call the real provider.
+  fallback, and academic-only reviewer actions. Migration `202608110003` is
+  synchronized with the StudyDate project; controlled rollout has not started
+  and automated/live audits did not call the real provider.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
 - Server-side sign-out
 
