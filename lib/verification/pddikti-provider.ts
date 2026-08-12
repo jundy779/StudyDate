@@ -31,6 +31,15 @@ function endpoint() {
   return url;
 }
 
+function providerHeaders(url: URL) {
+  return {
+    accept: "application/json",
+    origin: url.origin,
+    referer: `${url.origin}/`,
+    "user-agent": "Mozilla/5.0",
+  };
+}
+
 function unavailable(latencyMs: number): AcademicLookupResult {
   return {
     outcome: "provider_unavailable",
@@ -72,7 +81,7 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
         url.searchParams.set("query", claim.nim.trim());
         const response = await this.fetcher(url, {
           method: "GET",
-          headers: { accept: "application/json" },
+          headers: providerHeaders(url),
           cache: "no-store",
           signal: externalSignal
             ? AbortSignal.any([externalSignal, AbortSignal.timeout(TIMEOUT_MS)])

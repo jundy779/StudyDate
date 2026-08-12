@@ -243,8 +243,10 @@ function jsonResponse(payload: unknown, status = 200) {
 test("adapter executes exact matching without projecting candidate data", async () => {
   await withProviderEnv(async () => {
     let requestedUrl = "";
-    const provider = new PddiktiAcademicLookupProvider(async (input) => {
+    let requestedHeaders = new Headers();
+    const provider = new PddiktiAcademicLookupProvider(async (input, init) => {
       requestedUrl = String(input);
+      requestedHeaders = new Headers(init?.headers);
       return jsonResponse(wrapped([{ ...exact, nim: "99999999" }, exact]));
     });
     const result = await provider.lookup(claim);
@@ -254,6 +256,8 @@ test("adapter executes exact matching without projecting candidate data", async 
     assert.equal("candidates" in result, false);
     assert.equal("academicStatus" in result, false);
     assert.equal(new URL(requestedUrl).searchParams.get("query"), claim.nim.trim());
+    assert.equal(requestedHeaders.get("origin"), "https://provider.invalid");
+    assert.equal(requestedHeaders.get("referer"), "https://provider.invalid/");
   });
 });
 
