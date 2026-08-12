@@ -234,7 +234,10 @@ test("adapter executes exact matching without projecting candidate data", async 
     assert.equal(result.candidateCount, 2);
     assert.equal("candidates" in result, false);
     assert.equal("academicStatus" in result, false);
-    assert.equal(new URL(requestedUrl).searchParams.get("query"), claim.nim.trim());
+    assert.equal(
+      new URL(requestedUrl).searchParams.get("query"),
+      claim.legalName.trim(),
+    );
   });
 });
 
@@ -301,5 +304,22 @@ test("adapter handles 4xx, retryable 5xx, invalid JSON, and abort", async () => 
       (await aborted.lookup(claim, controller.signal)).outcome,
       "provider_unavailable",
     );
+  });
+});
+
+test("stream timeout is unavailable rather than invalid schema", async () => {
+  await withProviderEnv(async () => {
+    let calls = 0;
+    const timedOut = new PddiktiAcademicLookupProvider(async () => {
+      calls += 1;
+      const stream = new ReadableStream({
+        pull(controller) {
+          controller.error(new DOMException("Timed out", "TimeoutError"));
+        },
+      });
+      return new Response(stream, { status: 200 });
+    });
+    assert.equal((await timedOut.lookup(claim)).outcome, "provider_unavailable");
+    assert.equal(calls, 2);
   });
 });

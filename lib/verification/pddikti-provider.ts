@@ -62,7 +62,7 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
       try {
         const url = endpoint();
         url.searchParams.set("aksesKey", accessKey);
-        url.searchParams.set("query", claim.nim.trim());
+        url.searchParams.set("query", claim.legalName.trim());
         const response = await this.fetcher(url, {
           method: "GET",
           headers: { accept: "application/json" },
@@ -109,7 +109,13 @@ export class PddiktiAcademicLookupProvider implements AcademicLookupProvider {
           }
           body += decoder.decode();
           payload = JSON.parse(body);
-        } catch {
+        } catch (error) {
+          if (
+            error instanceof Error &&
+            (error.name === "AbortError" || error.name === "TimeoutError")
+          ) {
+            throw error;
+          }
           return {
             outcome: "provider_invalid_response",
             candidateCount: 0,
