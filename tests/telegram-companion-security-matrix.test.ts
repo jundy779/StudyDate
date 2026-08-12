@@ -139,7 +139,7 @@ const deliveryChecks: [string, () => void][] = [
   ["never rolls back StudyDate message on network failure", () => assert.doesNotMatch(functionBody("queue_telegram_delivery"), /api\.telegram\.org|sendMessage/)],
   ["suppresses rich link previews", () => assert.match(worker + botApi, /link_preview_options: \{ is_disabled: true \}/)],
   ["uses a protected production scheduler endpoint", () => {
-    assert.match(vercelConfig, /\/api\/internal\/telegram\/delivery/);
+    assert.doesNotMatch(vercelConfig, /\/api\/internal\/telegram\/delivery/);
     assert.match(runnerRoute, /process\.env\.CRON_SECRET/);
     assert.match(runnerRoute, /authorization/);
     assert.match(runnerRoute, /timingSafeEqual/);

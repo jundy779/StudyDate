@@ -111,10 +111,10 @@ The database trigger only writes a durable outbox reference after the
 StudyDate message commits. It does not perform network I/O and does not roll
 back the StudyDate message on Telegram failure.
 
-Production uses the protected runner:
+The protected runner remains available for an external worker:
 
 ```text
-Vercel Cron (once per minute)
+External scheduler (once per minute)
   -> GET /api/internal/telegram/delivery
   -> Authorization: Bearer <CRON_SECRET>
   -> bounded batch of 25 claims
@@ -126,8 +126,10 @@ sends “Pesan baru” plus text with link preview disabled, and completes or
 retries. Retry is bounded to five attempts with 15-second–1-hour backoff;
 official 429 `retry_after` is honored. Failure categories are sanitized.
 
-`CRON_SECRET` is server-only, at least 32 random characters, and configured in
-the production Vercel project before enabling Telegram. Unauthorized requests
+The Vercel Hobby deployment does not schedule this runner because sub-daily Cron
+requires Pro. Telegram must remain OFF until an approved external scheduler or
+plan upgrade is configured. `CRON_SECRET` is server-only, at least 32 random
+characters, and configured before enabling Telegram. Unauthorized requests
 receive a generic not-found response. The endpoint returns only aggregate
 counts and never returns an outbox ID, lease token, route, message body, Bot
 token, or raw error. `npm run telegram-outbox:process -- --limit=25` remains an

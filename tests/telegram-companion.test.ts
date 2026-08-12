@@ -281,8 +281,7 @@ test("forward fix preserves the delivery claim contract with qualified reference
 });
 
 test("protected scheduled runner claims one bounded batch without exposing secrets", () => {
-  assert.match(vercelConfig, /"path": "\/api\/internal\/telegram\/delivery"/);
-  assert.match(vercelConfig, /"schedule": "\* \* \* \* \*"/);
+  assert.doesNotMatch(vercelConfig, /\/api\/internal\/telegram\/delivery/);
   assert.match(runnerRoute, /export async function GET/);
   assert.match(runnerRoute, /process\.env\.CRON_SECRET/);
   assert.match(runnerRoute, /authorization/);

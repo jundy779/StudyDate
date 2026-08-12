@@ -554,10 +554,11 @@ Privacy lock mencabut relay/session langsung; final profile cleanup menghapus
 semua data routing Telegram.
 
 `TELEGRAM_COMPANION_ENABLED` hanya aktif saat exact `true` dan default OFF.
-Delivery runner produksi adalah Vercel Cron sekali per menit menuju endpoint
-server-only `/api/internal/telegram/delivery`, diautentikasi bearer
-`CRON_SECRET`, dan memproses batch maksimal 25 claim memakai lease/retry
-database existing. Endpoint hanya mengembalikan aggregate counts tersanitasi.
+Delivery runner server-only `/api/internal/telegram/delivery` diautentikasi
+bearer `CRON_SECRET` dan memproses batch maksimal 25 claim memakai lease/retry
+database existing. Vercel Hobby tidak menjadwalkannya karena sub-daily Cron
+memerlukan Pro; Telegram tetap OFF sampai scheduler eksternal disetujui atau
+plan di-upgrade. Endpoint hanya mengembalikan aggregate counts tersanitasi.
 BotFather, webhook production, dan real Bot API test belum dilakukan.
 
 ## 16. Logging
