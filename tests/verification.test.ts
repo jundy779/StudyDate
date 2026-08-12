@@ -425,10 +425,12 @@ test("verification code, email, NIM, legal name, URLs, and tokens are never logg
   }
 });
 
-test("campus email delivery has a bounded server-side timeout", () => {
+test("campus email delivery uses the StudyDate branded transport", () => {
   const sender = readFileSync(
     new URL("../lib/verification/email-sender.ts", import.meta.url),
     "utf8",
   );
-  assert.match(sender, /AbortSignal\.timeout\(10_000\)/);
+  assert.match(sender, /sendStudyDateEmail/);
+  assert.match(sender, /isStudyDateEmailConfigured/);
+  assert.doesNotMatch(sender, /STUDENT_VERIFICATION_EMAIL_WEBHOOK/);
 });

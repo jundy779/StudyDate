@@ -55,7 +55,7 @@ Server-only:
 - `PDDIKTI_PROVIDER_ACCESS_KEY`
 - `CONTACT_REVEAL_ENCRYPTION_KEY` (AES-256-GCM; see `docs/operations/contact-reveal-key-recovery.md`)
 - optional `CONTACT_REVEAL_KEY_VERSION` and `CONTACT_REVEAL_ENCRYPTION_KEY_V{n}` during rotation
-- optional campus-email delivery webhook URL dan token.
+- StudyDate-branded SMTP atau Resend untuk email verifikasi kampus.
 
 Jangan mengimpor service-role client ke Client Component.
 
@@ -181,7 +181,7 @@ live-verified dengan akun sintetis; kedua feature flag tetap default OFF,
 controlled rollout belum dimulai, dan provider nyata belum diuji.
 
 Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewer = true`, domain kampus berstatus
-`approved`, delivery webhook email server-to-server, dan Vercel Cron evidence
+`approved`, delivery email StudyDate SMTP/Resend, dan Vercel Cron evidence
 cleanup dengan heartbeat sukses dalam 36 jam. Readiness dipisah menjadi manual
 kartu, email kampus, dan provider. Tidak ada public admin route atau dashboard
 pada fase ini.

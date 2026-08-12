@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isStudyDateEmailConfigured } from "@/lib/email/mailer";
 import { createServerAdminClient } from "@/lib/supabase/admin";
 import {
   MAX_EVIDENCE_BYTES,
@@ -13,19 +14,6 @@ import { buildVerificationReadiness } from "./readiness-core";
 import type { VerificationReadiness } from "./readiness-core";
 
 export type { VerificationReadiness } from "./readiness-core";
-
-function hasValidWebhookConfiguration() {
-  const endpoint = process.env.STUDENT_VERIFICATION_EMAIL_WEBHOOK_URL;
-  const token = process.env.STUDENT_VERIFICATION_EMAIL_WEBHOOK_TOKEN;
-  if (!endpoint || !token) return false;
-
-  try {
-    const url = new URL(endpoint);
-    return url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -128,7 +116,7 @@ export async function getVerificationReadiness(): Promise<VerificationReadiness>
   const hmacConfigured = isVerificationKeyConfigured(
     "STUDENT_VERIFICATION_HMAC_KEY",
   );
-  const emailDeliveryConfigured = hasValidWebhookConfiguration();
+  const emailDeliveryConfigured = isStudyDateEmailConfigured();
   const cleanupConfigured = Boolean(
     process.env.STUDENT_VERIFICATION_CLEANUP_SECRET &&
       process.env.STUDENT_VERIFICATION_CLEANUP_SECRET.length >= 32 &&

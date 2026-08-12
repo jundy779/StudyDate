@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  isStudyDateEmailConfigured,
+  sendStudyDateEmail,
+} from "@/lib/email/mailer";
+
 export type CampusVerificationEmail = {
   recipient: string;
   code: string;
@@ -11,36 +16,22 @@ export interface CampusVerificationEmailSender {
   send(message: CampusVerificationEmail): Promise<void>;
 }
 
-class WebhookCampusVerificationEmailSender
-  implements CampusVerificationEmailSender
-{
+class StudyDateCampusVerificationEmailSender
+  implements CampusVerificationEmailSender {
   async send(message: CampusVerificationEmail) {
-    const endpoint = process.env.STUDENT_VERIFICATION_EMAIL_WEBHOOK_URL;
-    const token = process.env.STUDENT_VERIFICATION_EMAIL_WEBHOOK_TOKEN;
-    if (!endpoint || !token) {
+    if (!isStudyDateEmailConfigured()) {
       throw new Error("Campus verification email delivery is unavailable.");
     }
 
     await message.authorizeDelivery();
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        recipient: message.recipient,
-        code: message.code,
-        expiresInMinutes: message.expiresInMinutes,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
+    await sendStudyDateEmail({
+      to: message.recipient,
+      subject: "Kode verifikasi mahasiswa StudyDate ID",
+      text: `Kode verifikasi mahasiswa StudyDate ID: ${message.code}. Kode berlaku ${message.expiresInMinutes} menit. Abaikan email ini jika kamu tidak memintanya.`,
+      html: `<p>Kode verifikasi mahasiswa StudyDate ID:</p><p style="font-size:24px;font-weight:700;letter-spacing:0.2em">${message.code}</p><p>Kode berlaku ${message.expiresInMinutes} menit. Abaikan email ini jika kamu tidak memintanya.</p>`,
     });
-    if (!response.ok) {
-      throw new Error("Campus verification email delivery is unavailable.");
-    }
   }
 }
 
 export const campusVerificationEmailSender =
-  new WebhookCampusVerificationEmailSender();
+  new StudyDateCampusVerificationEmailSender();

@@ -273,7 +273,10 @@ test("campus email is reauthorized after challenge creation and before transport
     verificationService,
     /await sender\.send[\s\S]*authorizeDelivery[\s\S]*authorize_student_campus_email_delivery/,
   );
-  assert.match(emailSender, /await message\.authorizeDelivery\(\)[\s\S]*fetch\(/);
+  assert.match(
+    emailSender,
+    /await message\.authorizeDelivery\(\)[\s\S]*sendStudyDateEmail\(/,
+  );
   assert.doesNotMatch(emailSender, /JSON\.stringify\(message\)/);
   assert.match(
     migration,
