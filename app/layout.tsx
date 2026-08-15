@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
 import "./globals.css";
 
@@ -55,6 +56,7 @@ export default function RootLayout({
     <html lang="id">
       <body className={`${inter.variable} ${poppins.variable} antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
