@@ -1,6 +1,13 @@
 /** Stable production-relative public document routes (studydate.id). */
 export const PUBLIC_DOC_ROUTES = [
   {
+    path: "/insight",
+    label: "Insight",
+    title: "Insight Mahasiswa",
+    description:
+      "Panduan praktis tentang teman belajar, koneksi mahasiswa, privasi, dan pertemuan yang aman.",
+  },
+  {
     path: "/privacy",
     label: "Privasi",
     title: "Kebijakan Privasi",
@@ -43,6 +50,8 @@ export const PUBLIC_DOC_LAST_UPDATED_LABEL = "10 Agustus 2026";
 /** Intended production URLs for Search Console / OAuth readiness (documentation). */
 export const PRODUCTION_PUBLIC_URLS = [
   "https://studydate.id/",
+  "https://studydate.id/insight",
+  "https://studydate.id/insight/apa-itu-study-date",
   "https://studydate.id/privacy",
   "https://studydate.id/terms",
   "https://studydate.id/community-guidelines",

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
 import "./globals.css";
 
+const description =
+  "StudyDate ID adalah platform sosial privacy-first untuk mahasiswa Indonesia yang membantu mereka menemukan teman belajar, ngobrol, membangun networking, dan mengenal orang baru secara perlahan.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(getPublicSiteOrigin()),
+  applicationName: "StudyDate ID",
   title: {
-    default: "StudyDate ID — Temukan koneksi di kampus",
+    default: "StudyDate ID — Koneksi mahasiswa yang privacy-first",
     template: "%s",
   },
-  description:
-    "Temukan people, groups, dan campus events untuk belajar, berteman, networking, berkolaborasi, dan membangun koneksi yang berarti.",
-  alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
+  description,
   icons: {
     icon: "/brand/app-icon.png",
     apple: "/brand/app-icon.png",
@@ -22,15 +22,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: "StudyDate ID",
-    title: "StudyDate ID — Temukan koneksi di kampus",
-    description:
-      "Temukan people, groups, dan campus events untuk belajar, berteman, networking, berkolaborasi, dan membangun koneksi yang berarti.",
+    title: "StudyDate ID — Koneksi mahasiswa yang privacy-first",
+    description,
+    url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "StudyDate ID — Temukan koneksi di kampus",
-    description:
-      "Temukan people, groups, dan campus events untuk belajar, berteman, networking, berkolaborasi, dan membangun koneksi yang berarti.",
+    title: "StudyDate ID — Koneksi mahasiswa yang privacy-first",
+    description,
   },
 };
 
@@ -56,7 +55,6 @@ export default function RootLayout({
     <html lang="id">
       <body className={`${inter.variable} ${poppins.variable} antialiased`}>
         {children}
-        <Analytics />
       </body>
     </html>
   );

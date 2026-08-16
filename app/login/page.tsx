@@ -8,6 +8,7 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Masuk — StudyDate ID",
+  robots: { index: false, follow: false, nocache: true },
 };
 
 async function LoginContent() {

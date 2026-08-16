@@ -1,27 +1,43 @@
 import type { MetadataRoute } from "next";
-import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
+import { PRODUCTION_SITE_ORIGIN } from "../lib/marketing/site-origin";
 
 export default function robots(): MetadataRoute.Robots {
-  const origin = getPublicSiteOrigin();
+  const privatePaths = [
+    "/account",
+    "/account/",
+    "/admin",
+    "/admin/",
+    "/api",
+    "/api/",
+    "/app",
+    "/app/",
+    "/auth",
+    "/auth/",
+    "/login",
+    "/onboarding",
+    "/owner",
+    "/owner/",
+    "/protected",
+    "/staff",
+    "/staff/",
+    "/telegram-companion-audit",
+    "/verification-audit",
+  ];
 
   return {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/privacy", "/terms", "/community-guidelines", "/safety", "/help"],
-        disallow: [
-          "/app/",
-          "/onboarding",
-          "/owner/",
-          "/admin/",
-          "/api/",
-          "/auth/",
-          "/staff/",
-          "/protected",
-        ],
+        allow: "/",
+        disallow: privatePaths,
+      },
+      {
+        userAgent: ["Googlebot", "Bingbot", "OAI-SearchBot", "PerplexityBot"],
+        allow: "/",
+        disallow: privatePaths,
       },
     ],
-    sitemap: `${origin}/sitemap.xml`,
-    host: origin,
+    sitemap: `${PRODUCTION_SITE_ORIGIN}/sitemap.xml`,
+    host: PRODUCTION_SITE_ORIGIN,
   };
 }

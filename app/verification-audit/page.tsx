@@ -1,10 +1,11 @@
 import { VerificationForm } from "@/components/verification/verification-form";
+import { notFound } from "next/navigation";
 
 export const instant = false;
 
 export default function VerificationAuditPage() {
   if (process.env.NODE_ENV === "production") {
-    return null;
+    notFound();
   }
   return (
     <main className="min-h-svh overflow-x-clip bg-brand-surface">

@@ -227,7 +227,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate tidak memasang jaringan iklan pihak ketiga atau analitika pemasaran pihak ketiga pada halaman publik saat ini. Dialog Early Access dapat memancarkan peristiwa antarmuka lokal di peramban untuk memahami alur formulir. Server dapat mencatat log teknis terbatas (misalnya kesalahan, pembatasan laju, dan sinyal keamanan) untuk menjaga keandalan layanan—bukan untuk membuat profil iklan tentangmu.",
+        text: "StudyDate tidak memasang jaringan iklan pihak ketiga. Halaman publik memakai Vercel Web Analytics untuk metrik kunjungan agregat dan sumber rujukan tanpa mengirim NIM, identitas mahasiswa, isi percakapan, kontak, atau data verifikasi. Analitik tidak dipasang pada ruang aplikasi privat. Dialog Early Access dapat memancarkan peristiwa antarmuka lokal di peramban, dan server dapat mencatat log teknis terbatas untuk menjaga keandalan serta keamanan—bukan untuk membuat profil iklan tentangmu.",
       },
     ],
   },

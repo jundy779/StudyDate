@@ -1,5 +1,10 @@
 import { requireActiveStudentAppAccess } from "@/lib/account/guard";
+import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true },
+};
 
 async function ActiveStudentGate({ children }: { children: ReactNode }) {
   await requireActiveStudentAppAccess();

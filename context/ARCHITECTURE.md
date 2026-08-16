@@ -16,7 +16,9 @@ Browser
        -> Public UI: landing page + Early Access dialog
        -> Public docs: /privacy, /terms, /community-guidelines, /safety, /help
          (legacy /privasi, /ketentuan, /pedoman-komunitas, /bantuan, /keamanan redirect)
-       -> Public SEO: /sitemap.xml, /robots.txt
+       -> Public knowledge: /insight, /insight/[publishedSlug]
+       -> Public search discovery: /sitemap.xml, /robots.txt, canonical metadata,
+          public-only Web Analytics, dan JSON-LD Organization/WebSite/Article/Breadcrumb
        -> Public handler: /api/early-access
        -> Auth: /login, /staff/login, /auth/callback, /auth/confirm
        -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions,

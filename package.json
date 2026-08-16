@@ -27,6 +27,7 @@
     "test:telegram": "node --experimental-strip-types --test tests/telegram-companion.test.ts tests/telegram-companion-security-matrix.test.ts",
     "test:telegram:browser": "node scripts/telegram-companion-responsive-audit.mjs",
     "test:audit-closure": "node --experimental-strip-types --test tests/audit-closure.test.ts",
+    "test:search": "node --experimental-strip-types --test tests/search-ai-discovery.test.ts",
     "test:all": "node --experimental-strip-types --test tests/*.test.ts",
     "test:browser": "node tests/browser-audit.mjs",
     "test:account-privacy:browser": "node scripts/account-privacy-responsive-audit.mjs",

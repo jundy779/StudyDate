@@ -2,6 +2,32 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
+const noIndexPrefixes = [
+  "/account",
+  "/admin",
+  "/api",
+  "/app",
+  "/auth",
+  "/login",
+  "/onboarding",
+  "/owner",
+  "/protected",
+  "/staff",
+  "/telegram-companion-audit",
+  "/verification-audit",
+];
+
+function applyRobotsBoundary(response: NextResponse, pathname: string) {
+  if (
+    noIndexPrefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    )
+  ) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+  return response;
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -27,9 +53,9 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = isStaffRoute ? "/staff/login" : "/login";
       url.search = "";
-      return NextResponse.redirect(url);
+      return applyRobotsBoundary(NextResponse.redirect(url), pathname);
     }
-    return supabaseResponse;
+    return applyRobotsBoundary(supabaseResponse, pathname);
   }
 
   // With Fluid compute, don't put this client in a global environment
@@ -70,7 +96,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = isStaffRoute ? "/staff/login" : "/login";
     url.search = "";
-    return NextResponse.redirect(url);
+    return applyRobotsBoundary(NextResponse.redirect(url), pathname);
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
@@ -86,5 +112,5 @@ export async function updateSession(request: NextRequest) {
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
 
-  return supabaseResponse;
+  return applyRobotsBoundary(supabaseResponse, pathname);
 }

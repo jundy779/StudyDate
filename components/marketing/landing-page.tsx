@@ -26,6 +26,7 @@ const navigation = [
 ];
 
 const footerLinks = [
+  { label: "Insight", href: "/insight" },
   { label: "Privasi", href: "/privacy" },
   { label: "Ketentuan", href: "/terms" },
   { label: "Pedoman Komunitas", href: "/community-guidelines" },
@@ -842,8 +843,8 @@ function Footer() {
         <div>
           <BrandLogo />
           <p className="mt-4 max-w-sm text-sm leading-6 text-brand-muted">
-            Platform social-discovery mahasiswa untuk menemukan people, groups,
-            dan campus events.
+            Platform sosial privacy-first untuk mahasiswa Indonesia yang ingin
+            belajar, ngobrol, networking, dan mengenal orang baru perlahan.
           </p>
         </div>
         <div className="text-sm text-brand-muted sm:text-right">

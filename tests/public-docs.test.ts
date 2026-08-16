@@ -12,6 +12,7 @@ const root = process.cwd();
 test("public doc routes cover privacy terms community safety help", () => {
   const paths = PUBLIC_DOC_ROUTES.map((route) => route.path);
   assert.deepEqual(paths, [
+    "/insight",
     "/privacy",
     "/terms",
     "/community-guidelines",
@@ -71,6 +72,7 @@ test("sitemap and robots modules exist", () => {
   const sitemap = readFileSync(join(root, "app/sitemap.ts"), "utf8");
   const robots = readFileSync(join(root, "app/robots.ts"), "utf8");
   assert.match(sitemap, /PUBLIC_DOC_ROUTES/);
-  assert.match(robots, /\/privacy/);
-  assert.match(robots, /disallow:[\s\S]*\/app\//i);
+  assert.match(robots, /allow: "\/"/);
+  assert.match(robots, /"\/app\/"/i);
+  assert.match(robots, /disallow: privatePaths/i);
 });
