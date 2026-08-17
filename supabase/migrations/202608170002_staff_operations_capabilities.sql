@@ -120,6 +120,9 @@ $$;
 revoke all on function public.staff_has_ops_capability(text)
   from public, anon, authenticated;
 
+-- Return type expanded; CREATE OR REPLACE cannot change OUT columns on PostgreSQL.
+drop function if exists public.get_current_staff_membership();
+
 create or replace function public.get_current_staff_membership()
 returns table (
   role text,
@@ -365,6 +368,8 @@ revoke all on function public.manage_staff_member(uuid, text)
   from public, anon;
 grant execute on function public.manage_staff_member(uuid, text)
   to authenticated;
+
+drop function if exists public.list_staff_members();
 
 create or replace function public.list_staff_members()
 returns table (
