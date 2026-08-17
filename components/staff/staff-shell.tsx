@@ -1,5 +1,5 @@
 import { ResponsiveNavigation } from "@/components/navigation/responsive-navigation";
-import type { StaffRole } from "@/lib/staff/authorization";
+import type { StaffAccess, StaffRole } from "@/lib/staff/authorization";
 import type { ReactNode } from "react";
 
 type StaffShellProps = {
@@ -11,13 +11,24 @@ type StaffShellProps = {
     | "audit"
     | "moderation"
     | "campuses"
-    | "study-programs";
+    | "study-programs"
+    | "early-access"
+    | "users";
   role: StaffRole;
+  access?: Pick<
+    StaffAccess,
+    "canEarlyAccessRead" | "canUsersRead" | "canUsersSupport" | "verificationReviewer"
+  >;
 };
 
-export function StaffShell({ children, current, role }: StaffShellProps) {
+export function StaffShell({ children, current, role, access }: StaffShellProps) {
   return (
-    <ResponsiveNavigation variant="staff" current={current} role={role}>
+    <ResponsiveNavigation
+      variant="staff"
+      current={current}
+      role={role}
+      staffCapabilities={access}
+    >
       {children}
     </ResponsiveNavigation>
   );

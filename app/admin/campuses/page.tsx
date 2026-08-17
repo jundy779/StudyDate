@@ -35,7 +35,7 @@ async function AdminCampusesContent({ searchParams }: Props) {
   }
 
   return (
-    <StaffShell role={access.role} current="campuses">
+    <StaffShell role={access.role} current="campuses" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <CampusDirectory
           items={items}

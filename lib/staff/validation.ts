@@ -8,8 +8,33 @@ export const staffActionSchema = z.object({
     "reactivate_admin",
     "grant_reviewer",
     "remove_reviewer",
+    "grant_early_access",
+    "remove_early_access",
+    "grant_users_read",
+    "remove_users_read",
+    "grant_users_support",
+    "remove_users_support",
   ]),
 }).strict();
+
+export const staffEmailAssignSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(3)
+      .max(254)
+      .email("Masukkan alamat email yang valid."),
+    action: z.enum([
+      "grant_admin",
+      "grant_reviewer",
+      "grant_early_access",
+      "grant_users_read",
+      "grant_users_support",
+    ]),
+  })
+  .strict();
 
 export const verificationReviewSchema = z.object({
   requestId: z.string().uuid(),

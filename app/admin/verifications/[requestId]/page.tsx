@@ -31,7 +31,7 @@ async function VerificationReviewContent({ params, searchParams }: Props) {
   const request = queue.find((item) => item.request_id === parsedId.data);
   if (!claim || !request) notFound();
 
-  return <StaffShell role={access.role} current="verification"><main className="min-h-svh bg-brand-surface"><div className="page-shell py-10 sm:py-14">
+  return <StaffShell role={access.role} current="verification" access={access}><main className="min-h-svh bg-brand-surface"><div className="page-shell py-10 sm:py-14">
     <Link href="/admin/verifications" className="focus-ring inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue">← Kembali ke antrean</Link>
     <p className="section-label mt-5">{request.academic_match_source === "manual" ? "Manual academic review" : "Auto lookup match"} · …{parsedId.data.slice(-8)}</p><h1 className="mt-4 font-heading text-4xl font-semibold">Review claim akademik</h1>
     {query.state === "error" && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-brand-error">Keputusan belum dapat disimpan. Periksa kombinasi hasil review.</p>}

@@ -450,3 +450,6 @@ Prioritaskan onboarding completion, quality introductions, reply rate, conversat
 participation, event attendance, user-controlled reveal, low abuse, dan retention yang sehat.
 
 Jangan menampilkan angka target publik yang belum disetujui.
+
+
+- Authorized Staff Operations v1: Early Access waitlist ops, safe user account ops, staff assign by email + capability grants (Owner-managed).

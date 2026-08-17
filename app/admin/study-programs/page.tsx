@@ -39,7 +39,7 @@ async function AdminStudyProgramsContent({ searchParams }: Props) {
   }
 
   return (
-    <StaffShell role={access.role} current="study-programs">
+    <StaffShell role={access.role} current="study-programs" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <StudyProgramDirectory
           items={items}

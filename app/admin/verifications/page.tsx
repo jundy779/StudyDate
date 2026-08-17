@@ -14,7 +14,7 @@ async function VerificationAdminContent({ searchParams }: Props) {
   const query = await searchParams;
   const selected = statuses.includes(query.status as (typeof statuses)[number]) ? query.status : undefined;
   const requests = await listVerificationQueue(selected);
-  return <StaffShell role={access.role} current="verification"><main className="min-h-svh bg-brand-surface"><div className="page-shell py-10 sm:py-14">
+  return <StaffShell role={access.role} current="verification" access={access}><main className="min-h-svh bg-brand-surface"><div className="page-shell py-10 sm:py-14">
     <p className="section-label">Verification administration</p><h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">Antrean review mahasiswa</h1>
     <p className="mt-4 max-w-3xl leading-7 text-brand-muted">Daftar ini memakai identifier non-sensitif. Claim akademik hanya dibuka saat reviewer memilih satu request.</p>
     <nav aria-label="Filter status" className="mt-7 flex gap-2 overflow-x-auto pb-2"><Link href="/admin/verifications" className="focus-ring shrink-0 rounded-full border border-brand-border bg-white px-4 py-2 text-sm font-semibold">Semua</Link>{statuses.map((status) => <Link key={status} href={`/admin/verifications?status=${status}`} className="focus-ring shrink-0 rounded-full border border-brand-border bg-white px-4 py-2 text-sm font-semibold">{statusLabels[status]}</Link>)}</nav>

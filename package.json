@@ -13,7 +13,7 @@
     "test:pddikti": "node --experimental-strip-types --test tests/pddikti-provider.test.ts tests/pddikti-lookup-service.test.ts tests/pddikti-verification-security.test.ts tests/verification-evidence.test.ts",
     "test:pddikti:browser": "node scripts/pddikti-verification-responsive-audit.mjs",
     "test:people": "node --experimental-strip-types --test tests/people-discovery.test.ts",
-    "test:staff": "node --experimental-strip-types --test tests/staff-authorization.test.ts tests/moderation-triage.test.ts",
+    "test:staff": "node --experimental-strip-types --test tests/staff-authorization.test.ts tests/moderation-triage.test.ts tests/staff-operations.test.ts",
     "test:moderation": "node --experimental-strip-types --test tests/moderation-triage.test.ts",
     "test:introductions": "node --experimental-strip-types --test tests/introductions.test.ts",
     "test:messages": "node --experimental-strip-types --test tests/messages.test.ts",

@@ -1,22 +1,34 @@
 import "server-only";
 
 import { getAuthenticatedUser } from "@/lib/auth/session";
+import {
+  staffHasCapability,
+  type StaffCapability,
+  type StaffRole,
+} from "@/lib/staff/capabilities";
 import { createClient } from "@/lib/supabase/server";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
-export type StaffRole = "owner" | "admin";
+export type { StaffCapability, StaffRole } from "@/lib/staff/capabilities";
+export { staffHasCapability } from "@/lib/staff/capabilities";
 
 export type StaffAccess = {
   user: User;
   role: StaffRole;
   verificationReviewer: boolean;
+  canEarlyAccessRead: boolean;
+  canUsersRead: boolean;
+  canUsersSupport: boolean;
 };
 
 type MembershipRow = {
   role: StaffRole;
   status: "active";
   verification_reviewer: boolean;
+  can_early_access_read?: boolean;
+  can_users_read?: boolean;
+  can_users_support?: boolean;
 };
 
 export async function getCurrentStaffAccess(
@@ -43,6 +55,9 @@ export async function getCurrentStaffAccess(
     user,
     role: membership.role,
     verificationReviewer: membership.verification_reviewer,
+    canEarlyAccessRead: membership.can_early_access_read === true,
+    canUsersRead: membership.can_users_read === true,
+    canUsersSupport: membership.can_users_support === true,
   };
 }
 
@@ -73,11 +88,29 @@ export async function requireVerificationReviewer(): Promise<StaffAccess> {
   return access;
 }
 
+export async function requireStaffCapability(
+  capability: StaffCapability,
+): Promise<StaffAccess> {
+  const user = await getAuthenticatedUser();
+  const access = await getCurrentStaffAccess(user);
+  if (!access || !staffHasCapability(access, capability)) {
+    return redirectNonStaff(user);
+  }
+  return access;
+}
+
 export async function getPostAuthenticationDestination(user: User) {
   const access = await getCurrentStaffAccess(user);
   if (access?.role === "owner") return "/owner";
   if (access?.role === "admin" && access.verificationReviewer) {
     return "/admin/verifications";
+  }
+  if (
+    access?.role === "admin" &&
+    (access.canEarlyAccessRead || access.canUsersRead || access.canUsersSupport)
+  ) {
+    if (access.canEarlyAccessRead) return "/staff/early-access";
+    return "/staff/users";
   }
   return "/app";
 }

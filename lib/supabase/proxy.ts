@@ -41,12 +41,20 @@ export async function updateSession(request: NextRequest) {
     pathname === "/owner" ||
     pathname.startsWith("/owner/") ||
     pathname === "/admin" ||
-    pathname.startsWith("/admin/");
+    pathname.startsWith("/admin/") ||
+    pathname === "/staff/early-access" ||
+    pathname.startsWith("/staff/early-access/") ||
+    pathname === "/staff/users" ||
+    pathname.startsWith("/staff/users/");
   const isStaffRoute =
     pathname === "/owner" ||
     pathname.startsWith("/owner/") ||
     pathname === "/admin" ||
-    pathname.startsWith("/admin/");
+    pathname.startsWith("/admin/") ||
+    pathname === "/staff/early-access" ||
+    pathname.startsWith("/staff/early-access/") ||
+    pathname === "/staff/users" ||
+    pathname.startsWith("/staff/users/");
 
   if (!hasEnvVars) {
     if (isProtectedRoute) {

@@ -613,3 +613,8 @@ Sebelum production:
 - production Site URL dan callback allowlist;
 - baseline security headers (`next.config.ts`); monitoring tanpa PII tetap P2;
 - Vercel root = `studydate-web` (lihat `docs/operations/vercel-deploy.md`).
+
+
+### Staff authorized operations
+
+Capability tipis di atas role Owner/Admin + `verification_reviewer`. Guard: `requireStaffCapability`. Waitlist ≠ akun. User ops projection aman (tanpa NIM/evidence/chat/reveal). Staff invite: resolve email → Auth user yang sudah ada; fallback jika belum ada akun (tanpa fabricate magic link).

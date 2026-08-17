@@ -50,6 +50,8 @@ type NavigationIcon =
   | "moderation"
   | "campuses"
   | "study-programs"
+  | "early-access"
+  | "users"
   | "profile"
   | "settings"
   | "help"
@@ -63,11 +65,19 @@ type NavigationItem = {
   badge?: number;
 };
 
+type StaffNavCapabilities = {
+  canEarlyAccessRead?: boolean;
+  canUsersRead?: boolean;
+  canUsersSupport?: boolean;
+  verificationReviewer?: boolean;
+};
+
 type ResponsiveNavigationProps = {
   children: ReactNode;
   current: string;
   variant: NavigationVariant;
   role?: StaffRole;
+  staffCapabilities?: StaffNavCapabilities;
   pendingIntroductions?: number;
   unreadMessages?: number;
   unreadNotifications?: number;
@@ -89,6 +99,8 @@ const iconMap = {
   moderation: Gavel,
   campuses: GraduationCap,
   "study-programs": BookOpen,
+  "early-access": ScrollText,
+  users: Users,
   profile: CircleUserRound,
   settings: Settings,
   help: LifeBuoy,
@@ -152,15 +164,46 @@ const studentAccountItems: NavigationItem[] = [
   },
 ];
 
-function getStaffItems(role: StaffRole): NavigationItem[] {
+function getStaffItems(
+  role: StaffRole,
+  capabilities?: StaffNavCapabilities,
+): NavigationItem[] {
+  const canEarlyAccess =
+    role === "owner" || capabilities?.canEarlyAccessRead === true;
+  const canUsers =
+    role === "owner" ||
+    capabilities?.canUsersRead === true ||
+    capabilities?.canUsersSupport === true;
+  const canVerification =
+    role === "owner" || capabilities?.verificationReviewer === true;
+
   if (role === "admin") {
-    return [
-      {
+    const items: NavigationItem[] = [];
+    if (canEarlyAccess) {
+      items.push({
+        href: "/staff/early-access",
+        label: "Akses Awal",
+        key: "early-access",
+        icon: "early-access",
+      });
+    }
+    if (canUsers) {
+      items.push({
+        href: "/staff/users",
+        label: "Akun pengguna",
+        key: "users",
+        icon: "users",
+      });
+    }
+    if (canVerification) {
+      items.push({
         href: "/admin/verifications",
         label: "Verifikasi",
         key: "verification",
         icon: "verification",
-      },
+      });
+    }
+    items.push(
       {
         href: "/admin/campuses",
         label: "Kampus",
@@ -173,12 +216,25 @@ function getStaffItems(role: StaffRole): NavigationItem[] {
         key: "study-programs",
         icon: "study-programs",
       },
-    ];
+    );
+    return items;
   }
 
   return [
     { href: "/owner", label: "Ringkasan", key: "overview", icon: "overview" },
     { href: "/owner/staff", label: "Staff", key: "staff", icon: "staff" },
+    {
+      href: "/staff/early-access",
+      label: "Akses Awal",
+      key: "early-access",
+      icon: "early-access",
+    },
+    {
+      href: "/staff/users",
+      label: "Akun pengguna",
+      key: "users",
+      icon: "users",
+    },
     {
       href: "/admin/verifications",
       label: "Verifikasi",
@@ -342,6 +398,7 @@ export function ResponsiveNavigation({
   current,
   variant,
   role,
+  staffCapabilities,
   pendingIntroductions = 0,
   unreadMessages = 0,
   unreadNotifications = 0,
@@ -354,7 +411,7 @@ export function ResponsiveNavigation({
   const mobilePanelRef = useRef<HTMLElement>(null);
   const isStaff = variant === "staff" && Boolean(role);
   const items = isStaff
-    ? getStaffItems(role as StaffRole)
+    ? getStaffItems(role as StaffRole, staffCapabilities)
     : studentItems.map((item) => {
         if (item.key === "introductions" && pendingIntroductions > 0) {
           return { ...item, badge: pendingIntroductions };

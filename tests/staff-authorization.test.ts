@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { staffActionSchema } from "../lib/staff/validation.ts";
+import { staffActionSchema, staffEmailAssignSchema } from "../lib/staff/validation.ts";
 import { getSafeAuthenticatedDestination } from "../lib/auth/redirect.ts";
 
 const migration = readFileSync(new URL("../supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql", import.meta.url), "utf8");
@@ -59,6 +59,26 @@ test("staff changes are atomic, constrained, and audited", () => {
   assert.match(migration, /update auth\.users[\s\S]*raw_app_meta_data/);
   assert.match(migration, /insert into public\.staff_role_events/);
   assert.match(migration, /staff_members_single_owner_idx/);
+});
+
+test("ops migration makes grant_admin least-privilege without auto reviewer", () => {
+  const ops = readFileSync(
+    new URL(
+      "../supabase/migrations/202608170002_staff_operations_capabilities.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(ops, /can_early_access_read/);
+  assert.match(ops, /verification_reviewer', staff\.verification_reviewer/);
+  assert.match(ops, /values \(\s*p_target_user_id, 'admin', 'active', false,/);
+  assert.equal(
+    staffEmailAssignSchema.safeParse({
+      email: "ops@example.com",
+      action: "grant_admin",
+    }).success,
+    true,
+  );
 });
 
 test("owner bootstrap is service-only, UUID-based, idempotent, and interactive", () => {

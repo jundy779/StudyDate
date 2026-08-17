@@ -724,3 +724,8 @@ Saat planned entity diimplementasikan:
 6. add tests;
 7. ubah status schema menjadi Implemented;
 8. dokumentasikan live verification.
+
+
+### Staff operations capabilities (LOCAL / NOT DEPLOYED)
+
+Migration `202608170002_staff_operations_capabilities.sql` menambah capability flags pada `staff_members` (`can_early_access_read`, `can_users_read`, `can_users_support`), RPC `list_early_access_waitlist_ops` / `list_student_account_ops`, dan audit `staff_ops_audit_events`. Owner role-implied semua capability; Admin default deny. UI: `/staff/early-access`, `/staff/users`; assign staff by email di `/owner/staff`. Bergantung pada claim columns dari `202608170001`.
