@@ -81,7 +81,10 @@ Sumber migration:
     audit RPC VOLATILE; **DEPLOYED**
 32. `supabase/migrations/202608170004_membership_entitlements_v1.sql` —
     StudyDate Free/Plus entitlement foundation, kuota produk, Owner grant;
-    **LOCAL / NOT DEPLOYED**
+    **DEPLOYED**
+33. `supabase/migrations/202608170005_fix_membership_quota_window_ambiguity.sql` —
+    rename PL/pgSQL `window_start` → `v_quota_window_start` in
+    `consume_membership_quota`; **LOCAL / NOT APPLIED**
 
 ### `early_access_waitlist`
 
@@ -738,9 +741,15 @@ Saat planned entity diimplementasikan:
 
 Migration `202608170002_staff_operations_capabilities.sql` menambah capability flags pada `staff_members` (`can_early_access_read`, `can_users_read`, `can_users_support`), RPC `list_early_access_waitlist_ops` / `list_student_account_ops`, dan audit `staff_ops_audit_events`. Owner role-implied semua capability; Admin default deny. UI: `/staff/early-access`, `/staff/users`; assign staff by email di `/owner/staff`. Bergantung pada claim columns dari `202608170001`.
 
-### Membership entitlements v1 (LOCAL / NOT DEPLOYED)
+### Membership entitlements v1 (DEPLOYED; quota hotfix LOCAL)
 
-Migration `202608170004_membership_entitlements_v1.sql`.
+Migration `202608170004_membership_entitlements_v1.sql` already applied remotely.
+Forward-only hotfix `202608170005_fix_membership_quota_window_ambiguity.sql`
+replaces `consume_membership_quota` so the daily window variable is
+`v_quota_window_start` and no longer collides with column `window_start`
+(SQLSTATE 42702). Arguments, return boolean, SECURITY DEFINER, `search_path`,
+quota semantics, and revoke grants stay identical. There is no `window_end`
+in this function.
 
 Tables:
 - `membership_plans` — `free` / `plus`; tanpa harga pembayaran.

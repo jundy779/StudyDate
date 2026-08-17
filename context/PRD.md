@@ -469,6 +469,10 @@ Downgrade tidak menghapus Circle atau perkenalan yang sudah ada.
 Owner dapat grant/cabut Plus terbatas (7/30/90 hari) di `/owner/memberships` via email Auth.
 Admin tidak mendapat `memberships.manage`. Early Access tidak otomatis memberi Plus.
 
+Hotfix lokal `202608170005` memperbaiki ambiguitas PL/pgSQL `window_start` pada
+`consume_membership_quota` tanpa mengubah kuota atau otorisasi. AutoGoPay/QRIS/checkout
+tetap di luar Phase 1.
+
 ## 14. Planned — Safety flows
 
 Landing page memakai pesan positif dan ringkas. Detail safety tersedia pada **Pusat Keamanan publik**

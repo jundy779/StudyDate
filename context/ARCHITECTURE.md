@@ -527,7 +527,8 @@ Plus `active` bersamaan. Grant Owner memakai `greatest(existing ends_at, now+dur
 dan tidak memendekkan grant tanpa batas (`ends_at` NULL).
 
 Kuota People harian memakai `membership_quota_usage` (satu consume per list RPC, jendela
-UTC day). Kuota introduction/circle dihitung dari row aktual (pending outgoing, created
+UTC day). Variabel PL/pgSQL hotfix adalah `v_quota_window_start` agar tidak bentrok
+dengan kolom `window_start`. Kuota introduction/circle dihitung dari row aktual (pending outgoing, created
 today UTC, owned active circles, joined `role=member`). UI `/app/membership` hanya
 menampilkan paket; checkout tidak ada. Owner `/owner/memberships` lookup/grant by email,
 RPC UUID `manage_user_membership` dicabut dari `authenticated`.

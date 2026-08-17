@@ -85,6 +85,55 @@ const deactivateMigration = readFileSync(
   join(root, "supabase/migrations/202608070010_student_account_lifecycle.sql"),
   "utf8",
 );
+const quotaHotfix = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608170005_fix_membership_quota_window_ambiguity.sql",
+  ),
+  "utf8",
+);
+
+class MembershipQuotaWindowModel {
+  private readonly rows = new Map<string, number>();
+
+  private windowStart(now: Date) {
+    return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  }
+
+  private key(userId: string, action: string, now: Date) {
+    return `${userId}:${action}:${this.windowStart(now)}`;
+  }
+
+  consume(
+    userId: string | null,
+    action: string,
+    limit: number,
+    now = new Date("2026-08-17T15:00:00.000Z"),
+  ) {
+    if (
+      !userId ||
+      action !== "people_discovery_daily" ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 1000
+    ) {
+      return false;
+    }
+    const key = this.key(userId, action, now);
+    const current = this.rows.get(key) ?? 0;
+    if (current >= limit) return false;
+    this.rows.set(key, current + 1);
+    return true;
+  }
+
+  count(
+    userId: string,
+    action: string,
+    now = new Date("2026-08-17T15:00:00.000Z"),
+  ) {
+    return this.rows.get(this.key(userId, action, now)) ?? 0;
+  }
+}
 
 test("Free is the default plan and Plus uses entitlements instead of a boolean", () => {
   assert.match(migration, /constraint membership_plans_code_allowed check \(code in \('free', 'plus'\)\)/);
@@ -263,4 +312,73 @@ test("account deletion purges entitlements; deactivation does not", () => {
 test("Early Access claim does not auto-grant Plus", () => {
   assert.doesNotMatch(claimMigration, /user_entitlements|grant_plus|plan_code/);
   assert.match(migration, /early_access_promo/);
+});
+
+test("consume_membership_quota hotfix removes window_start ambiguity", () => {
+  assert.match(
+    migration,
+    /^\s+window_start timestamptz := date_trunc\('day', timezone\('utc', now\(\)\)\);/m,
+  );
+  assert.doesNotMatch(
+    quotaHotfix,
+    /^\s+window_start timestamptz := date_trunc\('day', timezone\('utc', now\(\)\)\);/m,
+  );
+  assert.match(
+    quotaHotfix,
+    /v_quota_window_start timestamptz := date_trunc\('day', timezone\('utc', now\(\)\)\)/,
+  );
+  assert.match(
+    quotaHotfix,
+    /create or replace function public\.consume_membership_quota\(\s*p_user_id uuid,\s*p_action text,\s*p_limit integer\s*\)/,
+  );
+  assert.match(quotaHotfix, /returns boolean/);
+  assert.match(quotaHotfix, /security definer/);
+  assert.match(quotaHotfix, /set search_path = ''/);
+  assert.match(
+    quotaHotfix,
+    /values \(\s*p_user_id,\s*p_action,\s*v_quota_window_start,\s*1/,
+  );
+  assert.match(
+    quotaHotfix,
+    /on conflict \(user_id, action, window_start\) do update/,
+  );
+  assert.match(quotaHotfix, /where usage\.hit_count < p_limit/);
+  assert.match(
+    quotaHotfix,
+    /revoke all on function public\.consume_membership_quota\(uuid, text, integer\)/,
+  );
+  assert.doesNotMatch(quotaHotfix, /window_end/);
+  assert.doesNotMatch(quotaHotfix, /autogopay|qris|checkout/i);
+  assert.equal(MEMBERSHIP_LIMITS.free.peopleDiscoveryDaily, 10);
+  assert.equal(MEMBERSHIP_LIMITS.plus.peopleDiscoveryDaily, 40);
+});
+
+test("quota window increments once, rejects overflow, and resets next UTC day", () => {
+  const freeLimit = MEMBERSHIP_LIMITS.free.peopleDiscoveryDaily;
+  const plusLimit = MEMBERSHIP_LIMITS.plus.peopleDiscoveryDaily;
+  const day = new Date("2026-08-17T15:00:00.000Z");
+  const nextDay = new Date("2026-08-18T00:00:00.000Z");
+  const free = new MembershipQuotaWindowModel();
+  const plus = new MembershipQuotaWindowModel();
+
+  assert.equal(free.consume("student-free", "people_discovery_daily", freeLimit, day), true);
+  assert.equal(free.count("student-free", "people_discovery_daily", day), 1);
+
+  for (let index = 1; index < freeLimit; index += 1) {
+    assert.equal(free.consume("student-free", "people_discovery_daily", freeLimit, day), true);
+  }
+  assert.equal(free.count("student-free", "people_discovery_daily", day), freeLimit);
+  assert.equal(free.consume("student-free", "people_discovery_daily", freeLimit, day), false);
+  assert.equal(free.count("student-free", "people_discovery_daily", day), freeLimit);
+  assert.equal(free.consume("student-free", "people_discovery_daily", freeLimit, nextDay), true);
+  assert.equal(free.count("student-free", "people_discovery_daily", nextDay), 1);
+
+  for (let index = 0; index < plusLimit; index += 1) {
+    assert.equal(plus.consume("student-plus", "people_discovery_daily", plusLimit, day), true);
+  }
+  assert.equal(plus.count("student-plus", "people_discovery_daily", day), plusLimit);
+  assert.equal(plus.consume("student-plus", "people_discovery_daily", plusLimit, day), false);
+  assert.equal(plus.consume(null, "people_discovery_daily", freeLimit, day), false);
+  assert.match(peopleService, /discovery quota reached/);
+  assert.match(migration, /if not public\.consume_membership_quota\(/);
 });
