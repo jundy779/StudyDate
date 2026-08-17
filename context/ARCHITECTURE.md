@@ -348,7 +348,8 @@ RPCs (`#variable_conflict use_column` + constraint-based `ON CONFLICT`).
 ```text
 trusted product transition
  -> same-transaction trigger on introduction/message/completed conversation event
- -> user_notifications (recipient + constrained type + safe path + channel only)
+    or Circle/Event membership and material field changes
+ -> user_notifications (recipient + constrained type + safe path + bounded labels)
  -> list/count/mark RPCs derive actor from auth.uid()
  -> /api/notifications authenticated projection
  -> student bell + /app/notifications
@@ -373,6 +374,15 @@ dedupe notification mengacu pada message row. List dibatasi 20 item per halaman 
 keyset cursor; retention cleanup lama tetap future ops sampai kebijakan durasi disetujui.
 Unread count global dipoll setiap 25 detik, tidak overlap, dan polling dilewati ketika
 document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
+Preference per tipe tidak ada; Circle/Event memakai inbox dan badge yang sama.
+
+Migration lokal `202608170006` memperluas constraint type/path/metadata untuk Circle dan
+Campus Event. Fan-out memakai `INSERT … SELECT` terbatas pada membership/RSVP aktif,
+mengecualikan actor/organizer, dan `ON CONFLICT (dedupe_key) DO NOTHING`. Projection
+list menambahkan `headline` / `when_label` / `venue_label` terikat panjang, bukan objek
+metadata mentah, email, NIM, atau UUID. Delivery in-app only; reminder Event ditunda
+karena cron produk saat ini hanya untuk cleanup verifikasi, bukan scheduler Event.
+Pengiriman tidak memanggil kuota membership.
 
 ## 12g. Study Circle v1 architecture (deployed)
 
@@ -410,8 +420,9 @@ pesan berupa snapshot maksimal 280 karakter dari pesan yang benar-benar terikat 
 Owner tidak memperoleh broad member/chat access. Membership tidak pernah menulis
 `conversation_shells`, Mutual Interest, Identity Reveal, atau Contact Reveal.
 
-Notifications tidak diperluas pada v1 untuk menghindari notifikasi join/leave/message yang
-bising. Student Verification tetap dinonaktifkan dan bukan syarat Circle.
+Notifications Circle tidak men-fan-out join/leave/message ke seluruh anggota. Owner
+menerima anggota baru; anggota aktif menerima arsip dan perubahan nama/topik; anggota
+yang dikeluarkan menerima satu notifikasi keanggotaan. Join approval tidak ada.
 
 Live A/B/C/D audit mengonfirmasi safe projection, direct-grant denial, owner/staff
 isolation, open/campus eligibility, discussion dan report scope, block tanpa menghapus
@@ -457,15 +468,15 @@ masih terpenuhi.
 Discovery/detail hanya memproyeksikan jumlah peserta. Daftar peserta penuh hanya untuk
 organizer atau RSVP `going`, memakai allowlist field People dan mengecualikan pasangan
 yang saling memblokir. Introduction tetap melalui RPC eligibility existing; RSVP tidak
-menulis conversation, Mutual, Identity Reveal, Contact Reveal, atau Notifications.
+menulis conversation, Mutual Interest, Identity Reveal, atau Contact Reveal.
 
 Organizer adalah role Event-scoped, bukan staff. Edit hanya untuk Event `scheduled` yang
 masih lebih dari dua jam sebelum mulai; scope immutable dan kapasitas tidak dapat turun
 di bawah RSVP aktif. Waktu, timezone, dan venue dikunci setelah RSVP `going`
-non-organizer pertama karena v1 tidak mengirim notifikasi perubahan. Cancel tidak dapat
-dipulihkan, mempertahankan RSVP/evidence, dan
-archive hanya tersedia setelah cancel atau Event berakhir. Circle association dan
-notification perubahan/cancel ditunda agar authorization dan schema v1 tetap sempit.
+non-organizer pertama. Cancel tidak dapat dipulihkan, mempertahankan RSVP/evidence, dan
+archive hanya tersedia setelah cancel atau Event berakhir. Circle association tetap di
+luar v1. Notifikasi RSVP, perubahan jadwal/lokasi, dan pembatalan memakai tabel
+`user_notifications` existing; reminder ditunda.
 
 Live audit A/B/C/D mengonfirmasi public-place filtering, waktu/timezone, open/campus
 eligibility, RSVP idempotency dan exact final-slot concurrency, safe detail/attendee

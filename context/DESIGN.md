@@ -155,9 +155,10 @@ status belum dibaca yang juga tersedia sebagai teks screen reader, dan navigasi
 keyboard-accessible. State yang wajib: loading skeleton, generic error + retry, empty
 state icon tanpa mascot baru, mark one saat item dibuka, mark all, serta load more.
 
-Copy tidak pernah berisi isi pesan, nama, kontak, email, NIM, UUID, consent counterpart,
+Copy tidak pernah berisi isi pesan, nama orang, kontak, email, NIM, UUID, consent counterpart,
 atau sinyal progres satu sisi. Badge visual dibatasi `99+` tanpa mengubah unread count
-aktual pada accessible label.
+aktual pada accessible label. Tipe Circle/Event memakai baris yang sama; judul Circle/Event
+hanya sebagai headline terikat, bukan kartu baru atau styling premium.
 
 ### Study Circle v1 (deployed)
 

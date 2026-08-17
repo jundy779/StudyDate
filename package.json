@@ -20,7 +20,7 @@
     "test:mutual": "node --experimental-strip-types --test tests/mutual-interest.test.ts",
     "test:identity-reveal": "node --experimental-strip-types --test tests/identity-reveal.test.ts tests/identity-reveal-behavior.test.ts tests/identity-reveal-hydrate.test.ts",
     "test:contact-reveal": "node --experimental-strip-types --test tests/contact-reveal.test.ts tests/contact-reveal-behavior.test.ts tests/contact-reveal-crypto-recovery.test.ts",
-    "test:notifications": "node --experimental-strip-types --test tests/notifications.test.ts",
+    "test:notifications": "node --experimental-strip-types --test tests/notifications.test.ts tests/circle-event-notifications.test.ts",
     "test:circles": "node --experimental-strip-types --test tests/study-circles.test.ts",
     "test:membership": "node --experimental-strip-types --test tests/membership.test.ts",
     "test:events": "node --experimental-strip-types --test tests/campus-events.test.ts",

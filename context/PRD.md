@@ -304,7 +304,35 @@ persetujuan satu sisi. Secara khusus, pilihan/withdrawal Mutual Interest satu si
 persiapan/consent/withdrawal Identity Reveal satu sisi, dan
 persiapan/consent/withdrawal Contact Reveal satu sisi dilarang menghasilkan notifikasi.
 Notifications v1 tidak mencakup push, Web Push, email, SMS, WhatsApp, Telegram bot,
-presence, typing indicator, atau last seen.
+presence, typing indicator, atau last seen. Preference per kategori belum ada;
+seluruh tipe memakai inbox, badge, dan read-state yang sama.
+
+## 11d. Local-only — Circle & Event Notifications v1
+
+Circle dan Campus Event memakai Notification Center yang sudah ada. Tidak ada inbox
+kedua, tidak ada `circle_notifications` / `event_notifications`, dan pengiriman tidak
+di-gate oleh StudyDate Free atau Plus. V1 tetap in-app only.
+
+Notifikasi hanya untuk perubahan lifecycle yang benar-benar ada:
+
+- Circle: anggota baru ke owner; nama/topik penting ke anggota aktif; arsip ke
+  anggota aktif; pengeluaran anggota hanya ke yang dikeluarkan.
+- Event: konfirmasi RSVP ke peserta; perubahan jadwal/lokasi ke RSVP `going`;
+  pembatalan Event ke RSVP `going`.
+
+Join Circle bersifat langsung (tanpa approval), jadi permintaan bergabung
+tidak berlaku. Konfirmasi join ke pelaku sendiri dihilangkan karena UI sudah
+menampilkan status. Pesan grup, leave sukarela, dan penyimpanan deskripsi/typo
+tidak men-fan-out notifikasi. Reminder Event ditunda karena tidak ada scheduler
+produk yang aman khusus untuk ini (`event_reminders: DEFERRED_NO_SCHEDULER`).
+
+Jadwal dan venue Event tetap terkunci setelah RSVP non-organizer pertama; trigger
+perubahan hanya berbunyi jika field material benar-benar berubah. Deep link memakai
+slug opaque existing (`/app/circles/circle-…`, `/app/events/event-…`). Record yang
+tidak lagi dapat diakses gagal ke `notFound()` halaman existing.
+
+Migration `202608170006_circle_event_notifications_v1.sql` bersifat forward-only
+dan belum diterapkan remote pada task ini.
 
 ## 12. Implemented and deployed — Study Circle v1
 
@@ -334,8 +362,9 @@ maksimal 280 karakter yang terikat pada objek laporan. Arsip mencegah join dan p
 namun mempertahankan riwayat anggota aktif dan evidence moderasi. Membership tidak pernah
 membuat conversation, Mutual Interest, Identity Reveal, atau Contact Reveal.
 
-Notifications schema tidak diubah pada v1: join, leave, pesan grup, dan browsing tidak
-menimbulkan notifikasi agar tidak bising atau menciptakan tekanan sosial.
+Join, leave, pesan grup, dan browsing Circle tidak men-fan-out ke seluruh anggota.
+Notifikasi Circle yang bermakna ditambahkan kemudian melalui Notification Center
+existing (lihat 11d), tanpa mengubah model membership.
 
 Live audit sintetis A/B/C/D mengonfirmasi discovery open/campus, membership dan owner
 authorization, discussion privacy, report-scoped evidence, Introduction/block integration,
@@ -368,10 +397,11 @@ sukarela selama Event masih eligible dan memiliki kapasitas. Kapasitas 3–30 di
 atomik dengan row lock Event sebelum menghitung RSVP aktif. Organizer otomatis terdaftar
 sebagai peserta pertama dan tidak dapat membatalkan RSVP organizer.
 
-Karena v1 tidak menambahkan notifikasi perubahan, waktu, timezone, dan venue dikunci
-setelah peserta non-organizer pertama memiliki RSVP `going`. Organizer masih dapat
-memperbarui metadata non-lokasi serta kapasitas selama tidak lebih kecil dari jumlah RSVP
-aktif. Pembatalan Event tidak dapat dipulihkan dan mempertahankan riwayat.
+Waktu, timezone, dan venue dikunci setelah peserta non-organizer pertama memiliki RSVP
+`going`. Organizer masih dapat memperbarui metadata non-lokasi serta kapasitas selama
+tidak lebih kecil dari jumlah RSVP aktif. Pembatalan Event tidak dapat dipulihkan dan
+mempertahankan riwayat. Notifikasi perubahan jadwal/lokasi dan pembatalan memakai
+Notification Center existing (lihat 11d) bila field material benar-benar berubah.
 
 Discovery dan detail publik hanya menunjukkan jumlah peserta nyata. Daftar peserta aman
 hanya tersedia bagi organizer dan peserta dengan RSVP `going`; pasangan yang saling
@@ -380,10 +410,9 @@ aman. Attendance tidak pernah membuka nama, foto reveal, kontak, UUID, percakapa
 Mutual Interest, Identity Reveal, atau Contact Reveal.
 
 CTA `Kirim perkenalan` memakai seluruh eligibility Introduction existing. Attendance,
-browse, RSVP, cancel RSVP, dan edit Event tidak membuat private-flow atau Notification.
-Circle association, event chat, waitlist, ticketing, pembayaran, check-in, reminder, dan
-notification pembatalan ditunda dari v1. Student Verification tetap dinonaktifkan dan
-bukan syarat penggunaan Event.
+browse, RSVP, cancel RSVP, dan edit Event tidak membuat private-flow. Circle association,
+event chat, waitlist, ticketing, pembayaran, check-in, dan reminder tetap di luar v1.
+Student Verification tetap dinonaktifkan dan bukan syarat penggunaan Event.
 
 Live audit sintetis A/B/C/D mengonfirmasi venue dan batas waktu, open/campus discovery,
 RSVP idempotent serta final-slot concurrency, attendee projection aman, block dan

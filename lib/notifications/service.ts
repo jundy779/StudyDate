@@ -13,6 +13,9 @@ type NotificationRow = {
   notification_type: string;
   target_path: string;
   channel: string | null;
+  headline: string | null;
+  when_label: string | null;
+  venue_label: string | null;
   created_at: string;
   read_at: string | null;
 };
@@ -23,8 +26,17 @@ const channelSet = new Set<string>(["telegram", "instagram", "linkedin"]);
 function isSafeTargetPath(path: string): boolean {
   return (
     path === "/app/introductions" ||
-    /^\/app\/messages\/[0-9a-f]{32}$/.test(path)
+    /^\/app\/messages\/[0-9a-f]{32}$/.test(path) ||
+    /^\/app\/circles\/circle-[0-9a-f]{24}$/.test(path) ||
+    /^\/app\/events\/event-[0-9a-f]{24}$/.test(path)
   );
+}
+
+function sanitizeLabel(value: string | null | undefined, max: number) {
+  if (typeof value !== "string") return null;
+  const cleaned = value.replace(/[\n\r\t]+/g, " ").trim();
+  if (!cleaned || cleaned.length > max) return null;
+  return cleaned;
 }
 
 function mapNotification(row: NotificationRow): NotificationItem | null {
@@ -42,6 +54,9 @@ function mapNotification(row: NotificationRow): NotificationItem | null {
     type: row.notification_type as NotificationType,
     targetPath: row.target_path,
     channel: row.channel as NotificationChannel | null,
+    headline: sanitizeLabel(row.headline, 100),
+    whenLabel: sanitizeLabel(row.when_label, 64),
+    venueLabel: sanitizeLabel(row.venue_label, 160),
     createdAt: row.created_at,
     readAt: row.read_at,
   };

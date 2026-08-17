@@ -85,6 +85,8 @@ Sumber migration:
 33. `supabase/migrations/202608170005_fix_membership_quota_window_ambiguity.sql` —
     rename PL/pgSQL `window_start` → `v_quota_window_start` in
     `consume_membership_quota`; **LOCAL / NOT APPLIED**
+34. `supabase/migrations/202608170006_circle_event_notifications_v1.sql` —
+    Circle/Event types on existing `user_notifications`; **LOCAL / NOT APPLIED**
 
 ### `early_access_waitlist`
 
@@ -463,7 +465,8 @@ Sanitized audit: activated, message_sent, ended, blocked, reported, messages_rea
 mutual_interest_reached, identity_revealed, contact_revealed. Never stores one-sided interest/consent,
 message bodies, contacts, or Storage paths.
 
-### `user_notifications` (migration `202608070013`, applied remotely)
+### `user_notifications` (migration `202608070013`, applied remotely; Circle/Event
+types added by local `202608170006`)
 
 ```text
 id uuid internal primary key
@@ -471,7 +474,7 @@ public_id text unique opaque 32-hex
 recipient_user_id uuid -> auth.users
 notification_type constrained text
 target_path constrained safe app path
-metadata jsonb (empty, except completed contact channel)
+metadata jsonb (empty, completed contact channel, or bounded title/when/venue labels)
 dedupe_key text unique internal
 created_at timestamptz server default
 read_at timestamptz server controlled
@@ -479,14 +482,22 @@ read_at timestamptz server controlled
 
 Allowed types: `INTRODUCTION_RECEIVED`, `INTRODUCTION_ACCEPTED`,
 `MESSAGE_RECEIVED`, `MUTUAL_INTEREST_COMPLETED`, `IDENTITY_REVEAL_COMPLETED`,
-dan `CONTACT_REVEAL_COMPLETED`. `REPORT_STATUS_UPDATED` tidak dibuat karena kebijakan
-aktual tidak memproyeksikan hasil moderasi kepada student.
+`CONTACT_REVEAL_COMPLETED`, `CIRCLE_MEMBER_JOINED`, `CIRCLE_UPDATED`,
+`CIRCLE_ARCHIVED`, `CIRCLE_MEMBER_REMOVED`, `EVENT_REGISTERED`,
+`EVENT_SCHEDULE_CHANGED`, `EVENT_LOCATION_CHANGED`, dan `EVENT_CANCELLED`.
+`REPORT_STATUS_UPDATED` tidak dibuat karena kebijakan aktual tidak memproyeksikan
+hasil moderasi kepada student. Join approval Circle dan reminder Event tidak ada
+pada schema ini.
 
-Tidak menyimpan copy, message body, alias/nama, contact value, email, NIM, participant
-UUID dalam projection, ciphertext, atau Storage path. Target hanya
-`/app/introductions` atau `/app/messages/<opaque-public-id>`. Table RLS-enabled tanpa
-direct grants; read dan read-state melalui RPC yang mengambil actor dari `auth.uid()`.
-Dedupe key tidak dikembalikan kepada client.
+Tidak menyimpan copy HTML, message body, alias/nama orang, contact value, email, NIM,
+participant UUID dalam projection, ciphertext, atau Storage path. Target hanya
+`/app/introductions`, `/app/messages/<opaque-public-id>`,
+`/app/circles/circle-<24-hex>`, atau `/app/events/event-<24-hex>`. List RPC
+memproyeksikan `headline` / `when_label` / `venue_label` terikat panjang dari metadata
+aman, bukan objek metadata mentah. Table RLS-enabled tanpa direct grants; read dan
+read-state melalui RPC yang mengambil actor dari `auth.uid()`. Dedupe key tidak
+dikembalikan kepada client. Fan-out Circle/Event memakai `INSERT … SELECT` di database
+dan tidak mengonsumsi kuota membership.
 
 ### `conversation_mutual_interests`
 
