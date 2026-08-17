@@ -126,6 +126,28 @@ Vercel; fallback in-memory hanya di non-production bila RPC belum tersedia.
 Implementasi berada di `components/marketing/early-access-dialog.tsx`, `app/api/early-access/route.ts`, dan
 `lib/early-access/`.
 
+### 8.1 Early Access Account Claim
+
+```text
+Waitlist entry (bukan akun)
+ -> user magic-link dengan email yang sama
+ -> Auth callback / onboarding session valid
+ -> RPC claim_early_access_for_me() (auth.uid + auth.users.email)
+ -> atomic claim (FOR UPDATE + unique claimed_user_id)
+ -> onboarding prefill terbatas (campus + soft prefs/goals)
+ -> user tetap menyelesaikan field wajib + Terms/Privacy/Community
+```
+
+Prinsip:
+
+- Waitlist ≠ account. Claim membutuhkan kepemilikan email terautentikasi.
+- Claim idempotent dan server-authoritative; tidak menerima email/user_id dari client.
+- Early Access consent bukan pengganti product/legal consent.
+- Public launch tidak mewajibkan keanggotaan waitlist; non-waitlist tetap onboarding normal.
+- Prefill tidak menyalin CTA interests (`people`/`groups`/`events`) ke `profiles.interests`.
+- Tidak ada badge publik “Early Access Member” otomatis.
+- Deletion cleanup melepaskan `claimed_user_id` agar UUID terhapus tidak mereaktivasi klaim.
+
 ## 9. Database access model
 
 Normal authenticated client boleh membaca profile sendiri, mengubah editable fields sendiri, membaca/mengubah

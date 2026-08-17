@@ -1,5 +1,7 @@
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
+import { claimEarlyAccessForCurrentUser } from "@/lib/early-access/claim";
+import { buildOnboardingPrefillFromClaim } from "@/lib/early-access/claim-state";
 import { loadApprovedCampusOptions } from "@/lib/campus/service";
 import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
 import Image from "next/image";
@@ -17,6 +19,11 @@ async function OnboardingContent() {
   if (profile?.onboarding_completed_at) {
     redirect("/app");
   }
+
+  // Idempotent claim for users who land on onboarding without a fresh callback
+  // (e.g. bookmarked /onboarding). Prefill never includes source or waitlist id.
+  const claim = await claimEarlyAccessForCurrentUser();
+  const earlyAccessPrefill = buildOnboardingPrefillFromClaim(claim);
 
   const [campusOptions, studyProgramOptions] = await Promise.all([
     loadApprovedCampusOptions(),
@@ -44,6 +51,8 @@ async function OnboardingContent() {
           <OnboardingForm
             campusOptions={campusOptions}
             studyProgramOptions={studyProgramOptions}
+            earlyAccessPrefill={earlyAccessPrefill}
+            showClaimConflict={claim.showConflictSupport}
           />
         </section>
       </div>

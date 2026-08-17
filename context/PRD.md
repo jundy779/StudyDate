@@ -69,6 +69,7 @@ Diimplementasikan pada code dan migration repository saat ini:
 - public landing page;
 - public legal/safety/help pages (`/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`);
 - Early Access waitlist;
+- Early Access Account Claim (waitlist → authenticated email ownership → atomic claim → onboarding prefill terbatas);
 - passwordless email authentication;
 - Supabase PKCE callback;
 - protected routes;

@@ -5,6 +5,7 @@ import {
   isAllowedStudentEmail,
   STUDENT_EMAIL_DOMAIN_ERROR,
 } from "@/lib/auth/allowed-email-domains";
+import { claimEarlyAccessForCurrentUser } from "@/lib/early-access/claim";
 import { createClient } from "@/lib/supabase/server";
 import { hasEnvVars } from "@/lib/utils";
 import { getPostAuthenticationDestination } from "@/lib/staff/authorization";
@@ -81,6 +82,11 @@ export async function GET(request: NextRequest) {
   if (profile?.deactivated_at) {
     redirect("/account/reactivate");
   }
+
+  // Waitlist ≠ account. Claim only after a valid authenticated session proves
+  // ownership of the same email. Non-waitlist users continue unchanged.
+  await claimEarlyAccessForCurrentUser();
+
   if (!profile?.onboarding_completed_at) {
     redirect("/onboarding");
   }

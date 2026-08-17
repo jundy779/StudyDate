@@ -4,6 +4,7 @@ import {
   CONNECTION_GOALS,
   INTERESTS,
 } from "@/lib/onboarding/constants";
+import type { EarlyAccessOnboardingPrefill } from "@/lib/early-access/claim-state";
 import { CAMPUS_OPTIONS } from "@/lib/onboarding/options/campuses";
 import { CITY_REGENCY_OPTIONS } from "@/lib/onboarding/options/cities";
 import { STUDY_PROGRAM_OPTIONS } from "@/lib/onboarding/options/study-programs";
@@ -101,6 +102,31 @@ const initialState: FormState = {
   },
 };
 
+function buildInitialFormState(
+  earlyAccessPrefill: EarlyAccessOnboardingPrefill | null | undefined,
+): FormState {
+  if (!earlyAccessPrefill?.earlyAccessClaimed) {
+    return initialState;
+  }
+
+  const allowedGoals = new Set(
+    CONNECTION_GOALS.map((goal) => goal.value as string),
+  );
+  const connectionGoals = earlyAccessPrefill.connectionGoals.filter((goal) =>
+    allowedGoals.has(goal),
+  );
+
+  return {
+    ...initialState,
+    campus: earlyAccessPrefill.campus.slice(0, 120),
+    connectionGoals,
+    preferences: {
+      ...initialState.preferences,
+      groupFirst: earlyAccessPrefill.preferences.groupFirst,
+    },
+  };
+}
+
 function SelectionButton({
   label,
   selected,
@@ -157,21 +183,30 @@ function PreferenceToggle({
 export function OnboardingForm({
   campusOptions = CAMPUS_OPTIONS,
   studyProgramOptions = STUDY_PROGRAM_OPTIONS,
+  earlyAccessPrefill = null,
+  showClaimConflict = false,
 }: {
   campusOptions?: readonly OnboardingOption[];
   studyProgramOptions?: readonly OnboardingOption[];
+  earlyAccessPrefill?: EarlyAccessOnboardingPrefill | null;
+  showClaimConflict?: boolean;
 }) {
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(initialState);
+  const [form, setForm] = useState<FormState>(() =>
+    buildInitialFormState(earlyAccessPrefill),
+  );
   const [stepOneErrors, setStepOneErrors] = useState<StepOneErrors>({});
   const [stepOneEntryModes, setStepOneEntryModes] =
     useState<StepOneEntryModes>({
-      campus: "list",
+      campus: earlyAccessPrefill?.campus ? "manual" : "list",
       studyProgram: "list",
       cityRegion: "list",
     });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const showEarlyAccessWelcome = Boolean(
+    earlyAccessPrefill?.earlyAccessClaimed,
+  );
 
   function updateStepOneField<Field extends StepOneField>(
     field: Field,
@@ -370,8 +405,27 @@ export function OnboardingForm({
       </div>
 
       <h1 className="font-heading text-3xl font-semibold leading-tight tracking-[-0.03em] text-brand-navy sm:text-4xl">
-        {STEP_TITLES[step]}
+        {showEarlyAccessWelcome && step === 0
+          ? "Selamat datang kembali"
+          : STEP_TITLES[step]}
       </h1>
+
+      {showEarlyAccessWelcome && step === 0 ? (
+        <p className="mt-3 text-sm leading-relaxed text-brand-muted sm:text-base">
+          Akses Awal kamu sudah terhubung. Lengkapi profil StudyDate untuk
+          melanjutkan — tanpa daftar ulang.
+        </p>
+      ) : null}
+
+      {showClaimConflict ? (
+        <p
+          role="status"
+          className="mt-4 rounded-xl border border-brand-border bg-brand-surface px-4 py-3 text-sm text-brand-navy"
+        >
+          Pendaftaran belum dapat dilanjutkan otomatis. Silakan coba lagi nanti
+          atau hubungi dukungan StudyDate melalui halaman Bantuan.
+        </p>
+      ) : null}
 
       {step === 0 ? (
         <div className="mt-8 grid gap-5 sm:grid-cols-2">

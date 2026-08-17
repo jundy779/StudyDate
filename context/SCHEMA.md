@@ -71,26 +71,40 @@ Sumber migration:
 28. `supabase/migrations/202608120001_harden_student_verification_pilot.sql` —
     staff-finalized badge, cancellation/expiry/invalidation, cleanup heartbeat,
     dan aggregate provider telemetry tanpa identifier; **LOCAL / NOT DEPLOYED**
+29. `supabase/migrations/202608170001_early_access_account_claim.sql` —
+    Early Access account claim (`claimed_user_id` / `claimed_at`), RPC
+    `claim_early_access_for_me`, dan release claim pada account deletion;
+    **LOCAL / NOT DEPLOYED**
 
 ### `early_access_waitlist`
 
-Purpose: menyimpan Early Access registration.
+Purpose: menyimpan Early Access registration. Waitlist **bukan** akun StudyDate.
 
 Core fields:
 ```text
 id uuid primary key
 email text not null
 campus text null
-interests text[] not null default '{}'
-source text null
-status text not null default 'waiting'
+interests text[] not null default '{}'   -- people | groups | events (CTA categories)
+source text null                         -- navbar | hero | final-cta (internal)
+status text not null default 'waiting'   -- waiting | claimed
 consent_version text not null
 consented_at timestamptz not null
 created_at timestamptz not null
+claimed_user_id uuid null -> auth.users(id) on delete set null
+claimed_at timestamptz null
 ```
 
+Claim rules:
+- satu baris waitlist eligible → paling banyak satu `claimed_user_id`;
+- unique partial index pada `claimed_user_id` (non-null);
+- claim hanya via RPC `claim_early_access_for_me()` (auth.uid + email auth.users);
+- Early Access consent ≠ Terms/Privacy/Community product consent;
+- source tetap internal; tidak diekspos ke browser;
+- account deletion melepaskan claim (status kembali `waiting`) tanpa menghapus riwayat consent waitlist.
+
 Security: case-insensitive unique email, normalized email, approved interests/source, no public select/update/delete,
-insert melalui server handler.
+insert melalui server handler, claim melalui RPC authenticated.
 
 ### `profiles`
 
