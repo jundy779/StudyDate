@@ -331,6 +331,7 @@ tidak discoverable. Inactive staff tidak otomatis muncul kembali; user harus opt
 - `bootstrap_initial_owner`: service-role-only, UUID-based, exactly-one existing Auth user, single-owner, idempotent,
   memperbarui trusted metadata, staff row, People visibility, dan audit dalam satu transaksi.
 - `manage_staff_member`: owner-only; action enum tetap, tidak menerima role bebas, tidak dapat mengubah owner sendiri.
+  Owner UI menambah staff hanya via email Auth; RPC UUID tetap untuk toggle capability anggota yang sudah terdaftar.
 - `list_staff_members` dan `list_staff_role_events`: owner-only controlled projections.
 - `list_staff_verification_requests`: active owner/admin reviewer only, sanitized queue projection.
 - `finalize_staff_verification_review`: active reviewer only, actor dari `auth.uid()`, menolak self-review, mempertahankan

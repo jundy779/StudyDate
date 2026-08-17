@@ -135,8 +135,17 @@ test("Owner has all capabilities; admin defaults deny; support implies read", ()
 test("staff email assignment resolves server-side and rejects arbitrary capability strings", () => {
   assert.match(ownerStaffActions, /assignStaffMemberByEmail/);
   assert.match(ownerStaffPage, /Email akun Auth/);
+  assert.doesNotMatch(ownerStaffPage, /Tambahkan admin via UUID|UUID akun Auth|Fallback UUID/);
+  assert.doesNotMatch(ownerStaffPage, /placeholder="UUID akun yang sudah ada"/);
   assert.match(service, /auth\.admin\.listUsers/);
   assert.match(service, /Never returns UUID/);
+  assert.equal(
+    staffActionSchema.safeParse({
+      targetUserId: "b1111111-1111-4111-8111-111111111111",
+      action: "grant_admin",
+    }).success,
+    false,
+  );
   assert.equal(
     staffEmailAssignSchema.safeParse({
       email: "  Staff@Example.com ",

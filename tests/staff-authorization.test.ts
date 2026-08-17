@@ -44,7 +44,9 @@ test("user_metadata cannot grant staff or reviewer access", () => {
 
 test("client input cannot choose a role or owner action", () => {
   assert.equal(staffActionSchema.safeParse({ targetUserId: "b1111111-1111-4111-8111-111111111111", action: "grant_admin", role: "owner" }).success, false);
+  assert.equal(staffActionSchema.safeParse({ targetUserId: "b1111111-1111-4111-8111-111111111111", action: "grant_admin" }).success, false);
   assert.equal(staffActionSchema.safeParse({ targetUserId: "b1111111-1111-4111-8111-111111111111", action: "create_owner" }).success, false);
+  assert.doesNotMatch(staffPage, /Tambahkan admin via UUID|UUID akun Auth/);
   assert.doesNotMatch(migration, /manage_staff_member\([\s\S]*p_role/);
 });
 

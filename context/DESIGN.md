@@ -256,7 +256,7 @@ analytics, raw SQL, secrets, atau general database controls.
 
 Verification admin memakai utility-first review layout, identifier suffix pada list, full sensitive claim hanya pada
 explicit reviewer detail, generic errors, dan evidence link lima menit. Owner-only staff UI menampilkan UUID suffix dan
-status, sementara penambahan akun membutuhkan existing Auth UUID.
+status. Penambahan staff memakai email Auth yang sudah ada; server meresolve pengguna, tanpa input UUID mentah.
 
 ## 12. Components
 

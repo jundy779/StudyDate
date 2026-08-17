@@ -111,30 +111,6 @@ async function StaffContent({ searchParams }: Props) {
             </button>
           </form>
 
-          <p className="mt-3 text-sm text-brand-muted">
-            Fallback UUID tetap tersedia untuk operasi terkontrol bila email
-            tidak dapat dipakai.
-          </p>
-          <form
-            action={updateStaffMember}
-            className="mt-4 grid gap-4 rounded-[22px] border border-dashed border-brand-border bg-white/70 p-6 sm:grid-cols-[1fr_auto] sm:items-end"
-          >
-            <label className="text-sm font-semibold">
-              UUID akun Auth
-              <input
-                name="targetUserId"
-                required
-                pattern="[0-9a-fA-F-]{36}"
-                className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 font-mono text-sm"
-                placeholder="UUID akun yang sudah ada"
-              />
-            </label>
-            <input type="hidden" name="action" value="grant_admin" />
-            <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
-              Tambahkan admin via UUID
-            </button>
-          </form>
-
           <section
             className="mt-8 overflow-hidden rounded-[22px] border border-brand-border bg-white"
             aria-labelledby="staff-list"

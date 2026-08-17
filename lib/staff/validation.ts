@@ -3,7 +3,6 @@ import { z } from "zod";
 export const staffActionSchema = z.object({
   targetUserId: z.string().uuid(),
   action: z.enum([
-    "grant_admin",
     "deactivate_admin",
     "reactivate_admin",
     "grant_reviewer",
