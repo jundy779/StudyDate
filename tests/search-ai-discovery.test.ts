@@ -31,6 +31,28 @@ test("homepage and every indexable public page define a canonical", () => {
   }
 });
 
+test("public navbar links homepage sections and Insight with crawlable anchors", () => {
+  const landingPage = read("components/marketing/landing-page.tsx");
+  const publicDocs = read("components/marketing/public-doc-shell.tsx");
+  const expectedNavigation = [
+    '{ label: "People", href: "/#people" }',
+    '{ label: "Groups", href: "/#groups" }',
+    '{ label: "Events", href: "/#events" }',
+    '{ label: "Cara Kerja", href: "/#cara-kerja" }',
+    '{ label: "Insight", href: "/insight" }',
+    '{ label: "Keamanan", href: "/#keamanan" }',
+  ];
+
+  for (const item of expectedNavigation) {
+    assert.ok(landingPage.includes(item), item);
+  }
+  assert.match(landingPage, /<a[\s\S]*href={item\.href}/);
+  assert.match(landingPage, /<MobileNav items={navigation} \/>/);
+  assert.match(publicDocs, /<PublicNavbar static \/>/);
+  assert.match(publicDocs, /getAuthenticatedUser/);
+  assert.match(landingPage, />\s*Ikut Akses Awal\s*</);
+});
+
 test("sitemap contains only canonical public URLs", () => {
   assert.match(sitemapSource, /url: `\$\{origin\}\/`/);
   assert.match(sitemapSource, /PUBLIC_DOC_ROUTES\.map/);

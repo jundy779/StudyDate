@@ -56,7 +56,7 @@ test("privacy content states verification disabled and contact channels", () => 
   assert.doesNotMatch(privacy, /Masuk dengan Google \(belum aktif\)/i);
 });
 
-test("public doc shell swaps Masuk for Kembali when logged in", () => {
+test("public doc shell swaps the public navbar for app actions when logged in", () => {
   const shell = readFileSync(
     join(root, "components/marketing/public-doc-shell.tsx"),
     "utf8",
@@ -64,7 +64,7 @@ test("public doc shell swaps Masuk for Kembali when logged in", () => {
   assert.match(shell, /getAuthenticatedUser/);
   assert.match(shell, /Kembali/);
   assert.match(shell, /Beranda/);
-  assert.match(shell, /Masuk/);
+  assert.match(shell, /PublicNavbar/);
   assert.match(shell, /Suspense/);
 });
 

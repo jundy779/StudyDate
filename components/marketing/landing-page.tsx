@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
@@ -18,11 +19,12 @@ import {
 import { MobileNav } from "@/components/marketing/mobile-nav";
 
 const navigation = [
-  { label: "People", href: "#people" },
-  { label: "Groups", href: "#groups" },
-  { label: "Events", href: "#events" },
-  { label: "Cara Kerja", href: "#cara-kerja" },
-  { label: "Keamanan", href: "#keamanan" },
+  { label: "People", href: "/#people" },
+  { label: "Groups", href: "/#groups" },
+  { label: "Events", href: "/#events" },
+  { label: "Cara Kerja", href: "/#cara-kerja" },
+  { label: "Insight", href: "/insight" },
+  { label: "Keamanan", href: "/#keamanan" },
 ];
 
 const footerLinks = [
@@ -159,17 +161,19 @@ function BrandLogo({
   );
 }
 
-function Navbar() {
+export function PublicNavbar({ static: isStatic = false }: { static?: boolean }) {
   return (
-    <header className="absolute inset-x-0 top-0 z-30 border-b border-brand-border bg-white">
+    <header
+      className={`${isStatic ? "" : "absolute inset-x-0 top-0"} z-30 border-b border-brand-border bg-white`}
+    >
       <div className="page-shell flex h-[76px] items-center justify-between">
-        <a
-          href="#beranda"
+        <Link
+          href="/#beranda"
           aria-label="StudyDate ID, kembali ke beranda"
           className="focus-ring rounded-[12px]"
         >
           <BrandLogo priority />
-        </a>
+        </Link>
 
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Utama">
           {navigation.map((item) => (
@@ -871,7 +875,7 @@ function Footer() {
 export function LandingPage() {
   return (
     <EarlyAccessProvider>
-      <Navbar />
+      <PublicNavbar />
       <main>
         <Hero />
         <PillarsOverview />
