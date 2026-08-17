@@ -73,7 +73,8 @@ Daftar detail lokasi terlarang tidak perlu diulang pada semua halaman publik. Si
 confirmation, Community Guidelines, dan bot safety reminder.
 
 Sediakan block, report, leave/end, cancel meeting, dan safety check bila relevan. Jangan mengklaim verifikasi sebagai
-jaminan perilaku.
+jaminan perilaku. Block, report, Safety Center, privasi, consent, Identity/Contact Reveal, verifikasi, dan penghapusan
+akun tidak boleh di-paywall.
 
 ## 7. Authentication and authorization
 

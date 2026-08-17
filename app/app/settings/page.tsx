@@ -99,6 +99,9 @@ async function SettingsContent() {
             <a className="focus-ring shrink-0 text-brand-blue" href="#akun">
               Akun
             </a>
+            <a className="focus-ring shrink-0 text-brand-blue" href="/app/membership">
+              StudyDate Plus
+            </a>
           </nav>
 
           <div className="mt-8">
@@ -178,6 +181,19 @@ async function SettingsContent() {
               description="Kelola akun yang tidak ingin kamu ajak berinteraksi. Hanya blokir yang kamu buat yang terlihat di sini."
             >
               <BlockedStudentsList students={blockedStudents} />
+            </SettingsSection>
+
+            <SettingsSection
+              id="paket"
+              title="StudyDate Plus"
+              description="Paket menentukan kapasitas People, perkenalan, dan Circle. Privasi dan keamanan tetap sama."
+            >
+              <Link
+                href="/app/membership"
+                className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy hover:border-brand-blue"
+              >
+                Lihat paket
+              </Link>
             </SettingsSection>
 
             <SettingsSection

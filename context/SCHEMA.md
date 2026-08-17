@@ -70,10 +70,17 @@ Sumber migration:
     **DEPLOYED / LIVE-VERIFIED WITH SYNTHETIC DATA**
 28. `supabase/migrations/202608120001_harden_student_verification_pilot.sql` —
     staff-finalized badge, cancellation/expiry/invalidation, cleanup heartbeat,
-    dan aggregate provider telemetry tanpa identifier; **LOCAL / NOT DEPLOYED**
+    dan aggregate provider telemetry tanpa identifier;     **LOCAL / NOT DEPLOYED**
 29. `supabase/migrations/202608170001_early_access_account_claim.sql` —
     Early Access account claim (`claimed_user_id` / `claimed_at`), RPC
     `claim_early_access_for_me`, dan release claim pada account deletion;
+    **DEPLOYED**
+30. `supabase/migrations/202608170002_staff_operations_capabilities.sql` —
+    capability flags staff ops dan RPC waitlist/user ops; **DEPLOYED**
+31. `supabase/migrations/202608170003_fix_staff_ops_audit_volatility.sql` —
+    audit RPC VOLATILE; **DEPLOYED**
+32. `supabase/migrations/202608170004_membership_entitlements_v1.sql` —
+    StudyDate Free/Plus entitlement foundation, kuota produk, Owner grant;
     **LOCAL / NOT DEPLOYED**
 
 ### `early_access_waitlist`
@@ -339,8 +346,8 @@ tidak discoverable. Inactive staff tidak otomatis muncul kembali; user harus opt
 
 ### Introduction Requests RPC
 
-- `send_introduction_request`: alias-based send; eligibility, contact filter, duplicate, cooldown, dan rate limit
-  database-enforced.
+- `send_introduction_request`: alias-based send; eligibility, contact filter, duplicate, cooldown, product quota
+  membership, dan security rate limit database-enforced.
 - `accept_introduction_request` / `decline_introduction_request` / `cancel_introduction_request`: participant-gated
   status transitions; accept membuat `conversation_shells` unik.
 - `list_received_introduction_requests` / `list_sent_introduction_requests`: projection aman tanpa UUID peserta.
@@ -727,6 +734,23 @@ Saat planned entity diimplementasikan:
 8. dokumentasikan live verification.
 
 
-### Staff operations capabilities (LOCAL / NOT DEPLOYED)
+### Staff operations capabilities (DEPLOYED)
 
 Migration `202608170002_staff_operations_capabilities.sql` menambah capability flags pada `staff_members` (`can_early_access_read`, `can_users_read`, `can_users_support`), RPC `list_early_access_waitlist_ops` / `list_student_account_ops`, dan audit `staff_ops_audit_events`. Owner role-implied semua capability; Admin default deny. UI: `/staff/early-access`, `/staff/users`; assign staff by email di `/owner/staff`. Bergantung pada claim columns dari `202608170001`.
+
+### Membership entitlements v1 (LOCAL / NOT DEPLOYED)
+
+Migration `202608170004_membership_entitlements_v1.sql`.
+
+Tables:
+- `membership_plans` — `free` / `plus`; tanpa harga pembayaran.
+- `user_entitlements` — hanya plan `plus`; status `active|expired|revoked`; source
+  `system|owner_grant|promo|early_access_promo|future_payment`; `timestamptz` window.
+- `membership_quota_usage` — counter `people_discovery_daily` per UTC day.
+- `membership_audit_events` — `membership_granted|extended|revoked` tanpa email/UUID.
+
+Constraints/index: unique one active Plus per user; RLS on; revoke all table grants from
+`anon`/`authenticated`. Student RPC: `get_my_membership()`. Owner email RPC:
+`lookup_membership_ops`, `manage_user_membership_by_email`. UUID grant RPC
+`manage_user_membership` dicabut dari `authenticated`. Profile delete mem-purge
+entitlement dan quota usage. Deactivation tidak menghapus entitlement.

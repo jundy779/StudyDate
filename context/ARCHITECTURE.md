@@ -218,6 +218,7 @@ Zod lalu memanggil authenticated Supabase server client.
 `list_people_discovery_profiles` dan `get_people_discovery_profile` adalah `SECURITY DEFINER` RPC dengan explicit
 projection, fixed `search_path`, session/onboarding guard, discovery eligibility, self-exclusion, bounded result, serta
 execute grant hanya untuk `authenticated`. Detail memakai public alias dan tidak mengembalikan internal user ID.
+List RPC Phase 1 juga menolak kuota People harian dan mengabaikan filter lanjutan untuk paket Free.
 
 `set_people_discovery_visibility` mengambil target hanya dari `auth.uid()` dan mengubah satu protected field milik
 sendiri. Direct column update atas `is_discoverable` tetap tidak diberikan kepada client.
@@ -240,6 +241,7 @@ Introduction ditambahkan.
 Semua mutasi memakai SECURITY DEFINER RPC dengan `search_path = ''`, target dari `auth.uid()`, dan lookup penerima
 melalui `public_alias` — bukan UUID mentah dari browser. Projection list hanya mengembalikan alias counterpart,
 ringkasan akademik, badge verifikasi boolean, pesan, status, dan timestamp.
+Kuota produk (pending keluar + kiriman harian) terpisah dari security rate limit 5/jam dan 15/hari.
 
 Fondasi `user_blocks` dan `user_reports` privat. Block dua arah mencegah introduction baru dan menutup pending.
 People Discovery di-refresh agar mengecualikan pasangan yang saling memblokir.
@@ -506,6 +508,33 @@ migration telah sinkron dengan project `ctbqudtvrfezuoqcecyj`; audit live A/B/D,
 worker exact-request, cleanup, dan browser lima viewport lulus pada 10 Agustus
 2026.
 Mahasiswa tetap hanya dapat request self dan membaca status sendiri.
+
+## 12j. Membership & Entitlement Engine v1 (local / awaiting remote migration)
+
+```text
+get_my_membership / effective_membership_plan
+ -> Free fallback if no active Plus window
+ -> MEMBERSHIP_LIMITS (TS) + membership_plan_limit (SQL)
+ -> product quota checks inside People / Introduction / Circle RPCs
+ -> security rate limits remain independent
+```
+
+Free adalah default produk. Plus disimpan di `user_entitlements` (plan `plus` saja) dengan
+`timestamptz`, status `active|expired|revoked`, dan source
+`system|owner_grant|promo|early_access_promo|future_payment`. Resolver memilih paling
+lama `ends_at` (NULL first) di antara window aktif; unique partial index mencegah dua
+Plus `active` bersamaan. Grant Owner memakai `greatest(existing ends_at, now+duration)`
+dan tidak memendekkan grant tanpa batas (`ends_at` NULL).
+
+Kuota People harian memakai `membership_quota_usage` (satu consume per list RPC, jendela
+UTC day). Kuota introduction/circle dihitung dari row aktual (pending outgoing, created
+today UTC, owned active circles, joined `role=member`). UI `/app/membership` hanya
+menampilkan paket; checkout tidak ada. Owner `/owner/memberships` lookup/grant by email,
+RPC UUID `manage_user_membership` dicabut dari `authenticated`.
+
+Jangan cache otorisasi membership lintas request setelah grant/revoke. `getMyMembership`
+memakai React `cache()` per request. Client, `localStorage`, `user_metadata`, dan boolean
+profil bukan sumber membership.
 
 ## 13. Staff authorization v1
 

@@ -8,6 +8,8 @@ import {
   getOwnDiscoveryVisibility,
   listDiscoveryProfiles,
 } from "@/lib/people/service";
+import { getMyMembership } from "@/lib/membership/resolver";
+import { getMembershipLimits } from "@/lib/membership/limits";
 import {
   firstSearchValue,
   parsePeopleFilters,
@@ -42,12 +44,25 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
   const rawSearchParams = await searchParams;
   const parsed = parsePeopleFilters(rawSearchParams);
   const isDiscoverable = await getOwnDiscoveryVisibility(user.id);
+  const membership = await getMyMembership();
+  const limits = getMembershipLimits(membership.plan);
   const visibilityNotice = firstSearchValue(rawSearchParams.visibility);
 
   const filters = parsed.success ? parsed.data : {};
-  const result = parsed.success
-    ? await listDiscoveryProfiles(parsed.data)
-    : { profiles: [], nextCursor: null };
+  let result = { profiles: [] as Awaited<ReturnType<typeof listDiscoveryProfiles>>["profiles"], nextCursor: null as string | null };
+  let quotaReached = false;
+  if (parsed.success) {
+    try {
+      result = await listDiscoveryProfiles(parsed.data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.toLowerCase().includes("quota")) {
+        quotaReached = true;
+      } else {
+        throw error;
+      }
+    }
+  }
 
   return (
     <AppShell current="people">
@@ -86,7 +101,10 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
             <h2 id="people-filter-title" className="font-heading text-xl font-semibold text-brand-navy">Saring dengan konteks</h2>
             <p className="mt-2 text-sm leading-6 text-brand-muted">Semua filter bersifat opsional dan dijalankan di server.</p>
           </div>
-          <PeopleFilterForm filters={filters} />
+          <PeopleFilterForm
+            filters={filters}
+            advancedEnabled={limits.advancedDiscoveryFilters}
+          />
           {!parsed.success && (
             <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-brand-error">Filter tidak valid. Hapus filter lalu coba lagi.</p>
           )}
@@ -100,7 +118,15 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
             </div>
           </div>
 
-          {result.profiles.length ? (
+          {quotaReached ? (
+            <p role="status" className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
+              Kuota People harian untuk paket kamu sudah terpakai.{" "}
+              <Link href="/app/membership" className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline">
+                Lihat StudyDate Plus
+              </Link>
+              .
+            </p>
+          ) : result.profiles.length ? (
             <>
               <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {result.profiles.map((profile) => <PeopleProfileCard key={profile.public_alias} profile={profile} />)}

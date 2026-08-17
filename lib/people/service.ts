@@ -37,6 +37,10 @@ export async function listDiscoveryProfiles(
   });
 
   if (error) {
+    const text = (error.message ?? "").toLowerCase();
+    if (text.includes("quota")) {
+      throw new Error("discovery quota reached");
+    }
     throw new Error("People Discovery sedang tidak tersedia.");
   }
 

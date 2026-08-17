@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   Settings,
   UserCog,
+  Sparkles,
   Users,
   UsersRound,
   X,
@@ -55,7 +56,9 @@ type NavigationIcon =
   | "profile"
   | "settings"
   | "help"
-  | "privacy-safety";
+  | "privacy-safety"
+  | "membership"
+  | "memberships";
 
 type NavigationItem = {
   href: string;
@@ -105,6 +108,8 @@ const iconMap = {
   settings: Settings,
   help: LifeBuoy,
   "privacy-safety": Shield,
+  membership: Sparkles,
+  memberships: Sparkles,
 } as const;
 
 const studentItems: NavigationItem[] = [
@@ -155,6 +160,12 @@ const studentItems: NavigationItem[] = [
 ];
 
 const studentAccountItems: NavigationItem[] = [
+  {
+    href: "/app/membership",
+    label: "StudyDate Plus",
+    key: "membership",
+    icon: "membership",
+  },
   { href: "/help", label: "Bantuan", key: "help", icon: "help" },
   {
     href: "/app/account/privacy",
@@ -223,6 +234,12 @@ function getStaffItems(
   return [
     { href: "/owner", label: "Ringkasan", key: "overview", icon: "overview" },
     { href: "/owner/staff", label: "Staff", key: "staff", icon: "staff" },
+    {
+      href: "/owner/memberships",
+      label: "Membership",
+      key: "memberships",
+      icon: "memberships",
+    },
     {
       href: "/staff/early-access",
       label: "Akses Awal",

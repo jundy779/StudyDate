@@ -17,7 +17,8 @@ type AppShellProps = {
     | "verification"
     | "profile"
     | "settings"
-    | "privacy-safety";
+    | "privacy-safety"
+    | "membership";
   pendingIntroductions?: number;
   unreadMessages?: number;
   unreadNotifications?: number;

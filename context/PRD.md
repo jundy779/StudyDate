@@ -81,6 +81,8 @@ Diimplementasikan pada code dan migration repository saat ini:
 - server-side sign-out;
 - People Discovery v1 untuk browse profil anonim, filter, detail berbasis alias, pagination, dan kontrol visibilitas
   milik sendiri;
+- Membership & Entitlement Engine v1 (Free default + StudyDate Plus) untuk kuota kapasitas
+  server-side tanpa pembayaran, checkout, atau AutoGoPay;
 - Introduction Requests v1 untuk kirim/terima/tolak/batalkan perkenalan privat, fondasi block/report, rate limit
   database, serta handoff `conversation_shells` menuju Anonymous Chat v1 tanpa messaging;
 - Anonymous Chat v1 untuk percakapan teks privat setelah perkenalan diterima, daftar `/app/messages`,
@@ -128,7 +130,8 @@ Jangan menganggap fitur berikut tersedia:
 - adapter sumber akademik resmi, bila endpoint dan otorisasi resmi tersedia;
 - Telegram linking;
 - moderation dashboard;
-- payment/ticketing;
+- payment/ticketing dan Billing Phase 2 (AutoGoPay/QRIS/checkout); fondasi paket Free/Plus
+  sudah ada tanpa pembayaran;
 - recommendation algorithm;
 - Supabase Realtime delivery untuk chat (v1 memakai authenticated polling RPC).
 
@@ -211,8 +214,11 @@ umum, minat, connection goals, short intro, dan genuine verification badge melal
 Profil hanya muncul bila onboarding selesai dan user memilih `is_discoverable = true`. Current user dikecualikan. Browse
 dan detail membutuhkan session authenticated serta onboarding lengkap. Route detail memakai public alias, bukan UUID.
 
-Filter v1: kampus, program studi, semester, kota/kabupaten, connection goal, dan interest. Hasil diurutkan deterministik
-berdasarkan public alias dan memakai pagination berbatas.
+Filter v1: kampus dan program studi tersedia untuk semua paket. Filter lanjutan
+(semester, kota/kabupaten, connection goal, interest) adalah kapasitas StudyDate Plus;
+server mengabaikan filter lanjutan untuk paket Free. Hasil diurutkan deterministik
+berdasarkan public alias dan memakai pagination berbatas. Kuota People harian dihitung
+per pemanggilan `list_people_discovery_profiles` pada jendela UTC, bukan dari UI.
 
 Jangan tampilkan full name, clear photo sebelum reveal, contact, precise location, auth email, atau internal ID.
 
@@ -229,7 +235,8 @@ Rules:
 - satu introduction pending per pasangan;
 - message 12–300 karakter, plain text, filter kontak best-effort;
 - cooldown 7 hari setelah decline/cancel untuk pasangan sender→recipient yang sama;
-- rate limit: 5/jam, 15/hari, maksimal 5 pending keluar;
+- security rate limit tetap 5/jam dan 15/hari untuk semua paket (Plus tidak menembus anti-spam);
+- kuota produk pending keluar dan kiriman harian mengikuti paket (Free 3/3, Plus 10/10; angka peluncuran);
 - pending kedaluarsa setelah 14 hari;
 - active staff tidak dapat mengirim atau menerima;
 - block dua arah menutup pending dan mencegah introduction baru;
@@ -335,6 +342,11 @@ authorization, discussion privacy, report-scoped evidence, Introduction/block in
 arsip, RLS/grants, tidak adanya side effect ke private connection flow atau Notifications,
 safe UI projection, serta cleanup lengkap. Student Verification tetap dinonaktifkan.
 
+Kapasitas Circle aktif yang dibuat/diikuti adalah kuota membership (Free 1/3, Plus 3/10;
+angka peluncuran). Downgrade tidak menghapus Circle yang sudah ada; pembuatan/join baru
+ditolak sampai pemakaian kembali di bawah batas paket. Security rate limit create 2/hari
+dan membership 30/hari tetap berlaku untuk semua paket.
+
 ## 13. Implemented and deployed — Campus Events v1
 
 Campus Events v1 tersedia melalui migration
@@ -431,6 +443,31 @@ batch maksimal 25 delivery. Migration
 `202608110001_create_telegram_anonymous_chat_companion_v1.sql` tetap
 **LOCAL-ONLY**, kill switch default OFF, BotFather/webhook production belum
 dikonfigurasi, dan fitur belum deployed/live.
+
+## 13d. Local-only — Membership & Entitlement Engine v1
+
+StudyDate memakai paket **StudyDate Free** (default) dan **StudyDate Plus**. Free tidak
+memerlukan baris entitlement. Plus hanya aktif bila `status = active`, `starts_at <= now()`,
+dan (`ends_at` IS NULL atau `ends_at > now()`) menurut waktu database UTC. Kedaluwarsa
+berbasis timestamp; cron tidak diperlukan untuk kebenaran resolver.
+
+Kuota Phase 1 adalah konfigurasi peluncuran, bukan kebenaran bisnis permanen:
+
+```text
+FREE  peopleDiscoveryDaily 10 | introductionRequestsDaily 3 | activeIntroductions 3
+      createdCirclesActive 1 | joinedCirclesActive 3 | advancedDiscoveryFilters false
+PLUS  peopleDiscoveryDaily 40 | introductionRequestsDaily 10 | activeIntroductions 10
+      createdCirclesActive 3 | joinedCirclesActive 10 | advancedDiscoveryFilters true
+```
+
+Tidak berlaku: savedConnections (fitur tidak ada). Ditunda: retensi chat berbayar, kuota
+Campus Events. Keamanan (block, report, Safety Center, privasi, consent, Identity/Contact
+Reveal, verifikasi, penghapusan akun) tidak boleh di-paywall. Badge Plus publik tidak
+ditampilkan di People. Pembayaran/AutoGoPay/QRIS/checkout tidak ada pada Phase 1.
+Downgrade tidak menghapus Circle atau perkenalan yang sudah ada.
+
+Owner dapat grant/cabut Plus terbatas (7/30/90 hari) di `/owner/memberships` via email Auth.
+Admin tidak mendapat `memberships.manage`. Early Access tidak otomatis memberi Plus.
 
 ## 14. Planned — Safety flows
 

@@ -43,6 +43,8 @@ function eligibilityCopy(stateCode: string) {
     case "cooldown":
     case "rate_limited":
       return RATE_LIMIT_MESSAGE;
+    case "quota_reached":
+      return "Kuota perkenalan paket kamu sudah terpakai. Cek StudyDate Plus untuk kapasitas tambahan.";
     case "blocked":
       return "Interaksi dengan profil ini belum tersedia.";
     case "ok":

@@ -61,11 +61,11 @@ function mapCircleError(message?: string) {
   const normalized = (message ?? "").toLowerCase();
   if (normalized.includes("contact disclosure")) return CIRCLE_CONTACT_MESSAGE;
   if (normalized.includes("circle full")) return "Circle ini sudah penuh.";
-  if (normalized.includes("ownership limit")) {
-    return "Maksimal tiga Circle aktif dapat kamu kelola.";
+  if (normalized.includes("ownership quota") || normalized.includes("ownership limit")) {
+    return "Kuota Circle yang kamu kelola sudah terpakai. Circle yang ada tetap aman.";
   }
-  if (normalized.includes("membership limit")) {
-    return "Maksimal sepuluh Circle aktif dapat kamu ikuti.";
+  if (normalized.includes("membership quota") || normalized.includes("membership limit")) {
+    return "Kuota Circle yang kamu ikuti sudah terpakai. Circle yang ada tetap aman.";
   }
   if (normalized.includes("rate limited")) {
     return "Terlalu banyak aktivitas dalam waktu singkat. Coba lagi nanti.";

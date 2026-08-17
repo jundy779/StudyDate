@@ -181,6 +181,13 @@ focus jelas. Native `details` dapat dipakai untuk tindakan sekunder tanpa modal 
 Tablet mempertahankan rail 88px, desktop sidebar 260px, mobile satu kolom, dan semua
 copy panjang wajib wrap tanpa horizontal overflow.
 
+### StudyDate Plus v1
+
+`/app/membership` memakai halaman akun editorial: heading, status paket, tabel perbandingan
+kapasitas, dan CTA dinonaktifkan `StudyDate Plus segera tersedia`. Jangan memakai kartu
+harga SaaS, gradient berlebih, atau estetika VIP dating. Badge Plus tidak tampil di People.
+Owner `/owner/memberships` mengikuti shell staff existing.
+
 ### Campus Events v1 (deployed)
 
 `/app/events` memakai daftar editorial acara mendatang dengan filter nama, kategori, dan

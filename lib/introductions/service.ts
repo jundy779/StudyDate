@@ -31,6 +31,7 @@ export type IntroductionSendEligibility = {
     | "pending"
     | "cooldown"
     | "rate_limited"
+    | "quota_reached"
     | "blocked";
 };
 
@@ -39,6 +40,10 @@ function mapIntroductionError(message: string | undefined): string {
 
   if (text.includes("contact disclosure")) {
     return CONTACT_DISCLOSURE_MESSAGE;
+  }
+
+  if (text.includes("quota reached")) {
+    return "Kuota perkenalan paket kamu sudah terpakai. Lihat StudyDate Plus untuk kapasitas tambahan.";
   }
 
   if (
