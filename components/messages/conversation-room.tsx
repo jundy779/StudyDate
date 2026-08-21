@@ -41,8 +41,10 @@ import { IdentityRevealPanel } from "@/components/messages/identity-reveal-panel
 import { ContactRevealPanel } from "@/components/messages/contact-reveal-panel";
 import { CounterpartPrivacyCard } from "@/components/messages/counterpart-privacy-card";
 import { TelegramCompanionPanel } from "@/components/messages/telegram-companion-panel";
+import { MeetingPlanPanel } from "@/components/messages/meeting-plan-panel";
 import { getMascotForAlias } from "@/lib/people/constants";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
+import type { MeetingPlanState } from "@/lib/meeting-plans/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -74,6 +76,7 @@ type ConversationRoomProps = {
   >;
   profileContactDefaults?: Partial<Record<ContactRevealChannel, string>>;
   initialTelegramCompanion: TelegramSafeState;
+  initialMeetingPlan: MeetingPlanState;
   notice?: string | null;
   state?: string | null;
 };
@@ -112,6 +115,7 @@ export function ConversationRoom({
   initialContactCompleted,
   profileContactDefaults,
   initialTelegramCompanion,
+  initialMeetingPlan,
   notice,
   state,
 }: ConversationRoomProps) {
@@ -701,6 +705,10 @@ export function ConversationRoom({
                   .catch(() => undefined);
               }
             }}
+          />
+          <MeetingPlanPanel
+            publicId={conversation.public_id}
+            initialState={initialMeetingPlan}
           />
       </section>
 

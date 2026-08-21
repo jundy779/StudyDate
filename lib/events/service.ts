@@ -10,6 +10,7 @@ import {
 import type {
   EventFilters,
   EventFormInput,
+  EventMessageReportInput,
   EventReportInput,
   EventUpdateInput,
 } from "@/lib/events/validation";
@@ -62,12 +63,48 @@ export type CampusEventAttendee = {
   rsvped_at: string;
 };
 
+export type CampusEventMessage = {
+  message_public_id: string;
+  author_alias: string;
+  author_is_verified: boolean;
+  body: string;
+  created_at: string;
+  is_mine: boolean;
+};
+
+export type CampusEventCircleLink = {
+  circle_public_slug: string;
+  circle_name: string;
+};
+
+export type CampusEventCircleOption = {
+  public_slug: string;
+  name: string;
+};
+
+export type CampusEventTicket = {
+  ticket_public_id: string;
+  ticket_token: string;
+};
+
+export type CampusEventTicketState = {
+  status: "issued" | "revoked" | "checked_in";
+  issued_at: string;
+  checked_in_at: string | null;
+};
+
 export function mapCampusEventError(message?: string) {
   const value = (message ?? "").toLowerCase();
   if (value.includes("private venue")) {
     return "Lokasi pribadi tidak diperbolehkan. Pilih tempat umum.";
   }
   if (value.includes("event full")) return "Kapasitas event sudah penuh.";
+  if (value.includes("event ownership quota")) {
+    return "Batas Event aktif untuk paketmu sudah tercapai. Kelola Event lama atau lihat StudyDate Plus.";
+  }
+  if (value.includes("event attendance quota")) {
+    return "Batas Event yang dapat diikuti untuk paketmu sudah tercapai. Batalkan RSVP lain atau lihat StudyDate Plus.";
+  }
   if (value.includes("organizer limit")) {
     return "Maksimal lima event mendatang dapat kamu kelola.";
   }
@@ -232,3 +269,127 @@ export const reportCampusEvent = (input: EventReportInput) =>
   reportCampusEventTarget("report_campus_event", input);
 export const reportCampusEventOrganizer = (input: EventReportInput) =>
   reportCampusEventTarget("report_campus_event_organizer", input);
+
+export async function joinCampusEventWaitlist(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("join_campus_event_waitlist", {
+    p_public_slug: publicSlug,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+  return typeof data === "number" ? data : 0;
+}
+
+export async function leaveCampusEventWaitlist(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("leave_campus_event_waitlist", {
+    p_public_slug: publicSlug,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+  return Boolean(data);
+}
+
+export async function getMyCampusEventWaitlistPosition(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "get_my_campus_event_waitlist_position",
+    { p_public_slug: publicSlug },
+  );
+  return error || typeof data !== "number" ? null : data;
+}
+
+export async function setCampusEventCircle(
+  eventPublicSlug: string,
+  circlePublicSlug: string | null,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_campus_event_circle", {
+    p_event_public_slug: eventPublicSlug,
+    p_circle_public_slug: circlePublicSlug,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+}
+
+export async function getCampusEventCircle(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_campus_event_circle", {
+    p_event_public_slug: publicSlug,
+  });
+  if (error) return null;
+  return ((data ?? [])[0] as CampusEventCircleLink | undefined) ?? null;
+}
+
+export async function listMyCircleOptionsForEvent() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_my_circle_options_for_event");
+  if (error) return [];
+  return (data ?? []) as CampusEventCircleOption[];
+}
+
+export async function listCampusEventMessages(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_campus_event_messages", {
+    p_public_slug: publicSlug,
+    p_before_created_at: null,
+    p_before_public_id: null,
+    p_limit: 51,
+  });
+  if (error) return [];
+  return (data ?? []) as CampusEventMessage[];
+}
+
+export async function sendCampusEventMessage(
+  publicSlug: string,
+  body: string,
+  idempotencyKey: string,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("send_campus_event_message", {
+    p_public_slug: publicSlug,
+    p_body: body,
+    p_idempotency_key: idempotencyKey,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+}
+
+export async function reportCampusEventMessage(input: EventMessageReportInput) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("report_campus_event_message", {
+    p_public_slug: input.publicSlug,
+    p_message_public_id: input.messagePublicId,
+    p_reason_code: input.reasonCode,
+    p_details: input.details ?? null,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+}
+
+export async function issueMyCampusEventTicket(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("issue_my_campus_event_ticket", {
+    p_public_slug: publicSlug,
+  });
+  const row = (data ?? [])[0] as CampusEventTicket | undefined;
+  if (error || !row) throw new Error(mapCampusEventError(error?.message));
+  return row;
+}
+
+export async function getMyCampusEventTicketState(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_my_campus_event_ticket_state", {
+    p_public_slug: publicSlug,
+  });
+  if (error) return null;
+  return ((data ?? [])[0] as CampusEventTicketState | undefined) ?? null;
+}
+
+export async function checkInCampusEventTicket(
+  publicSlug: string,
+  ticketToken: string,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("check_in_campus_event_ticket", {
+    p_event_public_slug: publicSlug,
+    p_ticket_token: ticketToken,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+  return data === "duplicate" ? "duplicate" : "checked_in";
+}

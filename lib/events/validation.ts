@@ -24,6 +24,29 @@ const plainText = (message: string) =>
   z.string().trim().refine((value) => !/<[^>]+>/.test(value), message);
 
 export const eventSlugSchema = z.string().regex(/^event-[0-9a-f]{24}$/);
+export const eventMessageSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    body: plainText("Pesan harus berupa teks biasa.").min(1).max(800),
+    idempotencyKey: z.string().regex(/^[A-Za-z0-9_-]{16,80}$/),
+  })
+  .strict();
+
+export const eventCircleLinkSchema = z
+  .object({
+    eventPublicSlug: eventSlugSchema,
+    circlePublicSlug: z
+      .union([z.string().regex(/^circle-[0-9a-f]{24}$/), z.literal("")])
+      .transform((value) => value || null),
+  })
+  .strict();
+
+export const eventTicketCheckInSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    ticketToken: z.string().regex(/^[0-9a-f]{64}$/),
+  })
+  .strict();
 
 const eventFields = {
   title: plainText("Judul harus berupa teks biasa.")
@@ -122,10 +145,15 @@ export const eventReportSchema = z
   })
   .strict();
 
+export const eventMessageReportSchema = eventReportSchema.extend({
+  messagePublicId: z.string().regex(/^[0-9a-f]{32}$/),
+}).strict();
+
 export type EventFormInput = z.infer<typeof eventFormSchema>;
 export type EventUpdateInput = z.infer<typeof eventUpdateSchema>;
 export type EventFilters = z.infer<typeof eventFiltersSchema>;
 export type EventReportInput = z.infer<typeof eventReportSchema>;
+export type EventMessageReportInput = z.infer<typeof eventMessageReportSchema>;
 
 function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

@@ -11,6 +11,7 @@ Do not commit secret values. Fill hosting env (Vercel/etc.) and keep `.env.local
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3010` | `https://YOUR_DOMAIN` |
 | StudyDate email (`STUDYDATE_*`) | Required to test login mail | Required |
 | `STUDENT_VERIFICATION_ENABLED` | `false` | Enable only after controlled audit |
+| `AUTOGOPAY_ENABLED` | `false` | Enable only after rotated-key payment audit |
 
 ## Required production variables
 
@@ -41,9 +42,16 @@ STUDENT_VERIFICATION_CLEANUP_SCHEDULED=false
 PDDIKTI_LOOKUP_PROVIDER_ENABLED=false
 PDDIKTI_PROVIDER_BASE_URL=
 PDDIKTI_PROVIDER_ACCESS_KEY=
+
+AUTOGOPAY_ENABLED=false
+AUTOGOPAY_API_KEY=
 ```
 
 Verification crypto keys may remain set even while Verification stays disabled.
+
+AutoGoPay key must be server-only and rotated if it ever appears in chat, logs,
+screenshots, Git, or shell history. Callback production:
+`https://studydate.id/api/integrations/autogopay/webhook`.
 
 ## Student Verification production gate
 

@@ -13,6 +13,7 @@ import {
   getAllCompletedContactReveals,
   getContactRevealState,
 } from "@/lib/contact-reveal/service";
+import { getMyMeetingPlanState } from "@/lib/meeting-plans/service";
 import { NextResponse, type NextRequest } from "next/server";
 
 type RouteContext = {
@@ -43,7 +44,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     }
 
     const mode = _request.nextUrl.searchParams.get("mode");
-    const [messages, mutualInterest, identityReveal, contactReveal] =
+    const [messages, mutualInterest, identityReveal, contactReveal, meetingPlan] =
       await Promise.all([
         mode === "reveal"
           ? Promise.resolve([])
@@ -51,6 +52,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         mode === "messages" ? null : getMutualInterestState(parsed.data),
         mode === "messages" ? null : getIdentityRevealState(parsed.data),
         mode === "messages" ? null : getContactRevealState(parsed.data),
+        mode === "messages" ? null : getMyMeetingPlanState(parsed.data),
       ]);
 
     const identityRevealCompleted = identityReveal?.completed
@@ -124,6 +126,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           mineHref: item.mineHref,
           counterpartHref: item.counterpartHref,
         })),
+      meetingPlan: meetingPlan ?? undefined,
       messages: messages.map((message) => ({
         message_id: message.message_id,
         body: message.body,

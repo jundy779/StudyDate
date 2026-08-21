@@ -58,6 +58,8 @@ Server-only:
 - `CONTACT_REVEAL_ENCRYPTION_KEY` (AES-256-GCM; see `docs/operations/contact-reveal-key-recovery.md`)
 - optional `CONTACT_REVEAL_KEY_VERSION` and `CONTACT_REVEAL_ENCRYPTION_KEY_V{n}` during rotation
 - StudyDate-branded SMTP atau Resend untuk email verifikasi kampus.
+- `AUTOGOPAY_ENABLED` (default OFF) dan `AUTOGOPAY_API_KEY` untuk GoPay QRIS
+  server-side; key yang pernah dibagikan di chat wajib dirotasi.
 
 Jangan mengimpor service-role client ke Client Component.
 
@@ -376,7 +378,7 @@ Unread count global dipoll setiap 25 detik, tidak overlap, dan polling dilewati 
 document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
 Preference per tipe tidak ada; Circle/Event memakai inbox dan badge yang sama.
 
-Migration lokal `202608170006` memperluas constraint type/path/metadata untuk Circle dan
+Migration deployed `202608170006` memperluas constraint type/path/metadata untuk Circle dan
 Campus Event. Fan-out memakai `INSERT … SELECT` terbatas pada membership/RSVP aktif,
 mengecualikan actor/organizer, dan `ON CONFLICT (dedupe_key) DO NOTHING`. Projection
 list menambahkan `headline` / `when_label` / `venue_label` terikat panjang, bukan objek
@@ -457,7 +459,8 @@ hari ke depan.
 Venue hanya dapat memakai kategori tempat publik. Empat afirmasi keselamatan wajib true
 di RPC dan disimpan sebagai satu `safety_confirmed_at`; filter teks lokasi privat menjadi
 kontrol best-effort tambahan. V1 tidak memiliki venue pribadi, live location, link bebas,
-file, event chat, ticketing, pembayaran, waitlist, atau check-in.
+file, atau pembayaran Event. Fase lanjutan menambah Event chat, ticketing/check-in,
+waitlist, association Circle, dan reminder tanpa mengubah private reveal.
 
 RSVP `going | cancelled` mengambil user dari sesi. Organizer otomatis menjadi RSVP
 pertama. RPC RSVP mengunci row Event sebelum menghitung peserta aktif dan melakukan
@@ -475,8 +478,9 @@ masih lebih dari dua jam sebelum mulai; scope immutable dan kapasitas tidak dapa
 di bawah RSVP aktif. Waktu, timezone, dan venue dikunci setelah RSVP `going`
 non-organizer pertama. Cancel tidak dapat dipulihkan, mempertahankan RSVP/evidence, dan
 archive hanya tersedia setelah cancel atau Event berakhir. Circle association tetap di
-luar v1. Notifikasi RSVP, perubahan jadwal/lokasi, dan pembatalan memakai tabel
-`user_notifications` existing; reminder ditunda.
+luar Event v1 awal tetapi tersedia pada fase berikutnya. Notifikasi RSVP, perubahan
+jadwal/lokasi, pembatalan, waitlist promotion, dan reminder memakai tabel
+`user_notifications` existing.
 
 Live audit A/B/C/D mengonfirmasi public-place filtering, waktu/timezone, open/campus
 eligibility, RSVP idempotency dan exact final-slot concurrency, safe detail/attendee
@@ -520,7 +524,7 @@ worker exact-request, cleanup, dan browser lima viewport lulus pada 10 Agustus
 2026.
 Mahasiswa tetap hanya dapat request self dan membaca status sendiri.
 
-## 12j. Membership & Entitlement Engine v1 (local / awaiting remote migration)
+## 12j. Membership, AutoGoPay, dan Safety Meeting
 
 ```text
 get_my_membership / effective_membership_plan
@@ -540,13 +544,30 @@ dan tidak memendekkan grant tanpa batas (`ends_at` NULL).
 Kuota People harian memakai `membership_quota_usage` (satu consume per list RPC, jendela
 UTC day). Variabel PL/pgSQL hotfix adalah `v_quota_window_start` agar tidak bentrok
 dengan kolom `window_start`. Kuota introduction/circle dihitung dari row aktual (pending outgoing, created
-today UTC, owned active circles, joined `role=member`). UI `/app/membership` hanya
-menampilkan paket; checkout tidak ada. Owner `/owner/memberships` lookup/grant by email,
+today UTC, owned active circles, joined `role=member`). Kuota Event memakai row
+scheduled mendatang (Free 2/5, Plus 5/10). UI `/app/membership` menampilkan paket dan
+checkout GoPay hanya saat kill switch/offer aktif. Owner `/owner/memberships` lookup/grant by email,
 RPC UUID `manage_user_membership` dicabut dari `authenticated`.
 
 Jangan cache otorisasi membership lintas request setelah grant/revoke. `getMyMembership`
 memakai React `cache()` per request. Client, `localStorage`, `user_metadata`, dan boolean
 profil bukan sumber membership.
+
+Migration `202608210001` menambah offer singleton Owner, private payment ledger,
+service-role finalization, dan adapter GoPay QRIS Next.js. Webhook memverifikasi
+HMAC-SHA256 atas exact raw bytes sebelum strict payload validation. Amount, provider
+order, dan transaction harus cocok; duplicate callback tidak menambah entitlement.
+
+Migration `202608210002` menambah satu meeting plan aktif per `conversation_shells`
+setelah Mutual Interest + Identity Reveal. Projection actor hanya memuat detail plan
+dan own pre/post-check. End/block membatalkan plan mendatang; detail tempat/waktu
+dibersihkan setelah 90 hari kecuali report moderasi aktif.
+
+Migration deployed `202608210003`–`009` memisahkan Event roadmap menjadi kuota membership,
+scheduler reminder idempoten, preferensi in-app, association Circle milik organizer,
+FIFO waitlist, chat teks untuk RSVP aktif, serta tiket opaque dengan check-in organizer.
+Forward migration deployed `202608210010` memperbaiki konflik record/alias waitlist.
+Scheduler tetap OFF sampai live QA dan aktivasi cron terpisah.
 
 ## 13. Staff authorization v1
 

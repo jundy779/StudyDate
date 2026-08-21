@@ -185,9 +185,18 @@ copy panjang wajib wrap tanpa horizontal overflow.
 ### StudyDate Plus v1
 
 `/app/membership` memakai halaman akun editorial: heading, status paket, tabel perbandingan
-kapasitas, dan CTA dinonaktifkan `StudyDate Plus segera tersedia`. Jangan memakai kartu
-harga SaaS, gradient berlebih, atau estetika VIP dating. Badge Plus tidak tampil di People.
+kapasitas, serta satu CTA GoPay QRIS hanya ketika offer dan kill switch aktif. Pending
+payment menampilkan buka QRIS, status manual, dan cancel tanpa aggressive polling. Jangan
+memakai kartu harga SaaS, gradient berlebih, atau estetika VIP dating. Badge Plus tidak tampil di People.
 Owner `/owner/memberships` mengikuti shell staff existing.
+
+### Safety Meeting Flow v1
+
+Panel rencana bertemu berada setelah progressive reveal di conversation room. Form memakai
+tempat publik, waktu, timezone, dan empat afirmasi keselamatan. Setelah diajukan detail
+read-only; perubahan dilakukan dengan cancel lalu proposal baru. Share memakai teks lokal
+melalui native share/clipboard tanpa public link, alias, kontak, foto, atau live location.
+Pre/post-check memakai own state dan tidak menampilkan emergency-monitoring claim.
 
 ### Campus Events v1 (deployed)
 
@@ -213,7 +222,8 @@ Gunakan native `details` untuk tindakan sekunder; konfirmasi destruktif tidak bo
 bergantung pada dialog tanpa focus management.
 
 Mobile satu kolom dengan date/time controls yang dapat dipakai; tablet mempertahankan
-rail 88px dan desktop sidebar 260px. Tidak ada event chat, map embed, arbitrary links,
+rail 88px dan desktop sidebar 260px. Fase Event lanjutan menambahkan diskusi teks,
+waitlist, tiket, dan check-in dalam detail Event tanpa map embed, arbitrary links,
 poster, fake people, atau visual dating.
 
 ### Account & Privacy Controls v1 (DEPLOYED / LIVE-VERIFIED)

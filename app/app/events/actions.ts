@@ -5,16 +5,27 @@ import {
   archiveCampusEvent,
   cancelCampusEvent,
   cancelCampusEventRsvp,
+  checkInCampusEventTicket,
   createCampusEvent,
+  issueMyCampusEventTicket,
+  joinCampusEventWaitlist,
+  leaveCampusEventWaitlist,
   reportCampusEvent,
+  reportCampusEventMessage,
   reportCampusEventOrganizer,
   rsvpCampusEvent,
+  sendCampusEventMessage,
+  setCampusEventCircle,
   updateCampusEvent,
 } from "@/lib/events/service";
 import {
+  eventCircleLinkSchema,
   eventFormSchema,
+  eventMessageReportSchema,
+  eventMessageSchema,
   eventReportSchema,
   eventSlugSchema,
+  eventTicketCheckInSchema,
   eventUpdateSchema,
 } from "@/lib/events/validation";
 import { revalidatePath } from "next/cache";
@@ -199,4 +210,151 @@ export async function reportCampusEventAction(formData: FormData) {
     );
   }
   redirect(detailPath(parsed.data.publicSlug, "?state=reported"));
+}
+
+export async function joinCampusEventWaitlistAction(formData: FormData) {
+  await requireEventStudent();
+  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+  if (!slug.success) redirect("/app/events?state=error");
+  try {
+    await joinCampusEventWaitlist(slug.data);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Antrean belum dapat diperbarui.";
+    redirect(detailPath(slug.data, `?state=error&notice=${encodeURIComponent(message)}`));
+  }
+  revalidatePath(detailPath(slug.data));
+  redirect(detailPath(slug.data, "?state=waitlisted"));
+}
+
+export async function leaveCampusEventWaitlistAction(formData: FormData) {
+  await requireEventStudent();
+  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+  if (!slug.success) redirect("/app/events?state=error");
+  await leaveCampusEventWaitlist(slug.data);
+  revalidatePath(detailPath(slug.data));
+  redirect(detailPath(slug.data, "?state=left-waitlist"));
+}
+
+export async function sendCampusEventMessageAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventMessageSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    body: formData.get("body"),
+    idempotencyKey: formData.get("idempotencyKey"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  try {
+    await sendCampusEventMessage(
+      parsed.data.publicSlug,
+      parsed.data.body,
+      parsed.data.idempotencyKey,
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Pesan Event belum dapat dikirim.";
+    redirect(
+      detailPath(
+        parsed.data.publicSlug,
+        `?state=error&notice=${encodeURIComponent(message)}`,
+      ),
+    );
+  }
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=message-sent"));
+}
+
+export async function reportCampusEventMessageAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventMessageReportSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    messagePublicId: formData.get("messagePublicId"),
+    reasonCode: formData.get("reasonCode"),
+    details: formData.get("details") ?? undefined,
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  try {
+    await reportCampusEventMessage(parsed.data);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Laporan pesan belum dapat dikirim.";
+    redirect(
+      detailPath(
+        parsed.data.publicSlug,
+        `?state=error&notice=${encodeURIComponent(message)}`,
+      ),
+    );
+  }
+  redirect(detailPath(parsed.data.publicSlug, "?state=message-reported"));
+}
+
+export async function setCampusEventCircleAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventCircleLinkSchema.safeParse({
+    eventPublicSlug: formData.get("publicSlug"),
+    circlePublicSlug: formData.get("circlePublicSlug"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  try {
+    await setCampusEventCircle(
+      parsed.data.eventPublicSlug,
+      parsed.data.circlePublicSlug,
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Circle belum dapat ditautkan.";
+    redirect(
+      detailPath(
+        parsed.data.eventPublicSlug,
+        `?state=error&notice=${encodeURIComponent(message)}`,
+      ),
+    );
+  }
+  revalidatePath(detailPath(parsed.data.eventPublicSlug));
+  redirect(detailPath(parsed.data.eventPublicSlug, "?state=circle-linked"));
+}
+
+export async function issueCampusEventTicketAction(formData: FormData) {
+  await requireEventStudent();
+  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+  if (!slug.success) redirect("/app/events?state=error");
+  try {
+    const ticket = await issueMyCampusEventTicket(slug.data);
+    return {
+      ticketToken: ticket.ticket_token,
+      message: "Tiket diterbitkan. Simpan token ini secara privat.",
+    };
+  } catch (error) {
+    return {
+      ticketToken: null,
+      message:
+        error instanceof Error ? error.message : "Tiket belum dapat diterbitkan.",
+    };
+  }
+}
+
+export async function checkInCampusEventTicketAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventTicketCheckInSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    ticketToken: formData.get("ticketToken"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  try {
+    const state = await checkInCampusEventTicket(
+      parsed.data.publicSlug,
+      parsed.data.ticketToken,
+    );
+    revalidatePath(detailPath(parsed.data.publicSlug));
+    redirect(detailPath(parsed.data.publicSlug, `?state=${state}`));
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Check-in belum dapat diproses.";
+    redirect(
+      detailPath(
+        parsed.data.publicSlug,
+        `?state=error&notice=${encodeURIComponent(message)}`,
+      ),
+    );
+  }
 }

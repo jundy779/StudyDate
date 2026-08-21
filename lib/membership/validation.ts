@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MEMBERSHIP_GRANT_DAYS } from "./limits";
+export { billingOfferSchema } from "@/lib/billing/validation";
 
 export const membershipEmailLookupSchema = z
   .object({

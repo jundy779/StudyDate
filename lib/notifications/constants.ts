@@ -9,6 +9,7 @@ import {
   Sparkles,
   UserMinus,
   Users,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,6 +28,12 @@ export const NOTIFICATION_TYPES = [
   "EVENT_SCHEDULE_CHANGED",
   "EVENT_LOCATION_CHANGED",
   "EVENT_CANCELLED",
+  "MEETING_PLAN_PROPOSED",
+  "MEETING_PLAN_CONFIRMED",
+  "MEETING_PLAN_CANCELLED",
+  "EVENT_REMINDER_24H",
+  "EVENT_REMINDER_2H",
+  "EVENT_WAITLIST_PROMOTED",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -154,6 +161,49 @@ export function getNotificationCopy(item: NotificationItem): NotificationCopy {
         title: "Event dibatalkan",
         description: quotedHeadline(item.headline, "Campus Event tidak jadi dilaksanakan."),
         Icon: CalendarX2,
+      };
+    case "MEETING_PLAN_PROPOSED":
+      return {
+        title: "Rencana pertemuan baru",
+        description: "Ada rencana bertemu di tempat publik yang perlu kamu tinjau.",
+        Icon: MapPin,
+      };
+    case "MEETING_PLAN_CONFIRMED":
+      return {
+        title: "Rencana pertemuan dikonfirmasi",
+        description: "Kalian telah menyetujui rencana pertemuan di tempat publik.",
+        Icon: ShieldCheck,
+      };
+    case "MEETING_PLAN_CANCELLED":
+      return {
+        title: "Rencana pertemuan dibatalkan",
+        description: "Rencana pertemuan tidak lagi aktif.",
+        Icon: CalendarX2,
+      };
+    case "EVENT_REMINDER_24H":
+      return {
+        title: "Event dimulai sekitar 24 jam lagi",
+        description: item.whenLabel
+          ? `${quotedHeadline(item.headline, "Campus Event")} · ${item.whenLabel}`
+          : "Periksa kembali jadwal dan tempat publik event.",
+        Icon: CalendarClock,
+      };
+    case "EVENT_REMINDER_2H":
+      return {
+        title: "Event dimulai sekitar 2 jam lagi",
+        description: item.whenLabel
+          ? `${quotedHeadline(item.headline, "Campus Event")} · ${item.whenLabel}`
+          : "Periksa kembali jadwal dan tempat publik event.",
+        Icon: CalendarClock,
+      };
+    case "EVENT_WAITLIST_PROMOTED":
+      return {
+        title: "Kamu mendapat slot Event",
+        description: quotedHeadline(
+          item.headline,
+          "Kamu dipindahkan dari waitlist ke daftar peserta.",
+        ),
+        Icon: CalendarClock,
       };
     default: {
       const exhaustive: never = item.type;

@@ -2,8 +2,10 @@ import {
   grantPlusMembership,
   lookupMembership,
   revokePlusMembership,
+  updateBillingOffer,
 } from "@/app/owner/memberships/actions";
 import { StaffShell } from "@/components/staff/staff-shell";
+import { getOwnerBillingOffer } from "@/lib/billing/service";
 import { MEMBERSHIP_GRANT_DAYS } from "@/lib/membership/limits";
 import { lookupMembershipByEmail } from "@/lib/membership/service";
 import { requireOwner } from "@/lib/staff/authorization";
@@ -24,6 +26,7 @@ const stateMessage: Record<string, string> = {
   invalid: "Input tidak valid.",
   not_found: "Tidak ada akun Auth dengan email itu.",
   unchanged: "Tidak ada paket Plus aktif untuk dicabut.",
+  offer_saved: "Penawaran StudyDate Plus tersimpan.",
 };
 
 async function MembershipsContent({ searchParams }: Props) {
@@ -31,7 +34,10 @@ async function MembershipsContent({ searchParams }: Props) {
   const query = await searchParams;
   const email = query.email?.trim().toLowerCase() || "";
   const message = query.state ? stateMessage[query.state] : null;
-  const record = email ? await lookupMembershipByEmail(email) : null;
+  const [record, offer] = await Promise.all([
+    email ? lookupMembershipByEmail(email) : null,
+    getOwnerBillingOffer(),
+  ]);
   const isError =
     query.state === "error" ||
     query.state === "invalid" ||
@@ -46,8 +52,8 @@ async function MembershipsContent({ searchParams }: Props) {
             Membership
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Grant Plus terbatas untuk uji Owner. Pembayaran belum ada. Cari akun
-            lewat email Auth, tanpa UUID mentah.
+            Atur satu penawaran Plus global dan kelola grant manual lewat email
+            Auth, tanpa UUID mentah.
           </p>
 
           {message ? (
@@ -60,6 +66,55 @@ async function MembershipsContent({ searchParams }: Props) {
               {message}
             </p>
           ) : null}
+
+          <section className="mt-8 border-y border-brand-border py-7">
+            <h2 className="font-heading text-2xl font-semibold text-brand-navy">
+              Penawaran pembayaran
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
+              Checkout hanya muncul saat penawaran aktif dan kill switch AutoGoPay
+              dikonfigurasi server-side.
+            </p>
+            <form action={updateBillingOffer} className="mt-5 grid gap-4 sm:grid-cols-3 sm:items-end">
+              <label className="text-sm font-semibold">
+                Harga (IDR)
+                <input
+                  name="amountIdr"
+                  type="number"
+                  min={1}
+                  max={10_000_000}
+                  required
+                  defaultValue={offer?.amountIdr ?? 29000}
+                  className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                />
+              </label>
+              <label className="text-sm font-semibold">
+                Durasi (hari)
+                <input
+                  name="durationDays"
+                  type="number"
+                  min={1}
+                  max={365}
+                  required
+                  defaultValue={offer?.durationDays ?? 30}
+                  className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                />
+              </label>
+              <label className="flex min-h-11 items-center gap-3 text-sm font-semibold">
+                <input
+                  name="isActive"
+                  type="checkbox"
+                  value="true"
+                  defaultChecked={offer?.isActive ?? false}
+                  className="focus-ring h-5 w-5"
+                />
+                Aktifkan checkout
+              </label>
+              <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white sm:col-span-3 sm:justify-self-start">
+                Simpan penawaran
+              </button>
+            </form>
+          </section>
 
           <form
             action={lookupMembership}
@@ -120,7 +175,9 @@ async function MembershipsContent({ searchParams }: Props) {
                         ? "Promo Akses Awal"
                         : record.source === "system"
                           ? "Sistem"
-                          : "Cadangan pembayaran (tidak aktif)"}
+                          : record.source === "future_payment"
+                            ? "Pembayaran GoPay QRIS"
+                            : "Sumber lain"}
                 </p>
               ) : null}
 

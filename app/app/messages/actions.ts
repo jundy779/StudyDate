@@ -39,6 +39,18 @@ import {
   contactRevealWithdrawSchema,
 } from "@/lib/contact-reveal/validation";
 import { peopleAliasSchema } from "@/lib/people/validation";
+import {
+  acknowledgeMeetingPrecheck,
+  cancelMeetingPlan,
+  completeMeetingPostcheck,
+  confirmMeetingPlan,
+  proposeMeetingPlan,
+} from "@/lib/meeting-plans/service";
+import {
+  meetingPlanActionSchema,
+  meetingPostcheckSchema,
+  proposeMeetingPlanSchema,
+} from "@/lib/meeting-plans/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -271,6 +283,72 @@ export async function withdrawContactRevealAction(formData: FormData) {
     parsed.data.publicId,
     parsed.data.channel,
   );
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+const checked = (value: FormDataEntryValue | null) => value === "on";
+
+export async function proposeMeetingPlanAction(formData: FormData) {
+  await requireOnboardedStudent();
+  const parsed = proposeMeetingPlanSchema.safeParse({
+    publicId: formData.get("publicId"),
+    venueCategory: formData.get("venueCategory"),
+    venueName: formData.get("venueName"),
+    venueArea: formData.get("venueArea"),
+    city: formData.get("city"),
+    startsAtLocal: formData.get("startsAtLocal"),
+    expectedEndAtLocal: formData.get("expectedEndAtLocal"),
+    timezone: formData.get("timezone"),
+    confirmsPublicPlace: checked(formData.get("confirmsPublicPlace")),
+    confirmsExpectedOperating: checked(formData.get("confirmsExpectedOperating")),
+    confirmsNotPrivateResidence: checked(formData.get("confirmsNotPrivateResidence")),
+    confirmsNoPrivateLocationDisclosure: checked(
+      formData.get("confirmsNoPrivateLocationDisclosure"),
+    ),
+  });
+  if (!parsed.success) throw new Error("Periksa detail rencana pertemuan.");
+  const next = await proposeMeetingPlan(parsed.data);
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+async function meetingAction(
+  formData: FormData,
+  action: typeof confirmMeetingPlan | typeof cancelMeetingPlan | typeof acknowledgeMeetingPrecheck,
+) {
+  await requireOnboardedStudent();
+  const parsed = meetingPlanActionSchema.safeParse({
+    publicId: formData.get("publicId"),
+    planPublicId: formData.get("planPublicId"),
+  });
+  if (!parsed.success) throw new Error(GENERIC_CHAT_ERROR);
+  const next = await action(parsed.data.publicId, parsed.data.planPublicId);
+  revalidateMessages(parsed.data.publicId);
+  return next;
+}
+
+export async function confirmMeetingPlanAction(formData: FormData) {
+  return meetingAction(formData, confirmMeetingPlan);
+}
+
+export async function cancelMeetingPlanAction(formData: FormData) {
+  return meetingAction(formData, cancelMeetingPlan);
+}
+
+export async function acknowledgeMeetingPrecheckAction(formData: FormData) {
+  return meetingAction(formData, acknowledgeMeetingPrecheck);
+}
+
+export async function completeMeetingPostcheckAction(formData: FormData) {
+  await requireOnboardedStudent();
+  const parsed = meetingPostcheckSchema.safeParse({
+    publicId: formData.get("publicId"),
+    planPublicId: formData.get("planPublicId"),
+    status: formData.get("status"),
+  });
+  if (!parsed.success) throw new Error(GENERIC_CHAT_ERROR);
+  const next = await completeMeetingPostcheck(parsed.data);
   revalidateMessages(parsed.data.publicId);
   return next;
 }

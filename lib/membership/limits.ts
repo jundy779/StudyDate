@@ -9,6 +9,8 @@ export const MEMBERSHIP_LIMITS = {
     activeIntroductions: 3,
     createdCirclesActive: 1,
     joinedCirclesActive: 3,
+    createdEventsActive: 2,
+    joinedEventsActive: 5,
     advancedDiscoveryFilters: false,
   },
   plus: {
@@ -17,6 +19,8 @@ export const MEMBERSHIP_LIMITS = {
     activeIntroductions: 10,
     createdCirclesActive: 3,
     joinedCirclesActive: 10,
+    createdEventsActive: 5,
+    joinedEventsActive: 10,
     advancedDiscoveryFilters: true,
   },
 } as const;

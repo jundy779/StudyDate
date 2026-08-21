@@ -248,12 +248,13 @@ test("safety, reveal, and verification are not membership-gated", () => {
   assert.doesNotMatch(peopleDetail, /Plus badge|isPlus|plan === "plus"/);
 });
 
-test("student membership UI has no checkout or payment provider", () => {
+test("student membership UI keeps checkout server-authoritative", () => {
   assert.match(navigation, /href: "\/app\/membership"/);
   assert.match(navigation, /label: "StudyDate Plus"/);
   assert.match(studentPage, /StudyDate Plus segera tersedia/);
-  assert.match(studentPage, /Tidak ada checkout pada halaman ini/);
-  assert.doesNotMatch(studentPage, /autogopay|qris|checkout_url|harga Rp/i);
+  assert.match(studentPage, /startMembershipCheckout/);
+  assert.match(studentPage, /Pembayaran diproses melalui GoPay QRIS/);
+  assert.doesNotMatch(studentPage, /AUTOGOPAY_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(migration, /autogopay|checkout_url|qris|AUTOGOPAY/i);
 });
 

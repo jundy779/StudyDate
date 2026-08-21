@@ -84,9 +84,31 @@ Sumber migration:
     **DEPLOYED**
 33. `supabase/migrations/202608170005_fix_membership_quota_window_ambiguity.sql` —
     rename PL/pgSQL `window_start` → `v_quota_window_start` in
-    `consume_membership_quota`; **LOCAL / NOT APPLIED**
+    `consume_membership_quota`; **DEPLOYED**
 34. `supabase/migrations/202608170006_circle_event_notifications_v1.sql` —
-    Circle/Event types on existing `user_notifications`; **LOCAL / NOT APPLIED**
+    Circle/Event types on existing `user_notifications`; **DEPLOYED**
+35. `supabase/migrations/202608210001_autogopay_membership_billing_v1.sql` —
+    singleton offer, private payment ledger, dan atomic Plus finalization;
+    **DEPLOYED; CHECKOUT KILL SWITCH OFF**
+36. `supabase/migrations/202608210002_safety_meeting_flow_v1.sql` —
+    two-party public-place meeting plan setelah Identity Reveal;
+    **DEPLOYED**
+37. `supabase/migrations/202608210003_event_membership_quotas.sql` —
+    kuota Event Free/Plus atomik; **DEPLOYED**
+38. `supabase/migrations/202608210004_event_scheduler_reminders.sql` —
+    scheduler produk dan reminder Event 24h/2h; **DEPLOYED; CRON OFF**
+39. `supabase/migrations/202608210005_notification_preferences.sql` —
+    preferensi notification type in-app; **DEPLOYED**
+40. `supabase/migrations/202608210006_circle_event_association.sql` —
+    asosiasi opsional Event–Circle milik organizer; **DEPLOYED**
+41. `supabase/migrations/202608210007_event_waitlist.sql` —
+    FIFO waitlist dan promosi atomik; **DEPLOYED**
+42. `supabase/migrations/202608210008_event_chat.sql` —
+    chat teks peserta Event dan report-scoped evidence; **DEPLOYED**
+43. `supabase/migrations/202608210009_event_ticketing_checkin.sql` —
+    tiket opaque dan organizer check-in; **DEPLOYED**
+44. `supabase/migrations/202608210010_fix_event_waitlist_candidate_ambiguity.sql` —
+    forward fix konflik record/alias pada promosi waitlist; **DEPLOYED**
 
 ### `early_access_waitlist`
 
@@ -706,24 +728,32 @@ waitlist, approval, check-in, reminder, Event chat,
 ticketing, pembayaran, arbitrary link, Circle association, atau Event notification pada
 v1.
 
-## 12. Planned meeting plans
+## 12. Local meeting plans
 
 ```text
-id
-connection_id
-created_by
-meeting_type
-public_location_name
-public_location_category
-starts_at
-expected_end_at
-status
+public_id
+conversation_id
+created_by / counterpart_id (internal only)
+venue category/name/area/city
+starts_at / expected_end_at / timezone
+pending_confirmation | confirmed | cancelled
+creator/counterpart consent timestamps
+details_purged_at
 created_at
 ```
 
-Statuses: draft, public_location_pending, confirmed, checked_in, completed, cancelled, reported.
+Participant state menyimpan own pre-check acknowledgement dan own post-check
+`safe | report_started`; state counterpart tidak diproyeksikan. Tidak menyimpan
+koordinat, live location, private address, emergency contact, atau map URL.
 
-Jangan simpan precise personal location.
+### AutoGoPay billing
+
+- `membership_billing_offer` — exactly one Owner-managed amount/duration/active offer.
+- `membership_payment_orders` — user, immutable amount/duration snapshot, provider IDs,
+  safe checkout URL, expiry, status, dan entitlement reference.
+- Provider IDs unique; satu creating/pending order per user.
+- `finalize_membership_payment` service-role only, row-locked, amount/order/transaction
+  matched, duplicate-safe, dan menambah Plus dari `max(now, ends_at)`.
 
 ## 13. Future RLS principles
 
@@ -752,7 +782,7 @@ Saat planned entity diimplementasikan:
 
 Migration `202608170002_staff_operations_capabilities.sql` menambah capability flags pada `staff_members` (`can_early_access_read`, `can_users_read`, `can_users_support`), RPC `list_early_access_waitlist_ops` / `list_student_account_ops`, dan audit `staff_ops_audit_events`. Owner role-implied semua capability; Admin default deny. UI: `/staff/early-access`, `/staff/users`; assign staff by email di `/owner/staff`. Bergantung pada claim columns dari `202608170001`.
 
-### Membership entitlements v1 (DEPLOYED; quota hotfix LOCAL)
+### Membership entitlements v1 (DEPLOYED)
 
 Migration `202608170004_membership_entitlements_v1.sql` already applied remotely.
 Forward-only hotfix `202608170005_fix_membership_quota_window_ambiguity.sql`

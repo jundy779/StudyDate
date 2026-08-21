@@ -1,4 +1,5 @@
 import { signOut } from "@/app/app/actions";
+import { updateNotificationPreference } from "@/app/app/settings/notification-actions";
 import { AppShell } from "@/components/app/app-shell";
 import { AccountDangerZone } from "@/components/profile/account-danger-zone";
 import { ProfileEditForm } from "@/components/profile/profile-edit-form";
@@ -10,6 +11,7 @@ import { loadApprovedCampusOptions } from "@/lib/campus/service";
 import { getEditableStudentProfile } from "@/lib/profile/service";
 import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
 import { getMyTelegramCompanionState } from "@/lib/telegram/service";
+import { listNotificationPreferences } from "@/lib/notifications/preferences";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -60,6 +62,7 @@ async function SettingsContent() {
     campusOptions,
     studyProgramOptions,
     telegramCompanion,
+    notificationPreferences,
   ] =
     await Promise.all([
       getEditableStudentProfile(user.id),
@@ -67,6 +70,7 @@ async function SettingsContent() {
       loadApprovedCampusOptions(),
       loadApprovedStudyProgramOptions(),
       getMyTelegramCompanionState(),
+      listNotificationPreferences(),
     ]);
   if (!profile) redirect("/onboarding");
 
@@ -95,6 +99,9 @@ async function SettingsContent() {
             </a>
             <a className="focus-ring shrink-0 text-brand-blue" href="#blokir">
               Blokir
+            </a>
+            <a className="focus-ring shrink-0 text-brand-blue" href="#notifikasi">
+              Notifikasi
             </a>
             <a className="focus-ring shrink-0 text-brand-blue" href="#akun">
               Akun
@@ -181,6 +188,34 @@ async function SettingsContent() {
               description="Kelola akun yang tidak ingin kamu ajak berinteraksi. Hanya blokir yang kamu buat yang terlihat di sini."
             >
               <BlockedStudentsList students={blockedStudents} />
+            </SettingsSection>
+
+            <SettingsSection
+              id="notifikasi"
+              title="Notifikasi"
+              description="Pilih notifikasi in-app yang ingin kamu terima. Email, browser push, SMS, dan Telegram tetap nonaktif."
+            >
+              <div className="divide-y divide-brand-border rounded-xl border border-brand-border bg-white">
+                {notificationPreferences.map((preference) => (
+                  <form
+                    key={preference.type}
+                    action={updateNotificationPreference}
+                    className="flex items-center justify-between gap-4 px-4 py-3"
+                  >
+                    <input type="hidden" name="type" value={preference.type} />
+                    <span className="break-words text-sm font-semibold text-brand-navy">
+                      {preference.type.replaceAll("_", " ")}
+                    </span>
+                    <button
+                      name="enabled"
+                      value={preference.inAppEnabled ? "false" : "true"}
+                      className="focus-ring min-h-10 shrink-0 rounded-lg border border-brand-border px-3 text-xs font-semibold"
+                    >
+                      {preference.inAppEnabled ? "Aktif" : "Nonaktif"}
+                    </button>
+                  </form>
+                ))}
+              </div>
             </SettingsSection>
 
             <SettingsSection

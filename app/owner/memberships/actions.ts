@@ -3,10 +3,12 @@
 import { requireOwner } from "@/lib/staff/authorization";
 import { manageMembershipByEmail } from "@/lib/membership/service";
 import {
+  billingOfferSchema,
   membershipEmailLookupSchema,
   membershipGrantSchema,
   membershipRevokeSchema,
 } from "@/lib/membership/validation";
+import { saveOwnerBillingOffer } from "@/lib/billing/service";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -58,4 +60,22 @@ export async function revokePlusMembership(formData: FormData) {
   redirect(
     `/owner/memberships?email=${encodeURIComponent(parsed.data.email)}&state=saved`,
   );
+}
+
+export async function updateBillingOffer(formData: FormData) {
+  await requireOwner();
+  const parsed = billingOfferSchema.safeParse({
+    amountIdr: formData.get("amountIdr"),
+    durationDays: formData.get("durationDays"),
+    isActive: formData.get("isActive"),
+  });
+  if (!parsed.success) redirect("/owner/memberships?state=invalid");
+  try {
+    await saveOwnerBillingOffer(parsed.data);
+  } catch {
+    redirect("/owner/memberships?state=error");
+  }
+  revalidatePath("/owner/memberships");
+  revalidatePath("/app/membership");
+  redirect("/owner/memberships?state=offer_saved");
 }

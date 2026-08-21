@@ -18,6 +18,11 @@ export const MODERATION_TARGET_LABELS: Record<string, string> = {
   introduction: "Perkenalan",
   conversation: "Percakapan",
   message: "Pesan",
+  circle: "Study Circle",
+  circle_message: "Pesan Study Circle",
+  event: "Campus Event",
+  event_organizer: "Organizer Campus Event",
+  event_message: "Pesan Campus Event",
   other: "Lainnya",
 };
 

@@ -81,8 +81,8 @@ Diimplementasikan pada code dan migration repository saat ini:
 - server-side sign-out;
 - People Discovery v1 untuk browse profil anonim, filter, detail berbasis alias, pagination, dan kontrol visibilitas
   milik sendiri;
-- Membership & Entitlement Engine v1 (Free default + StudyDate Plus) untuk kuota kapasitas
-  server-side tanpa pembayaran, checkout, atau AutoGoPay;
+- Membership & Entitlement Engine v1 (Free default + StudyDate Plus) dan schema billing
+  AutoGoPay GoPay QRIS deployed dengan checkout kill switch default OFF;
 - Introduction Requests v1 untuk kirim/terima/tolak/batalkan perkenalan privat, fondasi block/report, rate limit
   database, serta handoff `conversation_shells` menuju Anonymous Chat v1 tanpa messaging;
 - Anonymous Chat v1 untuk percakapan teks privat setelah perkenalan diterima, daftar `/app/messages`,
@@ -130,8 +130,8 @@ Jangan menganggap fitur berikut tersedia:
 - adapter sumber akademik resmi, bila endpoint dan otorisasi resmi tersedia;
 - Telegram linking;
 - moderation dashboard;
-- payment/ticketing dan Billing Phase 2 (AutoGoPay/QRIS/checkout); fondasi paket Free/Plus
-  sudah ada tanpa pembayaran;
+- AutoGoPay tetap belum live sampai rotated secret dan audit pembayaran
+  production selesai;
 - recommendation algorithm;
 - Supabase Realtime delivery untuk chat (v1 memakai authenticated polling RPC).
 
@@ -307,7 +307,7 @@ Notifications v1 tidak mencakup push, Web Push, email, SMS, WhatsApp, Telegram b
 presence, typing indicator, atau last seen. Preference per kategori belum ada;
 seluruh tipe memakai inbox, badge, dan read-state yang sama.
 
-## 11d. Local-only — Circle & Event Notifications v1
+## 11d. Circle & Event Notifications v1
 
 Circle dan Campus Event memakai Notification Center yang sudah ada. Tidak ada inbox
 kedua, tidak ada `circle_notifications` / `event_notifications`, dan pengiriman tidak
@@ -323,8 +323,8 @@ Notifikasi hanya untuk perubahan lifecycle yang benar-benar ada:
 Join Circle bersifat langsung (tanpa approval), jadi permintaan bergabung
 tidak berlaku. Konfirmasi join ke pelaku sendiri dihilangkan karena UI sudah
 menampilkan status. Pesan grup, leave sukarela, dan penyimpanan deskripsi/typo
-tidak men-fan-out notifikasi. Reminder Event ditunda karena tidak ada scheduler
-produk yang aman khusus untuk ini (`event_reminders: DEFERRED_NO_SCHEDULER`).
+tidak men-fan-out notifikasi. Reminder 24 jam/2 jam tersedia melalui scheduler dengan
+receipt idempoten; cron production tetap OFF sampai live QA terkontrol.
 
 Jadwal dan venue Event tetap terkunci setelah RSVP non-organizer pertama; trigger
 perubahan hanya berbunyi jika field material benar-benar berubah. Deep link memakai
@@ -410,8 +410,9 @@ aman. Attendance tidak pernah membuka nama, foto reveal, kontak, UUID, percakapa
 Mutual Interest, Identity Reveal, atau Contact Reveal.
 
 CTA `Kirim perkenalan` memakai seluruh eligibility Introduction existing. Attendance,
-browse, RSVP, cancel RSVP, dan edit Event tidak membuat private-flow. Circle association,
-event chat, waitlist, ticketing, pembayaran, check-in, dan reminder tetap di luar v1.
+browse, RSVP, cancel RSVP, dan edit Event tidak membuat private-flow. Fase Event lanjutan
+menambah kuota Free/Plus, Circle association, FIFO waitlist, chat peserta,
+tiket opaque/check-in, reminder, dan preferensi in-app. Pembayaran Event tetap di luar scope.
 Student Verification tetap dinonaktifkan dan bukan syarat penggunaan Event.
 
 Live audit sintetis A/B/C/D mengonfirmasi venue dan batas waktu, open/campus discovery,
@@ -473,7 +474,7 @@ batch maksimal 25 delivery. Migration
 **LOCAL-ONLY**, kill switch default OFF, BotFather/webhook production belum
 dikonfigurasi, dan fitur belum deployed/live.
 
-## 13d. Local-only — Membership & Entitlement Engine v1
+## 13d. Membership & AutoGoPay billing (schema deployed; checkout OFF)
 
 StudyDate memakai paket **StudyDate Free** (default) dan **StudyDate Plus**. Free tidak
 memerlukan baris entitlement. Plus hanya aktif bila `status = active`, `starts_at <= now()`,
@@ -492,27 +493,30 @@ PLUS  peopleDiscoveryDaily 40 | introductionRequestsDaily 10 | activeIntroductio
 Tidak berlaku: savedConnections (fitur tidak ada). Ditunda: retensi chat berbayar, kuota
 Campus Events. Keamanan (block, report, Safety Center, privasi, consent, Identity/Contact
 Reveal, verifikasi, penghapusan akun) tidak boleh di-paywall. Badge Plus publik tidak
-ditampilkan di People. Pembayaran/AutoGoPay/QRIS/checkout tidak ada pada Phase 1.
+ditampilkan di People. Billing berikutnya menambahkan satu offer global Owner, checkout
+GoPay QRIS, ledger order privat, raw-body HMAC webhook, dan entitlement
+`future_payment` idempoten. OVO, ShopeePay, dan OrderKuota tidak digunakan.
 Downgrade tidak menghapus Circle atau perkenalan yang sudah ada.
 
 Owner dapat grant/cabut Plus terbatas (7/30/90 hari) di `/owner/memberships` via email Auth.
 Admin tidak mendapat `memberships.manage`. Early Access tidak otomatis memberi Plus.
 
-Hotfix lokal `202608170005` memperbaiki ambiguitas PL/pgSQL `window_start` pada
-`consume_membership_quota` tanpa mengubah kuota atau otorisasi. AutoGoPay/QRIS/checkout
-tetap di luar Phase 1.
+Hotfix `202608170005` memperbaiki ambiguitas PL/pgSQL `window_start` pada
+`consume_membership_quota` tanpa mengubah kuota atau otorisasi.
 
-## 14. Planned — Safety flows
+## 14. Safety Meeting Flow v1 (deployed)
 
 Landing page memakai pesan positif dan ringkas. Detail safety tersedia pada **Pusat Keamanan publik**
-(`/safety`), meeting flow (masih planned), Community Guidelines (`/community-guidelines`), dan bot reminder
+(`/safety`), meeting flow setelah Identity Reveal, Community Guidelines (`/community-guidelines`), dan bot reminder
 (planned).
 
 Halaman publik legal/bantuan yang diimplementasikan: `/privacy`, `/terms`, `/community-guidelines`, `/safety`,
 `/help` (lihat `docs/operations/public-legal-pages.md`). Google OAuth belum aktif.
 
-Meeting flow harus menyediakan public-location confirmation, cancellation, share plan, safety check, dan post-meeting
-check. Jangan menjanjikan emergency response.
+Meeting flow menyediakan proposal dan consent dua pihak, tempat publik, cancellation,
+share lokal tanpa public link, pre-check milik actor, serta post-check aman/report.
+Detail dibersihkan setelah 90 hari kecuali menjadi evidence moderasi aktif. Tidak ada
+live location atau emergency monitoring.
 
 ## 15. Success criteria
 

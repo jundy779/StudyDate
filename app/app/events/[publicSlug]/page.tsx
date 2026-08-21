@@ -2,18 +2,30 @@ import {
   archiveCampusEventAction,
   cancelCampusEventAction,
   cancelCampusEventRsvpAction,
+  checkInCampusEventTicketAction,
+  joinCampusEventWaitlistAction,
+  leaveCampusEventWaitlistAction,
   reportCampusEventAction,
+  reportCampusEventMessageAction,
   rsvpCampusEventAction,
+  sendCampusEventMessageAction,
+  setCampusEventCircleAction,
   updateCampusEventAction,
 } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventForm } from "@/components/events/event-form";
+import { EventTicketIssuer } from "@/components/events/event-ticket-issuer";
 import { SendIntroductionDialog } from "@/components/introductions/send-introduction-dialog";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { EVENT_CATEGORIES, EVENT_REPORT_REASONS } from "@/lib/events/constants";
 import {
   getCampusEvent,
+  getCampusEventCircle,
+  getMyCampusEventTicketState,
+  getMyCampusEventWaitlistPosition,
   listCampusEventAttendees,
+  listCampusEventMessages,
+  listMyCircleOptionsForEvent,
 } from "@/lib/events/service";
 import { eventSlugSchema } from "@/lib/events/validation";
 import { getIntroductionSendEligibility } from "@/lib/introductions/service";
@@ -28,6 +40,7 @@ import {
   ShieldAlert,
   UsersRound,
 } from "lucide-react";
+import { randomBytes } from "node:crypto";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -126,9 +139,23 @@ export default async function EventDetailPage({
   const notice = Array.isArray(query.notice) ? query.notice[0] : query.notice;
   const canViewAttendees =
     event.is_organizer || event.rsvp_status === "going";
-  const attendeeRows = canViewAttendees
-    ? await listCampusEventAttendees(event.public_slug)
-    : [];
+  const [
+    attendeeRows,
+    eventCircle,
+    eventMessages,
+    waitlistPosition,
+    ticketState,
+    circleOptions,
+  ] = await Promise.all([
+    canViewAttendees ? listCampusEventAttendees(event.public_slug) : [],
+    getCampusEventCircle(event.public_slug),
+    canViewAttendees ? listCampusEventMessages(event.public_slug) : [],
+    !event.is_organizer ? getMyCampusEventWaitlistPosition(event.public_slug) : null,
+    event.rsvp_status === "going"
+      ? getMyCampusEventTicketState(event.public_slug)
+      : null,
+    event.is_organizer ? listMyCircleOptionsForEvent() : [],
+  ]);
   const eligibilityEntries = canViewAttendees
     ? await Promise.all(
         attendeeRows
@@ -150,6 +177,14 @@ export default async function EventDetailPage({
     "cancel-event": "Acara dibatalkan. Riwayat RSVP tetap tersimpan.",
     archive: "Event telah diarsipkan.",
     reported: "Laporan telah dikirim secara privat untuk ditinjau.",
+    waitlisted: "Kamu masuk waitlist Event.",
+    "left-waitlist": "Kamu keluar dari waitlist Event.",
+    "message-sent": "Pesan Event terkirim.",
+    "message-reported": "Laporan pesan dikirim secara privat untuk ditinjau.",
+    "circle-linked": "Tautan Study Circle diperbarui.",
+    "ticket-issued": "Tiket berhasil diterbitkan. Simpan token ini.",
+    checked_in: "Check-in berhasil dicatat.",
+    duplicate: "Tiket ini sudah check-in sebelumnya.",
   };
 
   const statusLabel =
@@ -234,6 +269,31 @@ export default async function EventDetailPage({
                   </button>
                 </form>
               ) : null}
+              {!event.is_organizer &&
+              event.status === "scheduled" &&
+              !event.is_past &&
+              event.rsvp_status !== "going" &&
+              isFull ? (
+                <form action={joinCampusEventWaitlistAction}>
+                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                  <button className="focus-ring min-h-11 w-full rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white">
+                    Masuk waitlist
+                  </button>
+                </form>
+              ) : null}
+              {waitlistPosition ? (
+                <div className="rounded-xl border border-brand-border bg-white p-4">
+                  <p className="text-sm font-semibold text-brand-navy">
+                    Posisi waitlist: {waitlistPosition}
+                  </p>
+                  <form action={leaveCampusEventWaitlistAction} className="mt-3">
+                    <input type="hidden" name="publicSlug" value={event.public_slug} />
+                    <button className="focus-ring min-h-10 rounded-lg border border-brand-border px-3 text-xs font-semibold">
+                      Keluar dari waitlist
+                    </button>
+                  </form>
+                </div>
+              ) : null}
               {event.can_cancel_rsvp ? (
                 <details className="rounded-xl border border-brand-border bg-white p-4">
                   <summary className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-navy">
@@ -316,6 +376,18 @@ export default async function EventDetailPage({
               </p>
             </div>
           </section>
+
+          {eventCircle ? (
+            <section className="border-b border-brand-border py-8">
+              <p className="section-label">Study Circle terkait</p>
+              <Link
+                href={`/app/circles/${eventCircle.circle_public_slug}`}
+                className="focus-ring mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue hover:underline"
+              >
+                {eventCircle.circle_name}
+              </Link>
+            </section>
+          ) : null}
 
           <aside className="border-b border-brand-border py-8" aria-labelledby="event-safety-title">
             <div className="max-w-3xl">
@@ -406,6 +478,64 @@ export default async function EventDetailPage({
             </section>
           )}
 
+          {canViewAttendees ? (
+            <section className="border-t border-brand-border py-10" aria-labelledby="event-chat-title">
+              <p className="section-label">Diskusi Event</p>
+              <h2 id="event-chat-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
+                Koordinasi peserta
+              </h2>
+              <div className="mt-5 space-y-3">
+                {eventMessages.length ? (
+                  eventMessages.toReversed().map((message) => (
+                    <article key={message.message_public_id} className="rounded-xl border border-brand-border bg-white p-4">
+                      <p className="text-xs font-semibold text-brand-blue">
+                        {message.author_alias}{message.is_mine ? " · Kamu" : ""}
+                      </p>
+                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-brand-muted">
+                        {message.body}
+                      </p>
+                      {!message.is_mine && message.author_alias !== "Akun dihapus" ? (
+                        <details className="mt-3">
+                          <summary className="focus-ring cursor-pointer rounded text-xs font-semibold text-brand-muted">
+                            Laporkan pesan
+                          </summary>
+                          <form action={reportCampusEventMessageAction} className="mt-3 max-w-md">
+                            <input type="hidden" name="publicSlug" value={event.public_slug} />
+                            <input type="hidden" name="messagePublicId" value={message.message_public_id} />
+                            <ReportFields target="event" />
+                            <button className="focus-ring mt-3 min-h-10 rounded-lg border border-brand-error px-3 text-xs font-semibold text-brand-error">
+                              Kirim laporan pesan
+                            </button>
+                          </form>
+                        </details>
+                      ) : null}
+                    </article>
+                  ))
+                ) : (
+                  <p className="text-sm text-brand-muted">Belum ada pesan.</p>
+                )}
+              </div>
+              <form action={sendCampusEventMessageAction} className="mt-5">
+                <input type="hidden" name="publicSlug" value={event.public_slug} />
+                <input type="hidden" name="idempotencyKey" value={randomBytes(18).toString("base64url")} />
+                <label className="text-sm font-semibold text-brand-navy">
+                  Pesan teks
+                  <textarea name="body" required maxLength={800} rows={3} className="focus-ring mt-2 w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm" />
+                </label>
+                <button className="focus-ring mt-3 min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white">
+                  Kirim pesan
+                </button>
+              </form>
+            </section>
+          ) : null}
+
+          {event.rsvp_status === "going" ? (
+            <section className="border-t border-brand-border py-8">
+              <h2 className="font-heading text-2xl font-semibold text-brand-navy">Tiket kehadiran</h2>
+              <EventTicketIssuer publicSlug={event.public_slug} ticketState={ticketState} />
+            </section>
+          ) : null}
+
           {!event.is_organizer ? (
             <section className="border-t border-brand-border py-8" aria-labelledby="event-organizer-report-title">
               <details className="max-w-xl rounded-xl border border-brand-border bg-white p-4">
@@ -492,6 +622,45 @@ export default async function EventDetailPage({
                     </form>
                   </details>
                 ) : null}
+              </div>
+              <div className="mt-7 grid gap-5 lg:grid-cols-2">
+                <form action={setCampusEventCircleAction} className="rounded-[22px] border border-brand-border bg-white p-5">
+                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                  <label className="text-sm font-semibold text-brand-navy">
+                    Study Circle milikmu
+                    <select
+                      name="circlePublicSlug"
+                      defaultValue={eventCircle?.circle_public_slug ?? ""}
+                      className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
+                    >
+                      <option value="">Tidak ditautkan</option>
+                      {circleOptions.map((circle) => (
+                        <option key={circle.public_slug} value={circle.public_slug}>
+                          {circle.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="focus-ring mt-3 min-h-11 rounded-xl border border-brand-navy px-4 text-sm font-semibold">
+                    Simpan tautan Circle
+                  </button>
+                </form>
+                <form action={checkInCampusEventTicketAction} className="rounded-[22px] border border-brand-border bg-white p-5">
+                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                  <label className="text-sm font-semibold text-brand-navy">
+                    Token tiket peserta
+                    <input
+                      name="ticketToken"
+                      required
+                      pattern="[0-9a-f]{64}"
+                      autoComplete="off"
+                      className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                    />
+                  </label>
+                  <button className="focus-ring mt-3 min-h-11 rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white">
+                    Check-in peserta
+                  </button>
+                </form>
               </div>
               {!event.can_edit && !event.can_cancel_event && !event.can_archive ? (
                 <p className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm text-brand-muted">

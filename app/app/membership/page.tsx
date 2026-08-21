@@ -1,5 +1,15 @@
 import { AppShell } from "@/components/app/app-shell";
 import {
+  cancelMembershipPayment,
+  refreshMembershipPayment,
+  startMembershipCheckout,
+} from "@/app/app/membership/actions";
+import {
+  getMyBillingOffer,
+  getMyPaymentOrder,
+} from "@/lib/billing/service";
+import { paymentOrderPublicIdSchema } from "@/lib/billing/validation";
+import {
   MEMBERSHIP_DISPLAY_NAME,
   MEMBERSHIP_LIMITS,
 } from "@/lib/membership/limits";
@@ -44,6 +54,16 @@ function ComparisonTable() {
       plus: String(MEMBERSHIP_LIMITS.plus.joinedCirclesActive),
     },
     {
+      label: "Event mendatang yang kamu kelola",
+      free: String(MEMBERSHIP_LIMITS.free.createdEventsActive),
+      plus: String(MEMBERSHIP_LIMITS.plus.createdEventsActive),
+    },
+    {
+      label: "Event mendatang yang kamu ikuti",
+      free: String(MEMBERSHIP_LIMITS.free.joinedEventsActive),
+      plus: String(MEMBERSHIP_LIMITS.plus.joinedEventsActive),
+    },
+    {
       label: "Filter People lanjutan",
       free: "Kampus dan program studi",
       plus: "Termasuk semester, kota, tujuan, dan minat",
@@ -83,13 +103,29 @@ function ComparisonTable() {
   );
 }
 
-async function MembershipContent() {
+type MembershipPageProps = {
+  searchParams: Promise<{ order?: string; state?: string }>;
+};
+
+const currency = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
+
+async function MembershipContent({ searchParams }: MembershipPageProps) {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
 
-  const membership = await getMyMembership();
+  const query = await searchParams;
+  const orderId = paymentOrderPublicIdSchema.safeParse(query.order);
+  const [membership, offer, order] = await Promise.all([
+    getMyMembership(),
+    getMyBillingOffer(),
+    getMyPaymentOrder(orderId.success ? orderId.data : undefined),
+  ]);
   const isPlus = membership.plan === "plus";
   const endsLabel =
     isPlus && membership.endsAt
@@ -130,12 +166,61 @@ async function MembershipContent() {
                 yang sudah ada tetap aman jika paket berubah.
               </p>
             )}
-            <p className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-muted">
-              StudyDate Plus segera tersedia
-            </p>
-            <p className="mt-3 text-sm leading-6 text-brand-muted">
-              Pembayaran belum dibuka. Tidak ada checkout pada halaman ini.
-            </p>
+            {query.state === "payment_unavailable" ? (
+              <p role="alert" className="mt-5 text-sm font-semibold text-brand-error">
+                Pembayaran sedang tidak tersedia. Coba lagi nanti.
+              </p>
+            ) : null}
+            {order ? (
+              <div className="mt-6 border-t border-brand-border pt-5">
+                <p className="font-semibold text-brand-navy">
+                  Pembayaran {currency.format(order.amountIdr)}
+                </p>
+                <p className="mt-1 text-sm text-brand-muted">
+                  Status: {order.status === "paid" ? "Berhasil" : order.status === "pending" ? "Menunggu pembayaran" : order.status}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {order.status === "pending" ? (
+                    <>
+                      {order.checkoutUrl ? (
+                        <a
+                          href={order.checkoutUrl}
+                          rel="noopener noreferrer"
+                          className="focus-ring inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
+                        >
+                          Buka QRIS
+                        </a>
+                      ) : null}
+                      <form action={refreshMembershipPayment}>
+                        <input type="hidden" name="order" value={order.publicId} />
+                        <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
+                          Periksa status
+                        </button>
+                      </form>
+                      <form action={cancelMembershipPayment}>
+                        <input type="hidden" name="order" value={order.publicId} />
+                        <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
+                          Batalkan QRIS
+                        </button>
+                      </form>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            ) : offer && !isPlus ? (
+              <form action={startMembershipCheckout} className="mt-6">
+                <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
+                  Aktifkan Plus · {currency.format(offer.amountIdr)} / {offer.durationDays} hari
+                </button>
+                <p className="mt-3 text-sm leading-6 text-brand-muted">
+                  Pembayaran diproses melalui GoPay QRIS. Paket aktif setelah pembayaran terverifikasi.
+                </p>
+              </form>
+            ) : !isPlus ? (
+              <p className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-muted">
+                StudyDate Plus segera tersedia
+              </p>
+            ) : null}
           </section>
 
           <ComparisonTable />
@@ -158,7 +243,7 @@ async function MembershipContent() {
   );
 }
 
-export default function MembershipPage() {
+export default function MembershipPage(props: MembershipPageProps) {
   return (
     <Suspense
       fallback={
@@ -167,7 +252,7 @@ export default function MembershipPage() {
         </main>
       }
     >
-      <MembershipContent />
+      <MembershipContent {...props} />
     </Suspense>
   );
 }
