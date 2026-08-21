@@ -23,6 +23,13 @@ export type StaffRoleEvent = {
   created_at: string;
 };
 
+export type StaffOpsAuditEvent = {
+  actor_suffix: string | null;
+  event_type: string;
+  subject_suffix: string | null;
+  created_at: string;
+};
+
 export type VerificationQueueItem = {
   request_id: string;
   status: string;
@@ -48,6 +55,7 @@ export type EarlyAccessWaitlistRow = {
 };
 
 export type StudentAccountOpsRow = {
+  account_ref: string;
   alias: string;
   email_display: string;
   account_status: string;
@@ -57,10 +65,32 @@ export type StudentAccountOpsRow = {
   semester: number | null;
   is_discoverable: boolean;
   verification_summary: string;
+  membership_plan: string;
   created_at: string;
   deactivated: boolean;
   deletion_pending: boolean;
   total_count: number;
+};
+
+export type StudentAccountOpsDetail = {
+  account_ref: string;
+  alias: string;
+  email_display: string;
+  account_status: string;
+  onboarding_status: string;
+  campus: string;
+  study_program: string;
+  degree_level: string;
+  semester: number | null;
+  city_region: string;
+  short_intro: string;
+  interests: string[];
+  connection_goals: string[];
+  is_discoverable: boolean;
+  verification_summary: string;
+  membership_plan: string;
+  membership_ends_at: string | null;
+  created_at: string;
 };
 
 export async function listStaffMembers() {
@@ -91,6 +121,15 @@ export async function listStaffRoleEvents(limit = 50) {
   });
   if (error) throw new Error("Riwayat staff belum dapat dimuat.");
   return (data ?? []) as StaffRoleEvent[];
+}
+
+export async function listStaffOpsAuditEvents(limit = 50) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_staff_ops_audit_events", {
+    p_limit: limit,
+  });
+  if (error) throw new Error("Riwayat akses operasional belum dapat dimuat.");
+  return (data ?? []) as StaffOpsAuditEvent[];
 }
 
 export async function manageStaffMember(targetUserId: string, action: string) {
@@ -185,6 +224,15 @@ export async function listStudentAccountOps(input: {
   });
   if (error) throw new Error("Daftar akun belum dapat dimuat.");
   return (data ?? []) as StudentAccountOpsRow[];
+}
+
+export async function getStudentAccountOpsDetail(accountRef: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_student_account_ops_detail", {
+    p_account_ref: accountRef,
+  });
+  if (error) throw new Error("Detail akun belum dapat dimuat.");
+  return ((data ?? [])[0] as StudentAccountOpsDetail | undefined) ?? null;
 }
 
 export async function listVerificationQueue(status?: string) {

@@ -272,6 +272,12 @@ Admin memakai navigasi terpisah dari student app, dengan role-derived initial re
 Overview, Staff, Verification, Moderation placeholder, Audit, dan real System Readiness. Jangan menampilkan fake
 analytics, raw SQL, secrets, atau general database controls.
 
+Gunakan istilah UI **Ruang Operasional**, **Tim operasional**, **Akun
+mahasiswa**, **Paket & pembayaran**, dan **Riwayat akses**. Admin landing hanya
+menampilkan pekerjaan yang diizinkan capability. Daftar akun selalu masked;
+detail support memakai safe profile summary dan tidak menyerupai database
+inspector.
+
 Verification admin memakai utility-first review layout, identifier suffix pada list, full sensitive claim hanya pada
 explicit reviewer detail, generic errors, dan evidence link lima menit. Owner-only staff UI menampilkan UUID suffix dan
 status. Penambahan staff memakai email Auth yang sudah ada; server meresolve pengguna, tanpa input UUID mentah.

@@ -229,10 +229,14 @@ export async function createIdentityRevealProfile(input: {
   );
 
   if (registerError || !versionId) {
-    await admin.storage
+    const { error: removeError } = await admin.storage
       .from(IDENTITY_REVEAL_PHOTO_BUCKET)
-      .remove([processed.objectKey])
-      .catch(() => undefined);
+      .remove([processed.objectKey]);
+    if (removeError) {
+      await admin.rpc("enqueue_identity_reveal_orphan_photo", {
+        p_object_key: processed.objectKey,
+      });
+    }
     throw new Error(mapRevealError(registerError?.message));
   }
 

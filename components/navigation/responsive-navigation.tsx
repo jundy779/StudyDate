@@ -189,7 +189,14 @@ function getStaffItems(
     role === "owner" || capabilities?.verificationReviewer === true;
 
   if (role === "admin") {
-    const items: NavigationItem[] = [];
+    const items: NavigationItem[] = [
+      {
+        href: "/admin",
+        label: "Ringkasan",
+        key: "overview",
+        icon: "overview",
+      },
+    ];
     if (canEarlyAccess) {
       items.push({
         href: "/staff/early-access",
@@ -236,7 +243,7 @@ function getStaffItems(
     { href: "/owner/staff", label: "Staff", key: "staff", icon: "staff" },
     {
       href: "/owner/memberships",
-      label: "Membership",
+      label: "Paket & pembayaran",
       key: "memberships",
       icon: "memberships",
     },
@@ -248,7 +255,7 @@ function getStaffItems(
     },
     {
       href: "/staff/users",
-      label: "Akun pengguna",
+      label: "Akun mahasiswa",
       key: "users",
       icon: "users",
     },
@@ -270,7 +277,7 @@ function getStaffItems(
       key: "study-programs",
       icon: "study-programs",
     },
-    { href: "/owner/audit", label: "Audit", key: "audit", icon: "audit" },
+    { href: "/owner/audit", label: "Riwayat akses", key: "audit", icon: "audit" },
     {
       href: "/owner#system-readiness",
       label: "Kesiapan sistem",
@@ -446,13 +453,13 @@ export function ResponsiveNavigation({
     variant === "staff"
       ? role === "owner"
         ? "/owner"
-        : "/admin/verifications"
+        : "/admin"
       : "/app";
   const areaLabel =
     variant === "staff"
       ? role === "owner"
-        ? "Owner workspace"
-        : "Admin verification"
+        ? "Ruang operasional Owner"
+        : "Ruang operasional Admin"
       : "Ruang mahasiswa";
 
   useEffect(() => {

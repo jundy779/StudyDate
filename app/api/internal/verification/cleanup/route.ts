@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { deleteQueuedIdentityRevealPhotos } from "@/lib/identity-reveal/cleanup";
 import {
   deleteExpiredVerificationEvidence,
   recordVerificationCleanupHealth,
@@ -45,11 +46,12 @@ async function cleanup(request: NextRequest) {
     const result = await deleteExpiredVerificationEvidence(
       new Date().toISOString(),
     );
+    const revealPhotos = await deleteQueuedIdentityRevealPhotos();
     await recordVerificationCleanupHealth("succeeded", {
       ...result,
     });
     return NextResponse.json(
-      { ok: true, ...result },
+      { ok: true, ...result, revealPhotos },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch {

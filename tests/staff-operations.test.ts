@@ -56,6 +56,21 @@ const navigation = readFileSync(
   new URL("../components/navigation/responsive-navigation.tsx", import.meta.url),
   "utf8",
 );
+const hardeningMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202608210011_launch_ops_and_reveal_media_hardening.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const userDetailPage = readFileSync(
+  new URL("../app/staff/users/[accountRef]/page.tsx", import.meta.url),
+  "utf8",
+);
+const adminOverview = readFileSync(
+  new URL("../app/admin/page.tsx", import.meta.url),
+  "utf8",
+);
 
 function access(
   partial: Partial<StaffCapabilityFlags> & Pick<StaffCapabilityFlags, "role">,
@@ -99,7 +114,7 @@ test("User ops projection excludes NIM legal name evidence and chat", () => {
   assert.doesNotMatch(opsMigration, /nim|legal_name|telegram|ciphertext/i);
   assert.match(usersPage, /requireStaffCapability\("users\.read"\)/);
   assert.match(usersPage, /users\.support/);
-  assert.match(usersPage, /Data verifikasi privat/);
+  assert.match(usersPage, /NIM, kontak, chat, foto/);
   assert.match(usersPage, /tidak tersedia di sini/);
   assert.doesNotMatch(opsMigration, /\bnim\b|legal_name|telegram_id|ciphertext/i);
 });
@@ -134,7 +149,7 @@ test("Owner has all capabilities; admin defaults deny; support implies read", ()
 
 test("staff email assignment resolves server-side and rejects arbitrary capability strings", () => {
   assert.match(ownerStaffActions, /assignStaffMemberByEmail/);
-  assert.match(ownerStaffPage, /Email akun Auth/);
+  assert.match(ownerStaffPage, /Email akun StudyDate/);
   assert.doesNotMatch(ownerStaffPage, /Tambahkan admin via UUID|UUID akun Auth|Fallback UUID/);
   assert.doesNotMatch(ownerStaffPage, /placeholder="UUID akun yang sudah ada"/);
   assert.match(service, /auth\.admin\.listUsers/);
@@ -233,5 +248,55 @@ test("audit events are sanitized and capability changes are recorded", () => {
   assert.match(
     opsMigration,
     /insert into public\.staff_ops_audit_events \(actor_user_id, event_type\)/,
+  );
+});
+
+test("launch ops projection masks browse email and includes pre-onboarding accounts", () => {
+  assert.match(hardeningMigration, /from auth\.users auth_user/);
+  assert.match(
+    hardeningMigration,
+    /left join public\.profiles profile on profile\.user_id = auth_user\.id/,
+  );
+  assert.match(hardeningMigration, /public\.mask_account_email\(base\.auth_email\)/);
+  assert.doesNotMatch(
+    hardeningMigration,
+    /when allow_full_email then base\.auth_email/,
+  );
+  assert.match(hardeningMigration, /coalesce\(base\.public_alias, 'Belum onboarding'\)/);
+  assert.match(hardeningMigration, /public\.effective_membership_plan\(base\.user_id\)/);
+});
+
+test("student support detail is opaque, audited, and privacy-scoped", () => {
+  assert.match(hardeningMigration, /student_account_ops_ref/);
+  assert.match(hardeningMigration, /get_student_account_ops_detail/);
+  assert.match(hardeningMigration, /student_account_viewed/);
+  assert.match(hardeningMigration, /short_intro text/);
+  assert.match(hardeningMigration, /membership_plan text/);
+  assert.doesNotMatch(
+    userDetailPage,
+    /account\.(nim|legalName|telegram|instagram|linkedin|photo_object_key|user_id)/i,
+  );
+  assert.match(userDetailPage, /NIM, email lengkap, kontak, chat, foto identitas/);
+});
+
+test("admin has a capability-aware operational landing page", () => {
+  assert.match(adminOverview, /requireActiveStaff/);
+  assert.match(adminOverview, /Ruang operasional Admin/);
+  assert.match(adminOverview, /access\.canUsersRead/);
+  assert.match(adminOverview, /access\.verificationReviewer/);
+  assert.match(authorization, /if \(access\?\.role === "admin"\) return "\/admin"/);
+  assert.match(navigation, /href: "\/admin"/);
+});
+
+test("owner audit includes sanitized operational access events", () => {
+  assert.match(hardeningMigration, /list_staff_ops_audit_events/);
+  assert.match(hardeningMigration, /right\(event\.actor_user_id::text, 8\)/);
+  assert.doesNotMatch(
+    hardeningMigration.slice(
+      hardeningMigration.indexOf(
+        "create or replace function public.list_staff_ops_audit_events",
+      ),
+    ),
+    /auth_user\.email|profile\.short_intro/,
   );
 });

@@ -61,8 +61,9 @@ async function UsersContent({ searchParams }: Props) {
             Akun pengguna
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Proyeksi aman untuk dukungan operasional. Data verifikasi privat,
-            chat, Contact Reveal, dan NIM tidak tersedia di sini.
+            Cari dan periksa status akun mahasiswa untuk membantu kendala masuk,
+            onboarding, membership, atau visibilitas. NIM, kontak, chat, foto
+            identitas, dan bukti verifikasi tidak tersedia di sini.
           </p>
 
           <form
@@ -81,7 +82,7 @@ async function UsersContent({ searchParams }: Props) {
             </label>
             {canSupport ? (
               <label className="text-sm font-semibold">
-                Email (tepat)
+                Cari email lengkap
                 <input
                   name="email"
                   type="email"
@@ -93,8 +94,8 @@ async function UsersContent({ searchParams }: Props) {
               </label>
             ) : (
               <p className="text-sm leading-6 text-brand-muted sm:col-span-1">
-                Pencarian email penuh membutuhkan kemampuan dukungan
-                (users.support).
+                Pencarian dengan email lengkap hanya tersedia untuk petugas
+                dukungan akun.
               </p>
             )}
             <div className="flex items-end">
@@ -128,7 +129,7 @@ async function UsersContent({ searchParams }: Props) {
               ) : (
                 rows.map((row) => (
                   <article
-                    key={`${row.alias}-${row.created_at}`}
+                    key={row.account_ref}
                     className="grid gap-3 p-5 lg:grid-cols-[1.2fr_1fr_auto]"
                   >
                     <div>
@@ -145,13 +146,22 @@ async function UsersContent({ searchParams }: Props) {
                       <p>{row.account_status}</p>
                       <p>{row.onboarding_status}</p>
                       <p>Verifikasi: {row.verification_summary}</p>
+                      <p>Paket: {row.membership_plan}</p>
                       <p>
-                        Discoverable: {row.is_discoverable ? "Ya" : "Tidak"}
+                        Tampil di People: {row.is_discoverable ? "Ya" : "Tidak"}
                       </p>
                     </div>
-                    <time className="text-sm text-brand-muted">
-                      {dateFmt.format(new Date(row.created_at))}
-                    </time>
+                    <div className="flex flex-col items-start gap-3">
+                      <time className="text-sm text-brand-muted">
+                        {dateFmt.format(new Date(row.created_at))}
+                      </time>
+                      <Link
+                        href={`/staff/users/${row.account_ref}`}
+                        className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-blue"
+                      >
+                        Lihat ringkasan
+                      </Link>
+                    </div>
                   </article>
                 ))
               )}

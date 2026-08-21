@@ -102,15 +102,6 @@ export async function requireStaffCapability(
 export async function getPostAuthenticationDestination(user: User) {
   const access = await getCurrentStaffAccess(user);
   if (access?.role === "owner") return "/owner";
-  if (access?.role === "admin" && access.verificationReviewer) {
-    return "/admin/verifications";
-  }
-  if (
-    access?.role === "admin" &&
-    (access.canEarlyAccessRead || access.canUsersRead || access.canUsersSupport)
-  ) {
-    if (access.canEarlyAccessRead) return "/staff/early-access";
-    return "/staff/users";
-  }
+  if (access?.role === "admin") return "/admin";
   return "/app";
 }

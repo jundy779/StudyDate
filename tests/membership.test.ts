@@ -259,7 +259,7 @@ test("student membership UI keeps checkout server-authoritative", () => {
 });
 
 test("Owner grant is email-only with bounded durations and audit", () => {
-  assert.match(ownerPage, /Email akun Auth/);
+  assert.match(ownerPage, /Email akun StudyDate/);
   assert.doesNotMatch(ownerPage, /UUID akun|targetUserId|p_target_user_id/);
   assert.doesNotMatch(ownerActions, /targetUserId|p_target_user_id/);
   assert.match(service, /lookup_membership_ops/);

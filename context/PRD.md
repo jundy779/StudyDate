@@ -93,7 +93,8 @@ Diimplementasikan pada code dan migration repository saat ini:
   terpisah setelah Mutual Interest: nama depan + foto profil yang disiapkan user, privat
   sampai kedua pihak menyetujui; tanpa Contact Reveal;
 - Staff Roles and Admin Shell v1 dengan satu Supabase Auth, role Owner/Admin/Student, staff login terpisah, owner-only
-  staff management, verification review shell, dan audit role tersanitasi.
+  staff management, capability-aware Admin overview, safe student support detail,
+  verification review shell, dan audit akses tersanitasi.
 - Student Verification Center dengan pengajuan opsional, email kampus allowlisted, fallback kartu mahasiswa privat,
   status nyata, dan workflow review manual;
 - fondasi manual PDDikti review tanpa scraping atau klaim integrasi API resmi.
@@ -116,6 +117,14 @@ row `staff_members` aktif; `user_metadata`, form mahasiswa, URL, dan client stor
 Staff dianjurkan memakai akun khusus dan active staff tidak dapat ditemukan di People. Owner pertama hanya dapat
 di-bootstrap melalui operasi service/admin manual setelah akun Auth existing ditemukan secara unik; tidak ada public
 owner registration.
+
+Owner dan Admin memakai satu istilah UI: **Ruang Operasional**. Admin masuk ke
+ringkasan capability-aware, bukan dipaksa ke Verification. Dukungan akun dapat
+melihat status, onboarding, profil belajar, membership, dan discoverability
+melalui referensi opaque yang diaudit. Email selalu tersamarkan pada daftar dan
+detail; email lengkap hanya menjadi input pencarian exact untuk capability
+dukungan. NIM, nama legal, kontak, chat, foto Identity Reveal, dan evidence
+verifikasi tidak diproyeksikan.
 
 ## 6. Belum diimplementasikan
 
@@ -269,6 +278,10 @@ tidak saling memblokir. Setelah selesai:
 Tidak membuka verification badge sebagai klaim “real identity verified”, kontak, nama legal,
 NIM, atau evidence. Contact Reveal memerlukan consent per saluran yang terpisah.
 Student Verification tetap dinonaktifkan secara global.
+
+Upload foto Identity Reveal memakai rate limit durable per akun, re-encode
+server-side, bucket privat, dan cleanup queue untuk versi superseded/orphan.
+Snapshot reveal yang sudah selesai tidak ikut dibersihkan oleh queue.
 
 ## 11b. Implemented — Contact Reveal v1
 

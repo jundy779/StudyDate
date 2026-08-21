@@ -45,6 +45,21 @@ const mutualMigration = readFileSync(
   join(root, "supabase/migrations/202608060004_create_mutual_interest_v1.sql"),
   "utf8",
 );
+const hardeningMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608210011_launch_ops_and_reveal_media_hardening.sql",
+  ),
+  "utf8",
+);
+const cleanup = readFileSync(
+  join(root, "lib/identity-reveal/cleanup.ts"),
+  "utf8",
+);
+const rateLimit = readFileSync(
+  join(root, "lib/security/rate-limit.ts"),
+  "utf8",
+);
 
 test("identity reveal migration is local-forward and conversation-scoped", () => {
   assert.match(migration, /Local-only until explicit remote preflight/);
@@ -275,4 +290,47 @@ test("static contract suite is distinct from behavioral and hydrate coverage", (
   const pkg = readFileSync(join(root, "package.json"), "utf8");
   assert.match(pkg, /identity-reveal-behavior\.test\.ts/);
   assert.match(pkg, /identity-reveal-hydrate\.test\.ts/);
+});
+
+test("photo upload has durable account rate limits", () => {
+  assert.match(rateLimit, /identity_reveal_photo_hour/);
+  assert.match(rateLimit, /identity_reveal_photo_day/);
+  assert.match(rateLimit, /limit: 5/);
+  assert.match(rateLimit, /limit: 12/);
+  assert.match(profileRoute, /consumeIdentityRevealPhotoAttempt\(user\.id\)/);
+  assert.match(profileRoute, /status: 429/);
+});
+
+test("superseded and orphan photos use a private cleanup queue", () => {
+  assert.match(
+    hardeningMigration,
+    /identity_reveal_photo_cleanup_queue/,
+  );
+  assert.match(
+    hardeningMigration,
+    /queue_superseded_identity_reveal_photo/,
+  );
+  assert.match(
+    hardeningMigration,
+    /enqueue_identity_reveal_orphan_photo/,
+  );
+  assert.match(service, /enqueue_identity_reveal_orphan_photo/);
+  assert.match(cleanup, /IDENTITY_REVEAL_PHOTO_BUCKET/);
+  assert.match(cleanup, /list_identity_reveal_photo_cleanup_candidates/);
+  assert.match(cleanup, /finalize_identity_reveal_photo_cleanup/);
+});
+
+test("cleanup never queues completed reveal snapshots", () => {
+  assert.match(
+    hardeningMigration,
+    /not exists \(\s*select 1\s*from public\.conversation_identity_reveals reveal/,
+  );
+  assert.match(
+    hardeningMigration,
+    /completed reveal photo must be retained/,
+  );
+  assert.match(
+    hardeningMigration,
+    /profile_version_id is null[\s\S]*not exists \([\s\S]*conversation_identity_reveals/,
+  );
 });

@@ -12,7 +12,9 @@ export type RateLimitBucket =
   | "staff_magic_link_email"
   | "verification_lookup_hour"
   | "verification_lookup_day"
-  | "verification_manual_day";
+  | "verification_manual_day"
+  | "identity_reveal_photo_hour"
+  | "identity_reveal_photo_day";
 
 type MemoryEntry = {
   count: number;
@@ -37,6 +39,10 @@ export function getClientIpHash(request: NextRequest) {
 
 export function getEmailHash(email: string) {
   return hashSubject(`email:${email.trim().toLowerCase()}`);
+}
+
+export function getUserHash(userId: string) {
+  return hashSubject(`user:${userId}`);
 }
 
 function consumeMemoryFallback(
@@ -173,5 +179,24 @@ export async function consumeStaffMagicLinkAttempts(
     subjectHash: getEmailHash(email),
     limit: 3,
     windowSeconds: 60 * 60,
+  });
+}
+
+/** Identity Reveal photos: 5/hour and 12/day per authenticated account. */
+export async function consumeIdentityRevealPhotoAttempt(userId: string) {
+  const subjectHash = getUserHash(userId);
+  const hourlyOk = await consumeApiRateLimit({
+    bucket: "identity_reveal_photo_hour",
+    subjectHash,
+    limit: 5,
+    windowSeconds: 60 * 60,
+  });
+  if (!hourlyOk) return false;
+
+  return consumeApiRateLimit({
+    bucket: "identity_reveal_photo_day",
+    subjectHash,
+    limit: 12,
+    windowSeconds: 24 * 60 * 60,
   });
 }

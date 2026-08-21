@@ -319,6 +319,12 @@ Post-completion access:
 Migration `202608060005` is applied remotely after controlled preflight.
 Student Verification remains globally disabled.
 
+Identity Reveal photo preparation consumes durable per-account upload limits
+before decoding. Failed registration removes the new object immediately; a
+durable queue retries failed orphan removal and superseded-version cleanup
+through the existing protected daily cleanup route. Queue claims exclude profile
+versions referenced by completed reveal snapshots or active consents.
+
 ## 12e. Contact Reveal v1 architecture
 
 ```text

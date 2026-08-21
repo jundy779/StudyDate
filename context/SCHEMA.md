@@ -109,6 +109,9 @@ Sumber migration:
     tiket opaque dan organizer check-in; **DEPLOYED**
 44. `supabase/migrations/202608210010_fix_event_waitlist_candidate_ambiguity.sql` —
     forward fix konflik record/alias pada promosi waitlist; **DEPLOYED**
+45. `supabase/migrations/202608210011_launch_ops_and_reveal_media_hardening.sql` —
+    safe support projection, audited opaque student detail, dan durable Identity
+    Reveal photo cleanup queue; **DEPLOYED**
 
 ### `early_access_waitlist`
 
@@ -298,6 +301,12 @@ auto-orient, re-encode JPEG, dan strip metadata sebelum upload. Reviewer browser
 memakai no-store authenticated media proxy sehingga object path dan signed URL
 tidak diproyeksikan.
 
+Bucket `identity-reveal-photos` juga private dan hanya dilayani lewat media
+proxy. `identity_reveal_photo_cleanup_queue` menyimpan object key random untuk
+retry cleanup versi superseded atau orphan; tidak ada direct grant ke student.
+Candidate cleanup mengecualikan versi pada completed reveal snapshot dan active
+consent.
+
 ## 3. Implemented RPC
 
 ### `complete_student_onboarding`
@@ -367,6 +376,12 @@ tidak discoverable. Inactive staff tidak otomatis muncul kembali; user harus opt
 - `manage_staff_member`: owner-only; action enum tetap, tidak menerima role bebas, tidak dapat mengubah owner sendiri.
   Owner UI menambah staff hanya via email Auth; RPC UUID tetap untuk toggle capability anggota yang sudah terdaftar.
 - `list_staff_members` dan `list_staff_role_events`: owner-only controlled projections.
+- `list_student_account_ops`: capability-gated browse projection dari Auth users,
+  termasuk pra-onboarding; email selalu masked dan account reference opaque.
+- `get_student_account_ops_detail`: audited exact detail berbasis opaque reference;
+  hanya profil belajar, lifecycle, verification summary, dan membership.
+- `list_staff_ops_audit_events`: owner-only sanitized access log tanpa email atau
+  payload profil.
 - `list_staff_verification_requests`: active owner/admin reviewer only, sanitized queue projection.
 - `finalize_staff_verification_review`: active reviewer only, actor dari `auth.uid()`, menolak self-review, mempertahankan
   combined academic-match plus ownership requirement, dan menulis verification audit atomik.

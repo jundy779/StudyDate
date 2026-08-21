@@ -2,6 +2,7 @@ import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { IDENTITY_REVEAL_COPY } from "@/lib/identity-reveal/constants";
 import { createIdentityRevealProfile } from "@/lib/identity-reveal/service";
 import { identityRevealProfileSchema } from "@/lib/identity-reveal/validation";
+import { consumeIdentityRevealPhotoAttempt } from "@/lib/security/rate-limit";
 import { NextResponse } from "next/server";
 
 const MAX_FORM_BYTES = 6 * 1024 * 1024;
@@ -16,6 +17,13 @@ export async function POST(request: Request) {
     const profile = await getPrivateProfile(user.id);
     if (!profile?.onboarding_completed_at) {
       return NextResponse.json({ error: "onboarding" }, { status: 403 });
+    }
+
+    if (!(await consumeIdentityRevealPhotoAttempt(user.id))) {
+      return NextResponse.json(
+        { error: "Terlalu banyak percobaan unggah. Coba lagi nanti." },
+        { status: 429 },
+      );
     }
 
     const contentLength = Number(request.headers.get("content-length") ?? "0");

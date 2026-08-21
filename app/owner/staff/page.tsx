@@ -11,11 +11,11 @@ type Props = { searchParams: Promise<{ state?: string }> };
 const date = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" });
 
 const stateMessage: Record<string, string> = {
-  saved: "Perubahan staff tersimpan. Login ulang diperlukan untuk claim baru.",
-  error: "Perubahan belum dapat disimpan.",
+  saved: "Perubahan tim tersimpan. Admin perlu masuk ulang agar akses baru aktif.",
+  error: "Perubahan tim belum dapat disimpan.",
   invalid: "Input tidak valid.",
   not_found:
-    "Belum ada akun StudyDate dengan email ini. Minta pengguna masuk menggunakan email tersebut terlebih dahulu. Setelah akun dibuat, Owner dapat mengaktifkannya sebagai staff.",
+    "Belum ada akun StudyDate dengan email ini. Minta orang tersebut masuk memakai email itu terlebih dahulu. Setelah akun dibuat, Owner dapat menambahkannya sebagai Admin.",
   ambiguous: "Lebih dari satu akun cocok. Hubungi dukungan teknis secara privat.",
 };
 
@@ -53,14 +53,13 @@ async function StaffContent({ searchParams }: Props) {
     <StaffShell role={access.role} current="staff" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Owner only</p>
+          <p className="section-label">Khusus Owner</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Staff management
+            Tim operasional
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Tambahkan staff dengan email akun Auth yang sudah ada. Undangan
-            massal / magic-link palsu tidak dipakai. Capability baru default
-            nonaktif (least privilege).
+            Tambahkan Admin dengan email akun StudyDate yang sudah ada, lalu
+            pilih tugas yang boleh ditangani. Akses lain tetap nonaktif.
           </p>
 
           {message ? (
@@ -81,7 +80,7 @@ async function StaffContent({ searchParams }: Props) {
             className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-6 sm:grid-cols-[1fr_auto_auto] sm:items-end"
           >
             <label className="text-sm font-semibold">
-              Email akun Auth
+              Email akun StudyDate
               <input
                 name="email"
                 type="email"
@@ -99,15 +98,15 @@ async function StaffContent({ searchParams }: Props) {
                 defaultValue="grant_admin"
                 className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
               >
-                <option value="grant_admin">Tambah admin (tanpa capability)</option>
-                <option value="grant_early_access">Aktifkan Akses Awal read</option>
-                <option value="grant_users_read">Aktifkan Users read</option>
-                <option value="grant_users_support">Aktifkan Users support</option>
-                <option value="grant_reviewer">Aktifkan Verification reviewer</option>
+                <option value="grant_admin">Tambah Admin tanpa akses tugas</option>
+                <option value="grant_early_access">Boleh melihat Akses Awal</option>
+                <option value="grant_users_read">Boleh melihat ringkasan akun</option>
+                <option value="grant_users_support">Boleh mencari akun dengan email</option>
+                <option value="grant_reviewer">Boleh meninjau verifikasi</option>
               </select>
             </label>
             <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-              Tambah / atur staff
+              Simpan Admin
             </button>
           </form>
 
@@ -117,7 +116,7 @@ async function StaffContent({ searchParams }: Props) {
           >
             <div className="border-b border-brand-border p-5">
               <h2 id="staff-list" className="font-heading text-xl font-semibold">
-                Staff terdaftar
+                Anggota tim
               </h2>
             </div>
             <div className="divide-y divide-brand-border">
@@ -136,19 +135,19 @@ async function StaffContent({ searchParams }: Props) {
                     </p>
                     <ul className="mt-2 space-y-1 text-sm text-brand-muted">
                       <li>
-                        Verification reviewer:{" "}
+                        Tinjau verifikasi:{" "}
                         {member.verification_reviewer ? "Aktif" : "Nonaktif"}
                       </li>
                       <li>
-                        Early Access read:{" "}
+                        Lihat Akses Awal:{" "}
                         {member.can_early_access_read ? "Aktif" : "Nonaktif"}
                       </li>
                       <li>
-                        Users read:{" "}
+                        Lihat ringkasan akun:{" "}
                         {member.can_users_read ? "Aktif" : "Nonaktif"}
                       </li>
                       <li>
-                        Users support:{" "}
+                        Cari akun dengan email:{" "}
                         {member.can_users_support ? "Aktif" : "Nonaktif"}
                       </li>
                     </ul>
@@ -192,8 +191,8 @@ async function StaffContent({ searchParams }: Props) {
                             }
                             label={
                               member.can_users_read
-                                ? "Cabut Users read"
-                                : "Aktifkan Users read"
+                                ? "Cabut ringkasan akun"
+                                : "Boleh lihat ringkasan akun"
                             }
                           />
                           <CapabilityForm
@@ -205,8 +204,8 @@ async function StaffContent({ searchParams }: Props) {
                             }
                             label={
                               member.can_users_support
-                                ? "Cabut Users support"
-                                : "Aktifkan Users support"
+                                ? "Cabut pencarian email"
+                                : "Boleh cari dengan email"
                             }
                           />
                           <CapabilityForm
@@ -240,7 +239,7 @@ export default function StaffPage(props: Props) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan staff management…
+            Menyiapkan tim operasional…
           </p>
         </main>
       }

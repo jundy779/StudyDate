@@ -24,7 +24,7 @@ const stateMessage: Record<string, string> = {
   saved: "Perubahan paket tersimpan.",
   error: "Perubahan paket belum dapat disimpan.",
   invalid: "Input tidak valid.",
-  not_found: "Tidak ada akun Auth dengan email itu.",
+  not_found: "Tidak ada akun StudyDate dengan email itu.",
   unchanged: "Tidak ada paket Plus aktif untuk dicabut.",
   offer_saved: "Penawaran StudyDate Plus tersimpan.",
 };
@@ -47,13 +47,13 @@ async function MembershipsContent({ searchParams }: Props) {
     <StaffShell role={access.role} current="memberships" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Owner only</p>
+          <p className="section-label">Khusus Owner</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Membership
+            Paket & pembayaran
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Atur satu penawaran Plus global dan kelola grant manual lewat email
-            Auth, tanpa UUID mentah.
+            Atur harga StudyDate Plus dan bantu paket mahasiswa melalui email
+            akun StudyDate.
           </p>
 
           {message ? (
@@ -121,7 +121,7 @@ async function MembershipsContent({ searchParams }: Props) {
             className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-6 sm:grid-cols-[1fr_auto] sm:items-end"
           >
             <label className="text-sm font-semibold">
-              Email akun Auth
+              Email akun StudyDate
               <input
                 name="email"
                 type="email"
@@ -187,7 +187,7 @@ async function MembershipsContent({ searchParams }: Props) {
               >
                 <input type="hidden" name="email" value={email} />
                 <label className="text-sm font-semibold">
-                  Durasi grant
+                  Durasi Plus
                   <select
                     name="durationDays"
                     defaultValue="7"
@@ -201,14 +201,14 @@ async function MembershipsContent({ searchParams }: Props) {
                   </select>
                 </label>
                 <button className="focus-ring min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white">
-                  Grant StudyDate Plus
+                  Aktifkan StudyDate Plus
                 </button>
               </form>
               {record.plan_code === "plus" ? (
                 <form action={revokePlusMembership} className="mt-4">
                   <input type="hidden" name="email" value={email} />
                   <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
-                    Cabut Plus
+                    Nonaktifkan Plus
                   </button>
                 </form>
               ) : null}
@@ -225,7 +225,7 @@ export default function OwnerMembershipsPage(props: Props) {
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
-          <p className="page-shell py-10 text-brand-muted">Menyiapkan membership…</p>
+          <p className="page-shell py-10 text-brand-muted">Menyiapkan paket & pembayaran…</p>
         </main>
       }
     >

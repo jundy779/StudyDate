@@ -1,7 +1,16 @@
 import { StaffShell } from "@/components/staff/staff-shell";
 import { requireOwner } from "@/lib/staff/authorization";
 import { getVerificationReadiness } from "@/lib/verification/readiness";
-import { ShieldCheck, Users, Wrench } from "lucide-react";
+import {
+  BookOpen,
+  CreditCard,
+  GraduationCap,
+  ScrollText,
+  ShieldCheck,
+  UserCog,
+  Users,
+  Wrench,
+} from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -12,22 +21,22 @@ async function OwnerContent() {
     <StaffShell role={access.role} current="overview" access={access}>
       <main className="min-h-svh bg-brand-surface">
       <div className="page-shell py-10 sm:py-14">
-        <p className="section-label">Owner workspace</p>
-        <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">Kontrol yang terbatas dan dapat diaudit</h1>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-muted">Owner tetap bekerja melalui operasi terkontrol. Service-role credential, raw SQL, dan data mahasiswa privat tidak tersedia di browser.</p>
+        <p className="section-label">Ruang operasional Owner</p>
+        <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">Kelola StudyDate dari satu tempat</h1>
+        <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-muted">Pilih pekerjaan yang perlu ditangani. Akses data mahasiswa tetap dibatasi dan setiap operasi penting dapat ditelusuri.</p>
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          <Link href="/owner/staff" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Staff</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kelola admin dengan email akun Auth dan capability terbatas.</p></Link>
-          <Link href="/owner/memberships" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Membership</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat paket dan grant Plus terbatas tanpa checkout atau UUID mentah.</p></Link>
-          <Link href="/staff/early-access" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akses Awal</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat waitlist operasional tanpa klaim paksa atau kampanye massal.</p></Link>
-          <Link href="/staff/users" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akun pengguna</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Proyeksi aman status akun, onboarding, dan ringkasan verifikasi.</p></Link>
+          <Link href="/staff/users" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akun mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Bantu kendala akun, onboarding, profil belajar, membership, dan visibilitas.</p></Link>
+          <Link href="/owner/memberships" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CreditCard className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Paket & pembayaran</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur penawaran Plus serta kelola paket mahasiswa melalui email.</p></Link>
+          <Link href="/owner/staff" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><UserCog className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Tim operasional</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tambahkan Admin dan pilih tugas yang boleh mereka tangani.</p></Link>
+          <Link href="/staff/early-access" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ScrollText className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akses Awal</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Periksa daftar pendaftar dan status aktivasi akun.</p></Link>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-2">
-          <Link href="/admin/verifications" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Verification</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Buka antrean review dengan two-condition approval.</p></Link>
-          <section id="system-readiness" className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"><Wrench className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">System readiness</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Manual kartu: <strong className="text-brand-navy">{readiness.manualCardReady ? "Siap" : "Belum siap"}</strong><br />Email kampus: <strong className="text-brand-navy">{readiness.manualEmailReady ? "Siap" : "Belum siap"}</strong><br />Provider: <strong className="text-brand-navy">{readiness.providerReady ? "Siap" : "Tetap nonaktif"}</strong></p></section>
-          <Link href="/owner/moderation" className="focus-ring scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6" id="moderation"><h2 className="font-heading text-xl font-semibold">Moderation</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Antrean laporan Owner dengan status submitted → under_review → resolved/dismissed.</p></Link>
-          <Link href="/owner/campuses" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kurasi daftar kampus onboarding: usulan manual, tambah, edit, hapus.</p></Link>
-          <Link href="/owner/study-programs" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Jurusan</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kurasi daftar program studi: usulan manual, tambah, edit, hapus.</p></Link>
-          <Link href="/owner/audit" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Sanitized audit</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat perubahan role tanpa email lengkap atau payload privat.</p></Link>
+          <Link href="/admin/verifications" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Verifikasi mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tinjau data akademik dan bukti kepemilikan secara terpisah.</p></Link>
+          <section id="system-readiness" className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"><Wrench className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Kesiapan verifikasi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kartu mahasiswa: <strong className="text-brand-navy">{readiness.manualCardReady ? "Siap" : "Belum siap"}</strong><br />Email kampus: <strong className="text-brand-navy">{readiness.manualEmailReady ? "Siap" : "Belum siap"}</strong><br />Pencarian provider: <strong className="text-brand-navy">{readiness.providerReady ? "Siap" : "Tetap nonaktif"}</strong></p></section>
+          <Link href="/owner/moderation" className="focus-ring scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6" id="moderation"><h2 className="font-heading text-xl font-semibold">Laporan & moderasi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tinjau laporan mahasiswa dan catat hasil penanganannya.</p></Link>
+          <Link href="/owner/campuses" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><GraduationCap className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kurasi kampus yang tersedia saat onboarding.</p></Link>
+          <Link href="/owner/study-programs" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><BookOpen className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Program studi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kurasi program studi yang tersedia saat onboarding.</p></Link>
+          <Link href="/owner/audit" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Riwayat akses</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat perubahan tim dan akses operasional tanpa membuka data privat.</p></Link>
         </div>
       </div>
       </main>
