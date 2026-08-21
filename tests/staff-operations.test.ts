@@ -114,6 +114,7 @@ test("User ops projection excludes NIM legal name evidence and chat", () => {
   assert.doesNotMatch(opsMigration, /nim|legal_name|telegram|ciphertext/i);
   assert.match(usersPage, /requireStaffCapability\("users\.read"\)/);
   assert.match(usersPage, /users\.support/);
+  assert.match(usersPage, />\s*Akun mahasiswa\s*</);
   assert.match(usersPage, /NIM, kontak, chat, foto/);
   assert.match(usersPage, /tidak tersedia di sini/);
   assert.doesNotMatch(opsMigration, /\bnim\b|legal_name|telegram_id|ciphertext/i);

@@ -58,7 +58,7 @@ async function UsersContent({ searchParams }: Props) {
         <div className="page-shell py-10 sm:py-14">
           <p className="section-label">Operasional staff</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Akun pengguna
+            Akun mahasiswa
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
             Cari dan periksa status akun mahasiswa untuk membantu kendala masuk,
