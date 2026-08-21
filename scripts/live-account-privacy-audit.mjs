@@ -1303,7 +1303,10 @@ try {
       .map((item) => item.object_key),
   );
   assert.ok(dStorageKeys.size > 0);
-  assert.equal(storageKeys.some((key) => !dStorageKeys.has(key)), true);
+  assert.equal(
+    storageKeys.every((key) => dStorageKeys.has(key)),
+    true,
+  );
   const grouped = new Map();
   for (const object of inventory.data) {
     const values = grouped.get(object.bucket_name) ?? [];
@@ -1313,15 +1316,15 @@ try {
   for (const [bucket, objects] of grouped) {
     assert.ifError((await admin.storage.from(bucket).remove(objects)).error);
   }
-  const retainedCounterpart = storageKeys.find((key) => !dStorageKeys.has(key));
-  assert.ok(retainedCounterpart);
-  assert.ifError(
-    (
-      await admin.storage
-        .from("identity-reveal-photos")
-        .download(retainedCounterpart)
-    ).error,
-  );
+  for (const key of storageKeys) {
+    assert.ok(
+      (
+        await admin.storage
+          .from("identity-reveal-photos")
+          .download(key)
+      ).error,
+    );
+  }
   report.storageCleanup = true;
 
   stage = "database_cleanup";

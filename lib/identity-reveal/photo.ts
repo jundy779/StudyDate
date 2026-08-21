@@ -32,9 +32,11 @@ export async function processIdentityRevealPhoto(
   }
 
   const image = sharp(input, {
-    failOn: "error",
+    failOn: "warning",
     animated: false,
     pages: 1,
+    limitInputPixels:
+      IDENTITY_REVEAL_MAX_DIMENSION * IDENTITY_REVEAL_MAX_DIMENSION,
   });
 
   const metadata = await image.metadata();
@@ -70,13 +72,19 @@ export async function processIdentityRevealPhoto(
     .jpeg({ quality: 85, mozjpeg: true })
     .toBuffer();
 
-  const outputMeta = await sharp(buffer).metadata();
+  const outputMeta = await sharp(buffer, {
+    limitInputPixels:
+      IDENTITY_REVEAL_OUTPUT_MAX_EDGE * IDENTITY_REVEAL_OUTPUT_MAX_EDGE,
+  }).metadata();
   const outWidth = outputMeta.width ?? 0;
   const outHeight = outputMeta.height ?? 0;
 
   if (
+    outputMeta.format !== "jpeg" ||
     outWidth < IDENTITY_REVEAL_MIN_DIMENSION ||
-    outHeight < IDENTITY_REVEAL_MIN_DIMENSION
+    outHeight < IDENTITY_REVEAL_MIN_DIMENSION ||
+    outWidth > IDENTITY_REVEAL_OUTPUT_MAX_EDGE ||
+    outHeight > IDENTITY_REVEAL_OUTPUT_MAX_EDGE
   ) {
     throw new Error(IDENTITY_REVEAL_COPY.photoError);
   }

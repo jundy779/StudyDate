@@ -26,8 +26,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const contentLength = Number(request.headers.get("content-length") ?? "0");
-    if (contentLength > MAX_FORM_BYTES) {
+    const contentLengthHeader = request.headers.get("content-length");
+    const contentLength = Number(contentLengthHeader);
+    if (
+      !contentLengthHeader ||
+      !Number.isSafeInteger(contentLength) ||
+      contentLength <= 0 ||
+      contentLength > MAX_FORM_BYTES
+    ) {
       return NextResponse.json(
         { error: IDENTITY_REVEAL_COPY.photoError },
         { status: 413 },
@@ -76,7 +82,10 @@ export async function POST(request: Request) {
     });
   } catch (caught) {
     const message =
-      caught instanceof Error
+      caught instanceof Error &&
+      Object.values(IDENTITY_REVEAL_COPY).includes(
+        caught.message as (typeof IDENTITY_REVEAL_COPY)[keyof typeof IDENTITY_REVEAL_COPY],
+      )
         ? caught.message
         : IDENTITY_REVEAL_COPY.genericError;
     return NextResponse.json({ error: message }, { status: 400 });

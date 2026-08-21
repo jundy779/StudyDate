@@ -25,6 +25,20 @@ const hardeningMigration = readFileSync(
   ),
   "utf8",
 );
+const revealDeletionMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608210012_identity_reveal_account_deletion_scope.sql",
+  ),
+  "utf8",
+);
+const revealDeletionFixMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608210013_fix_identity_reveal_deletion_participants.sql",
+  ),
+  "utf8",
+);
 const settingsPage = readFileSync(
   join(root, "app/app/settings/page.tsx"),
   "utf8",
@@ -234,6 +248,52 @@ test("Storage cleanup is scoped to server-derived object references", () => {
   assert.match(inventory, /where request\.user_id = target_user_id/);
   assert.doesNotMatch(worker, /process\.argv.*object|p_object|p_bucket|prefix/);
   assert.match(worker, /objects\.slice\(index, index \+ 100\)/);
+});
+
+test("effective deletion inventory covers all reveal photos in affected conversations", () => {
+  const inventory =
+    revealDeletionFixMigration.match(
+      /create or replace function public\.list_account_deletion_storage_objects[\s\S]*?revoke all on function public\.list_account_deletion_storage_objects/,
+    )?.[0] ?? "";
+  assert.match(inventory, /with affected_conversations as/);
+  assert.match(
+    inventory,
+    /shell\.participant_sender_id = target_user_id[\s\S]*shell\.participant_recipient_id = target_user_id/,
+  );
+  assert.match(
+    inventory,
+    /join affected_conversations affected[\s\S]*affected\.id = version\.conversation_id/,
+  );
+  assert.doesNotMatch(inventory, /version\.owner_user_id = target_user_id/);
+  assert.match(inventory, /where request\.user_id = target_user_id/);
+});
+
+test("profile deletion purges conversation-scoped reveal state for both participants", () => {
+  assert.match(
+    revealDeletionFixMigration,
+    /create or replace function public\.purge_identity_reveal_for_deleted_profile/,
+  );
+  assert.match(
+    revealDeletionFixMigration,
+    /delete from public\.conversation_identity_reveals/,
+  );
+  assert.match(
+    revealDeletionFixMigration,
+    /delete from public\.conversation_identity_reveal_consents/,
+  );
+  assert.match(
+    revealDeletionFixMigration,
+    /delete from public\.identity_reveal_profile_versions/,
+  );
+  assert.match(
+    revealDeletionFixMigration,
+    /set identity_revealed_at = null/,
+  );
+  assert.match(
+    revealDeletionMigration,
+    /before delete on public\.profiles/,
+  );
+  assert.doesNotMatch(revealDeletionFixMigration, /shell\.(sender_id|recipient_id)/);
 });
 
 test("shared history uses tombstones without rewriting message bodies", () => {

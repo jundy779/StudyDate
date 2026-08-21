@@ -188,6 +188,12 @@ test("photo pipeline validates content, re-encodes, and uses private bucket", ()
   assert.match(photo, /animated: false/);
   assert.match(photo, /rotate\(/);
   assert.match(photo, /jpeg\(/);
+  assert.match(photo, /failOn: "warning"/);
+  assert.match(
+    photo,
+    /limitInputPixels:\s*[\s\S]*IDENTITY_REVEAL_MAX_DIMENSION/,
+  );
+  assert.match(photo, /outputMeta\.format !== "jpeg"/);
   assert.match(profileRoute, /createIdentityRevealProfile/);
   assert.match(service, /IDENTITY_REVEAL_PHOTO_BUCKET/);
 });
@@ -299,6 +305,15 @@ test("photo upload has durable account rate limits", () => {
   assert.match(rateLimit, /limit: 12/);
   assert.match(profileRoute, /consumeIdentityRevealPhotoAttempt\(user\.id\)/);
   assert.match(profileRoute, /status: 429/);
+  assert.match(
+    profileRoute,
+    /!contentLengthHeader[\s\S]*!Number\.isSafeInteger\(contentLength\)[\s\S]*contentLength <= 0/,
+  );
+  assert.ok(
+    profileRoute.indexOf("consumeIdentityRevealPhotoAttempt") <
+      profileRoute.indexOf("request.formData()"),
+  );
+  assert.match(profileRoute, /Object\.values\(IDENTITY_REVEAL_COPY\)\.includes/);
 });
 
 test("superseded and orphan photos use a private cleanup queue", () => {

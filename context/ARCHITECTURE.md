@@ -324,6 +324,10 @@ before decoding. Failed registration removes the new object immediately; a
 durable queue retries failed orphan removal and superseded-version cleanup
 through the existing protected daily cleanup route. Queue claims exclude profile
 versions referenced by completed reveal snapshots or active consents.
+Image decoding enforces a 4096² input-pixel ceiling and strict warning failure.
+Because reveal media is conversation-scoped, account deletion inventories and
+purges both participants' reveal versions only in conversations involving the
+deleted account.
 
 ## 12e. Contact Reveal v1 architecture
 

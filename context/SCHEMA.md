@@ -112,6 +112,12 @@ Sumber migration:
 45. `supabase/migrations/202608210011_launch_ops_and_reveal_media_hardening.sql` —
     safe support projection, audited opaque student detail, dan durable Identity
     Reveal photo cleanup queue; **DEPLOYED**
+46. `supabase/migrations/202608210012_identity_reveal_account_deletion_scope.sql` —
+    inventory dan purge semua foto Identity Reveal conversation-scoped saat salah
+    satu participant menghapus akun; **DEPLOYED**
+47. `supabase/migrations/202608210013_fix_identity_reveal_deletion_participants.sql` —
+    forward fix nama kolom participant pada fungsi inventory/purge migration 012;
+    **DEPLOYED**
 
 ### `early_access_waitlist`
 
