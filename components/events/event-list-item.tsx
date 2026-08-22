@@ -2,6 +2,7 @@ import { EVENT_CATEGORIES } from "@/lib/events/constants";
 import type { CampusEventSummary } from "@/lib/events/service";
 import {
   ArrowUpRight,
+  BadgeCheck,
   CalendarDays,
   LockKeyhole,
   MapPin,
@@ -40,6 +41,12 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           <span>{categoryLabels[event.category]}</span>
           <span aria-hidden="true">•</span>
           <span>{event.scope === "open" ? "Terbuka" : "Kampus yang sama"}</span>
+          {event.is_official ? (
+            <span className="inline-flex items-center gap-1 text-brand-navy">
+              <BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+              Official
+            </span>
+          ) : null}
           {event.rsvp_status === "going" ? (
             <span className="rounded-full bg-blue-50 px-2.5 py-1 normal-case tracking-normal">
               Kamu ikut
@@ -48,6 +55,21 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           {full ? (
             <span className="rounded-full bg-brand-surface px-2.5 py-1 normal-case tracking-normal text-brand-navy">
               Kuota penuh
+            </span>
+          ) : null}
+          <span className="normal-case tracking-normal text-brand-muted">
+            {event.registration_mode === "approval"
+              ? "Perlu persetujuan"
+              : "Konfirmasi langsung"}
+          </span>
+          {event.rsvp_status === "pending" ? (
+            <span className="normal-case tracking-normal text-brand-navy">
+              Registrasi pending
+            </span>
+          ) : null}
+          {event.rsvp_status === "waitlisted" ? (
+            <span className="normal-case tracking-normal text-brand-navy">
+              Kamu di waitlist
             </span>
           ) : null}
         </div>
@@ -82,13 +104,23 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           ) : null}
         </div>
       </div>
-      <Link
-        href={`/app/events/${event.public_slug}`}
-        className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue transition hover:bg-brand-blue hover:text-white"
-      >
-        Lihat Event
-        <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
+      <div className="flex flex-col gap-2">
+        <Link
+          href={`/app/events/${event.public_slug}`}
+          className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue transition hover:bg-brand-blue hover:text-white"
+        >
+          Lihat Event
+          <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+        {event.is_organizer ? (
+          <Link
+            href={`/app/events/${event.public_slug}/manage`}
+            className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
+          >
+            Manage Event
+          </Link>
+        ) : null}
+      </div>
     </article>
   );
 }

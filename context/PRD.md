@@ -437,6 +437,27 @@ Introduction existing, organizer/staff isolation, report-scoped evidence, schedu
 lock, cancel/archive retention, RLS/grants, zero private-flow atau Event Notification
 otomatis, authenticated UI smoke, serta cleanup lengkap.
 
+### Campus Events v2 — ready locally, not deployed
+
+Migration lokal `202608220002`–`003` mengembangkan Event menjadi alur
+`discover → register → approval/confirmation → QR ticket → check-in`. Mahasiswa reguler,
+organizer, cohost, petugas check-in, dan Owner/Staff tetap berbeda. Organizer memerlukan
+akun aktif/onboarding lengkap serta verification atau grant Owner; StudyDate Plus hanya
+menambah kapasitas dan tidak pernah memberi trust atau wewenang moderasi.
+
+Lifecycle registrasi menjadi `pending | going | waitlisted | declined | cancelled`;
+kehadiran disimpan terpisah sebagai check-in QR/manual. Free mendapat 1 Event aktif,
+kapasitas 50, 1 cohost, dan 3 pertanyaan; Plus mendapat 3 Event aktif, kapasitas 200,
+3 cohost, dan 10 pertanyaan. Downgrade tidak menghapus Event atau peserta existing.
+Pertanyaan sensitif ditolak server, attendee directory tetap privat, dan organizer hanya
+menerima projection alias/campus/program/semester/interests/jawaban/status yang aman.
+
+Setiap registrasi `going` memiliki tiket Event-specific `SDT1` yang raw token-nya tidak
+disimpan. Database menyimpan SHA-256 hash; regenerasi mencabut tiket lama. Check-in
+server-authoritative, event-scoped, race-safe, idempoten, dan dapat memakai QR atau manual.
+UI lokal menyediakan workspace organizer, registrasi, check-in, scanner kamera mobile,
+team, settings, tiket QR, serta Owner controls. Migration belum diterapkan ke production.
+
 ## 13b. Deployed — Account & Privacy Controls v1
 
 `/app/settings` menggabungkan Profil, Privasi, Blokir, dan Akun dalam satu

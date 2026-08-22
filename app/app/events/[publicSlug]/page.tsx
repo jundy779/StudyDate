@@ -1,47 +1,31 @@
 import {
-  archiveCampusEventAction,
-  cancelCampusEventAction,
   cancelCampusEventRsvpAction,
-  checkInCampusEventTicketAction,
-  joinCampusEventWaitlistAction,
-  leaveCampusEventWaitlistAction,
+  registerCampusEventAction,
   reportCampusEventAction,
   reportCampusEventMessageAction,
-  rsvpCampusEventAction,
   sendCampusEventMessageAction,
-  setCampusEventCircleAction,
-  updateCampusEventAction,
 } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
-import { EventForm } from "@/components/events/event-form";
+import { EventRegistrationForm } from "@/components/events/event-registration-form";
 import { EventTicketIssuer } from "@/components/events/event-ticket-issuer";
-import { SendIntroductionDialog } from "@/components/introductions/send-introduction-dialog";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { EVENT_CATEGORIES, EVENT_REPORT_REASONS } from "@/lib/events/constants";
 import {
   getCampusEvent,
   getCampusEventCircle,
   getMyCampusEventTicketState,
-  getMyCampusEventWaitlistPosition,
-  listCampusEventAttendees,
   listCampusEventMessages,
-  listMyCircleOptionsForEvent,
+  listCampusEventRegistrationQuestions,
 } from "@/lib/events/service";
 import { eventSlugSchema } from "@/lib/events/validation";
-import { getIntroductionSendEligibility } from "@/lib/introductions/service";
-import { getMascotForAlias } from "@/lib/people/constants";
 import {
-  Archive,
   BadgeCheck,
   CalendarDays,
-  Clock3,
   LockKeyhole,
   MapPin,
-  ShieldAlert,
   UsersRound,
 } from "lucide-react";
 import { randomBytes } from "node:crypto";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -137,42 +121,35 @@ export default async function EventDetailPage({
   const query = await searchParams;
   const state = Array.isArray(query.state) ? query.state[0] : query.state;
   const notice = Array.isArray(query.notice) ? query.notice[0] : query.notice;
-  const canViewAttendees =
+  const canUseParticipantFeatures =
     event.is_organizer || event.rsvp_status === "going";
-  const [
-    attendeeRows,
-    eventCircle,
-    eventMessages,
-    waitlistPosition,
-    ticketState,
-    circleOptions,
-  ] = await Promise.all([
-    canViewAttendees ? listCampusEventAttendees(event.public_slug) : [],
+  const [eventCircle, eventMessages, ticketState, registrationQuestions] =
+    await Promise.all([
     getCampusEventCircle(event.public_slug),
-    canViewAttendees ? listCampusEventMessages(event.public_slug) : [],
-    !event.is_organizer ? getMyCampusEventWaitlistPosition(event.public_slug) : null,
+    canUseParticipantFeatures ? listCampusEventMessages(event.public_slug) : [],
     event.rsvp_status === "going"
       ? getMyCampusEventTicketState(event.public_slug)
       : null,
-    event.is_organizer ? listMyCircleOptionsForEvent() : [],
+    !event.is_organizer &&
+    event.status === "scheduled" &&
+    !event.is_past &&
+    !["pending", "going", "waitlisted"].includes(event.rsvp_status ?? "")
+      ? listCampusEventRegistrationQuestions(event.public_slug)
+      : [],
   ]);
-  const eligibilityEntries = canViewAttendees
-    ? await Promise.all(
-        attendeeRows
-          .filter((attendee) => attendee.public_alias !== "Akun dihapus")
-          .map(async (attendee) => [
-          attendee.public_alias,
-          await getIntroductionSendEligibility(attendee.public_alias),
-          ] as const),
-      )
-    : [];
-  const eligibilityByAlias = new Map(eligibilityEntries);
   const isFull = event.attendee_count >= event.capacity;
+  const registrationClosed =
+    Boolean(event.registration_closes_at) &&
+    new Date(event.registration_closes_at!).getTime() <= new Date().getTime();
 
   const successCopy: Record<string, string> = {
     created: "Campus Event berhasil dibuat.",
     updated: "Detail Event berhasil diperbarui.",
-    rsvp: "Kamu sudah terdaftar untuk mengikuti acara.",
+    "registration-pending": "Registrasimu sedang menunggu persetujuan organizer.",
+    "registration-going": "Registrasimu sudah dikonfirmasi.",
+    "registration-waitlisted": "Kamu masuk waitlist Event.",
+    "registration-declined": "Registrasimu tidak disetujui.",
+    "registration-cancelled": "Registrasimu telah dibatalkan.",
     "cancel-rsvp": "Keikutsertaanmu telah dibatalkan.",
     "cancel-event": "Acara dibatalkan. Riwayat RSVP tetap tersimpan.",
     archive: "Event telah diarsipkan.",
@@ -182,9 +159,6 @@ export default async function EventDetailPage({
     "message-sent": "Pesan Event terkirim.",
     "message-reported": "Laporan pesan dikirim secara privat untuk ditinjau.",
     "circle-linked": "Tautan Study Circle diperbarui.",
-    "ticket-issued": "Tiket berhasil diterbitkan. Simpan token ini.",
-    checked_in: "Check-in berhasil dicatat.",
-    duplicate: "Tiket ini sudah check-in sebelumnya.",
   };
 
   const statusLabel =
@@ -239,6 +213,12 @@ export default async function EventDetailPage({
                 <span>{categoryLabels[event.category]}</span>
                 <span aria-hidden="true">•</span>
                 <span>{event.scope === "open" ? "Terbuka" : "Kampus yang sama"}</span>
+                {event.is_official ? (
+                  <span className="inline-flex items-center gap-1 text-brand-navy">
+                    <BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+                    Official
+                  </span>
+                ) : null}
                 <span className="text-brand-navy">{statusLabel}</span>
               </div>
               <h1 className="mt-4 break-words font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
@@ -258,41 +238,52 @@ export default async function EventDetailPage({
               </p>
             </div>
             <div className="space-y-3">
-              {event.can_rsvp ? (
-                <form action={rsvpCampusEventAction}>
-                  <input type="hidden" name="publicSlug" value={event.public_slug} />
-                  <button
-                    type="submit"
-                    className="focus-ring min-h-12 w-full rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-                  >
-                    Ikut acara
-                  </button>
-                </form>
+              {event.is_organizer ? (
+                <Link
+                  href={`/app/events/${event.public_slug}/manage`}
+                  className="focus-ring inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
+                >
+                  Manage Event
+                </Link>
+              ) : null}
+              {event.rsvp_status === "pending" ? (
+                <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
+                  Registrasimu sedang ditinjau organizer.
+                </p>
+              ) : event.rsvp_status === "going" ? (
+                <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
+                  Registrasimu sudah dikonfirmasi.
+                </p>
+              ) : event.rsvp_status === "waitlisted" ? (
+                <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
+                  Kamu berada di waitlist dan akan dipromosikan otomatis jika slot tersedia.
+                </p>
+              ) : event.rsvp_status === "declined" ? (
+                <p className="border-l-2 border-brand-border pl-4 text-sm leading-6 text-brand-muted">
+                  Registrasimu sebelumnya tidak disetujui. Kamu dapat mendaftar ulang selama registrasi masih terbuka.
+                </p>
+              ) : event.rsvp_status === "cancelled" ? (
+                <p className="border-l-2 border-brand-border pl-4 text-sm leading-6 text-brand-muted">
+                  Registrasimu telah dibatalkan.
+                </p>
               ) : null}
               {!event.is_organizer &&
               event.status === "scheduled" &&
               !event.is_past &&
-              event.rsvp_status !== "going" &&
-              isFull ? (
-                <form action={joinCampusEventWaitlistAction}>
+              !registrationClosed &&
+              !["pending", "going", "waitlisted"].includes(event.rsvp_status ?? "") &&
+              registrationQuestions.length === 0 ? (
+                <form action={registerCampusEventAction}>
                   <input type="hidden" name="publicSlug" value={event.public_slug} />
-                  <button className="focus-ring min-h-11 w-full rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white">
-                    Masuk waitlist
+                  <input type="hidden" name="answers" value="{}" />
+                  <button className="focus-ring min-h-12 w-full rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white">
+                    {event.registration_mode === "approval"
+                      ? "Kirim registrasi"
+                      : isFull && event.waitlist_enabled
+                        ? "Masuk waitlist"
+                        : "Ikut acara"}
                   </button>
                 </form>
-              ) : null}
-              {waitlistPosition ? (
-                <div className="rounded-xl border border-brand-border bg-white p-4">
-                  <p className="text-sm font-semibold text-brand-navy">
-                    Posisi waitlist: {waitlistPosition}
-                  </p>
-                  <form action={leaveCampusEventWaitlistAction} className="mt-3">
-                    <input type="hidden" name="publicSlug" value={event.public_slug} />
-                    <button className="focus-ring min-h-10 rounded-lg border border-brand-border px-3 text-xs font-semibold">
-                      Keluar dari waitlist
-                    </button>
-                  </form>
-                </div>
               ) : null}
               {event.can_cancel_rsvp ? (
                 <details className="rounded-xl border border-brand-border bg-white p-4">
@@ -314,6 +305,16 @@ export default async function EventDetailPage({
                   </form>
                 </details>
               ) : null}
+              {["pending", "waitlisted"].includes(event.rsvp_status ?? "") &&
+              event.status === "scheduled" &&
+              !event.is_past ? (
+                <form action={cancelCampusEventRsvpAction}>
+                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                  <button className="focus-ring min-h-11 w-full rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy">
+                    Batalkan registrasi
+                  </button>
+                </form>
+              ) : null}
               {!event.is_organizer ? (
                 <details className="rounded-xl border border-brand-border bg-white p-4">
                   <summary className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-muted">
@@ -333,6 +334,36 @@ export default async function EventDetailPage({
               ) : null}
             </div>
           </header>
+
+          {registrationQuestions.length ? (
+            <section className="border-b border-brand-border py-9" aria-labelledby="registration-form-title">
+              <p className="section-label">Registrasi</p>
+              <h2 id="registration-form-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
+                Lengkapi registrasi Event
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
+                Jawaban dibagikan hanya kepada organizer/cohost melalui projection registrasi yang aman.
+              </p>
+              <div className="mt-6 max-w-2xl">
+                <EventRegistrationForm
+                  publicSlug={event.public_slug}
+                  questions={registrationQuestions}
+                  profile={{
+                    campus: ownProfile.campus,
+                    studyProgram: ownProfile.study_program,
+                    semester: ownProfile.semester,
+                  }}
+                  submitLabel={
+                    event.registration_mode === "approval"
+                      ? "Kirim registrasi"
+                      : isFull && event.waitlist_enabled
+                        ? "Masuk waitlist"
+                        : "Ikut acara"
+                  }
+                />
+              </div>
+            </section>
+          ) : null}
 
           <section className="grid gap-7 border-b border-brand-border py-9 lg:grid-cols-3" aria-label="Informasi acara">
             <div className="min-w-0">
@@ -364,6 +395,16 @@ export default async function EventDetailPage({
               <h2 className="mt-3 text-sm font-semibold text-brand-navy">Peserta</h2>
               <p className="mt-2 text-sm leading-6 text-brand-muted">
                 {event.attendee_count} dari {event.capacity} peserta
+                <br />
+                {event.registration_mode === "approval"
+                  ? "Registrasi perlu persetujuan"
+                  : "Registrasi dikonfirmasi langsung"}
+                {isFull
+                  ? event.waitlist_enabled
+                    ? " · Waitlist tersedia"
+                    : " · Penuh"
+                  : ""}
+                {registrationClosed ? " · Registrasi ditutup" : ""}
                 {event.scope === "campus" && event.campus_scope ? (
                   <>
                     <br />
@@ -403,82 +444,17 @@ export default async function EventDetailPage({
             </div>
           </aside>
 
-          {canViewAttendees ? (
-            <section className="py-10" aria-labelledby="event-attendees-title">
-              <div className="max-w-3xl">
-                <p className="section-label">Peserta</p>
-                <h2 id="event-attendees-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
-                  Profil anonim yang aman
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-brand-muted">
-                  Daftar ini hanya untuk organizer dan peserta aktif. Attendance tidak
-                  membuka identitas, foto privat, kontak, atau state koneksi.
-                </p>
-              </div>
-              <div className="mt-6 grid gap-px overflow-hidden rounded-[22px] border border-brand-border bg-brand-border md:grid-cols-2 xl:grid-cols-3">
-                {attendeeRows.map((attendee) => {
-                  const eligibility = eligibilityByAlias.get(attendee.public_alias);
-                  return (
-                    <article key={attendee.public_alias} className="min-w-0 bg-white p-5">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-12 w-12 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-brand-surface">
-                          <Image
-                            src={getMascotForAlias(attendee.public_alias)}
-                            alt=""
-                            width={44}
-                            height={44}
-                            className="h-11 w-11 object-contain object-bottom"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="break-words font-semibold text-brand-navy">
-                              {attendee.public_alias}
-                            </h3>
-                            {attendee.is_verified ? (
-                              <BadgeCheck className="h-4 w-4 text-brand-blue" aria-label="Terverifikasi" />
-                            ) : null}
-                            {attendee.is_organizer ? (
-                              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-brand-blue">
-                                Organizer
-                              </span>
-                            ) : null}
-                          </div>
-                          {attendee.public_alias !== "Akun dihapus" ? (
-                            <p className="mt-1 break-words text-xs leading-5 text-brand-muted">
-                              {attendee.study_program} · {attendee.campus}
-                              {attendee.semester ? ` · Semester ${attendee.semester}` : ""}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                      {eligibility?.can_send ? (
-                        <div className="mt-4 rounded-xl bg-brand-navy p-4">
-                          <SendIntroductionDialog
-                            alias={attendee.public_alias}
-                            canSend
-                          />
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          ) : (
-            <section className="py-10" aria-labelledby="event-attendee-gate">
-              <h2 id="event-attendee-gate" className="font-heading text-2xl font-semibold text-brand-navy">
-                Daftar peserta tidak terbuka untuk publik
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
-                Hanya organizer dan peserta dengan RSVP aktif yang dapat melihat
-                projection anonim peserta. Jumlah peserta tetap tampil sebagai kapasitas
-                acara, bukan direktori mahasiswa.
-              </p>
-            </section>
-          )}
+          <section className="py-10" aria-labelledby="event-attendee-gate">
+            <h2 id="event-attendee-gate" className="font-heading text-2xl font-semibold text-brand-navy">
+              Direktori peserta tetap privat
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
+              Peserta biasa tidak dapat melihat siapa saja yang hadir. Daftar peserta
+              hanya tersedia bagi organizer dan tim Event pada route pengelolaan.
+            </p>
+          </section>
 
-          {canViewAttendees ? (
+          {canUseParticipantFeatures ? (
             <section className="border-t border-brand-border py-10" aria-labelledby="event-chat-title">
               <p className="section-label">Diskusi Event</p>
               <h2 id="event-chat-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
@@ -532,7 +508,15 @@ export default async function EventDetailPage({
           {event.rsvp_status === "going" ? (
             <section className="border-t border-brand-border py-8">
               <h2 className="font-heading text-2xl font-semibold text-brand-navy">Tiket kehadiran</h2>
-              <EventTicketIssuer publicSlug={event.public_slug} ticketState={ticketState} />
+              <EventTicketIssuer
+                publicSlug={event.public_slug}
+                ticketState={ticketState}
+                eventTitle={event.title}
+                attendeeAlias={ownProfile.public_alias}
+                startsAt={event.starts_at}
+                timezone={event.timezone_name}
+                venue={`${event.venue_name}, ${event.venue_area}, ${event.city}`}
+              />
             </section>
           ) : null}
 
@@ -557,119 +541,26 @@ export default async function EventDetailPage({
           ) : null}
 
           {event.is_organizer ? (
-            <section className="border-t border-brand-border py-10" aria-labelledby="event-organizer-title">
-              <div className="max-w-3xl">
-                <p className="section-label">Kontrol Event</p>
-                <h2 id="event-organizer-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
-                  Kelola sebagai organizer
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-brand-muted">
-                  Organizer hanya mengelola Event ini. Akses staff, Anonymous Chat,
-                  Identity Reveal, dan Contact Reveal tetap tertutup.
-                </p>
-              </div>
-
-              {event.can_edit ? (
-                <div className="mt-7 rounded-[22px] border border-brand-border bg-white p-5 sm:p-7">
-                  <EventForm
-                    action={updateCampusEventAction}
-                    event={event}
-                    submitLabel="Simpan perubahan"
-                  />
-                </div>
-              ) : null}
-
-              <div className="mt-7 grid gap-5 lg:grid-cols-2">
-                {event.can_cancel_event ? (
-                  <details className="rounded-[22px] border border-brand-border bg-white p-5">
-                    <summary className="focus-ring cursor-pointer rounded-lg font-heading text-lg font-semibold text-brand-navy">
-                      Batalkan Event
-                    </summary>
-                    <p className="mt-3 text-sm leading-6 text-brand-muted">
-                      RSVP dan evidence tetap disimpan. Event yang dibatalkan tidak dapat
-                      dipulihkan pada v1 dan tidak mengirim notifikasi otomatis.
-                    </p>
-                    <form action={cancelCampusEventAction} className="mt-5">
-                      <input type="hidden" name="publicSlug" value={event.public_slug} />
-                      <button
-                        type="submit"
-                        className="focus-ring inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error"
-                      >
-                        <ShieldAlert className="h-4 w-4" aria-hidden="true" />
-                        Ya, batalkan Event
-                      </button>
-                    </form>
-                  </details>
-                ) : null}
-                {event.can_archive ? (
-                  <details className="rounded-[22px] border border-brand-border bg-white p-5">
-                    <summary className="focus-ring cursor-pointer rounded-lg font-heading text-lg font-semibold text-brand-navy">
-                      Arsipkan Event
-                    </summary>
-                    <p className="mt-3 text-sm leading-6 text-brand-muted">
-                      Arsip menyimpan riwayat dan bukti moderasi, tetapi menutup akses
-                      discovery serta RSVP baru.
-                    </p>
-                    <form action={archiveCampusEventAction} className="mt-5">
-                      <input type="hidden" name="publicSlug" value={event.public_slug} />
-                      <button
-                        type="submit"
-                        className="focus-ring inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-brand-navy px-4 text-sm font-semibold text-brand-navy"
-                      >
-                        <Archive className="h-4 w-4" aria-hidden="true" />
-                        Arsipkan Event
-                      </button>
-                    </form>
-                  </details>
-                ) : null}
-              </div>
-              <div className="mt-7 grid gap-5 lg:grid-cols-2">
-                <form action={setCampusEventCircleAction} className="rounded-[22px] border border-brand-border bg-white p-5">
-                  <input type="hidden" name="publicSlug" value={event.public_slug} />
-                  <label className="text-sm font-semibold text-brand-navy">
-                    Study Circle milikmu
-                    <select
-                      name="circlePublicSlug"
-                      defaultValue={eventCircle?.circle_public_slug ?? ""}
-                      className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
-                    >
-                      <option value="">Tidak ditautkan</option>
-                      {circleOptions.map((circle) => (
-                        <option key={circle.public_slug} value={circle.public_slug}>
-                          {circle.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button className="focus-ring mt-3 min-h-11 rounded-xl border border-brand-navy px-4 text-sm font-semibold">
-                    Simpan tautan Circle
-                  </button>
-                </form>
-                <form action={checkInCampusEventTicketAction} className="rounded-[22px] border border-brand-border bg-white p-5">
-                  <input type="hidden" name="publicSlug" value={event.public_slug} />
-                  <label className="text-sm font-semibold text-brand-navy">
-                    Token tiket peserta
-                    <input
-                      name="ticketToken"
-                      required
-                      pattern="[0-9a-f]{64}"
-                      autoComplete="off"
-                      className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
-                    />
-                  </label>
-                  <button className="focus-ring mt-3 min-h-11 rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white">
-                    Check-in peserta
-                  </button>
-                </form>
-              </div>
-              {!event.can_edit && !event.can_cancel_event && !event.can_archive ? (
-                <p className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm text-brand-muted">
-                  <Clock3 className="h-4 w-4" aria-hidden="true" />
-                  Tidak ada perubahan organizer yang tersedia untuk status ini.
-                </p>
-              ) : null}
+            <section className="border-t border-brand-border py-8" aria-labelledby="event-manage-link-title">
+              <p className="section-label">Organizer</p>
+              <h2 id="event-manage-link-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
+                Registrasi, check-in, team, dan settings
+              </h2>
+              <Link
+                href={`/app/events/${event.public_slug}/manage`}
+                className="focus-ring mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white"
+              >
+                Manage Event
+              </Link>
+              <Link
+                href={`/app/events/${event.public_slug}/manage/check-in/scan`}
+                className="focus-ring ml-2 mt-4 inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
+              >
+                Buka scanner QR
+              </Link>
             </section>
           ) : null}
+
         </div>
       </main>
     </AppShell>

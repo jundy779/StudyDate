@@ -215,6 +215,66 @@ export function EventForm({
         </div>
       </fieldset>
 
+      {!event ? (
+        <fieldset className="border-t border-brand-border pt-7">
+          <legend className="font-heading text-xl font-semibold text-brand-navy">
+            Registrasi
+          </legend>
+          <p className="mt-2 text-sm leading-6 text-brand-muted">
+            Pilih apakah peserta langsung dikonfirmasi atau perlu persetujuanmu.
+          </p>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <label className="text-sm font-semibold text-brand-navy">
+              Mode registrasi
+              <select
+                name="registrationMode"
+                defaultValue="instant"
+                className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
+              >
+                <option value="instant">Instant — langsung dikonfirmasi</option>
+                <option value="approval">Approval — perlu ditinjau</option>
+              </select>
+            </label>
+            <label className="text-sm font-semibold text-brand-navy">
+              Ditutup pada
+              <input
+                type="datetime-local"
+                name="registrationClosesAt"
+                className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
+              />
+              <span className="mt-2 block text-xs font-normal leading-5 text-brand-muted">
+                Opsional dan harus sebelum waktu mulai.
+              </span>
+            </label>
+          </div>
+          <label className="mt-4 flex min-h-11 items-start gap-3 text-sm leading-6 text-brand-navy">
+            <input
+              type="checkbox"
+              name="waitlistEnabled"
+              defaultChecked
+              className="mt-1 h-4 w-4 accent-brand-blue"
+            />
+            <span>Aktifkan waitlist saat kapasitas penuh.</span>
+          </label>
+        </fieldset>
+      ) : (
+        <>
+          <input type="hidden" name="registrationMode" value={event.registration_mode} />
+          <input
+            type="hidden"
+            name="waitlistEnabled"
+            value={event.waitlist_enabled ? "on" : "off"}
+          />
+          {event.registration_closes_at ? (
+            <input
+              type="hidden"
+              name="registrationClosesAt"
+              value={event.registration_closes_at}
+            />
+          ) : null}
+        </>
+      )}
+
       <fieldset
         disabled={event?.schedule_venue_locked}
         className="border-t border-brand-border pt-7 disabled:opacity-70"

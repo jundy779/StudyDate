@@ -2,32 +2,59 @@
 
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
+  addCampusEventRegistrationQuestion,
   archiveCampusEvent,
   cancelCampusEvent,
   cancelCampusEventRsvp,
   checkInCampusEventTicket,
   createCampusEvent,
+  deleteCampusEventRegistrationQuestion,
+  inviteCampusEventTeamMember,
   issueMyCampusEventTicket,
-  joinCampusEventWaitlist,
-  leaveCampusEventWaitlist,
+  manageCampusEventRegistration,
+  manualCheckInCampusEventRegistration,
+  ownerManageEventOrganizerEligibility,
+  ownerSetCampusEventOfficial,
+  registerForCampusEvent,
+  removeCampusEventTeamMember,
   reportCampusEvent,
   reportCampusEventMessage,
   reportCampusEventOrganizer,
-  rsvpCampusEvent,
+  respondCampusEventTeamInvitation,
   sendCampusEventMessage,
   setCampusEventCircle,
+  undoCampusEventCheckIn,
   updateCampusEvent,
+  updateCampusEventRegistrationSettings,
 } from "@/lib/events/service";
 import {
   eventCircleLinkSchema,
   eventFormSchema,
+  eventManualCheckInSchema,
   eventMessageReportSchema,
   eventMessageSchema,
+  eventOfficialFlagSchema,
+  eventOrganizerEligibilityManageSchema,
+  eventQuestionCreateSchema,
+  eventQuestionDeleteSchema,
+  eventRegistrationAnswersSchema,
+  eventRegistrationManageSchema,
+  eventRegistrationSettingsSchema,
   eventReportSchema,
   eventSlugSchema,
+  eventTeamInviteSchema,
+  eventTeamRemoveSchema,
+  eventTeamResponseSchema,
   eventTicketCheckInSchema,
+  eventTicketIssueSchema,
   eventUpdateSchema,
+  parseBoundedJson,
 } from "@/lib/events/validation";
+import {
+  EVENT_QUESTION_OPTIONS_MAX,
+  EVENT_REGISTRATION_ANSWER_MAX_BYTES,
+} from "@/lib/events/constants";
+import { requireOwner } from "@/lib/staff/authorization";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -56,6 +83,9 @@ function formValues(formData: FormData) {
     description: formData.get("description"),
     category: formData.get("category"),
     scope: formData.get("scope"),
+    registrationMode: formData.get("registrationMode") ?? "instant",
+    waitlistEnabled: formData.get("waitlistEnabled") !== "off",
+    registrationClosesAt: formData.get("registrationClosesAt") || undefined,
     startsAtLocal: formData.get("startsAtLocal"),
     endsAtLocal: formData.get("endsAtLocal"),
     timezone: formData.get("timezone"),
@@ -107,6 +137,9 @@ export async function updateCampusEventAction(formData: FormData) {
     title: values.title,
     description: values.description,
     category: values.category,
+    registrationMode: values.registrationMode,
+    waitlistEnabled: values.waitlistEnabled,
+    registrationClosesAt: values.registrationClosesAt,
     startsAtLocal: values.startsAtLocal,
     endsAtLocal: values.endsAtLocal,
     timezone: values.timezone,
@@ -144,14 +177,13 @@ export async function updateCampusEventAction(formData: FormData) {
 
 async function runBooleanAction(
   formData: FormData,
-  action: "rsvp" | "cancel-rsvp" | "cancel-event" | "archive",
+  action: "cancel-rsvp" | "cancel-event" | "archive",
 ) {
   await requireEventStudent();
   const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
   if (!slug.success) redirect("/app/events?state=error");
   try {
-    if (action === "rsvp") await rsvpCampusEvent(slug.data);
-    else if (action === "cancel-rsvp") await cancelCampusEventRsvp(slug.data);
+    if (action === "cancel-rsvp") await cancelCampusEventRsvp(slug.data);
     else if (action === "cancel-event") await cancelCampusEvent(slug.data);
     else await archiveCampusEvent(slug.data);
   } catch (error) {
@@ -170,7 +202,7 @@ async function runBooleanAction(
 }
 
 export async function rsvpCampusEventAction(formData: FormData) {
-  return runBooleanAction(formData, "rsvp");
+  return registerCampusEventAction(formData);
 }
 
 export async function cancelCampusEventRsvpAction(formData: FormData) {
@@ -212,29 +244,32 @@ export async function reportCampusEventAction(formData: FormData) {
   redirect(detailPath(parsed.data.publicSlug, "?state=reported"));
 }
 
-export async function joinCampusEventWaitlistAction(formData: FormData) {
+export async function registerCampusEventAction(formData: FormData) {
   await requireEventStudent();
   const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
   if (!slug.success) redirect("/app/events?state=error");
+  let answers: unknown = {};
   try {
-    await joinCampusEventWaitlist(slug.data);
+    const rawAnswers = formData.get("answers");
+    if (rawAnswers !== null) {
+      answers = parseBoundedJson(rawAnswers, EVENT_REGISTRATION_ANSWER_MAX_BYTES);
+    }
+    const parsedAnswers = eventRegistrationAnswersSchema.parse(answers);
+    const result = await registerForCampusEvent(slug.data, parsedAnswers);
+    revalidatePath(detailPath(slug.data));
+    revalidatePath("/app/events");
+    redirect(detailPath(slug.data, `?state=registration-${result.status}`));
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Antrean belum dapat diperbarui.";
+      error instanceof Error ? error.message : "Registrasi belum dapat diproses.";
     redirect(detailPath(slug.data, `?state=error&notice=${encodeURIComponent(message)}`));
   }
-  revalidatePath(detailPath(slug.data));
-  redirect(detailPath(slug.data, "?state=waitlisted"));
 }
 
-export async function leaveCampusEventWaitlistAction(formData: FormData) {
-  await requireEventStudent();
-  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
-  if (!slug.success) redirect("/app/events?state=error");
-  await leaveCampusEventWaitlist(slug.data);
-  revalidatePath(detailPath(slug.data));
-  redirect(detailPath(slug.data, "?state=left-waitlist"));
-}
+/** @deprecated Compatibility only until the current detail UI is replaced. */
+export const joinCampusEventWaitlistAction = registerCampusEventAction;
+/** @deprecated Waitlist cancellation is the unified registration cancellation. */
+export const leaveCampusEventWaitlistAction = cancelCampusEventRsvpAction;
 
 export async function sendCampusEventMessageAction(formData: FormData) {
   await requireEventStudent();
@@ -316,13 +351,23 @@ export async function setCampusEventCircleAction(formData: FormData) {
 
 export async function issueCampusEventTicketAction(formData: FormData) {
   await requireEventStudent();
-  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
-  if (!slug.success) redirect("/app/events?state=error");
+  const parsed = eventTicketIssueSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    regenerate: formData.get("regenerate") === "true",
+  });
+  if (!parsed.success) {
+    return { ticketToken: null, message: "Permintaan tiket tidak valid." };
+  }
   try {
-    const ticket = await issueMyCampusEventTicket(slug.data);
+    const ticket = await issueMyCampusEventTicket(
+      parsed.data.publicSlug,
+      parsed.data.regenerate,
+    );
     return {
       ticketToken: ticket.ticket_token,
-      message: "Tiket diterbitkan. Simpan token ini secara privat.",
+      message: parsed.data.regenerate
+        ? "QR tiket baru siap. QR dan screenshot lama sudah tidak berlaku."
+        : "QR tiket siap ditampilkan.",
     };
   } catch (error) {
     return {
@@ -339,22 +384,217 @@ export async function checkInCampusEventTicketAction(formData: FormData) {
     publicSlug: formData.get("publicSlug"),
     ticketToken: formData.get("ticketToken"),
   });
-  if (!parsed.success) redirect("/app/events?state=error");
+  if (!parsed.success) {
+    return {
+      status: "invalid" as const,
+      attendeeAlias: null,
+      checkedInAt: null,
+      message: "QR tiket tidak valid.",
+    };
+  }
   try {
-    const state = await checkInCampusEventTicket(
+    const result = await checkInCampusEventTicket(
       parsed.data.publicSlug,
       parsed.data.ticketToken,
     );
     revalidatePath(detailPath(parsed.data.publicSlug));
-    redirect(detailPath(parsed.data.publicSlug, `?state=${state}`));
+    return { ...result, message: null };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Check-in belum dapat diproses.";
-    redirect(
-      detailPath(
-        parsed.data.publicSlug,
-        `?state=error&notice=${encodeURIComponent(message)}`,
-      ),
-    );
+    return {
+      status: "invalid" as const,
+      attendeeAlias: null,
+      checkedInAt: null,
+      message:
+        error instanceof Error ? error.message : "Check-in belum dapat diproses.",
+    };
   }
+}
+
+function optionsFromFormData(formData: FormData) {
+  const values = formData
+    .getAll("options")
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, EVENT_QUESTION_OPTIONS_MAX);
+  if (values.length) return values;
+  const text = formData.get("optionsText");
+  if (typeof text === "string" && text.trim()) {
+    return text
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, EVENT_QUESTION_OPTIONS_MAX);
+  }
+  const json = formData.get("optionsJson");
+  return json === null
+    ? []
+    : parseBoundedJson(json, EVENT_QUESTION_OPTIONS_MAX * 100);
+}
+
+export async function addCampusEventRegistrationQuestionAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventQuestionCreateSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    questionType: formData.get("questionType"),
+    prompt: formData.get("prompt"),
+    options: optionsFromFormData(formData),
+    isRequired: formData.get("isRequired") === "on",
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  try {
+    await addCampusEventRegistrationQuestion(parsed.data);
+  } catch (error) {
+    redirect(detailPath(parsed.data.publicSlug, `?state=error&notice=${encodeURIComponent(error instanceof Error ? error.message : "Pertanyaan belum dapat ditambahkan.")}`));
+  }
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=question-added"));
+}
+
+export async function deleteCampusEventRegistrationQuestionAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventQuestionDeleteSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    questionPublicId: formData.get("questionPublicId"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  await deleteCampusEventRegistrationQuestion(
+    parsed.data.publicSlug,
+    parsed.data.questionPublicId,
+  );
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=question-deleted"));
+}
+
+export async function updateCampusEventRegistrationSettingsAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventRegistrationSettingsSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    registrationMode: formData.get("registrationMode"),
+    waitlistEnabled: formData.get("waitlistEnabled") === "on",
+    registrationClosesAt: formData.get("registrationClosesAt") || undefined,
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  await updateCampusEventRegistrationSettings(parsed.data);
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=settings-updated"));
+}
+
+export async function manageCampusEventRegistrationAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventRegistrationManageSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    registrationPublicId: formData.get("registrationPublicId"),
+    action: formData.get("action"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  const status = await manageCampusEventRegistration(parsed.data);
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, `?state=registration-${status}`));
+}
+
+export async function inviteCampusEventTeamMemberAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventTeamInviteSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    publicAlias: formData.get("publicAlias"),
+    role: formData.get("role"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  await inviteCampusEventTeamMember(parsed.data);
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=team-invited"));
+}
+
+export async function respondCampusEventTeamInvitationAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventTeamResponseSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    response: formData.get("response"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  await respondCampusEventTeamInvitation(
+    parsed.data.publicSlug,
+    parsed.data.response,
+  );
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, `?state=team-${parsed.data.response}`));
+}
+
+export async function removeCampusEventTeamMemberAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventTeamRemoveSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    publicAlias: formData.get("publicAlias"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  await removeCampusEventTeamMember(
+    parsed.data.publicSlug,
+    parsed.data.publicAlias,
+  );
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=team-removed"));
+}
+
+export async function manualCheckInCampusEventRegistrationAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventManualCheckInSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    registrationPublicId: formData.get("registrationPublicId"),
+  });
+  if (!parsed.success) {
+    return { status: "not_eligible" as const, attendeeAlias: null, checkedInAt: null, message: "Registrasi tidak valid." };
+  }
+  try {
+    const result = await manualCheckInCampusEventRegistration(
+      parsed.data.publicSlug,
+      parsed.data.registrationPublicId,
+    );
+    revalidatePath(detailPath(parsed.data.publicSlug));
+    return { ...result, message: null };
+  } catch (error) {
+    return { status: "not_eligible" as const, attendeeAlias: null, checkedInAt: null, message: error instanceof Error ? error.message : "Check-in belum dapat diproses." };
+  }
+}
+
+export async function undoCampusEventCheckInAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventManualCheckInSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    registrationPublicId: formData.get("registrationPublicId"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  await undoCampusEventCheckIn(
+    parsed.data.publicSlug,
+    parsed.data.registrationPublicId,
+  );
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect(detailPath(parsed.data.publicSlug, "?state=checkin-undone"));
+}
+
+export async function ownerManageEventOrganizerEligibilityAction(formData: FormData) {
+  await requireOwner();
+  const parsed = eventOrganizerEligibilityManageSchema.safeParse({
+    publicAlias: formData.get("publicAlias"),
+    action: formData.get("action"),
+  });
+  if (!parsed.success) redirect("/owner?state=invalid");
+  await ownerManageEventOrganizerEligibility(
+    parsed.data.publicAlias,
+    parsed.data.action,
+  );
+  revalidatePath("/owner");
+  redirect("/owner?state=event-organizer-updated");
+}
+
+export async function ownerSetCampusEventOfficialAction(formData: FormData) {
+  await requireOwner();
+  const parsed = eventOfficialFlagSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    isOfficial: formData.get("isOfficial") === "true",
+  });
+  if (!parsed.success) redirect("/owner?state=invalid");
+  await ownerSetCampusEventOfficial(parsed.data.publicSlug, parsed.data.isOfficial);
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  redirect("/owner?state=event-official-updated");
 }

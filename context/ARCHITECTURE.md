@@ -499,6 +499,30 @@ cancel/archive retention, direct-table denial, zero automatic private-flow/Event
 Notification side effects, authenticated UI smoke, dan cleanup sintetis lengkap.
 Post-deploy migration dry-run kosong.
 
+### Campus Events v2 architecture (LOCAL / NOT DEPLOYED)
+
+```text
+/app/events/[event]
+ -> instant atau approval registration RPC
+ -> pending | going | waitlisted | declined | cancelled
+ -> going: app derives opaque SDT1 token; database stores SHA-256 hash only
+ -> /manage: safe registration projection + scoped team authorization
+ -> /manage/check-in/scan: browser camera -> Server Action -> atomic check-in RPC
+```
+
+Organizer eligibility adalah trust rule server-side (student aktif, onboarding lengkap,
+tidak staff, verified atau explicit Owner grant, serta bukan explicit revoke).
+`event_team_members` hanya memberi role `cohost | checkin_staff` pada satu Event.
+Membership resolver existing menentukan limit Event Free/Plus; membership tidak menentukan
+trust, official badge, check-in authorization, atau moderation.
+
+Kapasitas, approval, FIFO waitlist promotion, ticket issuance/regeneration, dan check-in
+berjalan dalam RPC/transaction lock. Scanner tidak menulis tabel langsung. Check-in staff
+hanya menerima projection minimum, cohost dapat mengelola registrasi/check-in, dan hanya
+creator Event dapat mengelola team/settings. Regular attendee tidak dapat enumerate peserta.
+`EVENT_TICKET_SECRET` adalah server-only key 32 byte untuk derivasi token deterministik;
+raw token tidak masuk database, URL, log, atau analytics.
+
 ## 12i. Account & Privacy Controls v1 (DEPLOYED / LIVE-VERIFIED)
 
 `/app/settings` memakai satu Server Component dengan empat section dan server

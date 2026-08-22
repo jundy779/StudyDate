@@ -74,6 +74,9 @@ const validForm = {
   venueArea: "Lantai satu, area baca umum",
   city: "Jakarta",
   capacity: 12,
+  registrationMode: "instant",
+  waitlistEnabled: true,
+  registrationClosesAt: undefined,
   confirmsPublicPlace: true,
   confirmsExpectedOperating: true,
   confirmsNotPrivateResidence: true,
@@ -249,9 +252,9 @@ test("CE-22 detector membolehkan area publik hotel tanpa membolehkan kamar", () 
   assert.match(detector, /kamar hotel\|hotel room/);
   assert.doesNotMatch(detector, /\\mhotel\\M/);
 });
-test("CE-23 kapasitas hanya 3 sampai 30", () => {
+test("CE-23 kapasitas hanya 3 sampai 200", () => {
   assert.equal(eventFormSchema.safeParse({ ...validForm, capacity: 2 }).success, false);
-  assert.equal(eventFormSchema.safeParse({ ...validForm, capacity: 31 }).success, false);
+  assert.equal(eventFormSchema.safeParse({ ...validForm, capacity: 201 }).success, false);
 });
 test("CE-24 organizer maksimal lima event upcoming aktif", () => {
   assert.match(sql, /active_owned >= 5/);
@@ -461,7 +464,7 @@ test("CE-55 validation/service/script lengkap dan verification tidak wajib", () 
   }).success, true);
   for (const fn of [
     "listCampusEvents", "getCampusEvent", "createCampusEvent",
-    "updateCampusEvent", "rsvpCampusEvent", "cancelCampusEventRsvp",
+    "updateCampusEvent", "registerForCampusEvent", "cancelCampusEventRsvp",
     "cancelCampusEvent", "archiveCampusEvent", "listCampusEventAttendees",
     "reportCampusEvent", "reportCampusEventOrganizer",
   ]) assert.match(service, new RegExp(fn));

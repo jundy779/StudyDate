@@ -3,6 +3,7 @@ import { requireOwner } from "@/lib/staff/authorization";
 import { getVerificationReadiness } from "@/lib/verification/readiness";
 import {
   BookOpen,
+  CalendarDays,
   CreditCard,
   GraduationCap,
   ScrollText,
@@ -27,6 +28,7 @@ async function OwnerContent() {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           <Link href="/staff/users" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akun mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Bantu kendala akun, onboarding, profil belajar, membership, dan visibilitas.</p></Link>
           <Link href="/owner/memberships" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CreditCard className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Paket & pembayaran</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur penawaran Plus serta kelola paket mahasiswa melalui email.</p></Link>
+          <Link href="/owner/events" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CalendarDays className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Campus Events</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kelola izin organizer dan status resmi Event melalui alias atau slug publik.</p></Link>
           <Link href="/owner/staff" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><UserCog className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Tim operasional</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tambahkan Admin dan pilih tugas yang boleh mereka tangani.</p></Link>
           <Link href="/staff/early-access" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ScrollText className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akses Awal</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Periksa daftar pendaftar dan status aktivasi akun.</p></Link>
         </div>

@@ -19,7 +19,9 @@ const preferences = readMigration("202608210005_notification_preferences.sql");
 const association = readMigration("202608210006_circle_event_association.sql");
 const waitlist = readMigration("202608210007_event_waitlist.sql");
 const chat = readMigration("202608210008_event_chat.sql");
-const tickets = readMigration("202608210009_event_ticketing_checkin.sql");
+const tickets = `${readMigration("202608210009_event_ticketing_checkin.sql")}\n${readMigration(
+  "202608220003_event_ticket_checkin_v2.sql",
+)}`;
 const waitlistFix = readMigration(
   "202608210010_fix_event_waitlist_candidate_ambiguity.sql",
 );
@@ -110,17 +112,17 @@ test("Event chat uses participant gate, contact filter, idempotency, and rate li
 });
 
 test("tickets are opaque, one-time issued, and time-bounded for organizer check-in", () => {
-  assert.match(tickets, /gen_random_bytes\(32\)/);
-  assert.match(tickets, /digest\(raw_token, 'sha256'\)/);
-  assert.match(tickets, /event\.starts_at - interval '2 hours'/);
-  assert.match(tickets, /event\.ends_at \+ interval '2 hours'/);
-  assert.match(tickets, /if ticket\.checked_in_at is not null then return 'duplicate'/);
+  assert.match(tickets, /p_ticket_hash text/);
+  assert.match(tickets, /digest\(p_ticket_token, 'sha256'\)/);
+  assert.match(tickets, /event_row\.starts_at - interval '2 hours'/);
+  assert.match(tickets, /event_row\.ends_at \+ interval '2 hours'/);
+  assert.match(tickets, /registration\.checked_in_at is not null/);
   assert.match(tickets, /get_my_campus_event_ticket_state/);
-  assert.match(tickets, /campus_event_tickets_lifecycle/);
+  assert.match(tickets, /active_registration_idx/);
   assert.equal(
     eventTicketCheckInSchema.safeParse({
       publicSlug: `event-${"a".repeat(24)}`,
-      ticketToken: "c".repeat(64),
+      ticketToken: `SDT1.${"c".repeat(43)}`,
     }).success,
     true,
   );

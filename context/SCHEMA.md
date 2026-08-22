@@ -120,7 +120,14 @@ Sumber migration:
     **DEPLOYED**
 48. `supabase/migrations/202608220001_plus_duration_packages.sql` —
     mengganti initial offer menjadi package tetap Plus 7/30/90 hari;
-    **LOCAL ONLY / NOT DEPLOYED**
+    **DEPLOYED**
+49. `supabase/migrations/202608220002_event_organizer_registration_v2.sql` —
+    organizer eligibility, official flag, team Event-scoped, quota Free/Plus,
+    registration approval, pertanyaan aman, lifecycle RSVP v2, capacity/waitlist,
+    management projection, dan notification types; **LOCAL / NOT DEPLOYED**
+50. `supabase/migrations/202608220003_event_ticket_checkin_v2.sql` —
+    registration-scoped ticket hash, issuance/regeneration, QR/manual check-in,
+    undo, audit, dan account cleanup; **LOCAL / NOT DEPLOYED**
 
 ### `early_access_waitlist`
 
@@ -731,6 +738,40 @@ Semua table RLS-enabled dan direct grant dicabut dari `public`, `anon`, serta
 `authenticated`. Capacity authoritative memakai row lock pada `campus_events` sebelum
 menghitung RSVP `going`, sehingga upsert RSVP paralel diserialisasi. Scope kampus,
 organizer, target RSVP, dan report context selalu diturunkan server-side.
+
+Campus Events v2 lokal menambah:
+
+```text
+campus_events:
+  is_official
+  registration_mode instant | approval
+  waitlist_enabled
+  registration_closes_at
+  capacity 3..200
+
+campus_event_rsvps:
+  public_id
+  status pending | going | waitlisted | declined | cancelled
+  registration_answers
+  checked_in_at / checked_in_by / checkin_method qr | manual
+
+event_organizer_eligibility
+event_organizer_eligibility_audit
+event_team_members
+event_registration_questions
+
+campus_event_tickets:
+  rsvp_id
+  ticket_hash SHA-256
+  issued/revoked/checked-in state
+```
+
+Tabel v2 tetap RLS-closed tanpa direct authenticated access. Team unik per
+`(event_id, user_id)`, registrasi tetap unik per `(event_id, user_id)`, dan satu tiket
+aktif dibatasi per registrasi. Raw `SDT1` token tidak disimpan. Registration answers
+dibatasi object JSON 12 KB dan hanya dapat memakai question public ID yang valid.
+Management RPC memproyeksikan alias/campus/program/semester/interests/answers/status,
+tanpa email, NIM, nama legal, kontak, verification evidence, UUID user, atau token hash.
 
 Projection discovery/detail memuat metadata Event publik dan jumlah peserta nyata, bukan
 daftar peserta. Projection attendee terbatas pada organizer atau RSVP `going` dan hanya

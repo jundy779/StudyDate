@@ -14,7 +14,8 @@ type StaffShellProps = {
     | "study-programs"
     | "early-access"
     | "users"
-    | "memberships";
+    | "memberships"
+    | "events";
   role: StaffRole;
   access?: Pick<
     StaffAccess,

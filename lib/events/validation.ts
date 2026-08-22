@@ -3,10 +3,24 @@ import {
   EVENT_CAPACITY_MAX,
   EVENT_CAPACITY_MIN,
   EVENT_CATEGORIES,
+  EVENT_CHECKIN_STATUSES,
+  EVENT_CITY_MAX,
+  EVENT_CITY_MIN,
   EVENT_DESCRIPTION_MAX,
   EVENT_DESCRIPTION_MIN,
+  EVENT_QUESTION_OPTION_MAX,
+  EVENT_QUESTION_OPTIONS_MAX,
+  EVENT_QUESTION_PROMPT_MAX,
+  EVENT_QUESTION_PROMPT_MIN,
+  EVENT_QUESTION_TYPES,
+  EVENT_REGISTRATION_ANSWER_MAX_BYTES,
+  EVENT_REGISTRATION_MODES,
+  EVENT_REGISTRATION_STATUSES,
   EVENT_REPORT_REASONS,
   EVENT_SCOPES,
+  EVENT_SHORT_ANSWER_MAX,
+  EVENT_TEAM_ROLES,
+  EVENT_TICKET_TOKEN_PATTERN,
   EVENT_TIMEZONES,
   EVENT_TITLE_MAX,
   EVENT_TITLE_MIN,
@@ -15,15 +29,26 @@ import {
   EVENT_VENUE_CATEGORIES,
   EVENT_VENUE_NAME_MAX,
   EVENT_VENUE_NAME_MIN,
-  EVENT_CITY_MAX,
-  EVENT_CITY_MIN,
 } from "./constants.ts";
 
 const localDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+const opaqueId = /^[0-9a-f]{32}$/;
 const plainText = (message: string) =>
   z.string().trim().refine((value) => !/<[^>]+>/.test(value), message);
+const optionalTimestamp = z.preprocess(
+  (value) => (value === "" || value === null ? undefined : value),
+  z.iso.datetime({ offset: true }).optional(),
+);
+const safeAlias = plainText("Alias tidak valid.")
+  .min(1)
+  .max(80)
+  .refine((value) => !/[\u0000-\u001f\u007f]/.test(value), "Alias tidak valid.");
+const sensitiveQuestionWords =
+  /(^|[^a-z0-9_])(password|kata sandi|otp|one.?time password|nim|nomor induk|nik|ktp|passport|paspor|government id|legal id|alamat rumah|alamat pribadi|private address|home address|auth credential|kredensial|contact reveal|kampus|campus|program studi|study program|semester|minat|interests)([^a-z0-9_]|$)/i;
 
 export const eventSlugSchema = z.string().regex(/^event-[0-9a-f]{24}$/);
+export const eventPublicIdSchema = z.string().regex(opaqueId);
+export const eventTicketTokenSchema = z.string().regex(EVENT_TICKET_TOKEN_PATTERN);
 export const eventMessageSchema = z
   .object({
     publicSlug: eventSlugSchema,
@@ -44,7 +69,7 @@ export const eventCircleLinkSchema = z
 export const eventTicketCheckInSchema = z
   .object({
     publicSlug: eventSlugSchema,
-    ticketToken: z.string().regex(/^[0-9a-f]{64}$/),
+    ticketToken: eventTicketTokenSchema,
   })
   .strict();
 
@@ -63,12 +88,15 @@ const eventFields = {
       ),
   category: z.enum(EVENT_CATEGORIES),
   scope: z.enum(EVENT_SCOPES),
-    startsAtLocal: z
-      .string()
-      .regex(localDateTime, "Waktu mulai tidak valid."),
-    endsAtLocal: z
-      .string()
-      .regex(localDateTime, "Waktu selesai tidak valid."),
+  registrationMode: z.enum(EVENT_REGISTRATION_MODES),
+  waitlistEnabled: z.boolean(),
+  registrationClosesAt: optionalTimestamp,
+  startsAtLocal: z
+    .string()
+    .regex(localDateTime, "Waktu mulai tidak valid."),
+  endsAtLocal: z
+    .string()
+    .regex(localDateTime, "Waktu selesai tidak valid."),
   timezone: z.enum(EVENT_TIMEZONES),
   venueCategory: z.enum(EVENT_VENUE_CATEGORIES),
   venueName: plainText("Nama tempat harus berupa teks biasa.")
@@ -99,11 +127,224 @@ const validTimeOrder = (value: {
 const eventObjectSchema = z.object(eventFields).strict();
 
 export const eventFormSchema = eventObjectSchema
-  .refine(validTimeOrder, "Waktu selesai harus setelah waktu mulai.");
+  .refine(validTimeOrder, "Waktu selesai harus setelah waktu mulai.")
+  .refine(
+    (value) =>
+      !value.registrationClosesAt ||
+      new Date(value.registrationClosesAt).getTime() <
+        new Date(`${value.startsAtLocal}:00${timezoneOffset(value.timezone)}`).getTime(),
+    "Penutupan registrasi harus sebelum waktu mulai.",
+  );
 
 export const eventUpdateSchema = eventObjectSchema
   .omit({ scope: true })
   .refine(validTimeOrder, "Waktu selesai harus setelah waktu mulai.");
+
+function timezoneOffset(timezone: (typeof EVENT_TIMEZONES)[number]) {
+  switch (timezone) {
+    case "Asia/Jakarta":
+      return "+07:00";
+    case "Asia/Makassar":
+      return "+08:00";
+    case "Asia/Jayapura":
+      return "+09:00";
+    default: {
+      const exhaustive: never = timezone;
+      return exhaustive;
+    }
+  }
+}
+
+export const eventQuestionPromptSchema = plainText(
+  "Pertanyaan harus berupa teks biasa.",
+)
+  .min(EVENT_QUESTION_PROMPT_MIN)
+  .max(EVENT_QUESTION_PROMPT_MAX)
+  .refine(
+    (value) => !sensitiveQuestionWords.test(value),
+    "Pertanyaan tidak boleh meminta data profil, identitas, kontak, atau kredensial.",
+  );
+
+const eventQuestionOptionSchema = plainText(
+  "Opsi harus berupa teks biasa.",
+)
+  .min(1)
+  .max(EVENT_QUESTION_OPTION_MAX);
+
+export const eventQuestionCreateSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    questionType: z.enum(EVENT_QUESTION_TYPES),
+    prompt: eventQuestionPromptSchema,
+    options: z.array(eventQuestionOptionSchema).max(EVENT_QUESTION_OPTIONS_MAX),
+    isRequired: z.boolean(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const selection =
+      value.questionType === "single_select" ||
+      value.questionType === "multi_select";
+    if (selection && value.options.length < 2) {
+      context.addIssue({
+        code: "custom",
+        message: "Pertanyaan pilihan memerlukan minimal dua opsi.",
+        path: ["options"],
+      });
+    }
+    if (!selection && value.options.length !== 0) {
+      context.addIssue({
+        code: "custom",
+        message: "Jenis pertanyaan ini tidak menerima opsi.",
+        path: ["options"],
+      });
+    }
+    if (new Set(value.options).size !== value.options.length) {
+      context.addIssue({
+        code: "custom",
+        message: "Opsi pertanyaan tidak boleh duplikat.",
+        path: ["options"],
+      });
+    }
+  });
+
+export const eventQuestionDeleteSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    questionPublicId: eventPublicIdSchema,
+  })
+  .strict();
+
+const registrationAnswerValueSchema = z.union([
+  plainText("Jawaban harus berupa teks biasa.").max(EVENT_SHORT_ANSWER_MAX),
+  z.boolean(),
+  z
+    .array(plainText("Pilihan jawaban tidak valid.").max(EVENT_QUESTION_OPTION_MAX))
+    .max(EVENT_QUESTION_OPTIONS_MAX),
+]);
+
+export const eventRegistrationAnswersSchema = z
+  .record(eventPublicIdSchema, registrationAnswerValueSchema)
+  .refine(
+    (value) => new TextEncoder().encode(JSON.stringify(value)).byteLength <=
+      EVENT_REGISTRATION_ANSWER_MAX_BYTES,
+    "Jawaban registrasi terlalu besar.",
+  );
+
+export const eventRegistrationSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    answers: eventRegistrationAnswersSchema,
+  })
+  .strict();
+
+export const eventRegistrationManageSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    registrationPublicId: eventPublicIdSchema,
+    action: z.enum(["approve", "decline"]),
+  })
+  .strict();
+
+export const eventRegistrationSettingsSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    registrationMode: z.enum(EVENT_REGISTRATION_MODES),
+    waitlistEnabled: z.boolean(),
+    registrationClosesAt: optionalTimestamp,
+  })
+  .strict();
+
+export const eventRegistrationListSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    status: z.enum(EVENT_REGISTRATION_STATUSES).optional(),
+    beforeRsvpedAt: z.iso.datetime({ offset: true }).optional(),
+    beforePublicId: eventPublicIdSchema.optional(),
+  })
+  .strict()
+  .refine(
+    (value) => Boolean(value.beforeRsvpedAt) === Boolean(value.beforePublicId),
+    "Cursor registrasi tidak valid.",
+  );
+
+export const eventTeamInviteSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    publicAlias: safeAlias,
+    role: z.enum(EVENT_TEAM_ROLES),
+  })
+  .strict();
+
+export const eventTeamResponseSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    response: z.enum(["accept", "decline"]),
+  })
+  .strict();
+
+export const eventTeamRemoveSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    publicAlias: safeAlias,
+  })
+  .strict();
+
+export const eventManualCheckInSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    registrationPublicId: eventPublicIdSchema,
+  })
+  .strict();
+
+export const eventCheckInResultSchema = z
+  .object({
+    status: z.enum(EVENT_CHECKIN_STATUSES),
+    attendeeAlias: z.string().max(80).nullable(),
+    checkedInAt: z.iso.datetime({ offset: true }).nullable(),
+  })
+  .strict();
+
+export const eventOrganizerEligibilityLookupSchema = z
+  .object({ publicAlias: safeAlias })
+  .strict();
+
+export const eventOrganizerEligibilityManageSchema = z
+  .object({
+    publicAlias: safeAlias,
+    action: z.enum(["grant", "revoke"]),
+  })
+  .strict();
+
+export const eventOfficialFlagSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    isOfficial: z.boolean(),
+  })
+  .strict();
+
+export const eventTicketIssueSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    regenerate: z.boolean(),
+  })
+  .strict();
+
+export function parseBoundedJson(
+  value: FormDataEntryValue | null,
+  maxBytes: number,
+): unknown {
+  if (
+    typeof value !== "string" ||
+    new TextEncoder().encode(value).byteLength > maxBytes
+  ) {
+    throw new Error("Payload JSON tidak valid.");
+  }
+  try {
+    return JSON.parse(value);
+  } catch {
+    throw new Error("Payload JSON tidak valid.");
+  }
+}
 
 export const eventFiltersSchema = z
   .object({
@@ -154,6 +395,18 @@ export type EventUpdateInput = z.infer<typeof eventUpdateSchema>;
 export type EventFilters = z.infer<typeof eventFiltersSchema>;
 export type EventReportInput = z.infer<typeof eventReportSchema>;
 export type EventMessageReportInput = z.infer<typeof eventMessageReportSchema>;
+export type EventQuestionCreateInput = z.infer<typeof eventQuestionCreateSchema>;
+export type EventRegistrationInput = z.infer<typeof eventRegistrationSchema>;
+export type EventRegistrationManageInput = z.infer<
+  typeof eventRegistrationManageSchema
+>;
+export type EventRegistrationSettingsInput = z.infer<
+  typeof eventRegistrationSettingsSchema
+>;
+export type EventRegistrationListInput = z.infer<
+  typeof eventRegistrationListSchema
+>;
+export type EventTeamInviteInput = z.infer<typeof eventTeamInviteSchema>;
 
 function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

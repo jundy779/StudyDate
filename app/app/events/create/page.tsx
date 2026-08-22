@@ -2,8 +2,10 @@ import { createCampusEventAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventForm } from "@/components/events/event-form";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
+import { getMyEventOrganizerEligibility } from "@/lib/events/service";
 import { ArrowLeft, MapPin } from "lucide-react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
 
 type CreateEventPageProps = {
@@ -17,6 +19,8 @@ export default async function CreateEventPage({
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
+  const eligibility = await getMyEventOrganizerEligibility();
+  if (!eligibility?.eligible) notFound();
   const params = await searchParams;
   const notice = Array.isArray(params.notice) ? params.notice[0] : params.notice;
 

@@ -34,6 +34,11 @@ export const NOTIFICATION_TYPES = [
   "EVENT_REMINDER_24H",
   "EVENT_REMINDER_2H",
   "EVENT_WAITLIST_PROMOTED",
+  "EVENT_REGISTRATION_PENDING",
+  "EVENT_REGISTRATION_APPROVED",
+  "EVENT_REGISTRATION_DECLINED",
+  "EVENT_WAITLISTED",
+  "EVENT_TEAM_INVITED",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -204,6 +209,51 @@ export function getNotificationCopy(item: NotificationItem): NotificationCopy {
           "Kamu dipindahkan dari waitlist ke daftar peserta.",
         ),
         Icon: CalendarClock,
+      };
+    case "EVENT_REGISTRATION_PENDING":
+      return {
+        title: "Pendaftaran sedang ditinjau",
+        description: quotedHeadline(
+          item.headline,
+          "Pendaftaran Campus Event menunggu konfirmasi organizer.",
+        ),
+        Icon: CalendarClock,
+      };
+    case "EVENT_REGISTRATION_APPROVED":
+      return {
+        title: "Pendaftaran dikonfirmasi",
+        description: quotedHeadline(
+          item.headline,
+          "Pendaftaran Campus Event kamu sudah dikonfirmasi.",
+        ),
+        Icon: CalendarClock,
+      };
+    case "EVENT_REGISTRATION_DECLINED":
+      return {
+        title: "Update pendaftaran Campus Event",
+        description: `${quotedHeadline(
+          item.headline,
+          "Campus Event",
+        )}. Untuk event kali ini, pendaftaranmu belum dapat dikonfirmasi.`,
+        Icon: CalendarX2,
+      };
+    case "EVENT_WAITLISTED":
+      return {
+        title: "Kamu masuk daftar tunggu",
+        description: quotedHeadline(
+          item.headline,
+          "Kami akan memberi tahu jika tempat tersedia.",
+        ),
+        Icon: CalendarClock,
+      };
+    case "EVENT_TEAM_INVITED":
+      return {
+        title: "Undangan tim Campus Event",
+        description: quotedHeadline(
+          item.headline,
+          "Organizer mengundangmu membantu satu Campus Event.",
+        ),
+        Icon: Users,
       };
     default: {
       const exhaustive: never = item.type;

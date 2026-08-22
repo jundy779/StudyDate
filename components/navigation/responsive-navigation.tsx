@@ -248,6 +248,12 @@ function getStaffItems(
       icon: "memberships",
     },
     {
+      href: "/owner/events",
+      label: "Campus Events",
+      key: "events",
+      icon: "events",
+    },
+    {
       href: "/staff/early-access",
       label: "Akses Awal",
       key: "early-access",

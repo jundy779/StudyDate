@@ -229,6 +229,20 @@ rail 88px dan desktop sidebar 260px. Fase Event lanjutan menambahkan diskusi tek
 waitlist, tiket, dan check-in dalam detail Event tanpa map embed, arbitrary links,
 poster, fake people, atau visual dating.
 
+#### Campus Events v2 (lokal)
+
+Detail Event membedakan registrasi pending, confirmed, waitlisted, declined, dan
+cancelled dengan teks, bukan warna saja. QR peserta tampil sebagai tiket editorial
+StudyDate dengan title, alias aman, waktu, venue publik, dan status; raw token tidak
+ditampilkan. Attendee directory tidak tampil untuk peserta reguler.
+
+Workspace organizer memakai hierarchy dan divider, bukan grid dashboard berlebihan:
+Overview, Registrations, Check-In, Team, dan Settings. Statistik dibatasi pada angka
+operasional nyata. Scanner mobile memprioritaskan rear camera, feedback `aria-live`,
+touch target besar, pilihan kamera, serta fallback check-in manual. Check-in staff hanya
+melihat identity minimum. Official badge restrained dan hanya tampil untuk flag
+server-authoritative.
+
 ### Account & Privacy Controls v1 (DEPLOYED / LIVE-VERIFIED)
 
 `/app/settings` memakai satu halaman dengan section Profil, Privasi, Blokir,

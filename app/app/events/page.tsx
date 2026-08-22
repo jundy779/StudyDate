@@ -3,10 +3,15 @@ import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { EventFilterForm } from "@/components/events/event-filter-form";
 import { EventListItem } from "@/components/events/event-list-item";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
-import { listCampusEvents } from "@/lib/events/service";
+import {
+  getMyEventOrganizerEligibility,
+  listCampusEvents,
+  listMyCampusEventTeamInvitations,
+} from "@/lib/events/service";
 import { parseEventFilters } from "@/lib/events/validation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { respondCampusEventTeamInvitationAction } from "./actions";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
@@ -36,9 +41,16 @@ async function EventsContent({ searchParams }: EventsPageProps) {
   const rawSearchParams = await searchParams;
   const parsed = parseEventFilters(rawSearchParams);
   const filters = parsed.success ? parsed.data : {};
-  const result = parsed.success
-    ? await listCampusEvents(parsed.data)
-    : { events: [], nextCursor: null };
+  const [result, eligibility, invitations] = await Promise.all([
+    parsed.success
+      ? listCampusEvents(parsed.data)
+      : Promise.resolve({ events: [], nextCursor: null }),
+    getMyEventOrganizerEligibility(),
+    listMyCampusEventTeamInvitations(),
+  ]);
+  const pendingInvitations = invitations.filter(
+    (invitation) => invitation.invitation_status === "invited",
+  );
 
   return (
     <AppShell current="events">
@@ -55,14 +67,83 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 membuka identitas, kontak, atau percakapan privat.
               </p>
             </div>
-            <Link
-              href="/app/events/create"
-              className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Buat Event
-            </Link>
+            {eligibility?.eligible ? (
+              <Link
+                href="/app/events/create"
+                className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Buat Event
+              </Link>
+            ) : (
+              <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
+                <p className="font-semibold text-brand-navy">Pembuatan Event terbatas</p>
+                <p className="mt-1">
+                  Diperlukan verifikasi mahasiswa atau eligibility dari Owner. StudyDate
+                  Plus menambah kapasitas, bukan kepercayaan organizer.
+                </p>
+              </aside>
+            )}
           </header>
+
+          {pendingInvitations.length ? (
+            <section
+              className="mt-9 border-y border-brand-border py-6"
+              aria-labelledby="event-team-invitations-title"
+            >
+              <p className="section-label">Team invitations</p>
+              <h2
+                id="event-team-invitations-title"
+                className="mt-2 font-heading text-xl font-semibold text-brand-navy"
+              >
+                Undangan untuk membantu Event
+              </h2>
+              <div className="mt-4 divide-y divide-brand-border">
+                {pendingInvitations.map((invitation) => (
+                  <article
+                    key={`${invitation.event_public_slug}-${invitation.team_role}`}
+                    className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <h3 className="break-words font-semibold text-brand-navy">
+                        {invitation.event_title}
+                      </h3>
+                      <p className="mt-1 text-sm text-brand-muted">
+                        {invitation.team_role === "cohost"
+                          ? "Cohost · registrasi dan check-in"
+                          : "Check-in staff · daftar hadir dan scanner"}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      {(["accept", "decline"] as const).map((response) => (
+                        <form
+                          key={response}
+                          action={respondCampusEventTeamInvitationAction}
+                        >
+                          <input
+                            type="hidden"
+                            name="publicSlug"
+                            value={invitation.event_public_slug}
+                          />
+                          <button
+                            name="response"
+                            value={response}
+                            className={`focus-ring min-h-11 rounded-xl px-4 text-sm font-semibold ${
+                              response === "accept"
+                                ? "bg-brand-blue text-white"
+                                : "border border-brand-border bg-white text-brand-navy"
+                            }`}
+                          >
+                            {response === "accept" ? "Terima" : "Tolak"}
+                          </button>
+                        </form>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section
             aria-labelledby="event-filter-title"
@@ -108,7 +189,11 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                       : "Belum ada acara mendatang"
                   }
                   description="Coba ubah filter atau buat kegiatan kecil di tempat publik."
-                  action={{ href: "/app/events/create", label: "Buat Event" }}
+                  action={
+                    eligibility?.eligible
+                      ? { href: "/app/events/create", label: "Buat Event" }
+                      : undefined
+                  }
                 />
               </div>
             ) : null}
