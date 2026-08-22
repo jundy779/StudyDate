@@ -1,12 +1,15 @@
 import { z } from "zod";
+import { PLUS_PACKAGE_CODES } from "../membership/limits.ts";
 
 export const billingOfferSchema = z
   .object({
+    packageCode: z.enum(PLUS_PACKAGE_CODES),
     amountIdr: z.coerce.number().int().min(1).max(10_000_000),
-    durationDays: z.coerce.number().int().min(1).max(365),
     isActive: z.preprocess((value) => value === "true" || value === true, z.boolean()),
   })
   .strict();
+
+export const plusPackageCodeSchema = z.enum(PLUS_PACKAGE_CODES);
 
 export const paymentOrderPublicIdSchema = z.string().regex(/^[0-9a-f]{32}$/);
 

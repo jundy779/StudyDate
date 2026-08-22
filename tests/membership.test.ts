@@ -9,6 +9,7 @@ import {
   hasEntitlement,
   MEMBERSHIP_GRANT_DAYS,
   MEMBERSHIP_LIMITS,
+  PLUS_PACKAGES,
 } from "../lib/membership/limits.ts";
 
 const root = process.cwd();
@@ -90,6 +91,10 @@ const quotaHotfix = readFileSync(
     root,
     "supabase/migrations/202608170005_fix_membership_quota_window_ambiguity.sql",
   ),
+  "utf8",
+);
+const billingMigration = readFileSync(
+  join(root, "supabase/migrations/202608220001_plus_duration_packages.sql"),
   "utf8",
 );
 
@@ -251,11 +256,41 @@ test("safety, reveal, and verification are not membership-gated", () => {
 test("student membership UI keeps checkout server-authoritative", () => {
   assert.match(navigation, /href: "\/app\/membership"/);
   assert.match(navigation, /label: "StudyDate Plus"/);
-  assert.match(studentPage, /StudyDate Plus segera tersedia/);
+  assert.match(studentPage, /Pilih durasi Plus/);
+  assert.match(studentPage, /tidak diperpanjang otomatis/);
   assert.match(studentPage, /startMembershipCheckout/);
   assert.match(studentPage, /Pembayaran diproses melalui GoPay QRIS/);
   assert.doesNotMatch(studentPage, /AUTOGOPAY_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(migration, /autogopay|checkout_url|qris|AUTOGOPAY/i);
+});
+
+test("Plus checkout exposes only fixed 7, 30, and 90 day purchases", () => {
+  assert.deepEqual(
+    PLUS_PACKAGES.map(({ code, durationDays, amountIdr }) => ({
+      code,
+      durationDays,
+      amountIdr,
+    })),
+    [
+      { code: "plus_7", durationDays: 7, amountIdr: 9_000 },
+      { code: "plus_30", durationDays: 30, amountIdr: 19_000 },
+      { code: "plus_90", durationDays: 90, amountIdr: 49_000 },
+    ],
+  );
+  assert.match(billingMigration, /package_code in \('plus_7', 'plus_30', 'plus_90'\)/);
+  assert.match(billingMigration, /\(true, 'plus_7', 9000, 7/);
+  assert.match(billingMigration, /\(true, 'plus_30', 19000, 30/);
+  assert.match(billingMigration, /\(true, 'plus_90', 49000, 90/);
+  assert.match(
+    billingMigration,
+    /create_or_reuse_my_membership_payment_order\(\s*p_package_code text\s*\)/,
+  );
+  assert.match(ownerPage, /Paket yang dijual/);
+  assert.match(ownerPage, /bukan langganan yang memperpanjang otomatis/);
+  assert.match(
+    studentPage,
+    /tidak ada tingkatan Basic,[\s\S]*Pro, atau Premium/,
+  );
 });
 
 test("Owner grant is email-only with bounded durations and audit", () => {

@@ -6,7 +6,10 @@ import {
   createCheckout,
   refreshMyPaymentStatus,
 } from "@/lib/billing/service";
-import { paymentOrderPublicIdSchema } from "@/lib/billing/validation";
+import {
+  paymentOrderPublicIdSchema,
+  plusPackageCodeSchema,
+} from "@/lib/billing/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -17,11 +20,13 @@ async function requireStudent() {
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
 }
 
-export async function startMembershipCheckout() {
+export async function startMembershipCheckout(formData: FormData) {
   await requireStudent();
+  const packageCode = plusPackageCodeSchema.safeParse(formData.get("packageCode"));
+  if (!packageCode.success) redirect("/app/membership?state=invalid");
   let order: Awaited<ReturnType<typeof createCheckout>>;
   try {
-    order = await createCheckout();
+    order = await createCheckout(packageCode.data);
   } catch {
     redirect("/app/membership?state=payment_unavailable");
   }

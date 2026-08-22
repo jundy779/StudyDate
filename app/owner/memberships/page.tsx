@@ -5,19 +5,27 @@ import {
   updateBillingOffer,
 } from "@/app/owner/memberships/actions";
 import { StaffShell } from "@/components/staff/staff-shell";
-import { getOwnerBillingOffer } from "@/lib/billing/service";
-import { MEMBERSHIP_GRANT_DAYS } from "@/lib/membership/limits";
+import { getOwnerBillingOffers } from "@/lib/billing/service";
+import {
+  MEMBERSHIP_GRANT_DAYS,
+  PLUS_PACKAGES,
+} from "@/lib/membership/limits";
 import { lookupMembershipByEmail } from "@/lib/membership/service";
 import { requireOwner } from "@/lib/staff/authorization";
 import { Suspense } from "react";
 
 type Props = {
-  searchParams: Promise<{ email?: string; state?: string }>;
+  searchParams: Promise<{ email?: string; state?: string; package?: string }>;
 };
 
 const dateFmt = new Intl.DateTimeFormat("id-ID", {
   dateStyle: "medium",
   timeZone: "UTC",
+});
+const currency = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
 });
 
 const stateMessage: Record<string, string> = {
@@ -34,9 +42,9 @@ async function MembershipsContent({ searchParams }: Props) {
   const query = await searchParams;
   const email = query.email?.trim().toLowerCase() || "";
   const message = query.state ? stateMessage[query.state] : null;
-  const [record, offer] = await Promise.all([
+  const [record, offers] = await Promise.all([
     email ? lookupMembershipByEmail(email) : null,
-    getOwnerBillingOffer(),
+    getOwnerBillingOffers(),
   ]);
   const isError =
     query.state === "error" ||
@@ -52,8 +60,9 @@ async function MembershipsContent({ searchParams }: Props) {
             Paket & pembayaran
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Atur harga StudyDate Plus dan bantu paket mahasiswa melalui email
-            akun StudyDate.
+            Kelola tiga pilihan akses StudyDate Plus dan bantu akun mahasiswa
+            bila pembayaran perlu ditangani. Plus dibeli berdasarkan durasi,
+            bukan langganan yang memperpanjang otomatis.
           </p>
 
           {message ? (
@@ -69,51 +78,64 @@ async function MembershipsContent({ searchParams }: Props) {
 
           <section className="mt-8 border-y border-brand-border py-7">
             <h2 className="font-heading text-2xl font-semibold text-brand-navy">
-              Penawaran pembayaran
+              Paket yang dijual
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
-              Checkout hanya muncul saat penawaran aktif dan kill switch AutoGoPay
-              dikonfigurasi server-side.
+              Mahasiswa memilih 7, 30, atau 90 hari. Pembelian saat Plus masih
+              aktif menambah durasi dari tanggal berakhir sebelumnya.
             </p>
-            <form action={updateBillingOffer} className="mt-5 grid gap-4 sm:grid-cols-3 sm:items-end">
-              <label className="text-sm font-semibold">
-                Harga (IDR)
-                <input
-                  name="amountIdr"
-                  type="number"
-                  min={1}
-                  max={10_000_000}
-                  required
-                  defaultValue={offer?.amountIdr ?? 29000}
-                  className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Durasi (hari)
-                <input
-                  name="durationDays"
-                  type="number"
-                  min={1}
-                  max={365}
-                  required
-                  defaultValue={offer?.durationDays ?? 30}
-                  className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
-                />
-              </label>
-              <label className="flex min-h-11 items-center gap-3 text-sm font-semibold">
-                <input
-                  name="isActive"
-                  type="checkbox"
-                  value="true"
-                  defaultChecked={offer?.isActive ?? false}
-                  className="focus-ring h-5 w-5"
-                />
-                Aktifkan checkout
-              </label>
-              <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white sm:col-span-3 sm:justify-self-start">
-                Simpan penawaran
-              </button>
-            </form>
+            <div className="mt-5 divide-y divide-brand-border border-y border-brand-border">
+              {PLUS_PACKAGES.map((preset) => {
+                const offer =
+                  offers.find((item) => item.packageCode === preset.code) ?? preset;
+                return (
+                  <form
+                    key={preset.code}
+                    action={updateBillingOffer}
+                    className="grid gap-4 py-5 sm:grid-cols-[minmax(9rem,0.7fr)_1fr_auto_auto] sm:items-end"
+                  >
+                    <input type="hidden" name="packageCode" value={preset.code} />
+                    <div>
+                      <p className="font-semibold text-brand-navy">
+                        Plus {preset.durationDays} Hari
+                      </p>
+                      <p className="mt-1 text-sm text-brand-muted">
+                        Akses selama {preset.durationDays} hari
+                      </p>
+                    </div>
+                    <label className="text-sm font-semibold">
+                      Harga (IDR)
+                      <input
+                        name="amountIdr"
+                        type="number"
+                        min={1}
+                        max={10_000_000}
+                        required
+                        defaultValue={offer.amountIdr}
+                        className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                      />
+                    </label>
+                    <label className="flex min-h-11 items-center gap-3 text-sm font-semibold">
+                      <input
+                        name="isActive"
+                        type="checkbox"
+                        value="true"
+                        defaultChecked={"isActive" in offer && offer.isActive === true}
+                        className="focus-ring h-5 w-5"
+                      />
+                      Tersedia
+                    </label>
+                    <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
+                      Simpan
+                    </button>
+                  </form>
+                );
+              })}
+            </div>
+            <p className="mt-4 text-sm leading-6 text-brand-muted">
+              Harga rencana: {PLUS_PACKAGES.map((item) => `${item.durationDays} hari ${currency.format(item.amountIdr)}`).join(" · ")}.
+              Checkout juga tetap bergantung pada kill switch AutoGoPay server-side.
+            </p>
           </section>
 
           <form
@@ -133,7 +155,7 @@ async function MembershipsContent({ searchParams }: Props) {
               />
             </label>
             <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-              Cari paket
+              Cari akun
             </button>
           </form>
 
@@ -187,7 +209,7 @@ async function MembershipsContent({ searchParams }: Props) {
               >
                 <input type="hidden" name="email" value={email} />
                 <label className="text-sm font-semibold">
-                  Durasi Plus
+                  Tambah durasi Plus
                   <select
                     name="durationDays"
                     defaultValue="7"
@@ -201,7 +223,7 @@ async function MembershipsContent({ searchParams }: Props) {
                   </select>
                 </label>
                 <button className="focus-ring min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white">
-                  Aktifkan StudyDate Plus
+                  Tambahkan akses Plus
                 </button>
               </form>
               {record.plan_code === "plus" ? (

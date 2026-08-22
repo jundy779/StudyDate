@@ -65,8 +65,8 @@ export async function revokePlusMembership(formData: FormData) {
 export async function updateBillingOffer(formData: FormData) {
   await requireOwner();
   const parsed = billingOfferSchema.safeParse({
+    packageCode: formData.get("packageCode"),
     amountIdr: formData.get("amountIdr"),
-    durationDays: formData.get("durationDays"),
     isActive: formData.get("isActive"),
   });
   if (!parsed.success) redirect("/owner/memberships?state=invalid");
@@ -77,5 +77,7 @@ export async function updateBillingOffer(formData: FormData) {
   }
   revalidatePath("/owner/memberships");
   revalidatePath("/app/membership");
-  redirect("/owner/memberships?state=offer_saved");
+  redirect(
+    `/owner/memberships?state=offer_saved&package=${encodeURIComponent(parsed.data.packageCode)}`,
+  );
 }

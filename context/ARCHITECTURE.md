@@ -551,20 +551,28 @@ lama `ends_at` (NULL first) di antara window aktif; unique partial index mencega
 Plus `active` bersamaan. Grant Owner memakai `greatest(existing ends_at, now+duration)`
 dan tidak memendekkan grant tanpa batas (`ends_at` NULL).
 
+Pembayaran Plus bukan subscription auto-renew. Catalog checkout hanya terdiri dari
+`plus_7` (7 hari, Rp9.000), `plus_30` (30 hari, Rp19.000), dan `plus_90`
+(90 hari, Rp49.000). Order menyimpan snapshot harga/durasi. Finalisasi pembayaran
+menambah durasi dari `max(now, ends_at)` sehingga pembelian berulang tidak membuang
+sisa masa aktif.
+
 Kuota People harian memakai `membership_quota_usage` (satu consume per list RPC, jendela
 UTC day). Variabel PL/pgSQL hotfix adalah `v_quota_window_start` agar tidak bentrok
 dengan kolom `window_start`. Kuota introduction/circle dihitung dari row aktual (pending outgoing, created
 today UTC, owned active circles, joined `role=member`). Kuota Event memakai row
-scheduled mendatang (Free 2/5, Plus 5/10). UI `/app/membership` menampilkan paket dan
-checkout GoPay hanya saat kill switch/offer aktif. Owner `/owner/memberships` lookup/grant by email,
-RPC UUID `manage_user_membership` dicabut dari `authenticated`.
+scheduled mendatang (Free 2/5, Plus 5/10). UI `/app/membership` menampilkan
+perbandingan Free/Plus dan tiga pilihan durasi GoPay hanya saat kill switch/package
+aktif. Owner `/owner/memberships` mengatur harga/status setiap durasi serta
+lookup/grant by email. RPC UUID `manage_user_membership` dicabut dari `authenticated`.
 
 Jangan cache otorisasi membership lintas request setelah grant/revoke. `getMyMembership`
 memakai React `cache()` per request. Client, `localStorage`, `user_metadata`, dan boolean
 profil bukan sumber membership.
 
-Migration `202608210001` menambah offer singleton Owner, private payment ledger,
-service-role finalization, dan adapter GoPay QRIS Next.js. Webhook memverifikasi
+Migration `202608210001` menambah offer awal Owner, private payment ledger,
+service-role finalization, dan adapter GoPay QRIS Next.js. Migration
+`202608220001` menggantinya dengan tiga fixed-duration package. Webhook memverifikasi
 HMAC-SHA256 atas exact raw bytes sebelum strict payload validation. Amount, provider
 order, dan transaction harus cocok; duplicate callback tidak menambah entitlement.
 

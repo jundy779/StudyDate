@@ -1,5 +1,8 @@
 import { StaffShell } from "@/components/staff/staff-shell";
-import { requireStaffCapability } from "@/lib/staff/authorization";
+import {
+  requireStaffCapability,
+  staffHasCapability,
+} from "@/lib/staff/authorization";
 import { listEarlyAccessWaitlistOps } from "@/lib/staff/service";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -21,9 +24,19 @@ const dateFmt = new Intl.DateTimeFormat("id-ID", {
 });
 
 const PAGE_SIZE = 25;
+const statusLabels: Record<"waiting" | "claimed", string> = {
+  waiting: "Belum membuat akun",
+  claimed: "Sudah menjadi akun",
+};
+const sourceLabels: Record<string, string> = {
+  navbar: "Navigasi",
+  hero: "Bagian utama landing",
+  "final-cta": "Ajakan akhir landing",
+};
 
 async function EarlyAccessContent({ searchParams }: Props) {
   const access = await requireStaffCapability("early_access.read");
+  const canSupportUsers = staffHasCapability(access, "users.support");
   const query = await searchParams;
   const page = Math.max(1, Number(query.page ?? "1") || 1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -87,9 +100,20 @@ async function EarlyAccessContent({ searchParams }: Props) {
             Akses Awal
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Daftar minat Early Access untuk dukungan operasional. Waitlist bukan
-            akun. Tidak ada klaim paksa atau undangan massal dari halaman ini.
+            Pantau pendaftar sebelum dan sesudah mereka membuat akun. Akses Awal
+            bukan akun dan tidak dapat diaktifkan paksa oleh staff; mahasiswa
+            harus masuk memakai email yang sama agar kepemilikan email terverifikasi.
           </p>
+          <div className="mt-6 border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
+            <p>
+              <strong className="text-brand-navy">Belum membuat akun:</strong>{" "}
+              arahkan mahasiswa ke halaman masuk StudyDate dengan email yang terdaftar.
+            </p>
+            <p className="mt-1">
+              <strong className="text-brand-navy">Sudah menjadi akun:</strong>{" "}
+              buka Akun mahasiswa untuk memeriksa onboarding dan membantu kendala akun.
+            </p>
+          </div>
 
           <form
             method="get"
@@ -184,7 +208,7 @@ async function EarlyAccessContent({ searchParams }: Props) {
                 rows.map((row) => (
                   <article
                     key={`${row.email}-${row.created_at}`}
-                    className="grid gap-2 p-5 lg:grid-cols-[1.4fr_1fr_auto]"
+                    className="grid gap-3 p-5 lg:grid-cols-[1.35fr_1fr_auto]"
                   >
                     <div>
                       <p className="font-semibold break-all">{row.email}</p>
@@ -194,16 +218,33 @@ async function EarlyAccessContent({ searchParams }: Props) {
                       </p>
                     </div>
                     <div className="text-sm text-brand-muted">
-                      <p>Sumber: {row.source ?? "—"}</p>
-                      <p>Status: {row.status}</p>
+                      <p>Sumber: {row.source ? sourceLabels[row.source] ?? row.source : "—"}</p>
+                      <p>
+                        Status:{" "}
+                        {statusLabels[row.status as "waiting" | "claimed"] ?? row.status}
+                      </p>
                       <p>{row.activation_label}</p>
                     </div>
-                    <time className="text-sm text-brand-muted">
-                      {dateFmt.format(new Date(row.created_at))}
-                      {row.claimed_at
-                        ? ` · aktif ${dateFmt.format(new Date(row.claimed_at))}`
-                        : ""}
-                    </time>
+                    <div className="flex flex-col items-start gap-3 lg:items-end">
+                      <time className="text-sm text-brand-muted">
+                        {dateFmt.format(new Date(row.created_at))}
+                        {row.claimed_at
+                          ? ` · aktif ${dateFmt.format(new Date(row.claimed_at))}`
+                          : ""}
+                      </time>
+                      {row.status === "claimed" && canSupportUsers ? (
+                        <Link
+                          href={`/staff/users?email=${encodeURIComponent(row.email)}`}
+                          className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-blue"
+                        >
+                          Buka akun mahasiswa
+                        </Link>
+                      ) : row.status === "waiting" ? (
+                        <span className="text-right text-xs leading-5 text-brand-muted">
+                          Menunggu mahasiswa masuk sendiri
+                        </span>
+                      ) : null}
+                    </div>
                   </article>
                 ))
               )}

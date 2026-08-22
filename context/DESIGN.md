@@ -185,10 +185,13 @@ copy panjang wajib wrap tanpa horizontal overflow.
 ### StudyDate Plus v1
 
 `/app/membership` memakai halaman akun editorial: heading, status paket, tabel perbandingan
-kapasitas, serta satu CTA GoPay QRIS hanya ketika offer dan kill switch aktif. Pending
+kapasitas, serta daftar pilihan Plus 7/30/90 hari hanya ketika package dan kill switch
+aktif. Jelaskan bahwa pembelian tidak auto-renew dan pembelian lanjutan menambah masa
+aktif yang tersisa. Pending
 payment menampilkan buka QRIS, status manual, dan cancel tanpa aggressive polling. Jangan
 memakai kartu harga SaaS, gradient berlebih, atau estetika VIP dating. Badge Plus tidak tampil di People.
-Owner `/owner/memberships` mengikuti shell staff existing.
+Owner `/owner/memberships` mengikuti shell staff existing dan menampilkan harga/status
+ketiga durasi, bukan input durasi bebas atau tier Basic/Pro/Premium.
 
 ### Safety Meeting Flow v1
 

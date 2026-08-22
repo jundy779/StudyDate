@@ -88,7 +88,7 @@ Sumber migration:
 34. `supabase/migrations/202608170006_circle_event_notifications_v1.sql` —
     Circle/Event types on existing `user_notifications`; **DEPLOYED**
 35. `supabase/migrations/202608210001_autogopay_membership_billing_v1.sql` —
-    singleton offer, private payment ledger, dan atomic Plus finalization;
+    initial singleton offer, private payment ledger, dan atomic Plus finalization;
     **DEPLOYED; CHECKOUT KILL SWITCH OFF**
 36. `supabase/migrations/202608210002_safety_meeting_flow_v1.sql` —
     two-party public-place meeting plan setelah Identity Reveal;
@@ -118,6 +118,9 @@ Sumber migration:
 47. `supabase/migrations/202608210013_fix_identity_reveal_deletion_participants.sql` —
     forward fix nama kolom participant pada fungsi inventory/purge migration 012;
     **DEPLOYED**
+48. `supabase/migrations/202608220001_plus_duration_packages.sql` —
+    mengganti initial offer menjadi package tetap Plus 7/30/90 hari;
+    **LOCAL ONLY / NOT DEPLOYED**
 
 ### `early_access_waitlist`
 
@@ -769,12 +772,15 @@ koordinat, live location, private address, emergency contact, atau map URL.
 
 ### AutoGoPay billing
 
-- `membership_billing_offer` — exactly one Owner-managed amount/duration/active offer.
+- `membership_billing_offer` — tiga package Owner-managed:
+  `plus_7` (7 hari/Rp9.000), `plus_30` (30 hari/Rp19.000), dan
+  `plus_90` (90 hari/Rp49.000), masing-masing dapat diaktifkan atau dihentikan.
 - `membership_payment_orders` — user, immutable amount/duration snapshot, provider IDs,
   safe checkout URL, expiry, status, dan entitlement reference.
 - Provider IDs unique; satu creating/pending order per user.
 - `finalize_membership_payment` service-role only, row-locked, amount/order/transaction
   matched, duplicate-safe, dan menambah Plus dari `max(now, ends_at)`.
+- Tidak ada subscription auto-renew; setiap pembayaran membeli tambahan masa akses.
 
 ## 13. Future RLS principles
 

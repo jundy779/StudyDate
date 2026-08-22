@@ -6,10 +6,12 @@ import {
   getAutoGoPayQrisStatus,
   isAutoGoPayEnabled,
 } from "@/lib/billing/autogopay";
+import type { PlusPackageCode } from "@/lib/membership/limits";
 import { createServerAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type BillingOffer = {
+  packageCode: PlusPackageCode;
   amountIdr: number;
   durationDays: number;
   isActive?: boolean;
@@ -52,37 +54,48 @@ function mapOrder(row: OrderRow): PaymentOrder {
   };
 }
 
-export async function getMyBillingOffer(): Promise<BillingOffer | null> {
-  if (!isAutoGoPayEnabled()) return null;
+export async function getMyBillingOffers(): Promise<BillingOffer[]> {
+  if (!isAutoGoPayEnabled()) return [];
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_my_membership_billing_offer");
-  if (error) return null;
-  const row = (data ?? [])[0] as { amount_idr: number; duration_days: number } | undefined;
-  return row ? { amountIdr: row.amount_idr, durationDays: row.duration_days } : null;
+  if (error) return [];
+  return ((data ?? []) as {
+    package_code: PlusPackageCode;
+    amount_idr: number;
+    duration_days: number;
+  }[]).map((row) => ({
+    packageCode: row.package_code,
+    amountIdr: row.amount_idr,
+    durationDays: row.duration_days,
+  }));
 }
 
-export async function getOwnerBillingOffer(): Promise<BillingOffer | null> {
+export async function getOwnerBillingOffers(): Promise<BillingOffer[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_membership_billing_offer_ops");
-  if (error) return null;
-  const row = (data ?? [])[0] as
-    | { amount_idr: number; duration_days: number; is_active: boolean; updated_at: string }
-    | undefined;
-  return row
-    ? {
-        amountIdr: row.amount_idr,
-        durationDays: row.duration_days,
-        isActive: row.is_active,
-        updatedAt: row.updated_at,
-      }
-    : null;
+  if (error) return [];
+  return ((data ?? []) as {
+    package_code: PlusPackageCode;
+    amount_idr: number;
+    duration_days: number;
+    is_active: boolean;
+    updated_at: string;
+  }[]).map((row) => ({
+    packageCode: row.package_code,
+    amountIdr: row.amount_idr,
+    durationDays: row.duration_days,
+    isActive: row.is_active,
+    updatedAt: row.updated_at,
+  }));
 }
 
-export async function saveOwnerBillingOffer(offer: BillingOffer) {
+export async function saveOwnerBillingOffer(
+  offer: Pick<BillingOffer, "packageCode" | "amountIdr" | "isActive">,
+) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("manage_membership_billing_offer", {
+    p_package_code: offer.packageCode,
     p_amount_idr: offer.amountIdr,
-    p_duration_days: offer.durationDays,
     p_is_active: offer.isActive ?? false,
   });
   if (error) throw new Error("Konfigurasi penawaran belum dapat disimpan.");
@@ -98,10 +111,12 @@ export async function getMyPaymentOrder(publicId?: string): Promise<PaymentOrder
   return row ? mapOrder(row) : null;
 }
 
-export async function createCheckout(): Promise<PaymentOrder> {
+export async function createCheckout(packageCode: PlusPackageCode): Promise<PaymentOrder> {
   if (!isAutoGoPayEnabled()) throw new Error("Pembayaran sedang tidak tersedia.");
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("create_or_reuse_my_membership_payment_order");
+  const { data, error } = await supabase.rpc("create_or_reuse_my_membership_payment_order", {
+    p_package_code: packageCode,
+  });
   const row = (data ?? [])[0] as OrderRow | undefined;
   if (error || !row) throw new Error("Pembayaran sedang tidak tersedia.");
   if (!row.should_generate) return mapOrder(row);

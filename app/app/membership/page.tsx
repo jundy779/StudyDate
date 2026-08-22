@@ -5,7 +5,7 @@ import {
   startMembershipCheckout,
 } from "@/app/app/membership/actions";
 import {
-  getMyBillingOffer,
+  getMyBillingOffers,
   getMyPaymentOrder,
 } from "@/lib/billing/service";
 import { paymentOrderPublicIdSchema } from "@/lib/billing/validation";
@@ -121,9 +121,9 @@ async function MembershipContent({ searchParams }: MembershipPageProps) {
 
   const query = await searchParams;
   const orderId = paymentOrderPublicIdSchema.safeParse(query.order);
-  const [membership, offer, order] = await Promise.all([
+  const [membership, offers, order] = await Promise.all([
     getMyMembership(),
-    getMyBillingOffer(),
+    getMyBillingOffers(),
     getMyPaymentOrder(orderId.success ? orderId.data : undefined),
   ]);
   const isPlus = membership.plan === "plus";
@@ -143,6 +143,11 @@ async function MembershipContent({ searchParams }: MembershipPageProps) {
           <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
             StudyDate Free tetap utuh. StudyDate Plus menambah kapasitas, bukan
             memotong privasi, persetujuan, atau perlindungan keamanan.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
+            Plus dibeli berdasarkan durasi dan tidak diperpanjang otomatis.
+            Jika kamu membeli lagi saat Plus masih aktif, durasi baru ditambahkan
+            setelah masa aktif saat ini.
           </p>
 
           <section className="mt-10 rounded-[22px] border border-brand-border bg-white p-6 sm:p-8">
@@ -174,7 +179,7 @@ async function MembershipContent({ searchParams }: MembershipPageProps) {
             {order ? (
               <div className="mt-6 border-t border-brand-border pt-5">
                 <p className="font-semibold text-brand-navy">
-                  Pembayaran {currency.format(order.amountIdr)}
+                  Pembayaran Plus {order.durationDays} Hari · {currency.format(order.amountIdr)}
                 </p>
                 <p className="mt-1 text-sm text-brand-muted">
                   Status: {order.status === "paid" ? "Berhasil" : order.status === "pending" ? "Menunggu pembayaran" : order.status}
@@ -207,20 +212,54 @@ async function MembershipContent({ searchParams }: MembershipPageProps) {
                   ) : null}
                 </div>
               </div>
-            ) : offer && !isPlus ? (
-              <form action={startMembershipCheckout} className="mt-6">
-                <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-                  Aktifkan Plus · {currency.format(offer.amountIdr)} / {offer.durationDays} hari
-                </button>
-                <p className="mt-3 text-sm leading-6 text-brand-muted">
-                  Pembayaran diproses melalui GoPay QRIS. Paket aktif setelah pembayaran terverifikasi.
-                </p>
-              </form>
-            ) : !isPlus ? (
-              <p className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-muted">
-                StudyDate Plus segera tersedia
-              </p>
             ) : null}
+          </section>
+
+          <section className="mt-10 border-y border-brand-border py-8" aria-labelledby="plus-options">
+            <h2 id="plus-options" className="font-heading text-2xl font-semibold text-brand-navy">
+              Pilih durasi Plus
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
+              Pembayaran diproses melalui GoPay QRIS. Tidak ada auto-renew dan
+              tidak ada tingkatan Basic, Pro, atau Premium.
+            </p>
+            {offers.length > 0 && order?.status !== "pending" ? (
+              <div className="mt-5 divide-y divide-brand-border border-y border-brand-border">
+                {offers.map((offer) => (
+                  <form
+                    key={offer.packageCode}
+                    action={startMembershipCheckout}
+                    className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <input type="hidden" name="packageCode" value={offer.packageCode} />
+                    <div>
+                      <h3 className="font-semibold text-brand-navy">
+                        Plus {offer.durationDays} Hari
+                      </h3>
+                      <p className="mt-1 text-sm text-brand-muted">
+                        {currency.format(offer.amountIdr)} untuk {offer.durationDays} hari
+                      </p>
+                    </div>
+                    <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
+                      {isPlus ? "Tambah durasi" : "Pilih paket"}
+                    </button>
+                  </form>
+                ))}
+              </div>
+            ) : order?.status === "pending" ? (
+              <p className="mt-5 text-sm font-semibold text-brand-muted">
+                Selesaikan atau batalkan pembayaran yang sedang menunggu sebelum memilih paket lain.
+              </p>
+            ) : (
+              <p className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-muted">
+                Pembelian StudyDate Plus sedang tidak tersedia
+              </p>
+            )}
+            <p className="mt-4 text-sm leading-6 text-brand-muted">
+              Paket aktif setelah pembayaran terverifikasi. Masa aktif baru
+              dihitung dari hari ini atau dari tanggal berakhir Plus saat ini,
+              mana yang lebih akhir.
+            </p>
           </section>
 
           <ComparisonTable />

@@ -10,6 +10,10 @@ const migration = readFileSync(
   join(root, "supabase/migrations/202608210001_autogopay_membership_billing_v1.sql"),
   "utf8",
 );
+const packageMigration = readFileSync(
+  join(root, "supabase/migrations/202608220001_plus_duration_packages.sql"),
+  "utf8",
+);
 const adapter = readFileSync(join(root, "lib/billing/autogopay.ts"), "utf8");
 const webhook = readFileSync(
   join(root, "app/api/integrations/autogopay/webhook/route.ts"),
@@ -23,31 +27,35 @@ const env = readFileSync(join(root, ".env.example"), "utf8");
 test("Owner offer is bounded and checkout defaults off", () => {
   assert.equal(
     billingOfferSchema.safeParse({
-      amountIdr: 29_000,
-      durationDays: 30,
+      packageCode: "plus_30",
+      amountIdr: 19_000,
       isActive: "true",
     }).success,
     true,
   );
   assert.equal(
     billingOfferSchema.safeParse({
+      packageCode: "plus_30",
       amountIdr: 10_000_001,
-      durationDays: 30,
       isActive: true,
     }).success,
     false,
   );
   assert.equal(
     billingOfferSchema.safeParse({
-      amountIdr: 29_000,
-      durationDays: 365,
+      packageCode: "plus_365",
+      amountIdr: 49_000,
       isActive: true,
     }).success,
-    true,
+    false,
   );
-  assert.match(migration, /primary key default true check \(singleton\)/);
+  assert.match(packageMigration, /package_code in \('plus_7', 'plus_30', 'plus_90'\)/);
+  assert.match(packageMigration, /\(true, 'plus_7', 9000, 7, false/);
+  assert.match(packageMigration, /\(true, 'plus_30', 19000, 30, false/);
+  assert.match(packageMigration, /\(true, 'plus_90', 49000, 90, false/);
+  assert.doesNotMatch(packageMigration, /bool_or\(offer\.is_active\)/);
   assert.match(ownerPage, /Harga \(IDR\)/);
-  assert.match(ownerPage, /Aktifkan checkout/);
+  assert.match(ownerPage, /Tersedia/);
   assert.match(env, /AUTOGOPAY_ENABLED=false/);
   assert.doesNotMatch(env, /agp_[0-9a-f]+/i);
 });
@@ -68,7 +76,7 @@ test("adapter is GoPay QRIS-only and validates provider URL", () => {
 
 test("raw-body HMAC is stable and rejects modified bytes", () => {
   const key = "rotated-secret-only-for-test";
-  const raw = Buffer.from('{"event":"transaction.received","transaction":{"amount":29000}}');
+  const raw = Buffer.from('{"event":"transaction.received","transaction":{"amount":19000}}');
   const signature = createHmac("sha256", key).update(raw).digest("hex");
   const expected = Buffer.from(createHmac("sha256", key).update(raw).digest("hex"));
   const supplied = Buffer.from(signature);
@@ -89,7 +97,7 @@ test("webhook accepts only strict paid GoPay transaction shape", () => {
     transaction: {
       transaction_id: "trx-1",
       order_id: "order-1",
-      amount: 29_000,
+      amount: 19_000,
       status: "PAID",
       payment_method: "QRIS",
       paid_at: "2026-08-21 09:59:58",

@@ -81,7 +81,10 @@ Diimplementasikan pada code dan migration repository saat ini:
 - server-side sign-out;
 - People Discovery v1 untuk browse profil anonim, filter, detail berbasis alias, pagination, dan kontrol visibilitas
   milik sendiri;
-- Membership & Entitlement Engine v1 (Free default + StudyDate Plus) dan schema billing
+- Membership & Entitlement Engine v1: StudyDate Free sebagai default dan satu
+  level berbayar StudyDate Plus. Plus dijual sebagai akses 7 hari Rp9.000,
+  30 hari Rp19.000, atau 90 hari Rp49.000 tanpa auto-renew. Pembelian saat Plus
+  masih aktif menambah durasi dari tanggal berakhir sebelumnya. Schema billing
   AutoGoPay GoPay QRIS deployed dengan checkout kill switch default OFF;
 - Introduction Requests v1 untuk kirim/terima/tolak/batalkan perkenalan privat, fondasi block/report, rate limit
   database, serta handoff `conversation_shells` menuju Anonymous Chat v1 tanpa messaging;
