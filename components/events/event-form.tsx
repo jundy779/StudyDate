@@ -87,6 +87,9 @@ export function EventForm({
   const endsAtLocal = event
     ? localDateTimeValue(event.ends_at, timezone)
     : defaults.endsAtLocal;
+  const registrationClosesAtLocal = event?.registration_closes_at
+    ? localDateTimeValue(event.registration_closes_at, timezone)
+    : "";
 
   return (
     <form action={action} className="space-y-8">
@@ -240,6 +243,7 @@ export function EventForm({
               <input
                 type="datetime-local"
                 name="registrationClosesAt"
+                defaultValue={registrationClosesAtLocal}
                 className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
               />
               <span className="mt-2 block text-xs font-normal leading-5 text-brand-muted">

@@ -1,4 +1,5 @@
 import {
+  blockCampusEventOrganizerAction,
   cancelCampusEventRsvpAction,
   registerCampusEventAction,
   reportCampusEventAction,
@@ -123,6 +124,12 @@ export default async function EventDetailPage({
   const notice = Array.isArray(query.notice) ? query.notice[0] : query.notice;
   const canUseParticipantFeatures =
     event.is_organizer || event.rsvp_status === "going";
+  const canManageEvent =
+    event.can_manage_registrations || event.can_check_in || event.can_manage_team;
+  const managementHref =
+    event.can_check_in && !event.can_manage_registrations
+      ? `/app/events/${event.public_slug}/manage/check-in`
+      : `/app/events/${event.public_slug}/manage`;
   const [eventCircle, eventMessages, ticketState, registrationQuestions] =
     await Promise.all([
     getCampusEventCircle(event.public_slug),
@@ -150,6 +157,8 @@ export default async function EventDetailPage({
     "registration-waitlisted": "Kamu masuk waitlist Event.",
     "registration-declined": "Registrasimu tidak disetujui.",
     "registration-cancelled": "Registrasimu telah dibatalkan.",
+    "team-accept": "Undangan tim diterima. Workspace Event sudah tersedia.",
+    "team-decline": "Undangan tim ditolak.",
     "cancel-rsvp": "Keikutsertaanmu telah dibatalkan.",
     "cancel-event": "Acara dibatalkan. Riwayat RSVP tetap tersimpan.",
     archive: "Event telah diarsipkan.",
@@ -238,9 +247,9 @@ export default async function EventDetailPage({
               </p>
             </div>
             <div className="space-y-3">
-              {event.is_organizer ? (
+              {canManageEvent ? (
                 <Link
-                  href={`/app/events/${event.public_slug}/manage`}
+                  href={managementHref}
                   className="focus-ring inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
                 >
                   Manage Event
@@ -271,6 +280,7 @@ export default async function EventDetailPage({
               event.status === "scheduled" &&
               !event.is_past &&
               !registrationClosed &&
+              event.can_rsvp &&
               !["pending", "going", "waitlisted"].includes(event.rsvp_status ?? "") &&
               registrationQuestions.length === 0 ? (
                 <form action={registerCampusEventAction}>
@@ -335,7 +345,7 @@ export default async function EventDetailPage({
             </div>
           </header>
 
-          {registrationQuestions.length ? (
+          {registrationQuestions.length && event.can_rsvp ? (
             <section className="border-b border-brand-border py-9" aria-labelledby="registration-form-title">
               <p className="section-label">Registrasi</p>
               <h2 id="registration-form-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
@@ -537,27 +547,51 @@ export default async function EventDetailPage({
                   </button>
                 </form>
               </details>
+              <details className="mt-3 max-w-xl rounded-xl border border-brand-border bg-white p-4">
+                <summary className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-muted">
+                  Blokir organizer
+                </summary>
+                <p className="mt-3 text-sm leading-6 text-brand-muted">
+                  Organizer tidak dapat berinteraksi atau memberi akses tim kepadamu.
+                  Riwayat Event dan registrasi yang perlu dipertahankan tidak otomatis
+                  dihapus.
+                </p>
+                <form action={blockCampusEventOrganizerAction} className="mt-4">
+                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                  <input type="hidden" name="organizerAlias" value={event.organizer_alias} />
+                  <button
+                    type="submit"
+                    className="focus-ring min-h-11 w-full rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error"
+                  >
+                    Ya, blokir organizer
+                  </button>
+                </form>
+              </details>
             </section>
           ) : null}
 
-          {event.is_organizer ? (
+          {canManageEvent ? (
             <section className="border-t border-brand-border py-8" aria-labelledby="event-manage-link-title">
               <p className="section-label">Organizer</p>
               <h2 id="event-manage-link-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Registrasi, check-in, team, dan settings
               </h2>
-              <Link
-                href={`/app/events/${event.public_slug}/manage`}
-                className="focus-ring mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white"
-              >
-                Manage Event
-              </Link>
-              <Link
-                href={`/app/events/${event.public_slug}/manage/check-in/scan`}
-                className="focus-ring ml-2 mt-4 inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
-              >
-                Buka scanner QR
-              </Link>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Link
+                  href={managementHref}
+                  className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white"
+                >
+                  Manage Event
+                </Link>
+                {event.can_check_in ? (
+                  <Link
+                    href={`/app/events/${event.public_slug}/manage/check-in/scan`}
+                    className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
+                  >
+                    Buka scanner QR
+                  </Link>
+                ) : null}
+              </div>
             </section>
           ) : null}
 

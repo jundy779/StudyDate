@@ -9,7 +9,10 @@ import {
 import { eventSlugSchema } from "@/lib/events/validation";
 import { notFound, redirect } from "next/navigation";
 
-export async function getCampusEventManagement(publicSlug: string) {
+export async function getCampusEventManagement(
+  publicSlug: string,
+  required: "workspace" | "registrations" | "team" = "workspace",
+) {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
@@ -19,16 +22,38 @@ export async function getCampusEventManagement(publicSlug: string) {
   const slug = eventSlugSchema.safeParse(publicSlug);
   if (!slug.success) notFound();
 
+  const event = await getCampusEvent(slug.data).catch(() => null);
+  if (!event) notFound();
+  const allowed =
+    required === "registrations"
+      ? event.can_manage_registrations
+      : required === "team"
+        ? event.can_manage_team
+        : event.can_manage_registrations ||
+          event.can_check_in ||
+          event.can_manage_team;
+  if (!allowed) notFound();
+  if (
+    required === "workspace" &&
+    event.can_check_in &&
+    !event.can_manage_registrations &&
+    !event.can_manage_team
+  ) {
+    redirect(`/app/events/${slug.data}/manage/check-in`);
+  }
   try {
-    const [event, overview] = await Promise.all([
-      getCampusEvent(slug.data),
-      getCampusEventRegistrationOverview(slug.data),
-    ]);
-    if (!event || !overview) notFound();
+    const overview = await getCampusEventRegistrationOverview(slug.data);
+    if (!overview) notFound();
     return { event, overview };
-  } catch {
-    // The management RPC is the authorization boundary. Hide existence on denial.
-    notFound();
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    if (
+      message.includes("event management required") ||
+      message.includes("event unavailable")
+    ) {
+      notFound();
+    }
+    throw error;
   }
 }
 
@@ -68,8 +93,31 @@ export async function getCampusEventCheckInManagement(publicSlug: string) {
     } catch {
       // Check-in staff can operate attendance but cannot undo organizer decisions.
     }
-    return { event, overview, attendees, canUndo };
-  } catch {
-    notFound();
+    return {
+      event,
+      overview,
+      attendees: event.can_manage_registrations
+        ? attendees
+        : attendees
+            .filter((attendee) => attendee.registration_status === "going")
+            .map((attendee) => ({
+              ...attendee,
+              campus: "",
+              study_program: "",
+              semester: null,
+              interests: [],
+            })),
+      canUndo,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    if (
+      message.includes("event management required") ||
+      message.includes("check-in unavailable") ||
+      message.includes("event unavailable")
+    ) {
+      notFound();
+    }
+    throw error;
   }
 }

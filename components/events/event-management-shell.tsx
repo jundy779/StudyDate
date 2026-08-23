@@ -26,6 +26,12 @@ export function EventManagementShell({
   children: ReactNode;
 }) {
   const base = `/app/events/${event.public_slug}/manage`;
+  const visibleSections = sections.filter(
+    ([key]) =>
+      (key !== "registrations" || event.can_manage_registrations) &&
+      (key !== "check-in" || event.can_check_in) &&
+      (key !== "team" && key !== "settings" || event.can_manage_team),
+  );
 
   return (
     <div className="page-shell py-8 sm:py-12 lg:py-16">
@@ -101,7 +107,7 @@ export function EventManagementShell({
         className="-mx-1 overflow-x-auto border-b border-brand-border"
       >
         <div className="flex min-w-max gap-1 px-1">
-          {sections.map(([key, label, suffix]) => (
+          {visibleSections.map(([key, label, suffix]) => (
             <Link
               key={key}
               href={`${base}${suffix}`}

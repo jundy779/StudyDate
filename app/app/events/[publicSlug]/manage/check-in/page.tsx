@@ -21,7 +21,10 @@ export default async function CheckInPage({
   const { publicSlug } = await params;
   const { event, overview, attendees, canUndo } =
     await getCampusEventCheckInManagement(publicSlug);
-  const filter = first((await searchParams).filter);
+  const query = await searchParams;
+  const filter = first(query.filter);
+  const state = first(query.state);
+  const notice = first(query.notice);
   const activeFilter =
     filter === "checked-in" || filter === "not-yet" ? filter : "all";
   const registrations = attendees.filter(
@@ -42,6 +45,22 @@ export default async function CheckInPage({
     <AppShell current="events">
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <EventManagementShell active="check-in" event={event} overview={overview}>
+          {state === "checkin-undone" ? (
+            <p
+              role="status"
+              className="mb-7 border-l-2 border-brand-blue pl-4 text-sm font-medium text-brand-blue"
+            >
+              Check-in berhasil dibatalkan dan tercatat dalam audit.
+            </p>
+          ) : null}
+          {notice ? (
+            <p
+              role="alert"
+              className="mb-7 border-l-2 border-brand-error pl-4 text-sm font-medium text-brand-error"
+            >
+              {notice}
+            </p>
+          ) : null}
           <section aria-labelledby="checkin-title">
             <p className="section-label">Check-In</p>
             <h2

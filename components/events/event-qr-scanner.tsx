@@ -269,7 +269,13 @@ export function EventQrScanner({
             <h2 id="camera-preview-title" className="font-heading text-lg font-semibold">
               Kamera pemindai QR
             </h2>
-            <p id="camera-instructions" className="mt-1 text-sm leading-6 text-blue-100">
+            <p
+              id="camera-instructions"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="mt-1 text-sm leading-6 text-blue-100"
+            >
               {cameraMessage(cameraState)}
             </p>
           </div>

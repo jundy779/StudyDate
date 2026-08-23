@@ -155,9 +155,8 @@ async function OwnerEventsContent({ searchParams }: Props) {
                   </div>
                 </dl>
                 <p className="border-t border-brand-border pt-5 text-sm leading-6 text-brand-muted">
-                  Verifikasi tetap memberi izin efektif meski grant Owner dicabut.
-                  Gunakan cabut untuk menghapus grant eksplisit, bukan untuk
-                  membatalkan status verifikasi.
+                  Status dicabut oleh Owner selalu menonaktifkan izin organizer,
+                  termasuk untuk akun terverifikasi, sampai izin diberikan kembali.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <form action={manageEventOrganizerEligibility}>

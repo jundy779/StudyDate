@@ -84,6 +84,7 @@ test("EV2-04 event team is scoped, alias-invited, block-aware, and audited", () 
   const invite = functionBody("invite_campus_event_team_member");
   assert.match(invite, /p_public_alias text/);
   assert.match(invite, /users_are_blocked\(actor, target_user\)/);
+  assert.match(invite, /event_team_invite_hour', 20, 3600/);
   assert.match(invite, /event_cohosts/);
   assert.match(invite, /else 10 end/);
   assert.doesNotMatch(invite, /manage_staff_member|staff_role/);
@@ -91,7 +92,16 @@ test("EV2-04 event team is scoped, alias-invited, block-aware, and audited", () 
   assert.match(listTeam, /event\.organizer_user_id = actor/);
   assert.match(listTeam, /profile\.public_alias/);
   assert.match(listTeam, /member\.status in \('invited', 'active'\)/);
+  assert.match(
+    functionBody("respond_campus_event_team_invitation"),
+    /event\.status = 'scheduled'[\s\S]*event\.ends_at > timezone\('utc', now\(\)\)/,
+  );
   assert.match(organizer, /team_invited[\s\S]*team_accepted[\s\S]*team_removed/);
+  assert.match(
+    functionBody("is_event_team_member"),
+    /not public\.users_are_blocked\(member\.user_id, event\.organizer_user_id\)/,
+  );
+  assert.match(organizer, /'event_team_invite_hour'[\s\S]*'checkin_mutation_minute'/);
 });
 
 test("EV2-05 old waitlist migrates deterministically into RSVP lifecycle", () => {
@@ -115,6 +125,11 @@ test("EV2-06 custom questions reject sensitive and profile wording", () => {
     "alamat rumah",
     "auth credential",
     "contact reveal",
+    "email",
+    "whatsapp",
+    "telegram",
+    "instagram",
+    "linkedin",
     "kampus",
     "program studi",
     "semester",
@@ -127,6 +142,7 @@ test("EV2-06 custom questions reject sensitive and profile wording", () => {
   assert.match(validate, /unknown registration answer/);
   assert.match(validate, /required registration answer missing/);
   assert.match(validate, /jsonb_array_length\(answer\) > 12/);
+  assert.match(validate, /event_registration_answer_has_contact/);
 });
 
 test("EV2-07 registration is event-locked and capacity-safe", () => {
@@ -139,10 +155,19 @@ test("EV2-07 registration is event-locked and capacity-safe", () => {
       register.indexOf("select count(*)::integer into going_count"),
   );
   assert.match(register, /registration_mode = 'approval'/);
+  assert.match(register, /campus_event_join_quota_available\(actor, event_row\.id\)/);
   assert.match(register, /waitlist_enabled/);
   assert.match(register, /registration_closes_at/);
+  assert.match(
+    register,
+    /existing_registration\.status in \('pending', 'going', 'waitlisted'\)[\s\S]*return query/,
+  );
   assert.match(manage, /public_slug = p_public_slug for update/);
   assert.match(manage, /event_can_manage_registrations/);
+  assert.match(
+    manage,
+    /campus_event_join_quota_available\([\s\S]*registration\.user_id, event_row\.id/,
+  );
   assert.match(cancel, /promote_campus_event_waitlisted_rsvp/);
   assert.match(
     functionBody("promote_campus_event_waitlisted_rsvp"),
@@ -155,6 +180,11 @@ test("EV2-08 participant enumeration is management-only and paginated", () => {
   const registrations = functionBody("list_campus_event_registrations");
   assert.match(attendees, /event_can_manage_registrations/);
   assert.match(attendees, /checkin_staff/);
+  assert.match(attendees, /is_checkin_only and rsvp\.status = 'going'/);
+  assert.match(
+    attendees,
+    /case when is_checkin_only then '' else profile\.campus end/,
+  );
   assert.doesNotMatch(
     attendees.match(/returns table \(([\s\S]*?)\)\nlanguage/)?.[1] ?? "",
     /\b(email|nim|first_name|contact|ticket_hash|user_id|uuid)\b/i,
@@ -223,6 +253,10 @@ test("EV2-11 QR check-in hashes SDT1 token and returns safe structured status", 
   assert.match(checkin, /'wrong_event'/);
   assert.match(checkin, /starts_at - interval '2 hours'/);
   assert.match(checkin, /ends_at \+ interval '2 hours'/);
+  assert.match(
+    checkin,
+    /ticket_scan_invalid_hour', 120, 3600[\s\S]*'rate_limited'/,
+  );
   assert.match(checkin, /status text,[\s\S]*attendee_alias text/);
   assert.doesNotMatch(checkin, /select .*email|select .*ticket_hash/i);
 });
@@ -230,10 +264,11 @@ test("EV2-11 QR check-in hashes SDT1 token and returns safe structured status", 
 test("EV2-12 manual check-in and undo preserve role separation and audit", () => {
   assert.match(
     functionBody("manual_check_in_campus_event_registration"),
-    /event_can_check_in/,
+    /event_can_check_in[\s\S]*checkin_mutation_minute/,
   );
   const undo = functionBody("undo_campus_event_check_in");
   assert.match(undo, /array\['cohost'\]/);
+  assert.match(undo, /checkin_mutation_minute/);
   assert.doesNotMatch(undo, /checkin_staff/);
   assert.match(organizer, /checked_in_qr[\s\S]*checked_in_manual[\s\S]*checkin_undone/);
   assert.doesNotMatch(sql, /EVENT_CHECKED_IN|CHECKIN_NOTIFICATION/);
@@ -273,5 +308,12 @@ test("EV2-14 account cleanup covers v2 rows without deleting shared history", ()
   assert.match(
     cleanup,
     /delete from public\.campus_event_rsvps[\s\S]*status <> 'going'/,
+  );
+  assert.match(cleanup, /set registration_answers = '\{\}'::jsonb/);
+  assert.match(tickets, /checked_in_at is not null[\s\S]*checkin_method = 'qr'/);
+  assert.match(tickets, /Legacy v1 tokens cannot be re-derived/);
+  assert.match(
+    organizer,
+    /campus_event_rsvps_checkin check \([\s\S]*checked_in_at is not null[\s\S]*checkin_method in/,
   );
 });

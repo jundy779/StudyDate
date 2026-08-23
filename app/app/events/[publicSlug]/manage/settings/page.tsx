@@ -48,7 +48,7 @@ export default async function SettingsPage({
   searchParams,
 }: SettingsPageProps) {
   const { publicSlug } = await params;
-  const { event, overview } = await getCampusEventManagement(publicSlug);
+  const { event, overview } = await getCampusEventManagement(publicSlug, "team");
   const [questions, eventCircle, circleOptions] = await Promise.all([
     listCampusEventRegistrationQuestions(event.public_slug),
     getCampusEventCircle(event.public_slug),
@@ -86,6 +86,7 @@ export default async function SettingsPage({
             </h2>
             <form action={updateCampusEventRegistrationSettingsAction} className="mt-6 max-w-2xl space-y-5 border-y border-brand-border py-6">
               <input type="hidden" name="publicSlug" value={event.public_slug} />
+              <input type="hidden" name="timezone" value={event.timezone_name} />
               <label className="block text-sm font-semibold text-brand-navy">
                 Mode registrasi
                 <select name="registrationMode" defaultValue={event.registration_mode} className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm">

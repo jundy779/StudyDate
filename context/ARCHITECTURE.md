@@ -392,8 +392,8 @@ Migration deployed `202608170006` memperluas constraint type/path/metadata untuk
 Campus Event. Fan-out memakai `INSERT … SELECT` terbatas pada membership/RSVP aktif,
 mengecualikan actor/organizer, dan `ON CONFLICT (dedupe_key) DO NOTHING`. Projection
 list menambahkan `headline` / `when_label` / `venue_label` terikat panjang, bukan objek
-metadata mentah, email, NIM, atau UUID. Delivery in-app only; reminder Event ditunda
-karena cron produk saat ini hanya untuk cleanup verifikasi, bukan scheduler Event.
+metadata mentah, email, NIM, atau UUID. Delivery in-app only. Fungsi scheduler Event
+sudah deployed, tetapi cron production tetap OFF sampai live QA dan approval aktivasi.
 Pengiriman tidak memanggil kuota membership.
 
 ## 12g. Study Circle v1 architecture (deployed)
@@ -585,7 +585,9 @@ Kuota People harian memakai `membership_quota_usage` (satu consume per list RPC,
 UTC day). Variabel PL/pgSQL hotfix adalah `v_quota_window_start` agar tidak bentrok
 dengan kolom `window_start`. Kuota introduction/circle dihitung dari row aktual (pending outgoing, created
 today UTC, owned active circles, joined `role=member`). Kuota Event memakai row
-scheduled mendatang (Free 2/5, Plus 5/10). UI `/app/membership` menampilkan
+scheduled mendatang. Campus Events v2 memakai owned active Free/Plus `1/3`,
+joined active `5/10`, participant capacity `50/200`, cohost `1/3`, dan custom
+questions `3/10`. UI `/app/membership` menampilkan
 perbandingan Free/Plus dan tiga pilihan durasi GoPay hanya saat kill switch/package
 aktif. Owner `/owner/memberships` mengatur harga/status setiap durasi serta
 lookup/grant by email. RPC UUID `manage_user_membership` dicabut dari `authenticated`.

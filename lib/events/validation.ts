@@ -44,7 +44,9 @@ const safeAlias = plainText("Alias tidak valid.")
   .max(80)
   .refine((value) => !/[\u0000-\u001f\u007f]/.test(value), "Alias tidak valid.");
 const sensitiveQuestionWords =
-  /(^|[^a-z0-9_])(password|kata sandi|otp|one.?time password|nim|nomor induk|nik|ktp|passport|paspor|government id|legal id|alamat rumah|alamat pribadi|private address|home address|auth credential|kredensial|contact reveal|kampus|campus|program studi|study program|semester|minat|interests)([^a-z0-9_]|$)/i;
+  /(^|[^a-z0-9_])(password|kata sandi|otp|one.?time password|nim|nomor induk|nik|ktp|passport|paspor|government id|legal id|alamat rumah|alamat pribadi|private address|home address|auth credential|kredensial|contact reveal|email|e-mail|nomor telepon|nomor hp|phone number|whatsapp|telegram|instagram|linkedin|social handle|username|kampus|campus|program studi|study program|semester|minat|interests)([^a-z0-9_]|$)/i;
+const contactAnswerPattern =
+  /(?:[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|https?:\/\/|www\.|t\.me\/|telegram\.me\/|wa\.me\/|instagram\.com\/|linkedin\.com\/|@[a-z0-9_]{3,})/i;
 
 export const eventSlugSchema = z.string().regex(/^event-[0-9a-f]{24}$/);
 export const eventPublicIdSchema = z.string().regex(opaqueId);
@@ -215,7 +217,15 @@ export const eventQuestionDeleteSchema = z
   .strict();
 
 const registrationAnswerValueSchema = z.union([
-  plainText("Jawaban harus berupa teks biasa.").max(EVENT_SHORT_ANSWER_MAX),
+  plainText("Jawaban harus berupa teks biasa.")
+    .max(EVENT_SHORT_ANSWER_MAX)
+    .refine(
+      (value) =>
+        !contactAnswerPattern.test(value) &&
+        !/(?:\D*\d){8,}/.test(value) &&
+        !/\b(?:whatsapp|telegram|instagram|linkedin|discord)\b/i.test(value),
+      "Jawaban tidak boleh memuat kontak privat.",
+    ),
   z.boolean(),
   z
     .array(plainText("Pilihan jawaban tidak valid.").max(EVENT_QUESTION_OPTION_MAX))

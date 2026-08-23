@@ -23,12 +23,18 @@ const service = read("lib/events/service.ts");
 test("EV2UI-01 management routes use RPC authorization and safe not-found", () => {
   assert.match(managementGuard, /getCampusEventRegistrationOverview/);
   assert.match(managementGuard, /listCampusEventAttendees/);
-  assert.match(managementGuard, /catch \{[\s\S]*notFound\(\)/);
+  assert.match(
+    managementGuard,
+    /required === "registrations"[\s\S]*event\.can_manage_registrations[\s\S]*required === "team"[\s\S]*event\.can_manage_team/,
+  );
+  assert.match(managementGuard, /message\.includes\("event management required"\)/);
+  assert.match(managementGuard, /throw error/);
   assert.doesNotMatch(managementGuard, /\.from\("profiles"\)/);
   assert.match(manage, /Registrations/);
   assert.match(manage, /Check-In/);
   assert.match(manage, /Team/);
   assert.match(manage, /Settings/);
+  assert.match(manage, /visibleDestinations/);
 });
 
 test("EV2UI-02 detail does not enumerate attendees and links organizer workspace", () => {
@@ -39,6 +45,8 @@ test("EV2UI-02 detail does not enumerate attendees and links organizer workspace
   assert.match(detail, /event\.is_official/);
   assert.match(detail, /event\.registration_mode/);
   assert.match(detail, /event\.waitlist_enabled/);
+  assert.match(detail, /blockCampusEventOrganizerAction/);
+  assert.match(detail, /Blokir organizer/);
 });
 
 test("EV2UI-03 registration form serializes only typed question answers", () => {
@@ -94,6 +102,7 @@ test("EV2UI-06 settings use strict action field names", () => {
   assert.match(settings, /EventForm/);
   assert.match(settings, /cancelCampusEventAction/);
   assert.match(settings, /archiveCampusEventAction/);
+  assert.match(service, /p_waitlist_enabled: input\.waitlistEnabled/);
 });
 
 test("EV2UI-07 eligibility gates creation and Plus copy is not trust", () => {
@@ -104,6 +113,8 @@ test("EV2UI-07 eligibility gates creation and Plus copy is not trust", () => {
     /StudyDate\s+Plus menambah kapasitas, bukan kepercayaan organizer/,
   );
   assert.match(events, /listMyCampusEventTeamInvitations/);
+  assert.match(events, /activeAssignments/);
+  assert.match(events, /Buka workspace/);
   assert.match(create, /getMyEventOrganizerEligibility/);
   assert.match(create, /if \(!eligibility\?\.eligible\) notFound\(\)/);
 });

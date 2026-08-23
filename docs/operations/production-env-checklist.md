@@ -8,6 +8,7 @@ Do not commit secret values. Fill hosting env (Vercel/etc.) and keep `.env.local
 |------|----------------------|-------------------|
 | Supabase URL + publishable + service-role | Required | Same project values |
 | `CONTACT_REVEAL_ENCRYPTION_KEY` (+ backup) | Required | Same key (backed up offline) |
+| `EVENT_TICKET_SECRET` | Required for ticket QA | Required, server-only 32-byte key |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3010` | `https://YOUR_DOMAIN` |
 | StudyDate email (`STUDYDATE_*`) | Required to test login mail | Required |
 | `STUDENT_VERIFICATION_ENABLED` | `false` | Enable only after controlled audit |
@@ -22,6 +23,7 @@ NEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN
 SUPABASE_SERVICE_ROLE_KEY=
 CONTACT_REVEAL_ENCRYPTION_KEY=
 CONTACT_REVEAL_KEY_VERSION=1
+EVENT_TICKET_SECRET=
 
 STUDYDATE_EMAIL_FROM="StudyDate ID <noreply@YOUR_DOMAIN>"
 # either:
@@ -52,6 +54,10 @@ Verification crypto keys may remain set even while Verification stays disabled.
 AutoGoPay key must be server-only and rotated if it ever appears in chat, logs,
 screenshots, Git, or shell history. Callback production:
 `https://studydate.id/api/integrations/autogopay/webhook`.
+
+`EVENT_TICKET_SECRET` must decode to exactly 32 bytes and remain identical across
+production deployments. Never prefix it with `NEXT_PUBLIC_` or print it during
+ticket smoke tests.
 
 ## Student Verification production gate
 

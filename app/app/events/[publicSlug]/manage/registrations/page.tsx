@@ -41,9 +41,14 @@ export default async function RegistrationsPage({
   searchParams,
 }: RegistrationsPageProps) {
   const { publicSlug } = await params;
-  const { event, overview } = await getCampusEventManagement(publicSlug);
+  const { event, overview } = await getCampusEventManagement(
+    publicSlug,
+    "registrations",
+  );
   const query = await searchParams;
   const rawStatus = first(query.status);
+  const state = first(query.state);
+  const notice = first(query.notice);
   const parsed = eventRegistrationListSchema.safeParse({
     publicSlug: event.public_slug,
     status: rawStatus === "all" ? undefined : rawStatus,
@@ -74,6 +79,22 @@ export default async function RegistrationsPage({
           event={event}
           overview={overview}
         >
+          {state?.startsWith("registration-") ? (
+            <p
+              role="status"
+              className="mb-7 border-l-2 border-brand-blue pl-4 text-sm font-medium text-brand-blue"
+            >
+              Keputusan registrasi berhasil disimpan.
+            </p>
+          ) : null}
+          {notice ? (
+            <p
+              role="alert"
+              className="mb-7 border-l-2 border-brand-error pl-4 text-sm font-medium text-brand-error"
+            >
+              {notice}
+            </p>
+          ) : null}
           <section aria-labelledby="registration-list-title">
             <p className="section-label">Registrations</p>
             <h2
@@ -153,7 +174,7 @@ export default async function RegistrationsPage({
                             value="approve"
                             className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
                           >
-                            Approve
+                            Setujui
                           </button>
                         </form>
                         <form action={manageCampusEventRegistrationAction}>
@@ -172,7 +193,7 @@ export default async function RegistrationsPage({
                             value="decline"
                             className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy"
                           >
-                            Decline
+                            Tolak dengan sopan
                           </button>
                         </form>
                       </div>

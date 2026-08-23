@@ -54,6 +54,8 @@ import {
   EVENT_QUESTION_OPTIONS_MAX,
   EVENT_REGISTRATION_ANSWER_MAX_BYTES,
 } from "@/lib/events/constants";
+import { blockStudentByAlias } from "@/lib/introductions/service";
+import { z } from "zod";
 import { requireOwner } from "@/lib/staff/authorization";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -70,6 +72,11 @@ function detailPath(publicSlug: string, query = "") {
   return `/app/events/${publicSlug}${query}`;
 }
 
+const eventBlockSchema = z.object({
+  publicSlug: eventSlugSchema,
+  organizerAlias: z.string().min(1).max(80),
+});
+
 function firstIssueMessage(
   result: { success: false; error: { issues: { message: string }[] } },
   fallback: string,
@@ -78,17 +85,19 @@ function firstIssueMessage(
 }
 
 function formValues(formData: FormData) {
+  const timezone = formData.get("timezone");
+  const registrationClosesAt = formData.get("registrationClosesAt");
   return {
     title: formData.get("title"),
     description: formData.get("description"),
     category: formData.get("category"),
     scope: formData.get("scope"),
     registrationMode: formData.get("registrationMode") ?? "instant",
-    waitlistEnabled: formData.get("waitlistEnabled") !== "off",
-    registrationClosesAt: formData.get("registrationClosesAt") || undefined,
+    waitlistEnabled: formData.get("waitlistEnabled") === "on",
+    registrationClosesAt: toEventTimestamp(registrationClosesAt, timezone),
     startsAtLocal: formData.get("startsAtLocal"),
     endsAtLocal: formData.get("endsAtLocal"),
-    timezone: formData.get("timezone"),
+    timezone,
     venueCategory: formData.get("venueCategory"),
     venueName: formData.get("venueName"),
     venueArea: formData.get("venueArea"),
@@ -102,6 +111,20 @@ function formValues(formData: FormData) {
     confirmsNoPrivateLocationDisclosure:
       formData.get("confirmsNoPrivateLocationDisclosure") === "on",
   };
+}
+
+function toEventTimestamp(value: FormDataEntryValue | null, timezone: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !value) return undefined;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+    const offset =
+      timezone === "Asia/Makassar"
+        ? "+08:00"
+        : timezone === "Asia/Jayapura"
+          ? "+09:00"
+          : "+07:00";
+    return new Date(`${value}:00${offset}`).toISOString();
+  }
+  return value;
 }
 
 export async function createCampusEventAction(formData: FormData) {
@@ -164,15 +187,16 @@ export async function updateCampusEventAction(formData: FormData) {
     const message =
       error instanceof Error ? error.message : "Event belum dapat diperbarui.";
     redirect(
-      detailPath(
+      managePath(
         slug.data,
+        "/settings",
         `?state=error&notice=${encodeURIComponent(message)}`,
       ),
     );
   }
   revalidatePath(detailPath(slug.data));
   revalidatePath("/app/events");
-  redirect(detailPath(slug.data, "?state=updated"));
+  redirect(managePath(slug.data, "/settings", "?state=updated"));
 }
 
 async function runBooleanAction(
@@ -199,6 +223,10 @@ async function runBooleanAction(
   revalidatePath(detailPath(slug.data));
   revalidatePath("/app/events");
   redirect(detailPath(slug.data, `?state=${action}`));
+}
+
+function managePath(publicSlug: string, section = "", query = "") {
+  return `/app/events/${publicSlug}/manage${section}${query}`;
 }
 
 export async function rsvpCampusEventAction(formData: FormData) {
@@ -249,6 +277,7 @@ export async function registerCampusEventAction(formData: FormData) {
   const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
   if (!slug.success) redirect("/app/events?state=error");
   let answers: unknown = {};
+  let status: string;
   try {
     const rawAnswers = formData.get("answers");
     if (rawAnswers !== null) {
@@ -256,14 +285,32 @@ export async function registerCampusEventAction(formData: FormData) {
     }
     const parsedAnswers = eventRegistrationAnswersSchema.parse(answers);
     const result = await registerForCampusEvent(slug.data, parsedAnswers);
-    revalidatePath(detailPath(slug.data));
-    revalidatePath("/app/events");
-    redirect(detailPath(slug.data, `?state=registration-${result.status}`));
+    status = result.status;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Registrasi belum dapat diproses.";
     redirect(detailPath(slug.data, `?state=error&notice=${encodeURIComponent(message)}`));
   }
+  revalidatePath(detailPath(slug.data));
+  revalidatePath("/app/events");
+  redirect(detailPath(slug.data, `?state=registration-${status}`));
+}
+
+export async function blockCampusEventOrganizerAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventBlockSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    organizerAlias: formData.get("organizerAlias"),
+  });
+  if (!parsed.success) redirect("/app/events?state=error");
+  try {
+    await blockStudentByAlias(parsed.data.organizerAlias);
+  } catch {
+    redirect(detailPath(parsed.data.publicSlug, "?state=error"));
+  }
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  revalidatePath("/app/events");
+  redirect("/app/events?state=organizer-blocked");
 }
 
 /** @deprecated Compatibility only until the current detail UI is replaced. */
@@ -339,14 +386,17 @@ export async function setCampusEventCircleAction(formData: FormData) {
     const message =
       error instanceof Error ? error.message : "Circle belum dapat ditautkan.";
     redirect(
-      detailPath(
+      managePath(
         parsed.data.eventPublicSlug,
+        "/settings",
         `?state=error&notice=${encodeURIComponent(message)}`,
       ),
     );
   }
-  revalidatePath(detailPath(parsed.data.eventPublicSlug));
-  redirect(detailPath(parsed.data.eventPublicSlug, "?state=circle-linked"));
+  revalidatePath(managePath(parsed.data.eventPublicSlug));
+  redirect(
+    managePath(parsed.data.eventPublicSlug, "/settings", "?state=circle-linked"),
+  );
 }
 
 export async function issueCampusEventTicketAction(formData: FormData) {
@@ -445,10 +495,20 @@ export async function addCampusEventRegistrationQuestionAction(formData: FormDat
   try {
     await addCampusEventRegistrationQuestion(parsed.data);
   } catch (error) {
-    redirect(detailPath(parsed.data.publicSlug, `?state=error&notice=${encodeURIComponent(error instanceof Error ? error.message : "Pertanyaan belum dapat ditambahkan.")}`));
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/settings",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error
+            ? error.message
+            : "Pertanyaan belum dapat ditambahkan.",
+        )}`,
+      ),
+    );
   }
-  revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, "?state=question-added"));
+  revalidatePath(managePath(parsed.data.publicSlug));
+  redirect(managePath(parsed.data.publicSlug, "/settings", "?state=question-added"));
 }
 
 export async function deleteCampusEventRegistrationQuestionAction(formData: FormData) {
@@ -458,12 +518,26 @@ export async function deleteCampusEventRegistrationQuestionAction(formData: Form
     questionPublicId: formData.get("questionPublicId"),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  await deleteCampusEventRegistrationQuestion(
-    parsed.data.publicSlug,
-    parsed.data.questionPublicId,
-  );
-  revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, "?state=question-deleted"));
+  try {
+    await deleteCampusEventRegistrationQuestion(
+      parsed.data.publicSlug,
+      parsed.data.questionPublicId,
+    );
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/settings",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error
+            ? error.message
+            : "Pertanyaan belum dapat dihapus.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(parsed.data.publicSlug));
+  redirect(managePath(parsed.data.publicSlug, "/settings", "?state=question-deleted"));
 }
 
 export async function updateCampusEventRegistrationSettingsAction(formData: FormData) {
@@ -472,12 +546,30 @@ export async function updateCampusEventRegistrationSettingsAction(formData: Form
     publicSlug: formData.get("publicSlug"),
     registrationMode: formData.get("registrationMode"),
     waitlistEnabled: formData.get("waitlistEnabled") === "on",
-    registrationClosesAt: formData.get("registrationClosesAt") || undefined,
+    registrationClosesAt: toEventTimestamp(
+      formData.get("registrationClosesAt"),
+      formData.get("timezone"),
+    ),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  await updateCampusEventRegistrationSettings(parsed.data);
+  try {
+    await updateCampusEventRegistrationSettings(parsed.data);
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/settings",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error
+            ? error.message
+            : "Pengaturan registrasi belum dapat disimpan.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(parsed.data.publicSlug));
   revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, "?state=settings-updated"));
+  redirect(managePath(parsed.data.publicSlug, "/settings", "?state=settings-updated"));
 }
 
 export async function manageCampusEventRegistrationAction(formData: FormData) {
@@ -488,9 +580,31 @@ export async function manageCampusEventRegistrationAction(formData: FormData) {
     action: formData.get("action"),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  const status = await manageCampusEventRegistration(parsed.data);
+  let status: string;
+  try {
+    status = await manageCampusEventRegistration(parsed.data);
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/registrations",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error
+            ? error.message
+            : "Keputusan registrasi belum dapat diproses.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(parsed.data.publicSlug));
   revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, `?state=registration-${status}`));
+  redirect(
+    managePath(
+      parsed.data.publicSlug,
+      "/registrations",
+      `?state=registration-${status}`,
+    ),
+  );
 }
 
 export async function inviteCampusEventTeamMemberAction(formData: FormData) {
@@ -501,9 +615,21 @@ export async function inviteCampusEventTeamMemberAction(formData: FormData) {
     role: formData.get("role"),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  await inviteCampusEventTeamMember(parsed.data);
-  revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, "?state=team-invited"));
+  try {
+    await inviteCampusEventTeamMember(parsed.data);
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/team",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error ? error.message : "Undangan tim belum dapat dikirim.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(parsed.data.publicSlug));
+  redirect(managePath(parsed.data.publicSlug, "/team", "?state=team-invited"));
 }
 
 export async function respondCampusEventTeamInvitationAction(formData: FormData) {
@@ -513,10 +639,19 @@ export async function respondCampusEventTeamInvitationAction(formData: FormData)
     response: formData.get("response"),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  await respondCampusEventTeamInvitation(
-    parsed.data.publicSlug,
-    parsed.data.response,
-  );
+  try {
+    const changed = await respondCampusEventTeamInvitation(
+      parsed.data.publicSlug,
+      parsed.data.response,
+    );
+    if (!changed) throw new Error("Undangan sudah tidak tersedia.");
+  } catch (error) {
+    redirect(
+      `/app/events?state=error&notice=${encodeURIComponent(
+        error instanceof Error ? error.message : "Respons undangan belum tersimpan.",
+      )}`,
+    );
+  }
   revalidatePath(detailPath(parsed.data.publicSlug));
   redirect(detailPath(parsed.data.publicSlug, `?state=team-${parsed.data.response}`));
 }
@@ -528,12 +663,26 @@ export async function removeCampusEventTeamMemberAction(formData: FormData) {
     publicAlias: formData.get("publicAlias"),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  await removeCampusEventTeamMember(
-    parsed.data.publicSlug,
-    parsed.data.publicAlias,
-  );
-  revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, "?state=team-removed"));
+  try {
+    await removeCampusEventTeamMember(
+      parsed.data.publicSlug,
+      parsed.data.publicAlias,
+    );
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/team",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error
+            ? error.message
+            : "Anggota tim belum dapat dihapus.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(parsed.data.publicSlug));
+  redirect(managePath(parsed.data.publicSlug, "/team", "?state=team-removed"));
 }
 
 export async function manualCheckInCampusEventRegistrationAction(formData: FormData) {
@@ -564,12 +713,25 @@ export async function undoCampusEventCheckInAction(formData: FormData) {
     registrationPublicId: formData.get("registrationPublicId"),
   });
   if (!parsed.success) redirect("/app/events?state=error");
-  await undoCampusEventCheckIn(
-    parsed.data.publicSlug,
-    parsed.data.registrationPublicId,
-  );
+  try {
+    await undoCampusEventCheckIn(
+      parsed.data.publicSlug,
+      parsed.data.registrationPublicId,
+    );
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "/check-in",
+        `?state=error&notice=${encodeURIComponent(
+          error instanceof Error ? error.message : "Check-in belum dapat dibatalkan.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(parsed.data.publicSlug));
   revalidatePath(detailPath(parsed.data.publicSlug));
-  redirect(detailPath(parsed.data.publicSlug, "?state=checkin-undone"));
+  redirect(managePath(parsed.data.publicSlug, "/check-in", "?state=checkin-undone"));
 }
 
 export async function ownerManageEventOrganizerEligibilityAction(formData: FormData) {

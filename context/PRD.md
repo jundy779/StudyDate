@@ -333,8 +333,8 @@ Notifikasi hanya untuk perubahan lifecycle yang benar-benar ada:
 
 - Circle: anggota baru ke owner; nama/topik penting ke anggota aktif; arsip ke
   anggota aktif; pengeluaran anggota hanya ke yang dikeluarkan.
-- Event: konfirmasi RSVP ke peserta; perubahan jadwal/lokasi ke RSVP `going`;
-  pembatalan Event ke RSVP `going`.
+- Event: konfirmasi RSVP ke peserta; perubahan jadwal/lokasi dan pembatalan ke
+  registrasi aktif `pending | going | waitlisted`.
 
 Join Circle bersifat langsung (tanpa approval), jadi permintaan bergabung
 tidak berlaku. Konfirmasi join ke pelaku sendiri dihilangkan karena UI sudah

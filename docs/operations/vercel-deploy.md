@@ -36,6 +36,7 @@ NEXT_PUBLIC_SITE_URL=https://studydate.id
 SUPABASE_SERVICE_ROLE_KEY=
 CONTACT_REVEAL_ENCRYPTION_KEY=
 CONTACT_REVEAL_KEY_VERSION=1
+EVENT_TICKET_SECRET=
 
 STUDYDATE_EMAIL_FROM="StudyDate ID <studydateid@gmail.com>"
 STUDYDATE_SMTP_HOST=smtp.gmail.com
@@ -50,6 +51,8 @@ STUDENT_VERIFICATION_ENABLED=false
 ```
 
 Optional verification keys may remain set while Verification stays disabled.
+`EVENT_TICKET_SECRET` wajib server-only, tepat 32 byte, dan sama pada seluruh
+deployment production yang melayani tiket Event.
 
 ## 4. Supabase Auth (wajib)
 
@@ -77,6 +80,7 @@ Jangan andalkan Supabase Auth mailer untuk magic link produk.
 4. `/login` → email StudyDate ID masuk → `/auth/confirm` → `/app` atau onboarding
 5. Owner: `/staff/login` → `/owner/moderation`
 6. Response headers berisi `X-Content-Type-Options: nosniff` dan `X-Frame-Options: DENY`
+7. Event: issue tiket → reload → regenerate → scan QR, tanpa mencetak token/secret.
 
 ## 7. Stabilitas demo (sudah di kode)
 

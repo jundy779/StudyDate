@@ -21,10 +21,11 @@ export default async function TeamPage({
   searchParams,
 }: TeamPageProps) {
   const { publicSlug } = await params;
-  const { event, overview } = await getCampusEventManagement(publicSlug);
+  const { event, overview } = await getCampusEventManagement(publicSlug, "team");
   const teamMembers = await listCampusEventTeamMembers(event.public_slug);
   const query = await searchParams;
   const state = first(query.state);
+  const notice = first(query.notice);
 
   return (
     <AppShell current="events">
@@ -49,6 +50,22 @@ export default async function TeamPage({
                 className="mt-5 border-l-2 border-brand-blue pl-4 text-sm font-medium text-brand-blue"
               >
                 Undangan tim telah dikirim.
+              </p>
+            ) : null}
+            {state === "team-removed" ? (
+              <p
+                role="status"
+                className="mt-5 border-l-2 border-brand-blue pl-4 text-sm font-medium text-brand-blue"
+              >
+                Anggota telah dihapus dari tim Event.
+              </p>
+            ) : null}
+            {notice ? (
+              <p
+                role="alert"
+                className="mt-5 border-l-2 border-brand-error pl-4 text-sm font-medium text-brand-error"
+              >
+                {notice}
               </p>
             ) : null}
 

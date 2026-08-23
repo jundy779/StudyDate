@@ -10,8 +10,23 @@ from public.campus_event_rsvps rsvp
 where rsvp.event_id = ticket.event_id
   and rsvp.user_id = ticket.user_id
   and ticket.rsvp_id is null;
+update public.campus_event_rsvps rsvp
+set checked_in_at = ticket.checked_in_at,
+  checked_in_by = ticket.checked_in_by,
+  checkin_method = 'qr'
+from public.campus_event_tickets ticket
+where ticket.rsvp_id = rsvp.id
+  and rsvp.status = 'going'
+  and rsvp.checked_in_at is null
+  and ticket.checked_in_at is not null;
+-- Legacy v1 tokens cannot be re-derived by the v2 server secret.
 update public.campus_event_tickets
-set revoked_at = coalesce(revoked_at, timezone('utc', now()))
+set revoked_at = coalesce(revoked_at, timezone('utc', now())),
+  checked_in_at = null, checked_in_by = null
+where rsvp_id is not null and revoked_at is null;
+update public.campus_event_tickets
+set revoked_at = coalesce(revoked_at, timezone('utc', now())),
+  checked_in_at = null, checked_in_by = null
 where rsvp_id is null and revoked_at is null;
 create unique index campus_event_tickets_active_registration_idx
   on public.campus_event_tickets (rsvp_id)
@@ -113,6 +128,9 @@ begin
     set revoked_at = timezone('utc', now())
     where id = active_ticket.id;
   end if;
+  if registration.checked_in_at is not null then
+    raise exception 'checked-in ticket cannot issue' using errcode = 'P0001';
+  end if;
   insert into public.campus_event_tickets (
     public_id, event_id, user_id, rsvp_id, ticket_hash
   ) values (
@@ -187,9 +205,12 @@ begin
   end if;
   if p_ticket_token is null
     or p_ticket_token !~ '^SDT1\.[A-Za-z0-9_-]{43}$' then
-    perform public.consume_campus_event_rate_limit(
+    if not public.consume_campus_event_rate_limit(
       actor, 'ticket_scan_invalid_hour', 120, 3600
-    );
+    ) then
+      return query select 'rate_limited'::text, null::text, null::timestamptz;
+      return;
+    end if;
     return query select 'invalid'::text, null::text, null::timestamptz;
     return;
   end if;
@@ -205,9 +226,12 @@ begin
       return query select 'wrong_event'::text, null::text, null::timestamptz;
       return;
     end if;
-    perform public.consume_campus_event_rate_limit(
+    if not public.consume_campus_event_rate_limit(
       actor, 'ticket_scan_invalid_hour', 120, 3600
-    );
+    ) then
+      return query select 'rate_limited'::text, null::text, null::timestamptz;
+      return;
+    end if;
     return query select 'invalid'::text, null::text, null::timestamptz;
     return;
   end if;
@@ -275,6 +299,12 @@ begin
   if event_row.id is null or not public.event_can_check_in(event_row.id, actor) then
     raise exception 'check-in unavailable' using errcode = '42501';
   end if;
+  if not public.consume_campus_event_rate_limit(
+    actor, 'checkin_mutation_minute', 120, 60
+  ) then
+    return query select 'rate_limited'::text, null::text, null::timestamptz;
+    return;
+  end if;
   if event_row.status <> 'scheduled'
     or timezone('utc', now()) < event_row.starts_at - interval '2 hours'
     or timezone('utc', now()) > event_row.ends_at + interval '2 hours' then
@@ -331,6 +361,11 @@ begin
   if event_id_value is null then
     raise exception 'event management required' using errcode = '42501';
   end if;
+  if not public.consume_campus_event_rate_limit(
+    actor, 'checkin_mutation_minute', 120, 60
+  ) then
+    raise exception 'check-in mutation rate limited' using errcode = 'P0001';
+  end if;
   update public.campus_event_rsvps rsvp
   set checked_in_at = null, checked_in_by = null, checkin_method = null
   where rsvp.event_id = event_id_value
@@ -358,12 +393,14 @@ begin
   if tg_table_name = 'campus_event_rsvps'
     and old.status = 'going' and new.status <> 'going' then
     update public.campus_event_tickets
-    set revoked_at = coalesce(revoked_at, timezone('utc', now()))
+    set revoked_at = coalesce(revoked_at, timezone('utc', now())),
+      checked_in_at = null, checked_in_by = null
     where rsvp_id = new.id and revoked_at is null;
   elsif tg_table_name = 'campus_events'
     and old.status = 'scheduled' and new.status <> 'scheduled' then
     update public.campus_event_tickets
-    set revoked_at = coalesce(revoked_at, timezone('utc', now()))
+    set revoked_at = coalesce(revoked_at, timezone('utc', now())),
+      checked_in_at = null, checked_in_by = null
     where event_id = new.id and revoked_at is null;
   end if;
   return new;
@@ -456,6 +493,9 @@ begin
   using public.campus_event_rsvps rsvp
   where ticket.rsvp_id = rsvp.id and rsvp.user_id = target_user_id
     and rsvp.status <> 'going';
+  update public.campus_event_rsvps
+  set registration_answers = '{}'::jsonb
+  where user_id = target_user_id;
   delete from public.campus_event_rsvps
   where user_id = target_user_id and status <> 'going';
   update public.event_team_members

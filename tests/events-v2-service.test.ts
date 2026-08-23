@@ -16,6 +16,7 @@ import {
 } from "../lib/events/ticket-crypto-core.ts";
 import {
   eventQuestionCreateSchema,
+  eventFormSchema,
   eventRegistrationAnswersSchema,
   eventRegistrationListSchema,
   eventTeamInviteSchema,
@@ -59,6 +60,8 @@ test("EV2S-01 validators enforce safe questions and bounded answers", () => {
     "Apa password akunmu?",
     "Tulis alamat rumah",
     "Sebutkan program studi",
+    "Masukkan email aktif",
+    "Apa username Telegram kamu?",
   ]) {
     assert.equal(
       eventQuestionCreateSchema.safeParse({
@@ -77,6 +80,17 @@ test("EV2S-01 validators enforce safe questions and bounded answers", () => {
     }).success,
     false,
   );
+  for (const answer of [
+    "student@example.com",
+    "WhatsApp 0812-3456-7890",
+    "@akun_telegram",
+    "https://linkedin.com/in/student",
+  ]) {
+    assert.equal(
+      eventRegistrationAnswersSchema.safeParse({ [id]: answer }).success,
+      false,
+    );
+  }
   assert.equal(
     eventTeamInviteSchema.safeParse({
       publicSlug: slug,
@@ -88,6 +102,32 @@ test("EV2S-01 validators enforce safe questions and bounded answers", () => {
 });
 
 test("EV2S-02 registration cursor and QR format are strict", () => {
+  assert.equal(
+    eventFormSchema.safeParse({
+      title: "Belajar Bareng Event",
+      description: "Belajar bersama di tempat publik kampus dengan agenda yang jelas.",
+      category: "study_together",
+      scope: "open",
+      registrationMode: "instant",
+      waitlistEnabled: true,
+      registrationClosesAt: "2026-08-24T02:00:00.000Z",
+      startsAtLocal: "2026-08-24T10:00",
+      endsAtLocal: "2026-08-24T12:00",
+      timezone: "Asia/Jakarta",
+      venueCategory: "campus_public_area",
+      venueName: "Perpustakaan Kampus",
+      venueArea: "Lantai satu area diskusi",
+      city: "Jakarta",
+      capacity: 50,
+      confirmsPublicPlace: true,
+      confirmsExpectedOperating: true,
+      confirmsNotPrivateResidence: true,
+      confirmsNoPrivateLocationDisclosure: true,
+    }).success,
+    true,
+  );
+  assert.match(actions, /toEventTimestamp\(registrationClosesAt, timezone\)/);
+  assert.match(actions, /\+07:00/);
   assert.equal(
     eventRegistrationListSchema.safeParse({
       publicSlug: slug,

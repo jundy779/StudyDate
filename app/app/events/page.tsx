@@ -51,6 +51,9 @@ async function EventsContent({ searchParams }: EventsPageProps) {
   const pendingInvitations = invitations.filter(
     (invitation) => invitation.invitation_status === "invited",
   );
+  const activeAssignments = invitations.filter(
+    (invitation) => invitation.invitation_status === "active",
+  );
 
   return (
     <AppShell current="events">
@@ -139,6 +142,50 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                         </form>
                       ))}
                     </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {activeAssignments.length ? (
+            <section
+              className="mt-9 border-y border-brand-border py-6"
+              aria-labelledby="event-team-active-title"
+            >
+              <p className="section-label">Event yang kamu bantu</p>
+              <h2
+                id="event-team-active-title"
+                className="mt-2 font-heading text-xl font-semibold text-brand-navy"
+              >
+                Workspace tim Event
+              </h2>
+              <div className="mt-4 divide-y divide-brand-border">
+                {activeAssignments.map((assignment) => (
+                  <article
+                    key={`${assignment.event_public_slug}-${assignment.team_role}`}
+                    className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <h3 className="break-words font-semibold text-brand-navy">
+                        {assignment.event_title}
+                      </h3>
+                      <p className="mt-1 text-sm text-brand-muted">
+                        {assignment.team_role === "cohost"
+                          ? "Cohost · registrasi dan check-in"
+                          : "Check-in staff · daftar hadir dan scanner"}
+                      </p>
+                    </div>
+                    <Link
+                      href={
+                        assignment.team_role === "checkin_staff"
+                          ? `/app/events/${assignment.event_public_slug}/manage/check-in`
+                          : `/app/events/${assignment.event_public_slug}/manage`
+                      }
+                      className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue"
+                    >
+                      Buka workspace
+                    </Link>
                   </article>
                 ))}
               </div>

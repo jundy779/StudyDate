@@ -33,6 +33,12 @@ function formatEventDate(value: string, timezone: string) {
 }
 
 export function EventListItem({ event }: { event: CampusEventSummary }) {
+  const canManage =
+    event.can_manage_registrations || event.can_check_in || event.can_manage_team;
+  const manageHref =
+    event.can_check_in && !event.can_manage_registrations
+      ? `/app/events/${event.public_slug}/manage/check-in`
+      : `/app/events/${event.public_slug}/manage`;
   const full = event.attendee_count >= event.capacity;
   return (
     <article className="grid gap-5 border-b border-brand-border py-7 first:pt-0 last:border-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
@@ -112,9 +118,9 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           Lihat Event
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </Link>
-        {event.is_organizer ? (
+        {canManage ? (
           <Link
-            href={`/app/events/${event.public_slug}/manage`}
+            href={manageHref}
             className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
           >
             Manage Event

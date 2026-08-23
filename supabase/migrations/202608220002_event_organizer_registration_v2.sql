@@ -245,6 +245,35 @@ as $$
   end;
 $$;
 
+create or replace function public.campus_event_join_quota_available(
+  p_user_id uuid,
+  p_exclude_event_id uuid default null
+)
+returns boolean
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare active_count integer;
+begin
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_user_id::text || ':event-join-quota', 0
+  ));
+  select count(*)::integer into active_count
+  from public.campus_event_rsvps rsvp
+  join public.campus_events event on event.id = rsvp.event_id
+  where rsvp.user_id = p_user_id
+    and rsvp.status = 'going'
+    and event.status = 'scheduled'
+    and event.starts_at > timezone('utc', now())
+    and (p_exclude_event_id is null or event.id <> p_exclude_event_id);
+  return active_count < public.event_membership_limit(
+    public.effective_membership_plan(p_user_id), 'joined_events_active'
+  );
+end;
+$$;
+
 create or replace function public.enforce_campus_event_v2_limits()
 returns trigger
 language plpgsql
@@ -354,9 +383,9 @@ alter table public.campus_event_rsvps
     and octet_length(registration_answers::text) <= 12000
   ),
   add constraint campus_event_rsvps_checkin check (
-    (checked_in_at is null and checked_in_by is null and checkin_method is null)
+    (checked_in_at is null and checkin_method is null)
     or (
-      checked_in_at is not null and checked_in_by is not null
+      checked_in_at is not null
       and checkin_method in ('qr', 'manual')
     )
   );
@@ -507,10 +536,12 @@ set search_path = ''
 as $$
   select exists (
     select 1 from public.event_team_members member
+    join public.campus_events event on event.id = member.event_id
     where member.event_id = p_event_id
       and member.user_id = p_user_id
       and member.status = 'active'
       and member.role = any(p_roles)
+      and not public.users_are_blocked(member.user_id, event.organizer_user_id)
   );
 $$;
 
@@ -551,6 +582,11 @@ declare
   active_count integer;
   role_limit integer;
 begin
+  if not public.consume_campus_event_rate_limit(
+    actor, 'event_team_invite_hour', 20, 3600
+  ) then
+    raise exception 'event team invitation rate limited' using errcode = 'P0001';
+  end if;
   if p_role not in ('cohost', 'checkin_staff') then
     raise exception 'invalid event role' using errcode = '22023';
   end if;
@@ -618,7 +654,10 @@ begin
     raise exception 'invalid invitation response' using errcode = '22023';
   end if;
   select event.id into event_id_value from public.campus_events event
-  where event.public_slug = p_public_slug;
+  where event.public_slug = p_public_slug
+    and event.status = 'scheduled'
+    and event.ends_at > timezone('utc', now());
+  if event_id_value is null then return false; end if;
   update public.event_team_members member
   set status = case when p_response = 'accept' then 'active' else 'declined' end,
     responded_at = timezone('utc', now()), removed_at = null
@@ -770,7 +809,24 @@ immutable
 set search_path = ''
 as $$
   select lower(public.normalize_campus_event_single_line(p_prompt))
-    !~ '(^|[^[:alnum:]_])(password|kata sandi|otp|one.?time password|nim|nomor induk|nik|ktp|passport|paspor|government id|legal id|alamat rumah|alamat pribadi|private address|home address|auth credential|kredensial|contact reveal|kampus|campus|program studi|study program|semester|minat|interests)([^[:alnum:]_]|$)';
+    !~ '(^|[^[:alnum:]_])(password|kata sandi|otp|one.?time password|nim|nomor induk|nik|ktp|passport|paspor|government id|legal id|alamat rumah|alamat pribadi|private address|home address|auth credential|kredensial|contact reveal|email|e-mail|nomor telepon|nomor hp|phone number|whatsapp|telegram|instagram|linkedin|social handle|username|kampus|campus|program studi|study program|semester|minat|interests)([^[:alnum:]_]|$)';
+$$;
+
+create or replace function public.event_registration_answer_has_contact(p_answer text)
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select lower(coalesce(p_answer, ''))
+      ~ '[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}'
+    or lower(coalesce(p_answer, ''))
+      ~ '(https?://|www\.|t\.me/|telegram\.me/|wa\.me/|api\.whatsapp\.com|instagram\.com/|ig\.me/|linkedin\.com/|line\.me/|discord\.gg)'
+    or lower(coalesce(p_answer, ''))
+      ~ '(whatsapp|telegram|instagram|linkedin|line id|discord)'
+    or lower(coalesce(p_answer, '')) ~ '@[a-z0-9_]{3,}'
+    or regexp_replace(lower(coalesce(p_answer, '')), '[^0-9]', '', 'g')
+      ~ '[0-9]{8,}';
 $$;
 
 create or replace function public.add_campus_event_registration_question(
@@ -790,6 +846,7 @@ declare
   event_row public.campus_events%rowtype;
   normalized_prompt text := public.normalize_campus_event_single_line(p_prompt);
   question_count integer;
+  next_sort_order integer;
   option_value jsonb;
   new_public_id text;
 begin
@@ -827,11 +884,14 @@ begin
   if question_count >= public.event_membership_limit(
     public.effective_membership_plan(actor), 'event_custom_questions'
   ) then raise exception 'registration question quota reached' using errcode = 'P0001'; end if;
+  select coalesce(max(question.sort_order), 0) + 1 into next_sort_order
+  from public.event_registration_questions question
+  where question.event_id = event_row.id;
   insert into public.event_registration_questions (
     event_id, question_type, prompt, options, is_required, sort_order
   ) values (
     event_row.id, p_question_type, normalized_prompt, coalesce(p_options, '[]'::jsonb),
-    coalesce(p_is_required, false), question_count + 1
+    coalesce(p_is_required, false), next_sort_order
   ) returning public_id into new_public_id;
   return new_public_id;
 end;
@@ -954,6 +1014,7 @@ declare
   own_rsvp public.campus_event_rsvps%rowtype;
   going_count integer;
   has_history boolean;
+  has_team_access boolean;
   organizer_deleted boolean;
   blocked boolean;
 begin
@@ -969,14 +1030,20 @@ begin
   select * into own_rsvp from public.campus_event_rsvps rsvp
   where rsvp.event_id = target.id and rsvp.user_id = actor;
   has_history := own_rsvp.id is not null;
+  has_team_access := public.is_event_team_member(
+    target.id, actor, array['cohost', 'checkin_staff']::text[]
+  );
   blocked := public.users_are_blocked(actor, target.organizer_user_id);
   organizer_deleted := public.is_account_deletion_locked(target.organizer_user_id);
-  if organizer_deleted and not has_history then return; end if;
+  if organizer_deleted and not has_history and not has_team_access then return; end if;
   if target.status = 'archived'
-    and target.organizer_user_id <> actor and not has_history then return; end if;
+    and target.organizer_user_id <> actor and not has_history
+    and not has_team_access then return; end if;
   if target.scope = 'campus' and target.campus_scope <> actor_campus
-    and target.organizer_user_id <> actor and not has_history then return; end if;
-  if blocked and target.organizer_user_id <> actor and not has_history then return; end if;
+    and target.organizer_user_id <> actor and not has_history
+    and not has_team_access then return; end if;
+  if blocked and target.organizer_user_id <> actor and not has_history
+    and not has_team_access then return; end if;
   select count(*)::integer into going_count
   from public.campus_event_rsvps rsvp
   where rsvp.event_id = target.id and rsvp.status = 'going';
@@ -1196,6 +1263,7 @@ begin
       jsonb_typeof(answer) <> 'string'
       or char_length(btrim(answer #>> '{}')) > 500
       or (answer #>> '{}') ~ '<[^>]+>'
+      or public.event_registration_answer_has_contact(answer #>> '{}')
     ) then raise exception 'invalid short answer' using errcode = '22023'; end if;
     if question.question_type = 'single_select' and (
       jsonb_typeof(answer) <> 'string' or not question.options @> jsonb_build_array(answer)
@@ -1240,19 +1308,7 @@ begin
   where rsvp.event_id = event_row.id and rsvp.status = 'waitlisted'
     and public.is_campus_event_student(rsvp.user_id)
     and not public.users_are_blocked(rsvp.user_id, event_row.organizer_user_id)
-    and (
-      select count(*)
-      from public.campus_event_rsvps active_rsvp
-      join public.campus_events active_event
-        on active_event.id = active_rsvp.event_id
-      where active_rsvp.user_id = rsvp.user_id
-        and active_rsvp.status = 'going'
-        and active_event.status = 'scheduled'
-        and active_event.starts_at > timezone('utc', now())
-    ) < public.event_membership_limit(
-      public.effective_membership_plan(rsvp.user_id),
-      'joined_events_active'
-    )
+    and public.campus_event_join_quota_available(rsvp.user_id, event_row.id)
   order by rsvp.rsvped_at, rsvp.id, rsvp.public_id
   for update skip locked limit 1;
   if promoted_id is null then return null; end if;
@@ -1280,6 +1336,7 @@ declare
   next_status text;
   safe_answers jsonb;
   registration_id text;
+  existing_registration public.campus_event_rsvps%rowtype;
 begin
   if not public.is_campus_event_student(actor) then
     raise exception 'student access required' using errcode = '42501';
@@ -1300,6 +1357,13 @@ begin
   if not public.consume_campus_event_rate_limit(actor, 'rsvp_day', 30, 86400) then
     raise exception 'event registration rate limited' using errcode = 'P0001';
   end if;
+  select * into existing_registration from public.campus_event_rsvps rsvp
+  where rsvp.event_id = event_row.id and rsvp.user_id = actor for update;
+  if existing_registration.id is not null
+    and existing_registration.status in ('pending', 'going', 'waitlisted') then
+    return query select existing_registration.public_id, existing_registration.status;
+    return;
+  end if;
   safe_answers := public.validate_campus_event_registration_answers(
     event_row.id, p_answers
   );
@@ -1308,6 +1372,9 @@ begin
   if event_row.registration_mode = 'approval' then
     next_status := 'pending';
   elsif going_count < event_row.capacity then
+    if not public.campus_event_join_quota_available(actor, event_row.id) then
+      raise exception 'joined event quota reached' using errcode = 'P0001';
+    end if;
     next_status := 'going';
   elsif event_row.waitlist_enabled then
     next_status := 'waitlisted';
@@ -1370,7 +1437,13 @@ begin
   else
     select count(*)::integer into going_count from public.campus_event_rsvps rsvp
     where rsvp.event_id = event_row.id and rsvp.status = 'going';
-    if going_count < event_row.capacity then next_status := 'going';
+    if going_count < event_row.capacity then
+      if not public.campus_event_join_quota_available(
+        registration.user_id, event_row.id
+      ) then
+        raise exception 'joined event quota reached' using errcode = 'P0001';
+      end if;
+      next_status := 'going';
     elsif event_row.waitlist_enabled then next_status := 'waitlisted';
     else raise exception 'event full' using errcode = 'P0001'; end if;
   end if;
@@ -1448,14 +1521,19 @@ begin
     raise exception 'event management required' using errcode = '42501';
   end if;
   return query
-  select rsvp.public_id, profile.public_alias, profile.campus, profile.study_program,
+  select rsvp.public_id, profile.public_alias,
+    case when is_checkin_only then '' else profile.campus end,
+    case when is_checkin_only then '' else profile.study_program end,
     case when is_checkin_only then null else profile.semester end,
     case when is_checkin_only then array[]::text[] else profile.interests end,
     rsvp.status, rsvp.checked_in_at, rsvp.checkin_method
   from public.campus_event_rsvps rsvp
   join public.profiles profile on profile.user_id = rsvp.user_id
   where rsvp.event_id = event_id_value
-    and rsvp.status in ('going', 'pending', 'waitlisted')
+    and (
+      (is_checkin_only and rsvp.status = 'going')
+      or (not is_checkin_only and rsvp.status in ('going', 'pending', 'waitlisted'))
+    )
   order by rsvp.rsvped_at, rsvp.public_id
   limit 200;
 end;
@@ -1847,7 +1925,8 @@ alter table public.campus_event_rate_limits
   add constraint campus_event_rate_limits_bucket check (bucket in (
     'create_day', 'rsvp_day', 'edit_day', 'report_hour', 'report_day',
     'message_minute', 'message_day', 'ticket_regenerate_day',
-    'ticket_scan_minute', 'ticket_scan_invalid_hour'
+    'ticket_scan_minute', 'ticket_scan_invalid_hour', 'event_team_invite_hour',
+    'checkin_mutation_minute'
   ));
 
 create or replace function public.consume_campus_event_rate_limit(
@@ -1860,7 +1939,8 @@ begin
   if p_actor_user_id is null or p_bucket not in (
     'create_day', 'rsvp_day', 'edit_day', 'report_hour', 'report_day',
     'message_minute', 'message_day', 'ticket_regenerate_day',
-    'ticket_scan_minute', 'ticket_scan_invalid_hour'
+    'ticket_scan_minute', 'ticket_scan_invalid_hour', 'event_team_invite_hour',
+    'checkin_mutation_minute'
   ) or p_limit < 1 or p_limit > 1000
     or p_window_seconds < 1 or p_window_seconds > 86400 then return false; end if;
   window_value := to_timestamp(
@@ -1989,6 +2069,8 @@ revoke all on function public.is_event_organizer_eligible(uuid)
   from public, anon, authenticated;
 revoke all on function public.event_membership_limit(text, text)
   from public, anon, authenticated;
+revoke all on function public.campus_event_join_quota_available(uuid, uuid)
+  from public, anon, authenticated;
 revoke all on function public.enforce_campus_event_v2_limits()
   from public, anon, authenticated;
 revoke all on function public.guard_campus_event_official_flag()
@@ -1998,6 +2080,8 @@ revoke all on function public.is_event_team_member(uuid, uuid, text[])
 revoke all on function public.event_can_manage_registrations(uuid, uuid)
   from public, anon, authenticated;
 revoke all on function public.event_question_prompt_is_safe(text)
+  from public, anon, authenticated;
+revoke all on function public.event_registration_answer_has_contact(text)
   from public, anon, authenticated;
 revoke all on function public.validate_campus_event_registration_answers(uuid, jsonb)
   from public, anon, authenticated;

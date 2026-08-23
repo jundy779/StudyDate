@@ -41,9 +41,10 @@ dari 45 menit tanpa sukses. Jangan menambah Vercel Cron kedua.
   atau kapasitas naik, dan membatalkan antrean aktif saat Event ditutup.
 - Event Chat hanya untuk organizer/RSVP aktif. Report pesan menyimpan excerpt
   immutable maksimal 280 karakter ke Moderation Triage yang sudah ada.
-- Ticket menyimpan hash token saja. Token plaintext hanya tampil satu kali;
-  RSVP/Event cancellation mencabut ticket. Check-in bukan location tracking
-  atau bukti keselamatan.
+- Ticket menyimpan hash token saja. Raw token direkonstruksi hanya server-side
+  untuk pemilik registrasi agar QR tetap tersedia setelah reload; RSVP/Event
+  cancellation mencabut ticket. Check-in bukan location tracking atau bukti
+  keselamatan.
 - Notification preference hanya mengendalikan in-app delivery pada v1.
 
 ## Live verification minimum

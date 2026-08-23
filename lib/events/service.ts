@@ -198,7 +198,10 @@ export function mapCampusEventError(message?: string) {
   if (value.includes("event ownership quota")) {
     return "Batas Event aktif untuk paketmu sudah tercapai. Kelola Event lama atau lihat StudyDate Plus.";
   }
-  if (value.includes("event attendance quota")) {
+  if (
+    value.includes("event attendance quota") ||
+    value.includes("joined event quota")
+  ) {
     return "Batas Event yang dapat diikuti untuk paketmu sudah tercapai. Batalkan RSVP lain atau lihat StudyDate Plus.";
   }
   if (

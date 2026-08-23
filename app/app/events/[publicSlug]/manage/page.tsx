@@ -16,24 +16,28 @@ type EventManagePageProps = {
 
 const destinations = [
   {
+    permission: "registrations",
     suffix: "/registrations",
     title: "Registrations",
     description: "Tinjau status, jawaban aman, dan keputusan registrasi.",
     icon: ClipboardList,
   },
   {
+    permission: "check-in",
     suffix: "/check-in",
     title: "Check-In",
     description: "Pantau kehadiran dan lakukan check-in manual.",
     icon: QrCode,
   },
   {
+    permission: "team",
     suffix: "/team",
     title: "Team",
     description: "Undang cohost atau petugas check-in melalui alias tepat.",
     icon: UserRoundCog,
   },
   {
+    permission: "team",
     suffix: "/settings",
     title: "Settings",
     description: "Atur registrasi, pertanyaan, detail, dan lifecycle Event.",
@@ -45,6 +49,11 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
   const { publicSlug } = await params;
   const { event, overview } = await getCampusEventManagement(publicSlug);
   const base = `/app/events/${event.public_slug}/manage`;
+  const visibleDestinations = destinations.filter(({ permission }) => {
+    if (permission === "registrations") return event.can_manage_registrations;
+    if (permission === "check-in") return event.can_check_in;
+    return event.can_manage_team;
+  });
 
   return (
     <AppShell current="events">
@@ -64,7 +73,7 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
             </p>
 
             <div className="mt-7 divide-y divide-brand-border border-y border-brand-border">
-              {destinations.map(({ suffix, title, description, icon: Icon }) => (
+              {visibleDestinations.map(({ suffix, title, description, icon: Icon }) => (
                 <Link
                   key={suffix}
                   href={`${base}${suffix}`}
