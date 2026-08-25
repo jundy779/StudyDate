@@ -6,7 +6,7 @@ const BRAND_NAVY = "#0F1B33";
 /** Inline CID used by StudyDate SMTP/Resend attachments. */
 export const STUDYDATE_EMAIL_LOGO_CID = "studydate-logo";
 
-export type MagicLinkEmailKind = "student" | "staff";
+export type MagicLinkEmailKind = "student" | "staff" | "early-access";
 
 export function buildMagicLinkEmail(input: {
   kind: MagicLinkEmailKind;
@@ -20,16 +20,25 @@ export function buildMagicLinkEmail(input: {
   const heading =
     input.kind === "staff"
       ? "Masuk ke workspace StudyDate ID"
-      : "Masuk ke StudyDate ID";
+      : input.kind === "early-access"
+        ? "Akses awalmu sudah disetujui"
+        : "Masuk ke StudyDate ID";
   const lead =
     input.kind === "staff"
       ? "Gunakan tautan ini untuk masuk ke ruang Owner/Admin StudyDate ID. Tautan hanya berlaku sekali dan akan kedaluarsa."
-      : "Gunakan tautan ini untuk masuk ke StudyDate ID. Tautan hanya berlaku sekali dan akan kedaluarsa.";
+      : input.kind === "early-access"
+        ? "Kamu sudah mendapat akses ke Beta StudyDate. Gunakan tautan sekali pakai ini untuk masuk dengan email yang kamu daftarkan, klaim aksesmu, lalu selesaikan onboarding."
+        : "Gunakan tautan ini untuk masuk ke StudyDate ID. Tautan hanya berlaku sekali dan akan kedaluarsa.";
 
   const subject =
     input.kind === "staff"
       ? "Tautan masuk staff StudyDate ID"
-      : "Tautan masuk StudyDate ID";
+      : input.kind === "early-access"
+        ? "Akses awal StudyDate kamu sudah disetujui"
+        : "Tautan masuk StudyDate ID";
+
+  const buttonLabel =
+    input.kind === "early-access" ? "Mulai di StudyDate" : "Masuk sekarang";
 
   const logoSrc = input.logoSrc?.trim() || `cid:${STUDYDATE_EMAIL_LOGO_CID}`;
 
@@ -66,7 +75,7 @@ export function buildMagicLinkEmail(input: {
               <h1 style="margin:20px 0 0 0;font-family:Poppins,Inter,Segoe UI,sans-serif;font-size:28px;line-height:1.2;letter-spacing:-0.03em;color:${BRAND_NAVY};">${heading}</h1>
               <p style="margin:16px 0 0 0;font-size:16px;line-height:1.65;color:#4B5565;">${lead}</p>
               <p style="margin:28px 0 0 0;">
-                <a href="${input.confirmUrl}" style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;text-decoration:none;font-weight:700;font-size:15px;padding:14px 22px;border-radius:12px;">Masuk sekarang</a>
+                <a href="${input.confirmUrl}" style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;text-decoration:none;font-weight:700;font-size:15px;padding:14px 22px;border-radius:12px;">${buttonLabel}</a>
               </p>
               <p style="margin:24px 0 0 0;font-size:13px;line-height:1.6;color:#6B7280;">Jika tombol tidak berfungsi, salin tautan ini ke browser:<br /><span style="word-break:break-all;color:${BRAND_NAVY};">${input.confirmUrl}</span></p>
               <p style="margin:24px 0 0 0;font-size:13px;line-height:1.6;color:#6B7280;">Jika kamu tidak meminta tautan ini, abaikan email ini. Jangan bagikan tautan kepada siapa pun.</p>

@@ -1,5 +1,6 @@
 import { deliverStudyDateMagicLink } from "@/lib/auth/magic-link-delivery";
 import { getSiteOrigin } from "@/lib/auth/site-url";
+import { canReceiveStudentMagicLink } from "@/lib/early-access/access";
 import { magicLinkRequestSchema } from "@/lib/auth/validation";
 import { consumeMagicLinkAttempts } from "@/lib/security/rate-limit";
 import { NextResponse, type NextRequest } from "next/server";
@@ -40,6 +41,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Keep the public response enumeration-safe. Existing accounts can log in;
+    // new/pre-onboarding accounts need an approved Early Access row first.
+    if (!(await canReceiveStudentMagicLink(parsed.data.email))) {
+      return NextResponse.json({ ok: true });
+    }
+
     await deliverStudyDateMagicLink({
       email: parsed.data.email,
       origin: getSiteOrigin(request),

@@ -70,6 +70,7 @@ type NavigationItem = {
 
 type StaffNavCapabilities = {
   canEarlyAccessRead?: boolean;
+  canEarlyAccessReview?: boolean;
   canUsersRead?: boolean;
   canUsersSupport?: boolean;
   verificationReviewer?: boolean;
@@ -180,7 +181,9 @@ function getStaffItems(
   capabilities?: StaffNavCapabilities,
 ): NavigationItem[] {
   const canEarlyAccess =
-    role === "owner" || capabilities?.canEarlyAccessRead === true;
+    role === "owner" ||
+    capabilities?.canEarlyAccessRead === true ||
+    capabilities?.canEarlyAccessReview === true;
   const canUsers =
     role === "owner" ||
     capabilities?.canUsersRead === true ||
@@ -254,7 +257,7 @@ function getStaffItems(
       icon: "events",
     },
     {
-      href: "/staff/early-access",
+      href: "/owner/early-access",
       label: "Akses Awal",
       key: "early-access",
       icon: "early-access",

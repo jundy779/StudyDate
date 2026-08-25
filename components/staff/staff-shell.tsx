@@ -19,7 +19,7 @@ type StaffShellProps = {
   role: StaffRole;
   access?: Pick<
     StaffAccess,
-    "canEarlyAccessRead" | "canUsersRead" | "canUsersSupport" | "verificationReviewer"
+    "canEarlyAccessRead" | "canEarlyAccessReview" | "canUsersRead" | "canUsersSupport" | "verificationReviewer"
   >;
 };
 

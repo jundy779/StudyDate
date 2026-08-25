@@ -2,6 +2,7 @@ export type StaffRole = "owner" | "admin";
 
 export type StaffCapability =
   | "early_access.read"
+  | "early_access.review"
   | "users.read"
   | "users.support"
   | "moderation.review"
@@ -12,6 +13,7 @@ export type StaffCapabilityFlags = {
   role: StaffRole;
   verificationReviewer: boolean;
   canEarlyAccessRead: boolean;
+  canEarlyAccessReview: boolean;
   canUsersRead: boolean;
   canUsersSupport: boolean;
 };
@@ -26,7 +28,9 @@ export function staffHasCapability(
 
   switch (capability) {
     case "early_access.read":
-      return access.canEarlyAccessRead;
+      return access.canEarlyAccessRead || access.canEarlyAccessReview;
+    case "early_access.review":
+      return access.canEarlyAccessReview;
     case "users.read":
       return access.canUsersRead || access.canUsersSupport;
     case "users.support":

@@ -6,6 +6,7 @@ import { join } from "node:path";
 import {
   buildMagicLinkEmail,
   STUDYDATE_EMAIL_LOGO_CID,
+  type MagicLinkEmailKind,
 } from "@/lib/email/magic-link-template";
 import {
   isStudyDateEmailConfigured,
@@ -29,8 +30,8 @@ function loadStudyDateEmailLogo() {
 export type DeliverMagicLinkInput = {
   email: string;
   origin: string;
-  nextPath: "/app" | "/staff";
-  kind: "student" | "staff";
+  nextPath: "/app" | "/onboarding" | "/staff";
+  kind: MagicLinkEmailKind;
   /** Student login may create Auth users; staff login must not. */
   allowCreateUser: boolean;
 };

@@ -10,11 +10,13 @@ import {
   markConversationMessagesRead,
   reportConversation,
   sendAnonymousMessage,
+  sendAnonymousSticker,
 } from "@/lib/messages/service";
 import {
   conversationPublicIdSchema,
   reportConversationSchema,
   sendChatMessageSchema,
+  sendChatStickerSchema,
 } from "@/lib/messages/validation";
 import { blockStudentByAlias } from "@/lib/introductions/service";
 import {
@@ -93,6 +95,37 @@ export async function submitChatMessage(formData: FormData) {
     await sendAnonymousMessage(
       parsed.data.publicId,
       parsed.data.body,
+      parsed.data.idempotencyKey,
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : GENERIC_CHAT_ERROR;
+    redirect(
+      `/app/messages/${parsed.data.publicId}?notice=${encodeURIComponent(message)}`,
+    );
+  }
+
+  revalidateMessages(parsed.data.publicId);
+  redirect(`/app/messages/${parsed.data.publicId}`);
+}
+
+export async function submitChatSticker(formData: FormData) {
+  await requireOnboardedStudent();
+
+  const parsed = sendChatStickerSchema.safeParse({
+    publicId: formData.get("publicId"),
+    stickerId: formData.get("stickerId"),
+    idempotencyKey: formData.get("idempotencyKey") || undefined,
+  });
+
+  if (!parsed.success) {
+    redirect("/app/messages?state=error");
+  }
+
+  try {
+    await sendAnonymousSticker(
+      parsed.data.publicId,
+      parsed.data.stickerId,
       parsed.data.idempotencyKey,
     );
   } catch (error) {

@@ -1,4 +1,7 @@
-import { verifyAutoGoPaySignature } from "@/lib/billing/autogopay";
+import {
+  parseAutoGoPayTimestamp,
+  verifyAutoGoPaySignature,
+} from "@/lib/billing/autogopay";
 import { autoGoPayWebhookSchema } from "@/lib/billing/validation";
 import { createServerAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
@@ -36,8 +39,10 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ success: false }, { status: 400 });
   }
-  const paidAt = new Date(parsed.data.transaction.paid_at.replace(" ", "T") + "+07:00");
-  if (!Number.isFinite(paidAt.getTime())) {
+  let paidAt: Date;
+  try {
+    paidAt = parseAutoGoPayTimestamp(parsed.data.transaction.paid_at);
+  } catch {
     return NextResponse.json({ success: false }, { status: 400 });
   }
 

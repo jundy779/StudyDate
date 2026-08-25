@@ -122,7 +122,9 @@ Setelah diterima, tampilkan handoff ke Pesan dengan CTA `Mulai percakapan`.
 
 `/app/messages` menampilkan daftar percakapan anonim setelah perkenalan diterima. Detail
 `/app/messages/[publicId]` memakai header alias+mascot, privacy note, bubble teks escaped, composer
-`Tulis pesan`, serta aksi Akhiri / Blokir / Laporkan. Setelah Mutual Interest, panel
+`Tulis pesan`, emoji picker ringan, official mascot sticker picker, serta aksi Akhiri / Blokir / Laporkan.
+Emoji tetap text. Sticker tampil tanpa bubble dekoratif berlebihan dan hanya memakai aset mascot resmi; tidak ada user-uploaded
+sticker pada v1. Setelah Mutual Interest, panel
 `Buka Identitas` tersedia untuk siapkan nama depan + foto (conversation-scoped) dan
 consent terpisah. Setelah Identity Reveal selesai, panel `Bagikan kontak secara bertahap`
 menampilkan Telegram / Instagram / LinkedIn secara independen dengan copy tenang
@@ -229,7 +231,7 @@ rail 88px dan desktop sidebar 260px. Fase Event lanjutan menambahkan diskusi tek
 waitlist, tiket, dan check-in dalam detail Event tanpa map embed, arbitrary links,
 poster, fake people, atau visual dating.
 
-#### Campus Events v2 (lokal)
+#### Campus Events v2 (repository implementation)
 
 Detail Event membedakan registrasi pending, confirmed, waitlisted, declined, dan
 cancelled dengan teks, bukan warna saja. QR peserta tampil sebagai tiket editorial
@@ -298,6 +300,8 @@ inspector.
 Verification admin memakai utility-first review layout, identifier suffix pada list, full sensitive claim hanya pada
 explicit reviewer detail, generic errors, dan evidence link lima menit. Owner-only staff UI menampilkan UUID suffix dan
 status. Penambahan staff memakai email Auth yang sudah ada; server meresolve pengguna, tanpa input UUID mentah.
+
+Early Access memakai **satu moderation queue** yang dirender di `/owner/early-access` dan `/staff/early-access`. Owner selalu dapat review; Staff tanpa `early_access.review` tampil read-only. Action utama: **Approve & kirim email**, **Kirim ulang undangan**, dan **Reject**. Status UI: Menunggu review, Disetujui, Tidak disetujui, Akses diklaim. Copy harus menjelaskan bahwa approval Akses Awal bukan Student/Alumni Verification. Jangan expose UUID, token invitation, atau status Auth internal pada queue.
 
 ## 12. Components
 

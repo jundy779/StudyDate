@@ -337,8 +337,8 @@ function EarlyAccessDialog({
               className="mt-4 max-w-lg leading-7 text-brand-muted"
             >
               {phase === "success"
-                ? "Kami akan menghubungimu ketika akses StudyDate mulai tersedia. Sambil menunggu, ikuti perkembangan People, Groups, dan Campus Events kami."
-                : "Email ini sudah terdaftar dalam daftar akses awal StudyDate."}
+                ? "Pendaftaranmu masuk ke antrean review. Jika disetujui, StudyDate akan mengirim email resmi berisi tautan login sekali pakai untuk klaim akses dan melanjutkan onboarding."
+                : "Email ini sudah ada di antrean Akses Awal. Jika akses disetujui, tautan login resmi akan dikirim ke email tersebut."}
             </p>
             <button
               type="button"

@@ -9,6 +9,8 @@ export const staffActionSchema = z.object({
     "remove_reviewer",
     "grant_early_access",
     "remove_early_access",
+    "grant_early_access_review",
+    "remove_early_access_review",
     "grant_users_read",
     "remove_users_read",
     "grant_users_support",
@@ -29,6 +31,7 @@ export const staffEmailAssignSchema = z
       "grant_admin",
       "grant_reviewer",
       "grant_early_access",
+      "grant_early_access_review",
       "grant_users_read",
       "grant_users_support",
     ]),
@@ -72,4 +75,11 @@ export const manualAcademicReviewSchema = z
 
 export const verificationInvalidationSchema = z
   .object({ requestId: z.string().uuid() })
+  .strict();
+
+export const earlyAccessReviewActionSchema = z
+  .object({
+    email: z.string().trim().toLowerCase().min(3).max(254).email(),
+    action: z.enum(["approve", "reject", "resend"]),
+  })
   .strict();

@@ -4,11 +4,12 @@ import {
   cancelTelegramLinkAction,
   confirmTelegramBindingAction,
   createTelegramLinkAction,
+  refreshTelegramCompanionStateAction,
   switchTelegramRelayAction,
   unlinkTelegramCompanionAction,
 } from "@/app/app/messages/telegram-actions";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
-import { useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 
 type TelegramCompanionPanelProps = {
   publicId: string;
@@ -31,6 +32,19 @@ export function TelegramCompanionPanel({
   const switchDescriptionId = useId();
   const unlinkTitleId = useId();
   const unlinkDescriptionId = useId();
+
+  useEffect(() => {
+    if (state.state !== "link_created") return;
+    const interval = window.setInterval(() => {
+      void refreshTelegramCompanionStateAction(publicId).then((next) => {
+        if (next.state !== "link_created") {
+          setState(next);
+          setBotUrl(null);
+        }
+      });
+    }, 3_000);
+    return () => window.clearInterval(interval);
+  }, [publicId, state.state]);
 
   function run(operation: () => Promise<TelegramSafeState>) {
     setError(null);

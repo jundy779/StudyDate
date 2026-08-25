@@ -23,6 +23,7 @@ const detailPage = readFileSync(
   join(root, "app/app/events/[publicSlug]/page.tsx"),
   "utf8",
 );
+const nextConfig = readFileSync(join(root, "next.config.ts"), "utf8");
 
 test("EV2QR-01 participant ticket renders an accessible QR without raw token UI", () => {
   assert.match(ticket, /import \{ QRCodeSVG \} from "qrcode\.react"/);
@@ -53,6 +54,11 @@ test("EV2QR-03 scanner uses environment camera, device switching, and cleanup", 
   assert.match(scanner, /setTimeout\(\(\) => \{/);
   assert.match(scanner, /1200/);
   assert.doesNotMatch(scanner, /console\.|URLSearchParams|router\.refresh/);
+});
+
+test("EV2QR-03b security policy allows same-origin camera for the scanner", () => {
+  assert.match(nextConfig, /camera=\(self\)/);
+  assert.doesNotMatch(nextConfig, /camera=\(\)/);
 });
 
 test("EV2QR-04 express scanner handles every safe result with live feedback", () => {

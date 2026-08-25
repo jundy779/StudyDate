@@ -17,6 +17,13 @@ const opsMigration = readFileSync(
   ),
   "utf8",
 );
+const earlyAccessModerationMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202608250002_early_access_moderation_invitation_v1.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const claimMigration = readFileSync(
   new URL(
     "../supabase/migrations/202608170001_early_access_account_claim.sql",
@@ -34,6 +41,18 @@ const service = readFileSync(
 );
 const earlyAccessPage = readFileSync(
   new URL("../app/staff/early-access/page.tsx", import.meta.url),
+  "utf8",
+);
+const earlyAccessQueue = readFileSync(
+  new URL("../components/staff/early-access-queue.tsx", import.meta.url),
+  "utf8",
+);
+const earlyAccessActions = readFileSync(
+  new URL("../app/staff/early-access/actions.ts", import.meta.url),
+  "utf8",
+);
+const ownerEarlyAccessPage = readFileSync(
+  new URL("../app/owner/early-access/page.tsx", import.meta.url),
   "utf8",
 );
 const usersPage = readFileSync(
@@ -78,6 +97,7 @@ function access(
   return {
     verificationReviewer: false,
     canEarlyAccessRead: false,
+    canEarlyAccessReview: false,
     canUsersRead: false,
     canUsersSupport: false,
     ...partial,
@@ -123,6 +143,7 @@ test("User ops projection excludes NIM legal name evidence and chat", () => {
 test("Owner has all capabilities; admin defaults deny; support implies read", () => {
   const owner = access({ role: "owner" });
   assert.equal(staffHasCapability(owner, "early_access.read"), true);
+  assert.equal(staffHasCapability(owner, "early_access.review"), true);
   assert.equal(staffHasCapability(owner, "users.read"), true);
   assert.equal(staffHasCapability(owner, "users.support"), true);
   assert.equal(staffHasCapability(owner, "staff.manage"), true);
@@ -130,6 +151,7 @@ test("Owner has all capabilities; admin defaults deny; support implies read", ()
 
   const bareAdmin = access({ role: "admin" });
   assert.equal(staffHasCapability(bareAdmin, "early_access.read"), false);
+  assert.equal(staffHasCapability(bareAdmin, "early_access.review"), false);
   assert.equal(staffHasCapability(bareAdmin, "users.read"), false);
   assert.equal(staffHasCapability(bareAdmin, "verification.review"), false);
   assert.equal(staffHasCapability(bareAdmin, "moderation.review"), false);
@@ -138,6 +160,13 @@ test("Owner has all capabilities; admin defaults deny; support implies read", ()
   const support = access({ role: "admin", canUsersSupport: true });
   assert.equal(staffHasCapability(support, "users.read"), true);
   assert.equal(staffHasCapability(support, "users.support"), true);
+
+  const earlyAccessReviewer = access({
+    role: "admin",
+    canEarlyAccessReview: true,
+  });
+  assert.equal(staffHasCapability(earlyAccessReviewer, "early_access.review"), true);
+  assert.equal(staffHasCapability(earlyAccessReviewer, "early_access.read"), true);
 
   const reviewerOnly = access({
     role: "admin",
@@ -179,6 +208,13 @@ test("staff email assignment resolves server-side and rejects arbitrary capabili
   assert.equal(
     staffEmailAssignSchema.safeParse({
       email: "staff@example.com",
+      action: "grant_early_access_review",
+    }).success,
+    true,
+  );
+  assert.equal(
+    staffEmailAssignSchema.safeParse({
+      email: "staff@example.com",
       action: "grant_owner",
     }).success,
     false,
@@ -212,6 +248,8 @@ test("navigation exposes ops links for authorized staff", () => {
   assert.match(navigation, /\/staff\/early-access/);
   assert.match(navigation, /\/staff\/users/);
   assert.match(navigation, /canEarlyAccessRead/);
+  assert.match(navigation, /canEarlyAccessReview/);
+  assert.match(navigation, /\/owner\/early-access/);
   assert.match(authorization, /requireStaffCapability/);
   assert.match(authorization, /getPostAuthenticationDestination/);
 });
@@ -250,6 +288,34 @@ test("audit events are sanitized and capability changes are recorded", () => {
     opsMigration,
     /insert into public\.staff_ops_audit_events \(actor_user_id, event_type\)/,
   );
+});
+
+test("Early Access moderation is one queue with owner-full and explicit staff review capability", () => {
+  assert.match(earlyAccessModerationMigration, /can_early_access_review boolean not null default false/);
+  assert.match(earlyAccessModerationMigration, /p_capability = 'early_access\.review'/);
+  assert.match(earlyAccessModerationMigration, /membership\.role = 'owner'/);
+  assert.match(earlyAccessModerationMigration, /manage_early_access_review_capability/);
+  assert.match(ownerEarlyAccessPage, /requireOwner\(\)/);
+  assert.match(ownerEarlyAccessPage, /basePath="\/owner\/early-access"/);
+  assert.match(earlyAccessPage, /requireStaffCapability\("early_access\.read"\)/);
+  assert.match(earlyAccessQueue, /staffHasCapability\(access, "early_access\.review"\)/);
+  assert.match(earlyAccessQueue, /Mode baca saja/);
+});
+
+test("Early Access decisions approve or reject and invitation is server-side", () => {
+  assert.match(earlyAccessModerationMigration, /status in \('waiting', 'approved', 'rejected', 'claimed'\)/);
+  assert.match(earlyAccessModerationMigration, /review_early_access_entry/);
+  assert.match(earlyAccessModerationMigration, /p_decision not in \('approve', 'reject'\)/);
+  assert.match(earlyAccessModerationMigration, /prepare_early_access_invitation/);
+  assert.match(earlyAccessModerationMigration, /mark_early_access_invitation_sent/);
+  assert.match(earlyAccessModerationMigration, /waitlist_row\.status <> 'approved'/);
+  assert.match(earlyAccessActions, /requireStaffCapability\("early_access\.review"\)/);
+  assert.match(earlyAccessActions, /kind: "early-access"/);
+  assert.match(earlyAccessActions, /nextPath: "\/onboarding"/);
+  assert.match(earlyAccessQueue, /Approve & kirim email/);
+  assert.match(earlyAccessQueue, /Kirim ulang undangan/);
+  assert.match(earlyAccessQueue, /Reject/);
+  assert.doesNotMatch(earlyAccessActions, /studydateid@gmail\.com|admin@studydate\.id/i);
 });
 
 test("launch ops projection masks browse email and includes pre-onboarding accounts", () => {

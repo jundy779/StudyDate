@@ -1,6 +1,8 @@
 export type ClientChatMessage = {
   message_id: string;
   body: string;
+  message_type: "text" | "sticker";
+  sticker_id: string | null;
   is_mine: boolean;
   created_at: string;
   read_at: string | null;
@@ -49,4 +51,14 @@ export function nextPollDelay(
   maximumDelay: number,
 ) {
   return Math.min(baseDelay * 2 ** Math.max(0, failures), maximumDelay);
+}
+
+export function nextChatPollDelay(failures: number, idleCycles: number) {
+  if (failures > 0) {
+    return nextPollDelay(failures, 6_000, 30_000);
+  }
+
+  if (idleCycles >= 4) return 25_000;
+  if (idleCycles >= 2) return 12_000;
+  return 6_000;
 }

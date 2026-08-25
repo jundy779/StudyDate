@@ -41,6 +41,12 @@ export function MagicLinkForm() {
           ? decodeURIComponent(searchParams.get("detail")!)
           : STUDENT_EMAIL_DOMAIN_ERROR,
       );
+      return;
+    }
+    if (code === "early_access_required") {
+      setError(
+        "Akun baru masih melalui undangan Akses Awal. Daftar dari halaman utama dan tunggu email persetujuan StudyDate.",
+      );
     }
   }, [searchParams]);
 
@@ -135,7 +141,7 @@ export function MagicLinkForm() {
       <p className="mt-4 leading-7 text-brand-muted">
         {isSent
           ? "Kami sudah mengirimkan tautan masuk. Buka tautan tersebut melalui perangkat ini untuk melanjutkan ke StudyDate."
-          : "Masuk dengan Google atau tautan email. Hanya email yang didukung yang dapat membuat akun."}
+          : "Masuk dengan Google atau tautan email. Akun baru Beta StudyDate hanya dapat dibuat setelah Akses Awal disetujui."}
       </p>
 
       {!isSent ? (

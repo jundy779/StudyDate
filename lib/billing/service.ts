@@ -169,7 +169,8 @@ export async function refreshMyPaymentStatus(publicId: string) {
 export async function cancelMyPayment(publicId: string) {
   const order = await getMyPaymentOrder(publicId);
   if (!order || !order.providerTransactionId || order.status !== "pending") return order;
-  await cancelAutoGoPayQris(order.providerTransactionId);
+  const cancelled = await cancelAutoGoPayQris(order.providerTransactionId);
+  if (!cancelled) throw new Error("Pembayaran belum dapat dibatalkan.");
   const supabase = await createClient();
   await supabase.rpc("cancel_my_membership_payment", { p_public_id: publicId });
   return getMyPaymentOrder(publicId);

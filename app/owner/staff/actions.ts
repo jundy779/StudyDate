@@ -3,6 +3,7 @@
 import { requireOwner } from "@/lib/staff/authorization";
 import {
   assignStaffByEmail,
+  manageEarlyAccessReviewCapability,
   manageStaffMember,
 } from "@/lib/staff/service";
 import {
@@ -20,7 +21,13 @@ export async function updateStaffMember(formData: FormData) {
   });
   if (!parsed.success) redirect("/owner/staff?state=invalid");
   try {
-    await manageStaffMember(parsed.data.targetUserId, parsed.data.action);
+    if (parsed.data.action === "grant_early_access_review") {
+      await manageEarlyAccessReviewCapability(parsed.data.targetUserId, true);
+    } else if (parsed.data.action === "remove_early_access_review") {
+      await manageEarlyAccessReviewCapability(parsed.data.targetUserId, false);
+    } else {
+      await manageStaffMember(parsed.data.targetUserId, parsed.data.action);
+    }
   } catch {
     redirect("/owner/staff?state=error");
   }

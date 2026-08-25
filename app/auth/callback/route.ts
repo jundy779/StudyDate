@@ -83,11 +83,15 @@ export async function GET(request: NextRequest) {
     redirect("/account/reactivate");
   }
 
-  // Waitlist ≠ account. Claim only after a valid authenticated session proves
-  // ownership of the same email. Non-waitlist users continue unchanged.
-  await claimEarlyAccessForCurrentUser();
+  // Waitlist ≠ account. During Early Access, a brand-new account must claim an
+  // Owner/authorized-reviewer approved entry with the same authenticated email.
+  const claim = await claimEarlyAccessForCurrentUser();
 
   if (!profile?.onboarding_completed_at) {
+    if (!claim.earlyAccessClaimed) {
+      await supabase.auth.signOut();
+      redirect("/login?error=early_access_required");
+    }
     redirect("/onboarding");
   }
 

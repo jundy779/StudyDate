@@ -54,5 +54,10 @@ test("next.config sets baseline security headers and disables powered-by", () =>
   assert.match(cfg, /X-Frame-Options/);
   assert.match(cfg, /Referrer-Policy/);
   assert.match(cfg, /Permissions-Policy/);
+  assert.match(cfg, /camera=\(self\)/);
+  assert.match(cfg, /microphone=\(\)/);
+  assert.match(cfg, /X-DNS-Prefetch-Control/);
+  assert.match(cfg, /value: "off"/);
+  assert.match(cfg, /Strict-Transport-Security/);
   assert.match(cfg, /poweredByHeader:\s*false/);
 });

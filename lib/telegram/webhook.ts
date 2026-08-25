@@ -28,12 +28,13 @@ const COPY = {
 
 async function recordOutcome(updateId: number, outcome: string) {
   const admin = createServerAdminClient();
-  if (!admin) return false;
+  if (!admin) throw new Error("Telegram webhook is unavailable.");
   const { data, error } = await admin.rpc("record_telegram_update_outcome", {
     p_update_id: updateId,
     p_outcome: outcome,
   });
-  return !error && data === true;
+  if (error) throw new Error("Telegram webhook is unavailable.");
+  return data === true;
 }
 
 async function reply(chatId: string, text: string) {
@@ -66,7 +67,7 @@ export async function processTelegramUpdate(update: TelegramUpdate) {
   const command = parseTelegramCommand(message.text);
   const identityFingerprint = fingerprintTelegramIdentity(telegramUserId);
   const admin = createServerAdminClient();
-  if (!admin) return;
+  if (!admin) throw new Error("Telegram webhook is unavailable.");
 
   if (command?.command === "start" && command.argument) {
     let tokenHash: string;
@@ -88,6 +89,7 @@ export async function processTelegramUpdate(update: TelegramUpdate) {
       p_route_auth_tag: encrypted.authTag,
       p_key_version: encrypted.keyVersion,
     });
+    if (error) throw new Error("Telegram webhook is unavailable.");
     if (!error && data === "link_pending") await reply(chatId, COPY.pending);
     else if (!error && data !== "duplicate") await reply(chatId, COPY.unavailable);
     return;
@@ -108,6 +110,7 @@ export async function processTelegramUpdate(update: TelegramUpdate) {
         p_identity_fingerprint: identityFingerprint,
       },
     );
+    if (error) throw new Error("Telegram webhook is unavailable.");
     if (!error && data === "unlinked") await reply(chatId, COPY.unlinked);
     return;
   }
@@ -134,6 +137,7 @@ export async function processTelegramUpdate(update: TelegramUpdate) {
       p_body: message.text,
     },
   );
+  if (error) throw new Error("Telegram webhook is unavailable.");
   if (!error && data === "message_created") await reply(chatId, COPY.relayed);
   else if (!error && data === "invalid") await reply(chatId, COPY.unsupported);
   else if (!error && data !== "duplicate") await reply(chatId, COPY.unavailable);
