@@ -18,7 +18,14 @@ const tickets = readFileSync(
   ),
   "utf8",
 );
-const sql = `${organizer}\n${tickets}`;
+const registrationAliasFix = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202608240001_fix_event_registration_question_alias.sql",
+  ),
+  "utf8",
+);
+const sql = `${organizer}\n${tickets}\n${registrationAliasFix}`;
 
 const functionBody = (name: string) => {
   const body = sql.match(
@@ -143,6 +150,15 @@ test("EV2-06 custom questions reject sensitive and profile wording", () => {
   assert.match(validate, /required registration answer missing/);
   assert.match(validate, /jsonb_array_length\(answer\) > 12/);
   assert.match(validate, /event_registration_answer_has_contact/);
+  assert.match(registrationAliasFix, /question_row record/);
+  assert.match(
+    registrationAliasFix,
+    /event_registration_questions registration_question/,
+  );
+  assert.doesNotMatch(
+    registrationAliasFix,
+    /event_registration_questions question\b/,
+  );
 });
 
 test("EV2-07 registration is event-locked and capacity-safe", () => {

@@ -100,6 +100,7 @@ async function StaffContent({ searchParams }: Props) {
               >
                 <option value="grant_admin">Tambah Admin tanpa akses tugas</option>
                 <option value="grant_early_access">Boleh melihat Akses Awal</option>
+                <option value="grant_early_access_review">Boleh review & kirim undangan Akses Awal</option>
                 <option value="grant_users_read">Boleh melihat ringkasan akun</option>
                 <option value="grant_users_support">Boleh mencari akun dengan email</option>
                 <option value="grant_reviewer">Boleh meninjau verifikasi</option>
@@ -140,7 +141,13 @@ async function StaffContent({ searchParams }: Props) {
                       </li>
                       <li>
                         Lihat Akses Awal:{" "}
-                        {member.can_early_access_read ? "Aktif" : "Nonaktif"}
+                        {member.can_early_access_read || member.can_early_access_review
+                          ? "Aktif"
+                          : "Nonaktif"}
+                      </li>
+                      <li>
+                        Review & undang Akses Awal:{" "}
+                        {member.can_early_access_review ? "Aktif" : "Nonaktif"}
                       </li>
                       <li>
                         Lihat ringkasan akun:{" "}
@@ -180,6 +187,19 @@ async function StaffContent({ searchParams }: Props) {
                               member.can_early_access_read
                                 ? "Cabut Akses Awal"
                                 : "Aktifkan Akses Awal"
+                            }
+                          />
+                          <CapabilityForm
+                            userId={member.user_id}
+                            action={
+                              member.can_early_access_review
+                                ? "remove_early_access_review"
+                                : "grant_early_access_review"
+                            }
+                            label={
+                              member.can_early_access_review
+                                ? "Cabut review Akses Awal"
+                                : "Boleh review Akses Awal"
                             }
                           />
                           <CapabilityForm

@@ -124,10 +124,17 @@ Sumber migration:
 49. `supabase/migrations/202608220002_event_organizer_registration_v2.sql` —
     organizer eligibility, official flag, team Event-scoped, quota Free/Plus,
     registration approval, pertanyaan aman, lifecycle RSVP v2, capacity/waitlist,
-    management projection, dan notification types; **LOCAL / NOT DEPLOYED**
+    management projection, dan notification types; **DEPLOYED**
 50. `supabase/migrations/202608220003_event_ticket_checkin_v2.sql` —
     registration-scoped ticket hash, issuance/regeneration, QR/manual check-in,
-    undo, audit, dan account cleanup; **LOCAL / NOT DEPLOYED**
+    undo, audit, dan account cleanup; **DEPLOYED**
+51. `supabase/migrations/202608240001_fix_event_registration_question_alias.sql` —
+    forward fix konflik alias PL/pgSQL pada validasi jawaban registrasi Event;
+    **DEPLOYED / REMOTE LINT CLEAN**
+52. `supabase/migrations/202608250001_anonymous_chat_official_stickers_v1.sql` —
+    official allowlisted StudyDate stickers pada Anonymous Chat; **LOCAL / REQUIRE REMOTE PREFLIGHT**
+53. `supabase/migrations/202608250002_early_access_moderation_invitation_v1.sql` —
+    moderation lifecycle `waiting|approved|rejected|claimed`, Owner/full + explicit Staff review capability, branded invitation tracking, approved-only claim, dan new-account magic-link eligibility gate; **LOCAL / REQUIRE REMOTE PREFLIGHT**
 
 ### `early_access_waitlist`
 
@@ -140,24 +147,31 @@ email text not null
 campus text null
 interests text[] not null default '{}'   -- people | groups | events (CTA categories)
 source text null                         -- navbar | hero | final-cta (internal)
-status text not null default 'waiting'   -- waiting | claimed
+status text not null default 'waiting'   -- waiting | approved | rejected | claimed
 consent_version text not null
 consented_at timestamptz not null
 created_at timestamptz not null
+reviewed_at timestamptz null
+reviewed_by uuid null -> auth.users(id) on delete set null
+invitation_sent_at timestamptz null
 claimed_user_id uuid null -> auth.users(id) on delete set null
 claimed_at timestamptz null
 ```
 
-Claim rules:
+Moderation/claim rules:
 - satu baris waitlist eligible → paling banyak satu `claimed_user_id`;
 - unique partial index pada `claimed_user_id` (non-null);
-- claim hanya via RPC `claim_early_access_for_me()` (auth.uid + email auth.users);
-- Early Access consent ≠ Terms/Privacy/Community product consent;
-- source tetap internal; tidak diekspos ke browser;
-- account deletion melepaskan claim (status kembali `waiting`) tanpa menghapus riwayat consent waitlist.
+- Owner role-implied `early_access.read` + `early_access.review`; Admin hanya jika capability eksplisit diberikan;
+- `review_early_access_entry` hanya menghasilkan `approved` atau `rejected`; `claimed` tidak dapat direview ulang;
+- invitation hanya dipersiapkan/dicatat server-side untuk row `approved`;
+- claim hanya via RPC `claim_early_access_for_me()` (auth.uid + email auth.users) dan hanya dari status `approved`;
+- service-role-only `can_issue_student_magic_link(email)` dipakai public login untuk mengizinkan existing Auth account atau waitlist `approved|claimed`, tanpa mengekspos status ke browser;
+- Early Access approval ≠ Student/Alumni Verification dan consent ≠ Terms/Privacy/Community product consent;
+- source tetap internal; tidak diekspos ke student browser;
+- account deletion melepaskan claim ke `waiting` dan trigger terbaru membersihkan `reviewed_*` / `invitation_sent_at` agar perlu direview ulang.
 
 Security: case-insensitive unique email, normalized email, approved interests/source, no public select/update/delete,
-insert melalui server handler, claim melalui RPC authenticated.
+insert melalui server handler, review melalui authenticated staff RPC capability-gated, dan claim melalui RPC authenticated.
 
 ### `profiles`
 
@@ -502,15 +516,18 @@ Statuses: `awaiting_chat`, `active`, `ended`, `blocked`.
 id uuid primary key
 conversation_id uuid
 sender_id uuid
-body text (1–1000, normalized plain text)
+body text (1–1000; normalized text atau first-party sticker fallback)
+message_type text (text|sticker)
+sticker_id text null (allowlisted first-party StudyDate sticker id)
 created_at timestamptz
 read_at timestamptz null
 moderation_status text (visible|removed)
 client_idempotency_key text null
 ```
 
-Rules: sender = `auth.uid()` participant only; immutable body; best-effort contact rejection; rate limits
-20/minute and 300/day; duplicate window; no attachments; no table SELECT grants to clients.
+Rules: sender = `auth.uid()` participant only; text body immutable dan memakai best-effort contact rejection; rate limits
+20/minute dan 300/day; duplicate window; emoji adalah Unicode text; sticker hanya ID first-party yang di-allowlist database
+dan tidak boleh membawa URL atau upload media user; tidak ada generic attachment v1; no table SELECT grants to clients.
 
 ### `conversation_events`
 
@@ -846,9 +863,9 @@ Saat planned entity diimplementasikan:
 8. dokumentasikan live verification.
 
 
-### Staff operations capabilities (DEPLOYED)
+### Staff operations capabilities
 
-Migration `202608170002_staff_operations_capabilities.sql` menambah capability flags pada `staff_members` (`can_early_access_read`, `can_users_read`, `can_users_support`), RPC `list_early_access_waitlist_ops` / `list_student_account_ops`, dan audit `staff_ops_audit_events`. Owner role-implied semua capability; Admin default deny. UI: `/staff/early-access`, `/staff/users`; assign staff by email di `/owner/staff`. Bergantung pada claim columns dari `202608170001`.
+Migration deployed `202608170002_staff_operations_capabilities.sql` menambah capability flags awal pada `staff_members` (`can_early_access_read`, `can_users_read`, `can_users_support`), RPC ops, dan audit. Migration lokal `202608250002_early_access_moderation_invitation_v1.sql` menambah `can_early_access_review` sebagai capability terpisah. Owner role-implied semua capability; Admin default deny. Review capability mengimplikasikan read Early Access tetapi tidak memberi users/support/verification/staff-manage. UI queue yang sama tersedia di `/owner/early-access` dan `/staff/early-access`; Owner dapat memberikan/mencabut review capability dari `/owner/staff`. **Migration 202608250002 belum boleh dianggap remote sampai migration preflight dan apply terkontrol selesai.**
 
 ### Membership entitlements v1 (DEPLOYED)
 

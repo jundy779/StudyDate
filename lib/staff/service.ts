@@ -9,6 +9,7 @@ export type StaffMember = {
   status: "active" | "inactive";
   verification_reviewer: boolean;
   can_early_access_read: boolean;
+  can_early_access_review: boolean;
   can_users_read: boolean;
   can_users_support: boolean;
   created_at: string;
@@ -50,6 +51,8 @@ export type EarlyAccessWaitlistRow = {
   status: string;
   created_at: string;
   activation_label: string;
+  reviewed_at: string | null;
+  invitation_sent_at: string | null;
   claimed_at: string | null;
   total_count: number;
 };
@@ -109,6 +112,7 @@ export async function listStaffMembers() {
   return rows.map((row) => ({
     ...row,
     can_early_access_read: row.can_early_access_read === true,
+    can_early_access_review: row.can_early_access_review === true,
     can_users_read: row.can_users_read === true,
     can_users_support: row.can_users_support === true,
   })) as StaffMember[];
@@ -179,10 +183,68 @@ export async function assignStaffByEmail(
     if (action !== "grant_admin") {
       await manageStaffMember(targetId, "grant_admin");
     }
-    await manageStaffMember(targetId, action);
+    if (action === "grant_early_access_review") {
+      await manageEarlyAccessReviewCapability(targetId, true);
+    } else {
+      await manageStaffMember(targetId, action);
+    }
     return "saved";
   } catch {
     return "error";
+  }
+}
+
+export type EarlyAccessReviewResult = {
+  email: string;
+  status: "approved" | "rejected";
+  invitation_sent_at: string | null;
+};
+
+export async function manageEarlyAccessReviewCapability(
+  targetUserId: string,
+  enabled: boolean,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("manage_early_access_review_capability", {
+    p_target_user_id: targetUserId,
+    p_enabled: enabled,
+  });
+  if (error) throw new Error("Akses review Akses Awal belum dapat disimpan.");
+}
+
+export async function reviewEarlyAccessEntry(input: {
+  email: string;
+  decision: "approve" | "reject";
+}) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("review_early_access_entry", {
+    p_email: input.email,
+    p_decision: input.decision,
+  });
+  if (error) throw new Error("Review Akses Awal belum dapat disimpan.");
+  const row = ((data ?? [])[0] as EarlyAccessReviewResult | undefined) ?? null;
+  if (!row) throw new Error("Review Akses Awal belum dapat disimpan.");
+  return row;
+}
+
+export async function prepareEarlyAccessInvitation(email: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("prepare_early_access_invitation", {
+    p_email: email,
+  });
+  if (error || typeof data !== "string" || !data) {
+    throw new Error("Undangan Akses Awal belum dapat disiapkan.");
+  }
+  return data;
+}
+
+export async function markEarlyAccessInvitationSent(email: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("mark_early_access_invitation_sent", {
+    p_email: email,
+  });
+  if (error || data !== true) {
+    throw new Error("Status undangan Akses Awal belum dapat disimpan.");
   }
 }
 

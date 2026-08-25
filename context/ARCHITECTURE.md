@@ -128,27 +128,38 @@ Vercel; fallback in-memory hanya di non-production bila RPC belum tersedia.
 Implementasi berada di `components/marketing/early-access-dialog.tsx`, `app/api/early-access/route.ts`, dan
 `lib/early-access/`.
 
-### 8.1 Early Access Account Claim
+### 8.1 Early Access Moderation, Invitation, dan Claim
 
 ```text
-Waitlist entry (bukan akun)
- -> user magic-link dengan email yang sama
- -> Auth callback / onboarding session valid
+Waitlist entry (waiting; bukan akun)
+ -> shared moderation queue
+    -> Owner: full access
+    -> Staff: read/review hanya jika capability diberikan Owner
+ -> approve | reject
+ -> approved: StudyDate mengirim branded one-time magic link
+ -> Auth callback dengan email yang sama
  -> RPC claim_early_access_for_me() (auth.uid + auth.users.email)
- -> atomic claim (FOR UPDATE + unique claimed_user_id)
- -> onboarding prefill terbatas (campus + soft prefs/goals)
+ -> approved-only atomic claim (FOR UPDATE + unique claimed_user_id)
+ -> status claimed
+ -> onboarding prefill terbatas (campus + soft hints)
  -> user tetap menyelesaikan field wajib + Terms/Privacy/Community
 ```
 
 Prinsip:
 
-- Waitlist ≠ account. Claim membutuhkan kepemilikan email terautentikasi.
-- Claim idempotent dan server-authoritative; tidak menerima email/user_id dari client.
+- Waitlist ≠ account dan approval Early Access ≠ Student/Alumni Verification.
+- Status lifecycle: `waiting | approved | rejected | claimed`.
+- Owner selalu memiliki `early_access.read` dan `early_access.review` melalui role. Admin default deny; capability review diberikan secara eksplisit oleh Owner dan tidak memberi capability staff lain.
+- Claim idempotent dan server-authoritative; tidak menerima email/user_id dari client. Hanya row `approved` dengan email Auth yang sama yang dapat diklaim.
+- Login akun yang onboarding-nya sudah selesai tetap dapat berlangsung. Pembuatan/login akun Beta baru tidak menghasilkan akses onboarding sebelum Early Access disetujui; public magic-link endpoint menjaga respons enumeration-safe.
+- Invitation dikirim dari server melalui email StudyDate branded dan mengarah ke `/onboarding`; link sekali pakai/expiry mengikuti Supabase Auth token.
+- Jika pengiriman email gagal setelah approve, keputusan approval tetap tersimpan dan reviewer dapat `Kirim ulang undangan`.
 - Early Access consent bukan pengganti product/legal consent.
-- Public launch tidak mewajibkan keanggotaan waitlist; non-waitlist tetap onboarding normal.
 - Prefill tidak menyalin CTA interests (`people`/`groups`/`events`) ke `profiles.interests`.
 - Tidak ada badge publik “Early Access Member” otomatis.
-- Deletion cleanup melepaskan `claimed_user_id` agar UUID terhapus tidak mereaktivasi klaim.
+- Account deletion melepaskan claim menjadi `waiting` dan membersihkan metadata review/invitation lama agar membutuhkan review ulang.
+
+Implementasi queue dipakai bersama oleh `/owner/early-access` dan `/staff/early-access`; authorization tetap server-side melalui `staff_members`/app metadata, bukan hard-coded email Owner.
 
 ## 9. Database access model
 
@@ -257,15 +268,19 @@ yang sudah ada; pengiriman baru tetap membutuhkan discoverability.
 accepted introduction
  -> conversation_shells (public_id opaque)
  -> /app/messages list + /app/messages/[publicId]
- -> send_anonymous_message / list_conversation_messages RPCs
+ -> send_anonymous_message / send_anonymous_sticker
+ -> list_conversation_messages_v2 (legacy text projection tetap tersedia saat rolling deploy)
  -> authenticated poll /api/messages/[publicId] (~4s)
  -> end | block | report
 ```
 
 Lifecycle shell: `awaiting_chat` → `active` (pesan pertama) → `ended` | `blocked`.
-Pesan disimpan di `anonymous_messages` (plain text, idempotency key, read_at recipient-only).
-Tidak ada grant SELECT tabel ke `authenticated` agar UUID pengirim tidak bocor lewat PostgREST; delivery v1
-menggunakan polling RPC. Realtime dapat dipertimbangkan kemudian dengan projection aman.
+Pesan disimpan di `anonymous_messages` dengan `message_type = text | sticker`, body fallback text, optional allowlisted
+`sticker_id`, idempotency key, dan `read_at` recipient-only. Emoji tetap Unicode di body teks dan tidak memerlukan media
+storage. Sticker v1 hanya memakai aset mascot resmi yang sudah dibundel; tidak ada URL/storage path yang dikirim user.
+Body fallback mempertahankan kompatibilitas Telegram Companion v1 dan client lama. Tidak ada grant SELECT tabel ke
+`authenticated` agar UUID pengirim tidak bocor lewat PostgREST; delivery v1 menggunakan polling RPC. Realtime dapat
+dipertimbangkan kemudian dengan projection aman.
 
 ## 12c. Mutual Interest v1 architecture
 
@@ -384,7 +399,7 @@ moderation notes sehingga state satu sisi tidak dapat menghasilkan notifikasi.
 MESSAGE_RECEIVED v1 memakai satu row per pesan karena insert pesan sudah idempotent dan
 dedupe notification mengacu pada message row. List dibatasi 20 item per halaman dengan
 keyset cursor; retention cleanup lama tetap future ops sampai kebijakan durasi disetujui.
-Unread count global dipoll setiap 25 detik, tidak overlap, dan polling dilewati ketika
+Unread count global dipoll setiap 45 detik, tidak overlap, dan polling dilewati ketika
 document hidden. Chat tetap memakai polling percakapan ~4 detik yang sudah ada.
 Preference per tipe tidak ada; Circle/Event memakai inbox dan badge yang sama.
 
@@ -499,7 +514,7 @@ cancel/archive retention, direct-table denial, zero automatic private-flow/Event
 Notification side effects, authenticated UI smoke, dan cleanup sintetis lengkap.
 Post-deploy migration dry-run kosong.
 
-### Campus Events v2 architecture (LOCAL / NOT DEPLOYED)
+### Campus Events v2 architecture (REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED)
 
 ```text
 /app/events/[event]
@@ -607,10 +622,10 @@ setelah Mutual Interest + Identity Reveal. Projection actor hanya memuat detail 
 dan own pre/post-check. End/block membatalkan plan mendatang; detail tempat/waktu
 dibersihkan setelah 90 hari kecuali report moderasi aktif.
 
-Migration deployed `202608210003`–`009` memisahkan Event roadmap menjadi kuota membership,
+Migration repository `202608210003`–`009` memisahkan Event roadmap menjadi kuota membership,
 scheduler reminder idempoten, preferensi in-app, association Circle milik organizer,
 FIFO waitlist, chat teks untuk RSVP aktif, serta tiket opaque dengan check-in organizer.
-Forward migration deployed `202608210010` memperbaiki konflik record/alias waitlist.
+Forward migration repository `202608210010` memperbaiki konflik record/alias waitlist.
 Scheduler tetap OFF sampai live QA dan aktivasi cron terpisah.
 
 ## 13. Staff authorization v1

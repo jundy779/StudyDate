@@ -6,6 +6,7 @@ import {
   REPORT_REASON_CODES,
 } from "./constants.ts";
 import { openingMessageHasContact } from "../introductions/validation.ts";
+import { CHAT_STICKER_IDS } from "./stickers.ts";
 
 export function normalizeChatMessage(value: string) {
   return value
@@ -44,6 +45,15 @@ export const sendChatMessageSchema = z.object({
     .optional(),
 });
 
+export const sendChatStickerSchema = z.object({
+  publicId: conversationPublicIdSchema,
+  stickerId: z.enum(CHAT_STICKER_IDS),
+  idempotencyKey: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{8,64}$/)
+    .optional(),
+});
+
 export const reportConversationSchema = z.object({
   publicId: conversationPublicIdSchema,
   reasonCode: z.enum(REPORT_REASON_CODES),
@@ -62,4 +72,5 @@ export const reportConversationSchema = z.object({
 });
 
 export type SendChatMessageInput = z.infer<typeof sendChatMessageSchema>;
+export type SendChatStickerInput = z.infer<typeof sendChatStickerSchema>;
 export type ReportConversationInput = z.infer<typeof reportConversationSchema>;

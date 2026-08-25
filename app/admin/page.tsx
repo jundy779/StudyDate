@@ -18,7 +18,7 @@ async function AdminContent() {
           icon: Users,
         }
       : null,
-    access.canEarlyAccessRead
+    (access.canEarlyAccessRead || access.canEarlyAccessReview)
       ? {
           href: "/staff/early-access",
           title: "Akses Awal",

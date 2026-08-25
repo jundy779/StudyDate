@@ -18,6 +18,7 @@ export type StaffAccess = {
   role: StaffRole;
   verificationReviewer: boolean;
   canEarlyAccessRead: boolean;
+  canEarlyAccessReview: boolean;
   canUsersRead: boolean;
   canUsersSupport: boolean;
 };
@@ -27,6 +28,7 @@ type MembershipRow = {
   status: "active";
   verification_reviewer: boolean;
   can_early_access_read?: boolean;
+  can_early_access_review?: boolean;
   can_users_read?: boolean;
   can_users_support?: boolean;
 };
@@ -56,6 +58,7 @@ export async function getCurrentStaffAccess(
     role: membership.role,
     verificationReviewer: membership.verification_reviewer,
     canEarlyAccessRead: membership.can_early_access_read === true,
+    canEarlyAccessReview: membership.can_early_access_review === true,
     canUsersRead: membership.can_users_read === true,
     canUsersSupport: membership.can_users_support === true,
   };

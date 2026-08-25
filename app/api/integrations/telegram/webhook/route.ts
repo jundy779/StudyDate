@@ -1,6 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { isTelegramCompanionEnabled } from "@/lib/telegram/bot-api";
+import {
+  hasTelegramBotConfiguration,
+  isTelegramCompanionEnabled,
+} from "@/lib/telegram/bot-api";
 import {
   TELEGRAM_WEBHOOK_MAX_BYTES,
 } from "@/lib/telegram/constants";
@@ -30,6 +33,7 @@ function hasValidSecret(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (
     !isTelegramCompanionEnabled() ||
+    !hasTelegramBotConfiguration() ||
     !isTelegramCompanionCryptoConfigured()
   ) {
     return response(404);
@@ -62,6 +66,6 @@ export async function POST(request: NextRequest) {
     await processTelegramUpdate(parsed.data);
     return response(200);
   } catch {
-    return response(200);
+    return response(503);
   }
 }

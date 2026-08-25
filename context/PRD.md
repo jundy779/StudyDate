@@ -69,7 +69,7 @@ Diimplementasikan pada code dan migration repository saat ini:
 - public landing page;
 - public legal/safety/help pages (`/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`);
 - Early Access waitlist;
-- Early Access Account Claim (waitlist → authenticated email ownership → atomic claim → onboarding prefill terbatas);
+- Early Access moderation + invitation: satu queue untuk Owner/Staff ber-capability, status waiting/approved/rejected/claimed, branded one-time invitation email, approved-only claim, lalu onboarding;
 - passwordless email authentication;
 - Supabase PKCE callback;
 - protected routes;
@@ -88,8 +88,9 @@ Diimplementasikan pada code dan migration repository saat ini:
   AutoGoPay GoPay QRIS deployed dengan checkout kill switch default OFF;
 - Introduction Requests v1 untuk kirim/terima/tolak/batalkan perkenalan privat, fondasi block/report, rate limit
   database, serta handoff `conversation_shells` menuju Anonymous Chat v1 tanpa messaging;
-- Anonymous Chat v1 untuk percakapan teks privat setelah perkenalan diterima, daftar `/app/messages`,
-  pengiriman pesan anonim, end/block/report, unread nyata, serta polling aman tanpa expose UUID peserta;
+- Anonymous Chat v1 untuk percakapan privat setelah perkenalan diterima, daftar `/app/messages`,
+  pesan teks + Unicode emoji, official StudyDate mascot stickers, end/block/report, unread nyata, serta polling aman
+  tanpa expose UUID peserta; sticker v1 hanya first-party dan tidak menerima upload sticker/media user;
 - Mutual Interest v1 (migration `202608060004`) untuk consent privat
   “Kenal Lebih Jauh” di percakapan aktif, tanpa one-sided leak dan tanpa Identity Reveal otomatis;
 - Identity Reveal v1 (migration `202608060005`, applied remotely) untuk consent
@@ -133,19 +134,19 @@ verifikasi tidak diproyeksikan.
 
 Jangan menganggap fitur berikut tersedia:
 
-**Planned:**
-
-- contact reveal;
-
-**Future:**
+**Future / belum aktif production:**
 
 - adapter sumber akademik resmi, bila endpoint dan otorisasi resmi tersedia;
-- Telegram linking;
-- moderation dashboard;
+- moderation dashboard penuh;
+- production Telegram webhook dan controlled real-bot audit untuk Companion v1;
 - AutoGoPay tetap belum live sampai rotated secret dan audit pembayaran
   production selesai;
 - recommendation algorithm;
-- Supabase Realtime delivery untuk chat (v1 memakai authenticated polling RPC).
+- realtime chat delivery menggantikan authenticated polling v1;
+- push/browser/native notifications.
+
+Contact Reveal v1 dan Telegram Anonymous Chat Companion v1 sudah memiliki implementasi
+repository masing-masing; status rollout-nya dijelaskan pada section implementasi terkait.
 
 UI tidak boleh menampilkan data palsu untuk fitur tersebut.
 
@@ -261,7 +262,7 @@ Rules:
 
 Chat terbuka hanya setelah introduction diterima dan shell `awaiting_chat` diaktifkan pada tahap berikutnya.
 
-Actions: reply, end, block, report, mutual interest.
+Actions: reply dengan teks/emoji, kirim official StudyDate sticker, end, block, report, mutual interest.
 
 Jangan bocorkan Telegram metadata, email, sender ID, atau kontak sebelum reveal.
 
@@ -437,9 +438,9 @@ Introduction existing, organizer/staff isolation, report-scoped evidence, schedu
 lock, cancel/archive retention, RLS/grants, zero private-flow atau Event Notification
 otomatis, authenticated UI smoke, serta cleanup lengkap.
 
-### Campus Events v2 — ready locally, not deployed
+### Campus Events v2 — repository implemented, remote rollout must be verified
 
-Migration lokal `202608220002`–`003` mengembangkan Event menjadi alur
+Migration `202608220002`–`003` mengembangkan Event menjadi alur
 `discover → register → approval/confirmation → QR ticket → check-in`. Mahasiswa reguler,
 organizer, cohost, petugas check-in, dan Owner/Staff tetap berbeda. Organizer memerlukan
 akun aktif/onboarding lengkap serta verification atau grant Owner; StudyDate Plus hanya
@@ -563,4 +564,4 @@ participation, event attendance, user-controlled reveal, low abuse, dan retentio
 Jangan menampilkan angka target publik yang belum disetujui.
 
 
-- Authorized Staff Operations v1: Early Access waitlist ops, safe user account ops, staff assign by email + capability grants (Owner-managed).
+- Authorized Staff Operations v1: satu Early Access moderation queue, Owner full access, Staff read/review capability terpisah, safe user account ops, staff assign by email + capability grants (Owner-managed).

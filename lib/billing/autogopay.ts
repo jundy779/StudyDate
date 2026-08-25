@@ -45,6 +45,23 @@ export type AutoGoPayGeneratedPayment = {
   expiresAt: string;
 };
 
+export function parseAutoGoPayTimestamp(value: string) {
+  const trimmed = value.trim();
+  const explicitZone =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/;
+  const localWib = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/;
+  const normalized = explicitZone.test(trimmed)
+    ? trimmed
+    : localWib.test(trimmed)
+      ? `${trimmed.replace(" ", "T")}+07:00`
+      : "";
+  const parsed = new Date(normalized);
+  if (!normalized || !Number.isFinite(parsed.getTime())) {
+    throw new Error("AUTOGOPAY_INVALID_RESPONSE");
+  }
+  return parsed;
+}
+
 function apiKey() {
   const value = process.env.AUTOGOPAY_API_KEY?.trim();
   if (!value) throw new Error("AUTOGOPAY_UNAVAILABLE");
@@ -105,7 +122,7 @@ export async function generateAutoGoPayQris(amount: number): Promise<AutoGoPayGe
   if (checkout.origin !== CHECKOUT_ORIGIN || !/^\/pay\/[A-Za-z0-9_-]{1,200}$/.test(checkout.pathname)) {
     throw new Error("AUTOGOPAY_INVALID_RESPONSE");
   }
-  const expiresAt = new Date(parsed.data.data.expiry_time.replace(" ", "T") + "+07:00");
+  const expiresAt = parseAutoGoPayTimestamp(parsed.data.data.expiry_time);
   const now = Date.now();
   if (!Number.isFinite(expiresAt.getTime()) || expiresAt.getTime() <= now || expiresAt.getTime() > now + 30 * 60_000) {
     throw new Error("AUTOGOPAY_INVALID_RESPONSE");

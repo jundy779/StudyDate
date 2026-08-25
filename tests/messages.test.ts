@@ -5,6 +5,7 @@ import {
   chatMessageSchema,
   conversationPublicIdSchema,
   normalizeChatMessage,
+  sendChatStickerSchema,
 } from "../lib/messages/validation.ts";
 import {
   CHAT_MESSAGE_MAX,
@@ -14,12 +15,25 @@ import {
   getCharacterThresholdAnnouncement,
   isNearChatBottom,
   mergeChatMessages,
+  nextChatPollDelay,
   nextPollDelay,
 } from "../lib/messages/client-state.ts";
+import {
+  CHAT_EMOJI_SHORTLIST,
+  CHAT_STICKERS,
+  getChatStickerById,
+} from "../lib/messages/stickers.ts";
 
 const migration = readFileSync(
   new URL(
     "../supabase/migrations/202608060003_create_anonymous_chat_v1.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const stickerMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202608250001_anonymous_chat_official_stickers_v1.sql",
     import.meta.url,
   ),
   "utf8",
@@ -41,6 +55,14 @@ const conversationPage = readFileSync(
 );
 const room = readFileSync(
   new URL("../components/messages/conversation-room.tsx", import.meta.url),
+  "utf8",
+);
+const messageBubble = readFileSync(
+  new URL("../components/messages/chat-message-bubble.tsx", import.meta.url),
+  "utf8",
+);
+const composerTools = readFileSync(
+  new URL("../components/messages/chat-composer-tools.tsx", import.meta.url),
   "utf8",
 );
 const service = readFileSync(
@@ -154,7 +176,8 @@ test("read state is recipient-only and private", () => {
   assert.match(migration, /mark_conversation_messages_read/);
   assert.match(migration, /msg\.sender_id <> current_user_id/);
   assert.doesNotMatch(migration, /p_read_at/);
-  assert.match(room, /Dibaca|Terkirim/);
+  assert.match(room, /<ChatMessageBubble/);
+  assert.match(messageBubble, /Dibaca|Terkirim/);
 });
 
 test("projections never expose participant UUIDs or private identity", () => {
@@ -192,7 +215,7 @@ test("messages UI uses product terminology and escaped text rendering", () => {
   assert.match(messagesPage, /Jelajahi People/);
   assert.match(room, /Tulis pesan/);
   assert.match(room, /Akhiri percakapan/);
-  assert.match(room, /whitespace-pre-wrap break-words/);
+  assert.match(messageBubble, /whitespace-pre-wrap break-words/);
   assert.doesNotMatch(room, /dangerouslySetInnerHTML|match score|online now/i);
   assert.doesNotMatch(messagesPage, /\bDM\b|compatibility|swipe/i);
 });
@@ -216,8 +239,9 @@ test("delivery uses authenticated poll route without Realtime table grants", () 
   assert.match(room, /revealController\?\.abort/);
   assert.match(
     room,
-    /function handleVisibility\(\)[\s\S]*messageGeneration \+= 1;[\s\S]*revealGeneration \+= 1;[\s\S]*messageController\?\.abort\(\);[\s\S]*revealController\?\.abort\(\);/,
+    /function stopActivePolls\(\)[\s\S]*messageGeneration \+= 1;[\s\S]*revealGeneration \+= 1;[\s\S]*messageController\?\.abort\(\);[\s\S]*revealController\?\.abort\(\);/,
   );
+  assert.match(room, /function handleVisibility\(\)[\s\S]*stopActivePolls\(\)/);
   assert.match(room, /mode=messages/);
   assert.match(room, /mode=reveal/);
   assert.match(migration, /No table SELECT grants|polling/i);
@@ -229,6 +253,60 @@ test("client cannot forge moderation state", () => {
   assert.match(migration, /moderation_status text not null default 'visible'/);
 });
 
+test("emoji remains plain Unicode text and composer exposes an accessible shortlist", () => {
+  assert.ok(CHAT_EMOJI_SHORTLIST.includes("😂"));
+  assert.ok(CHAT_EMOJI_SHORTLIST.includes("📚"));
+  assert.equal(chatMessageSchema.safeParse("Semangat 📚🔥").success, true);
+  assert.match(composerTools, /Tambahkan emoji/);
+  assert.match(room, /insertEmoji/);
+});
+
+test("official sticker catalog is bounded to approved StudyDate mascot assets", () => {
+  assert.equal(CHAT_STICKERS.length, 4);
+  for (const sticker of CHAT_STICKERS) {
+    assert.match(sticker.id, /^studydate_/);
+    assert.match(sticker.src, /^\/brand\/mascot\//);
+    assert.equal(getChatStickerById(sticker.id)?.id, sticker.id);
+    assert.equal(
+      sendChatStickerSchema.safeParse({
+        publicId: "0".repeat(32),
+        stickerId: sticker.id,
+      }).success,
+      true,
+    );
+  }
+  assert.equal(
+    sendChatStickerSchema.safeParse({
+      publicId: "0".repeat(32),
+      stickerId: "https://evil.example/sticker.png",
+    }).success,
+    false,
+  );
+});
+
+test("sticker migration preserves privacy, rate limits, and rolling-deploy compatibility", () => {
+  assert.match(stickerMigration, /message_type in \('text', 'sticker'\)/);
+  assert.match(stickerMigration, /sticker_id in \(/);
+  assert.match(stickerMigration, /send_anonymous_sticker/);
+  assert.match(stickerMigration, /auth\.uid\(\)/);
+  assert.match(stickerMigration, /is_eligible_introduction_student/);
+  assert.match(stickerMigration, /users_are_blocked/);
+  assert.match(stickerMigration, /sent_last_minute >= 20/);
+  assert.match(stickerMigration, /sent_last_day >= 300/);
+  assert.match(stickerMigration, /list_conversation_messages_v2/);
+  assert.doesNotMatch(stickerMigration, /https?:\/\//i);
+  assert.match(service, /error\.code !== "PGRST202" && error\.code !== "42883"/);
+  assert.match(service, /list_conversation_messages_v2/);
+  assert.match(service, /list_conversation_messages"/);
+});
+
+test("chat renders official stickers without user-controlled image URLs", () => {
+  assert.match(messageBubble, /message\.message_type === "sticker"/);
+  assert.match(messageBubble, /getChatStickerById\(message\.sticker_id\)/);
+  assert.match(composerTools, /formAction=\{submitChatSticker\}/);
+  assert.doesNotMatch(`${messageBubble}\n${composerTools}`, /stickerUrl|sticker_url|dangerouslySetInnerHTML/);
+});
+
 test("history merge deduplicates and preserves deterministic chronological order", () => {
   const message = (
     id: string,
@@ -237,6 +315,8 @@ test("history merge deduplicates and preserves deterministic chronological order
   ) => ({
     message_id: id,
     body,
+    message_type: "text" as const,
+    sticker_id: null,
     is_mine: false,
     created_at: createdAt,
     read_at: null,
@@ -276,11 +356,20 @@ test("history endpoint uses existing stable cursor and bounded page", () => {
   assert.match(room, /mergeChatMessages/);
 });
 
-test("poll backoff is bounded and success cadence can reset", () => {
-  assert.equal(nextPollDelay(0, 4000, 30000), 4000);
-  assert.equal(nextPollDelay(1, 4000, 30000), 8000);
-  assert.equal(nextPollDelay(8, 4000, 30000), 30000);
-  assert.equal(nextPollDelay(0, 30000, 120000), 30000);
+test("poll backoff is bounded and idle chat polling slows down", () => {
+  assert.equal(nextPollDelay(0, 4_000, 30_000), 4_000);
+  assert.equal(nextPollDelay(1, 4_000, 30_000), 8_000);
+  assert.equal(nextPollDelay(8, 4_000, 30_000), 30_000);
+  assert.equal(nextPollDelay(0, 30_000, 120_000), 30_000);
+  assert.equal(nextChatPollDelay(0, 0), 6_000);
+  assert.equal(nextChatPollDelay(0, 2), 12_000);
+  assert.equal(nextChatPollDelay(0, 4), 25_000);
+  assert.equal(nextChatPollDelay(1, 0), 12_000);
+  assert.equal(nextChatPollDelay(8, 0), 30_000);
+  assert.match(room, /navigator\.onLine/);
+  assert.match(room, /addEventListener\("offline"/);
+  assert.match(room, /addEventListener\("online"/);
+  assert.match(room, /markMessagesReadAction/);
 });
 
 test("near-bottom policy preserves readers who are scrolled upward", () => {

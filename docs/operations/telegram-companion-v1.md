@@ -1,6 +1,6 @@
 # Telegram Anonymous Chat Companion v1
 
-Status: **LOCAL-ONLY / NOT DEPLOYED**
+Status: **DATABASE DEPLOYED / RUNTIME OFF**
 
 Bot identity: `@StudyDateBot`
 
@@ -166,8 +166,8 @@ Immediate kill switch:
 3. remove the webhook with official `deleteWebhook` if it had been configured;
 4. keep private binding data inaccessible while deciding migration rollback.
 
-Because this migration is not applied in the current task, rollback today is
-simply leaving the flag OFF and not configuring the webhook.
+While runtime remains OFF, rollback is leaving the flag OFF, stopping the
+runner, and keeping the webhook unconfigured.
 
 ## Secret rotation
 
@@ -180,5 +180,5 @@ simply leaving the flag OFF and not configuring the webhook.
 - HMAC key rotation changes identity/token fingerprints and requires a planned
   unlink/relink migration; do not rotate silently.
 
-No real Bot API request, BotFather change, webhook configuration, real Telegram
-identifier, or remote Supabase migration is part of the LOCAL-ONLY task.
+Live Bot API, webhook, and delivery validation remain required before runtime
+activation.

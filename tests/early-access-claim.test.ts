@@ -18,6 +18,13 @@ const claimMigration = readFileSync(
   ),
   "utf8",
 );
+const moderationMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202608250002_early_access_moderation_invitation_v1.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const waitlistMigration = readFileSync(
   new URL(
     "../supabase/migrations/202607300001_create_early_access_waitlist.sql",
@@ -43,6 +50,14 @@ const claimService = readFileSync(
 );
 const earlyAccessRoute = readFileSync(
   new URL("../app/api/early-access/route.ts", import.meta.url),
+  "utf8",
+);
+const studentMagicLinkRoute = readFileSync(
+  new URL("../app/api/auth/magic-link/route.ts", import.meta.url),
+  "utf8",
+);
+const earlyAccessAccess = readFileSync(
+  new URL("../lib/early-access/access.ts", import.meta.url),
   "utf8",
 );
 
@@ -86,6 +101,15 @@ test("claim RPC is SECURITY DEFINER, auth.uid-bound, and not public/anon executa
   assert.doesNotMatch(claimMigration, /p_email/);
 });
 
+test("latest claim requires an approved moderation decision", () => {
+  assert.match(moderationMigration, /status in \('waiting', 'approved', 'rejected', 'claimed'\)/);
+  assert.match(moderationMigration, /waitlist_row\.status <> 'approved'/);
+  assert.match(moderationMigration, /and status = 'approved'/);
+  assert.match(moderationMigration, /reviewed_at timestamptz null/);
+  assert.match(moderationMigration, /review_early_access_entry/);
+  assert.match(moderationMigration, /early_access\.review/);
+});
+
 test("waitlist table stays closed to anon/authenticated direct access", () => {
   assert.match(
     waitlistMigration,
@@ -93,6 +117,10 @@ test("waitlist table stays closed to anon/authenticated direct access", () => {
   );
   assert.match(
     claimMigration,
+    /revoke all on table public\.early_access_waitlist from anon, authenticated;/,
+  );
+  assert.match(
+    moderationMigration,
     /revoke all on table public\.early_access_waitlist from anon, authenticated;/,
   );
 });
@@ -108,6 +136,14 @@ test("deletion cleanup releases claim without deleting waitlist consent history"
   );
 });
 
+test("re-released claims require a fresh Early Access review", () => {
+  assert.match(moderationMigration, /normalize_early_access_review_lifecycle/);
+  assert.match(moderationMigration, /old\.status = 'claimed'[\s\S]*new\.status = 'waiting'/);
+  assert.match(moderationMigration, /new\.reviewed_at := null/);
+  assert.match(moderationMigration, /new\.reviewed_by := null/);
+  assert.match(moderationMigration, /new\.invitation_sent_at := null/);
+});
+
 test("auth callback claims only after session and lifecycle gates", () => {
   assert.match(callback, /await claimEarlyAccessForCurrentUser\(\)/);
   const claimIndex = callback.indexOf("await claimEarlyAccessForCurrentUser()");
@@ -118,6 +154,8 @@ test("auth callback claims only after session and lifecycle gates", () => {
   assert.ok(claimIndex > deactivateIndex);
   assert.ok(onboardingIndex > claimIndex);
   assert.match(callback, /isAllowedStudentEmail/);
+  assert.match(callback, /!claim\.earlyAccessClaimed/);
+  assert.match(callback, /early_access_required/);
 });
 
 test("claim service never accepts client email or user id arguments", () => {
@@ -266,14 +304,21 @@ test("onboarding still requires consents and does not auto-complete from claim",
   assert.doesNotMatch(onboardingForm, /Daftar ulang|Buat akun lagi|Registrasi ulang/);
   assert.doesNotMatch(onboardingForm, /Early Access Member/);
   assert.doesNotMatch(onboardingPage, /createUser|signUp|admin\.createUser/);
+  assert.match(onboardingPage, /!claim\.earlyAccessClaimed/);
+  assert.match(onboardingPage, /early_access_required/);
 });
 
-test("claim does not create Auth users and public launch stays open to non-waitlist", () => {
-  assert.doesNotMatch(claimMigration, /auth\.users.*insert/i);
+test("new accounts are invitation-gated while completed accounts can still log in", () => {
+  assert.doesNotMatch(moderationMigration, /insert into auth\.users/i);
   assert.doesNotMatch(claimService, /createUser|inviteUserByEmail/);
-  assert.match(callback, /claimEarlyAccessForCurrentUser/);
-  // Non-waitlist path: claim runs then existing onboarding/app routing continues.
-  assert.match(callback, /onboarding_completed_at/);
+  assert.match(moderationMigration, /can_issue_student_magic_link/);
+  assert.match(moderationMigration, /auth\.role\(\) <> 'service_role'/);
+  assert.match(moderationMigration, /profile\.onboarding_completed_at is not null/);
+  assert.match(moderationMigration, /waitlist\.status in \('approved', 'claimed'\)/);
+  assert.match(earlyAccessAccess, /admin\.rpc\("can_issue_student_magic_link"/);
+  assert.match(studentMagicLinkRoute, /canReceiveStudentMagicLink/);
+  assert.match(studentMagicLinkRoute, /return NextResponse\.json\(\{ ok: true \}\)/);
+  assert.match(callback, /!claim\.earlyAccessClaimed/);
 });
 
 test("claim RPC payload never returns source attribution to the browser mapper", () => {

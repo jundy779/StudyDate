@@ -1,7 +1,10 @@
 import "server-only";
 
 import { createServerAdminClient } from "@/lib/supabase/admin";
-import { sendTelegramText } from "@/lib/telegram/bot-api";
+import {
+  isTelegramCompanionEnabled,
+  sendTelegramText,
+} from "@/lib/telegram/bot-api";
 import {
   decryptTelegramRoute,
   normalizeTelegramBytea,
@@ -32,6 +35,9 @@ function firstRow(data: unknown) {
 }
 
 export async function runTelegramDeliveryBatch(): Promise<TelegramDeliveryBatchResult> {
+  if (!isTelegramCompanionEnabled()) {
+    throw new Error("Telegram delivery is unavailable.");
+  }
   const admin = createServerAdminClient();
   if (!admin) throw new Error("Telegram delivery is unavailable.");
 

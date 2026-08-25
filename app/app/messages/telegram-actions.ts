@@ -38,6 +38,11 @@ export async function createTelegramLinkAction(publicId: string) {
   };
 }
 
+export async function refreshTelegramCompanionStateAction(publicId: string) {
+  await requireActiveStudentAppAccess();
+  return getMyTelegramCompanionState(validatePublicId(publicId));
+}
+
 export async function confirmTelegramBindingAction(
   publicId: string,
   linkSessionPublicId: string,

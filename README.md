@@ -17,6 +17,8 @@ These documents are the primary product and engineering context, but agents must
 before editing. When code and documentation conflict, stop, inspect the implementation, and report the conflict instead
 of guessing. New product decisions should update the relevant context in the same commit.
 
+The current source-side First Meet Beta RC record is [`docs/operations/beta-rc-2026-08-25.md`](docs/operations/beta-rc-2026-08-25.md). It records validation evidence and deployment boundaries without treating repository migrations as already applied remotely.
+
 The approved landing page, Early Access waitlist, and auth/onboarding foundation must not be redesigned without explicit
 instruction.
 
@@ -61,7 +63,9 @@ Implemented:
 - Privacy-safe People Discovery v1 at `/app/people`
 - Introduction Requests v1 at `/app/introductions` with send/accept/decline/cancel, block/report foundation, and
   conversation shell handoff
-- Anonymous Chat v1 at `/app/messages` (deployed through migration `202608060003`)
+- Anonymous Chat v1 at `/app/messages` (deployed through migration `202608060003`); local migration
+  `202608250001` adds Unicode emoji composer support and allowlisted official StudyDate mascot stickers with a
+  legacy-safe text fallback. The sticker migration must be applied before enabling sticker sends.
 - Mutual Interest v1 inside active conversations (migration `202608060004`)
 - Identity Reveal v1 (migration `202608060005`)
 - Contact Reveal v1 for Telegram / Instagram / LinkedIn after Identity Reveal
@@ -108,7 +112,7 @@ Student Verification Center code exists but remains globally disabled unless exp
 
 ### Local requirements
 
-- Node.js 20.9.0 or newer, as required by the installed Next.js version
+- Node.js 22.6.0 or newer. Next.js itself supports older Node 20 releases, but this repository's TypeScript test commands use Node's `--experimental-strip-types` support.
 - npm
 - A dedicated Supabase project for StudyDate
 - Supabase CLI when linking or applying migrations
@@ -198,6 +202,8 @@ npx supabase migration list
 > **Warning:** Both commands communicate with the linked remote project, and `db push` modifies its database.
 > Review the target and migration plan before continuing.
 
+Current Beta-RC local tail also includes `202608250001_anonymous_chat_official_stickers_v1.sql` and `202608250002_early_access_moderation_invitation_v1.sql`. Do not infer remote status from this README; compare `supabase migration list` before any push. For the Early Access rollout, apply `202608250002` before deploying the app code that calls `can_issue_student_magic_link`.
+
 ### Supabase Auth configuration
 
 Configure Supabase Dashboard → Authentication:
@@ -212,11 +218,13 @@ Set the same production origin in `NEXT_PUBLIC_SITE_URL`. The production applica
 
 ### Authentication flow
 
-1. The user submits an email on `/login`.
-2. Supabase sends a passwordless link.
-3. `/auth/callback` exchanges the PKCE code and establishes the cookie-backed session.
-4. A new authenticated user without completed onboarding goes to `/onboarding`.
-5. A user with completed onboarding goes to `/app`.
+1. A new Beta user first submits the public Early Access form and waits for review.
+2. Owner or an explicitly authorized Early Access reviewer approves the entry; StudyDate sends a branded one-time login email.
+3. `/auth/confirm` / `/auth/callback` establishes the cookie-backed session.
+4. For a not-yet-onboarded user, callback/onboarding requires a same-email approved Early Access claim before continuing.
+5. A user with completed onboarding continues to `/app`; existing completed accounts can still request normal login links.
+
+The public login endpoint returns an enumeration-safe success response when a brand-new email is not approved and does not create an Auth account in that case. Early Access approval is separate from Student/Alumni Verification.
 
 Callback redirects accept only trusted internal destinations. Authentication errors shown to users are generic and do
 not expose Supabase error details.
@@ -273,20 +281,21 @@ end/block/report RPCs, and authenticated polling.
 Mutual Interest v1 (migration `202608060004`) adds private “Kenal Lebih Jauh” consent inside an active
 conversation. One-sided interest is never exposed. Mutual completion does not reveal identity or contacts.
 
-### Early Access waitlist
+### Early Access moderation + invitation
 
 The Early Access flow includes:
 
-- Server-side insertion
-- Case-insensitive duplicate handling
-- Consent version and timestamp recording
-- Honeypot validation
-- Request payload limit
-- Basic in-memory rate limiting
-- RLS and revoked table permissions preventing public waitlist reads
+- Server-side waitlist insertion with case-insensitive duplicate handling
+- Consent version/timestamp, honeypot, bounded payload, and durable DB-backed rate limiting
+- One shared moderation queue at `/owner/early-access` and `/staff/early-access`
+- Owner role-implied full Early Access access; Staff read/review capabilities are explicit and least-privilege
+- Lifecycle `waiting → approved|rejected`; only `approved → claimed` with the same authenticated email
+- Branded StudyDate one-time invitation email after Approve, with safe resend when delivery fails
+- New-account student magic-link eligibility gate that remains enumeration-safe to public callers
+- Claim before onboarding; Early Access approval never substitutes Student/Alumni Verification or legal/product consent
+- RLS/revoked direct table permissions; review and claim occur through server-authoritative RPCs
 
-The current rate limiter is in-memory and per application instance. Replace it with durable shared rate limiting before
-serving large or horizontally scaled production traffic.
+`202608250002_early_access_moderation_invitation_v1.sql` is forward-only and must be migration-preflighted before app deployment. Deploy the database contract first because the public magic-link gate fails closed when the new RPC is unavailable.
 
 ### Available scripts
 
@@ -321,12 +330,19 @@ serving large or horizontally scaled production traffic.
 | `npm run staff:bootstrap-owner` | Interactive trusted first-owner bootstrap; run only after approved migration |
 | `npm run test:browser` | Audit login responsiveness, overflow, and keyboard focus with Chrome |
 | `npm run check` | Run lint, typecheck, and production build |
+| `npm run verify:release` | Run lint, typecheck, all Node tests, and production build before a release candidate |
 
 `npm run test:browser` expects Google Chrome at its default Windows location unless `CHROME_PATH` is supplied.
 
 ### Validation before committing
 
-Run:
+Run the complete release gate when dependencies are installed:
+
+```powershell
+npm run verify:release
+```
+
+Feature-specific and browser/live audits still require their own controlled environment. For targeted development validation, run:
 
 ```powershell
 npm run lint
@@ -367,8 +383,8 @@ Contact preparation/consent/withdrawal intentionally create no notification. Mes
 bodies, names, contact values, email, NIM, raw UUIDs, Storage paths, report details, and
 moderation notes are not part of the notification projection.
 
-Notifications use bounded keyset pagination and a 25-second authenticated global unread
-poll that pauses while the document is hidden. Chat polling remains unchanged.
+Notifications use bounded keyset pagination and a 45-second authenticated global unread
+poll that pauses while the document is hidden. Chat polling uses adaptive authenticated polling that slows while idle, pauses when hidden/offline, and resumes on visibility/network recovery.
 
 The post-deployment live audit verifies A/B/C recipient isolation, direct-table denial,
 trusted trigger creation, deterministic deduplication, read-one/read-all behavior, all
@@ -406,7 +422,9 @@ filtering, all three report contexts, Introduction and block integration, RLS/di
 denial, safe rendered payloads, zero automatic private-flow side effects, Notification
 silence for Circle operations, authenticated UI smoke, and complete synthetic cleanup.
 
-### Campus Events v1 (deployed)
+### Campus Events v1 baseline (deployed)
+
+> Bagian ini mencatat baseline peluncuran v1. Kemampuan yang kemudian ditambahkan oleh Event v2 dirangkum setelah section ini.
 
 Migrations `202608090003_create_campus_events_v1.sql` and
 `202608090004_fix_campus_event_detail_projection.sql` are applied remotely. They add open
@@ -435,6 +453,19 @@ cancel/rejoin, block and Introduction behavior, schedule/venue locking, organize
 isolation, scoped reports, cancel/archive retention, RLS/direct-grant denial, zero
 automatic private-flow or Event Notification writes, authenticated UI smoke, and complete
 cleanup. The post-deployment migration dry-run is empty.
+
+
+### Campus Events v2 (current repository)
+
+Repository saat ini melanjutkan baseline v1 dengan organizer registration, approval/instant registration, waitlist,
+Event chat, Circle association, scoped team roles, attendee ticket, QR check-in, manual fallback, dan operational
+management routes. Migration utama v2 berada pada `202608210003`–`202608210010`, `202608220002`–`202608220003`,
+dan fix `202608240001`. Status migration remote harus selalu diverifikasi dengan `supabase migration list` sebelum
+menyebut capability v2 sebagai live pada environment tertentu.
+
+QR scanner memakai kamera browser hanya pada origin StudyDate dan tetap menyediakan fallback manual. Global
+`Permissions-Policy` mengizinkan `camera=(self)` serta tetap menolak microphone, geolocation, dan payment browser
+permissions.
 
 ### Live Supabase verification checklist
 

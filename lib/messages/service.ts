@@ -42,6 +42,8 @@ export type ConversationDetail = {
 export type ChatMessage = {
   message_id: string;
   body: string;
+  message_type: "text" | "sticker";
+  sticker_id: string | null;
   is_mine: boolean;
   created_at: string;
   read_at: string | null;
@@ -113,18 +115,41 @@ export async function listConversationMessages(
   },
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("list_conversation_messages", {
+  const params = {
     p_public_id: publicId,
     p_before_created_at: options?.beforeCreatedAt ?? null,
     p_before_id: options?.beforeId ?? null,
     p_limit: options?.limit ?? 40,
-  });
+  };
+  const { data, error } = await supabase.rpc(
+    "list_conversation_messages_v2",
+    params,
+  );
 
-  if (error) {
+  if (!error) {
+    return (data ?? []) as ChatMessage[];
+  }
+
+  // Safe rolling-deploy fallback: old servers can keep text chat working until
+  // the sticker migration is applied. Do not mask normal authorization errors.
+  if (error.code !== "PGRST202" && error.code !== "42883") {
     throw new Error(GENERIC_CHAT_ERROR);
   }
 
-  return (data ?? []) as ChatMessage[];
+  const legacy = await supabase.rpc("list_conversation_messages", params);
+  if (legacy.error) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const legacyMessages = (legacy.data ?? []) as Array<
+    Omit<ChatMessage, "message_type" | "sticker_id">
+  >;
+
+  return legacyMessages.map((message) => ({
+    ...message,
+    message_type: "text" as const,
+    sticker_id: null,
+  }));
 }
 
 export async function sendAnonymousMessage(
@@ -144,6 +169,25 @@ export async function sendAnonymousMessage(
   }
 
   return (data ?? [])[0] as ChatMessage & { conversation_status: string };
+}
+
+export async function sendAnonymousSticker(
+  publicId: string,
+  stickerId: string,
+  idempotencyKey?: string,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("send_anonymous_sticker", {
+    p_public_id: publicId,
+    p_sticker_id: stickerId,
+    p_idempotency_key: idempotencyKey ?? null,
+  });
+
+  if (error) {
+    throw new Error(mapChatError(error.message));
+  }
+
+  return data as string | null;
 }
 
 export async function markConversationMessagesRead(publicId: string) {

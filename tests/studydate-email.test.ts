@@ -57,3 +57,11 @@ test("local start/dev listen on port 3010 to match SITE_URL convention", () => {
   assert.match(pkg, /next start --port 3010/);
   assert.match(pkg, /next dev --port 3010/);
 });
+
+test("Early Access invitation uses the branded one-time login template", () => {
+  assert.match(template, /"early-access"/);
+  assert.match(template, /Akses awalmu sudah disetujui/);
+  assert.match(template, /Mulai di StudyDate/);
+  assert.match(delivery, /"\/onboarding"/);
+  assert.match(delivery, /type MagicLinkEmailKind/);
+});

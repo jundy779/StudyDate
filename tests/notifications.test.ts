@@ -296,7 +296,7 @@ test("client projection and copy contain no sensitive fields or UUIDs", () => {
 test("navigation, polling, page, and accessibility contracts are real", () => {
   assert.match(navigation, /href: "\/app\/notifications"/);
   assert.match(navigation, /variant="student"|!isStaff/);
-  assert.match(bell, /POLL_INTERVAL_MS = 25_000/);
+  assert.match(bell, /POLL_INTERVAL_MS = 45_000/);
   assert.match(bell, /visibilitychange/);
   assert.match(bell, /requestActive/);
   assert.match(bell, /pendingItemsRequest/);

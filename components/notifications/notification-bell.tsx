@@ -6,7 +6,7 @@ import { Bell, LoaderCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const POLL_INTERVAL_MS = 25_000;
+const POLL_INTERVAL_MS = 45_000;
 
 export function NotificationBell({
   initialUnreadCount,

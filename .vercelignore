@@ -5,6 +5,7 @@
 .next
 audit-artifacts
 node_modules
+mobile
 coverage
 *.log
 .DS_Store

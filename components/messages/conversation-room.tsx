@@ -19,6 +19,7 @@ import {
   getCharacterThresholdAnnouncement,
   isNearChatBottom,
   mergeChatMessages,
+  nextChatPollDelay,
   nextPollDelay,
 } from "@/lib/messages/client-state";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
@@ -42,6 +43,8 @@ import { ContactRevealPanel } from "@/components/messages/contact-reveal-panel";
 import { CounterpartPrivacyCard } from "@/components/messages/counterpart-privacy-card";
 import { TelegramCompanionPanel } from "@/components/messages/telegram-companion-panel";
 import { MeetingPlanPanel } from "@/components/messages/meeting-plan-panel";
+import { ChatMessageBubble } from "@/components/messages/chat-message-bubble";
+import { ChatComposerTools } from "@/components/messages/chat-composer-tools";
 import { getMascotForAlias } from "@/lib/people/constants";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
 import type { MeetingPlanState } from "@/lib/meeting-plans/constants";
@@ -80,13 +83,6 @@ type ConversationRoomProps = {
   notice?: string | null;
   state?: string | null;
 };
-
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
 
 function formatDay(value: string) {
   return new Intl.DateTimeFormat("id-ID", {
@@ -149,6 +145,7 @@ export function ConversationRoom({
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [newMessagesAvailable, setNewMessagesAvailable] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef(messages);
   const markedRead = useRef(false);
   const initialScrollDone = useRef(false);
@@ -199,6 +196,7 @@ export function ConversationRoom({
   useEffect(() => {
     let cancelled = false;
     let messageFailures = 0;
+    let messageIdleCycles = 0;
     let revealFailures = 0;
     let messageTimer: number | undefined;
     let revealTimer: number | undefined;
@@ -209,20 +207,20 @@ export function ConversationRoom({
 
     function scheduleMessages(delay: number) {
       window.clearTimeout(messageTimer);
-      if (!cancelled && !document.hidden) {
+      if (!cancelled && !document.hidden && navigator.onLine) {
         messageTimer = window.setTimeout(pollMessages, delay);
       }
     }
 
     function scheduleReveal(delay: number) {
       window.clearTimeout(revealTimer);
-      if (!cancelled && !document.hidden) {
+      if (!cancelled && !document.hidden && navigator.onLine) {
         revealTimer = window.setTimeout(pollReveal, delay);
       }
     }
 
     async function pollMessages() {
-      if (cancelled || document.hidden) return;
+      if (cancelled || document.hidden || !navigator.onLine) return;
       const generation = ++messageGeneration;
       messageController = new AbortController();
       try {
@@ -252,9 +250,13 @@ export function ConversationRoom({
         const known = new Set(
           messagesRef.current.map((message) => message.message_id),
         );
-        const hasNew = payload.messages.some(
+        const newMessages = payload.messages.filter(
           (message) => !known.has(message.message_id),
         );
+        const hasNew = newMessages.length > 0;
+        messageIdleCycles = hasNew
+          ? 0
+          : Math.min(messageIdleCycles + 1, 4);
         if (hasNew) {
           shouldScrollAfterUpdate.current = nearBottom;
           setNewMessagesAvailable(!nearBottom);
@@ -262,6 +264,12 @@ export function ConversationRoom({
         setMessages((current) =>
           mergeChatMessages(current, payload.messages),
         );
+
+        if (newMessages.some((message) => !message.is_mine && !message.read_at)) {
+          const formData = new FormData();
+          formData.set("publicId", conversation.public_id);
+          void markMessagesReadAction(formData);
+        }
       } catch {
         if (cancelled) return;
         messageFailures += 1;
@@ -270,13 +278,13 @@ export function ConversationRoom({
         }
       } finally {
         scheduleMessages(
-          nextPollDelay(messageFailures, 4000, 30000),
+          nextChatPollDelay(messageFailures, messageIdleCycles),
         );
       }
     }
 
     async function pollReveal() {
-      if (cancelled || document.hidden) return;
+      if (cancelled || document.hidden || !navigator.onLine) return;
       const generation = ++revealGeneration;
       revealController = new AbortController();
       try {
@@ -319,22 +327,43 @@ export function ConversationRoom({
       }
     }
 
-    function handleVisibility() {
+    function stopActivePolls() {
       window.clearTimeout(messageTimer);
       window.clearTimeout(revealTimer);
       messageGeneration += 1;
       revealGeneration += 1;
       messageController?.abort();
       revealController?.abort();
-      if (!document.hidden) {
-        void pollMessages();
-        void pollReveal();
-      }
+    }
+
+    function resumePolling() {
+      if (cancelled || document.hidden || !navigator.onLine) return;
+      messageFailures = 0;
+      revealFailures = 0;
+      setPollNote(null);
+      void pollMessages();
+      void pollReveal();
+    }
+
+    function handleVisibility() {
+      stopActivePolls();
+      if (!document.hidden) resumePolling();
+    }
+
+    function handleOffline() {
+      stopActivePolls();
+      setPollNote("Koneksi terputus. Menunggu jaringan…");
+    }
+
+    function handleOnline() {
+      resumePolling();
     }
 
     document.addEventListener("visibilitychange", handleVisibility);
-    scheduleMessages(4000);
-    scheduleReveal(30000);
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+    scheduleMessages(6_000);
+    scheduleReveal(30_000);
 
     return () => {
       cancelled = true;
@@ -345,6 +374,8 @@ export function ConversationRoom({
       window.clearTimeout(messageTimer);
       window.clearTimeout(revealTimer);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
     };
   }, [conversation.public_id]);
 
@@ -403,11 +434,51 @@ export function ConversationRoom({
     endDialogRef.current?.close();
   }
 
+  function insertEmoji(emoji: string) {
+    const textarea = composerRef.current;
+    if (!textarea) {
+      setBody((current) => (current + emoji).slice(0, CHAT_MESSAGE_MAX));
+      return;
+    }
+
+    const start = textarea.selectionStart ?? body.length;
+    const end = textarea.selectionEnd ?? body.length;
+    const next = `${body.slice(0, start)}${emoji}${body.slice(end)}`;
+    if (next.length > CHAT_MESSAGE_MAX) {
+      setClientError(`Maksimal ${CHAT_MESSAGE_MAX} karakter.`);
+      return;
+    }
+
+    setBody(next);
+    setClientError(null);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const caret = start + emoji.length;
+      textarea.setSelectionRange(caret, caret);
+    });
+  }
+
   function onComposerSubmit(event: FormEvent<HTMLFormElement>) {
     if (!canSend || pending) {
       event.preventDefault();
       return;
     }
+
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as
+      | HTMLButtonElement
+      | null;
+    const isStickerSubmit = submitter?.name === "stickerId";
+    const keyInput = event.currentTarget.elements.namedItem(
+      "idempotencyKey",
+    ) as HTMLInputElement | null;
+    if (keyInput) {
+      keyInput.value = makeIdempotencyKey();
+    }
+    if (isStickerSubmit) {
+      setClientError(null);
+      return;
+    }
+
     const trimmed = body
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
@@ -426,15 +497,10 @@ export function ConversationRoom({
     }
 
     setClientError(null);
-    const keyInput = event.currentTarget.elements.namedItem(
-      "idempotencyKey",
-    ) as HTMLInputElement | null;
-    if (keyInput) {
-      keyInput.value = makeIdempotencyKey();
-    }
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.nativeEvent.isComposing) return;
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       event.currentTarget.form?.requestSubmit();
@@ -567,40 +633,10 @@ export function ConversationRoom({
                   {formatDay(message.created_at)}
                 </p>
               ) : null}
-              <div
-                className={`flex ${message.is_mine ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[min(100%,28rem)] rounded-2xl px-4 py-3 text-sm leading-6 ${
-                    message.is_mine
-                      ? "bg-brand-blue text-white"
-                      : "border border-brand-border bg-white text-brand-navy"
-                  }`}
-                >
-                  <p className="sr-only">
-                    {message.is_mine
-                      ? "Pesan dari kamu"
-                      : `Pesan dari ${conversation.counterpart_alias}`}
-                  </p>
-                  <p className="whitespace-pre-wrap break-words">
-                    {message.moderation_status === "removed"
-                      ? "Pesan tidak tersedia."
-                      : message.body}
-                  </p>
-                  <p
-                    className={`mt-2 text-[11px] ${
-                      message.is_mine ? "text-white/75" : "text-brand-muted"
-                    }`}
-                  >
-                    {formatTime(message.created_at)}
-                    {message.is_mine
-                      ? message.read_at
-                        ? " · Dibaca"
-                        : " · Terkirim"
-                      : null}
-                  </p>
-                </div>
-              </div>
+              <ChatMessageBubble
+                message={message}
+                counterpartAlias={conversation.counterpart_alias}
+              />
             </div>
           );
         })}
@@ -727,10 +763,17 @@ export function ConversationRoom({
           >
             <input type="hidden" name="publicId" value={conversation.public_id} />
             <input type="hidden" name="idempotencyKey" defaultValue="" />
-            <label htmlFor="chat-body" className="text-sm font-semibold text-brand-navy">
-              Tulis pesan
-            </label>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label htmlFor="chat-body" className="text-sm font-semibold text-brand-navy">
+                Tulis pesan
+              </label>
+              <ChatComposerTools
+                disabled={pending}
+                onInsertEmoji={insertEmoji}
+              />
+            </div>
             <textarea
+              ref={composerRef}
               id="chat-body"
               name="body"
               rows={3}
