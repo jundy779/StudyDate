@@ -54,6 +54,10 @@ export type EarlyAccessWaitlistRow = {
   reviewed_at: string | null;
   invitation_sent_at: string | null;
   claimed_at: string | null;
+  review_reason_codes: string[];
+  review_user_note: string | null;
+  review_internal_note: string | null;
+  resubmitted_at: string | null;
   total_count: number;
 };
 
@@ -196,7 +200,7 @@ export async function assignStaffByEmail(
 
 export type EarlyAccessReviewResult = {
   email: string;
-  status: "approved" | "rejected";
+  status: "approved" | "needs_revision" | "rejected";
   invitation_sent_at: string | null;
 };
 
@@ -214,12 +218,22 @@ export async function manageEarlyAccessReviewCapability(
 
 export async function reviewEarlyAccessEntry(input: {
   email: string;
-  decision: "approve" | "reject";
+  decision: "approve" | "needs_revision" | "reject";
+  reasonCodes?: string[];
+  userNote?: string | null;
+  internalNote?: string | null;
+  revisionTokenHash?: string | null;
+  revisionTokenExpiresAt?: string | null;
 }) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("review_early_access_entry", {
+  const { data, error } = await supabase.rpc("review_early_access_entry_v2", {
     p_email: input.email,
     p_decision: input.decision,
+    p_reason_codes: input.reasonCodes ?? [],
+    p_user_note: input.userNote ?? null,
+    p_internal_note: input.internalNote ?? null,
+    p_revision_token_hash: input.revisionTokenHash ?? null,
+    p_revision_token_expires_at: input.revisionTokenExpiresAt ?? null,
   });
   if (error) throw new Error("Review Akses Awal belum dapat disimpan.");
   const row = ((data ?? [])[0] as EarlyAccessReviewResult | undefined) ?? null;
@@ -258,7 +272,7 @@ export async function listEarlyAccessWaitlistOps(input: {
   offset?: number;
 }) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("list_early_access_waitlist_ops", {
+  const params = {
     p_email: input.email ?? null,
     p_status: input.status ?? null,
     p_campus: input.campus ?? null,
@@ -266,9 +280,29 @@ export async function listEarlyAccessWaitlistOps(input: {
     p_source: input.source ?? null,
     p_limit: input.limit ?? 25,
     p_offset: input.offset ?? 0,
-  });
-  if (error) throw new Error("Daftar Akses Awal belum dapat dimuat.");
-  return (data ?? []) as EarlyAccessWaitlistRow[];
+  };
+
+  const current = await supabase.rpc("list_early_access_waitlist_ops_v2", params);
+  if (!current.error) {
+    return (current.data ?? []) as EarlyAccessWaitlistRow[];
+  }
+
+  // Rolling-deploy fallback while the new DB contract is not available yet.
+  if (current.error.code !== "PGRST202" && current.error.code !== "42883") {
+    throw new Error("Daftar Akses Awal belum dapat dimuat.");
+  }
+
+  const legacy = await supabase.rpc("list_early_access_waitlist_ops", params);
+  if (legacy.error) throw new Error("Daftar Akses Awal belum dapat dimuat.");
+  return ((legacy.data ?? []) as Array<Omit<EarlyAccessWaitlistRow,
+    "review_reason_codes" | "review_user_note" | "review_internal_note" | "resubmitted_at"
+  >>).map((row) => ({
+    ...row,
+    review_reason_codes: [],
+    review_user_note: null,
+    review_internal_note: null,
+    resubmitted_at: null,
+  }));
 }
 
 export async function listStudentAccountOps(input: {

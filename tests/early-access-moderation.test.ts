@@ -128,3 +128,47 @@ test("Owner identity is never authorized by hard-coded email literals", () => {
     /studydateid@gmail\.com|admin@studydate\.id/i,
   );
 });
+
+const revisionMigration = read(
+  "supabase/migrations/202608260001_early_access_revision_reasons_v1.sql",
+);
+const revisionRoute = read("app/api/early-access/revise/route.ts");
+const revisionPage = read("app/early-access/revise/page.tsx");
+const reviewTemplate = read("lib/email/early-access-review-template.ts");
+const reviewDelivery = read("lib/email/early-access-review-delivery.ts");
+
+test("Early Access supports revision reasons without conflating them with rejection", () => {
+  assert.match(
+    revisionMigration,
+    /status in \('waiting', 'approved', 'needs_revision', 'rejected', 'claimed'\)/,
+  );
+  assert.match(revisionMigration, /review_reason_codes text\[\]/);
+  assert.match(revisionMigration, /review_user_note text/);
+  assert.match(revisionMigration, /review_internal_note text/);
+  assert.match(revisionMigration, /p_decision not in \('approve', 'needs_revision', 'reject'\)/);
+  assert.match(queue, /Minta perbaikan/);
+  assert.match(queue, /Tolak & kirim email/);
+  assert.match(actions, /decision: "needs_revision"/);
+  assert.match(actions, /kind: "rejected"/);
+});
+
+test("revision links are opaque one-time tokens and only hashes are stored", () => {
+  assert.match(actions, /randomBytes\(32\)/);
+  assert.match(actions, /createHash\("sha256"\)/);
+  assert.match(revisionMigration, /revision_token_hash/);
+  assert.match(revisionMigration, /revision_token_expires_at/);
+  assert.match(revisionRoute, /createHash\("sha256"\)/);
+  assert.match(revisionRoute, /\.eq\("revision_token_hash", tokenHash\)/);
+  assert.match(revisionRoute, /revision_token_hash: null/);
+  assert.match(revisionPage, /EarlyAccessRevisionForm/);
+  assert.match(revisionPage, /import \{ Suspense \} from "react"/);
+  assert.match(revisionPage, /<Suspense fallback=\{<RevisionStateFallback \/>\}>/);
+  assert.match(revisionPage, /<RevisionState searchParams=\{searchParams\} \/>/);
+});
+
+test("review email separates applicant-facing and internal notes", () => {
+  assert.match(reviewTemplate, /Catatan dari tim StudyDate/);
+  assert.match(reviewDelivery, /sendStudyDateEmail/);
+  assert.doesNotMatch(reviewTemplate, /internalNote|review_internal_note/);
+  assert.match(queue, /Catatan internal/);
+});

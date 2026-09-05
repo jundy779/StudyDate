@@ -23,6 +23,15 @@ const staffRoute = readFileSync(
 );
 const pkg = readFileSync(join(root, "package.json"), "utf8");
 
+const earlyAccessReviewTemplate = readFileSync(
+  join(root, "lib/email/early-access-review-template.ts"),
+  "utf8",
+);
+const earlyAccessReviewDelivery = readFileSync(
+  join(root, "lib/email/early-access-review-delivery.ts"),
+  "utf8",
+);
+
 test("magic-link routes never call Supabase Auth mailer signInWithOtp", () => {
   assert.doesNotMatch(studentRoute, /signInWithOtp/);
   assert.doesNotMatch(staffRoute, /signInWithOtp/);
@@ -64,4 +73,13 @@ test("Early Access invitation uses the branded one-time login template", () => {
   assert.match(template, /Mulai di StudyDate/);
   assert.match(delivery, /"\/onboarding"/);
   assert.match(delivery, /type MagicLinkEmailKind/);
+});
+
+
+test("Early Access revision and rejection emails use StudyDate mail infrastructure", () => {
+  assert.match(earlyAccessReviewTemplate, /Pendaftaranmu perlu diperbaiki/);
+  assert.match(earlyAccessReviewTemplate, /Update pendaftaran Early Access/);
+  assert.match(earlyAccessReviewTemplate, /Perbarui pendaftaran/);
+  assert.match(earlyAccessReviewDelivery, /sendStudyDateEmail/);
+  assert.match(earlyAccessReviewDelivery, /STUDYDATE_EMAIL_LOGO_CID/);
 });

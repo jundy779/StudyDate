@@ -565,3 +565,7 @@ Jangan menampilkan angka target publik yang belum disetujui.
 
 
 - Authorized Staff Operations v1: satu Early Access moderation queue, Owner full access, Staff read/review capability terpisah, safe user account ops, staff assign by email + capability grants (Owner-managed).
+
+
+### Early Access review outcomes
+Owner or explicitly authorized Early Access staff may Approve, Minta Perbaikan, or Reject. Minta Perbaikan must carry at least one structured reason and sends a private one-time correction link. Reject also requires a reason and sends a notification email. Internal reviewer notes are never sent to applicants. Corrected applications return to the moderation queue and require a fresh approval before onboarding.

@@ -55,3 +55,28 @@ export function getEarlyAccessFieldErrors(
 
   return fieldErrors;
 }
+
+export const earlyAccessRevisionPayloadSchema = z
+  .object({
+    token: z.string().trim().min(32).max(200),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(1, "Email wajib diisi.")
+      .max(254, "Email terlalu panjang.")
+      .email("Masukkan alamat email yang valid.")
+      .refine(isAllowedStudentEmail, STUDENT_EMAIL_DOMAIN_ERROR),
+    campus: z
+      .string()
+      .trim()
+      .min(2, "Tuliskan nama kampus dengan jelas.")
+      .max(120, "Nama kampus maksimal 120 karakter."),
+    interests: z.array(z.enum(earlyAccessInterests)).max(3),
+    website: z.string().max(200),
+  })
+  .strict();
+
+export type EarlyAccessRevisionInput = z.input<
+  typeof earlyAccessRevisionPayloadSchema
+>;

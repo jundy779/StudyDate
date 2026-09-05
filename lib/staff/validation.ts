@@ -1,3 +1,4 @@
+import { EARLY_ACCESS_REVIEW_REASON_CODES } from "../early-access/review-reasons.ts";
 import { z } from "zod";
 
 export const staffActionSchema = z.object({
@@ -80,6 +81,32 @@ export const verificationInvalidationSchema = z
 export const earlyAccessReviewActionSchema = z
   .object({
     email: z.string().trim().toLowerCase().min(3).max(254).email(),
-    action: z.enum(["approve", "reject", "resend"]),
+    action: z.enum(["approve", "reject", "needs_revision", "resend"]),
+    reasonCodes: z.array(z.enum(EARLY_ACCESS_REVIEW_REASON_CODES)).max(7).default([]),
+    userNote: z.string().trim().max(500).default(""),
+    internalNote: z.string().trim().max(800).default(""),
   })
-  .strict();
+  .superRefine((value, ctx) => {
+    if (
+      (value.action === "reject" || value.action === "needs_revision") &&
+      value.reasonCodes.length === 0
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reasonCodes"],
+        message: "Pilih minimal satu alasan review.",
+      });
+    }
+
+    if (
+      value.action === "needs_revision" &&
+      value.reasonCodes.includes("other") &&
+      !value.userNote
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["userNote"],
+        message: "Tambahkan catatan untuk alasan lainnya.",
+      });
+    }
+  });

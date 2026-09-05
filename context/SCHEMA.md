@@ -889,3 +889,8 @@ Constraints/index: unique one active Plus per user; RLS on; revoke all table gra
 `lookup_membership_ops`, `manage_user_membership_by_email`. UUID grant RPC
 `manage_user_membership` dicabut dari `authenticated`. Profile delete mem-purge
 entitlement dan quota usage. Deactivation tidak menghapus entitlement.
+
+
+## Early Access review reasons + revision (repository migration 202608260001)
+
+`early_access_waitlist.status` adds `needs_revision` between waiting and a final decision. Review metadata includes structured `review_reason_codes`, an applicant-facing `review_user_note`, an internal-only `review_internal_note`, a SHA-256 `revision_token_hash`, expiry, and `resubmitted_at`. Raw revision tokens are never stored. A successful correction consumes the token and returns the entry to `waiting`; Early Access approval remains separate from Student Verification.

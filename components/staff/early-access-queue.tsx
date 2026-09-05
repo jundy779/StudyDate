@@ -1,4 +1,8 @@
 import { moderateEarlyAccess } from "@/app/staff/early-access/actions";
+import {
+  EARLY_ACCESS_REVIEW_REASONS,
+  getEarlyAccessReviewReasonLabel,
+} from "@/lib/early-access/review-reasons";
 import type { StaffAccess } from "@/lib/staff/authorization";
 import { staffHasCapability } from "@/lib/staff/authorization";
 import { listEarlyAccessWaitlistOps } from "@/lib/staff/service";
@@ -30,6 +34,7 @@ const PAGE_SIZE = 25;
 const statusLabels: Record<string, string> = {
   waiting: "Menunggu review",
   approved: "Disetujui",
+  needs_revision: "Perlu diperbaiki",
   rejected: "Tidak disetujui",
   claimed: "Akses diklaim",
 };
@@ -49,7 +54,11 @@ const stateMessages: Record<
     tone: "success",
   },
   rejected: {
-    text: "Pendaftaran Akses Awal ditandai tidak disetujui.",
+    text: "Pendaftaran ditolak dan email pemberitahuan sudah dikirim.",
+    tone: "success",
+  },
+  revision_requested: {
+    text: "Permintaan perbaikan sudah disimpan dan email petunjuk dikirim ke pendaftar.",
     tone: "success",
   },
   resent: {
@@ -58,6 +67,14 @@ const stateMessages: Record<
   },
   approved_email_error: {
     text: "Akses sudah disetujui, tetapi email undangan belum berhasil dikirim. Gunakan Kirim ulang undangan setelah layanan email siap.",
+    tone: "warning",
+  },
+  revision_email_error: {
+    text: "Status Perlu diperbaiki sudah tersimpan, tetapi email belum terkirim. Kirim Minta perbaikan lagi untuk membuat tautan baru dan mencoba ulang.",
+    tone: "warning",
+  },
+  rejected_email_error: {
+    text: "Status penolakan sudah tersimpan, tetapi email pemberitahuan belum terkirim. Keputusan dapat dikirim ulang dengan Reject lagi.",
     tone: "warning",
   },
   email_error: {
@@ -69,7 +86,7 @@ const stateMessages: Record<
     tone: "error",
   },
   invalid: {
-    text: "Permintaan review tidak valid.",
+    text: "Permintaan review tidak valid. Untuk Reject atau Minta perbaikan, pilih minimal satu alasan.",
     tone: "error",
   },
 };
@@ -96,18 +113,16 @@ function StatusNotice({ state }: { state?: string }) {
   );
 }
 
-function ReviewAction({
+function DirectReviewAction({
   email,
   action,
   label,
   basePath,
-  danger = false,
 }: {
   email: string;
-  action: "approve" | "reject" | "resend";
+  action: "approve" | "resend";
   label: string;
   basePath: Props["basePath"];
-  danger?: boolean;
 }) {
   return (
     <form action={moderateEarlyAccess}>
@@ -117,16 +132,105 @@ function ReviewAction({
       <button
         type="submit"
         className={`focus-ring min-h-11 rounded-xl px-4 text-sm font-semibold ${
-          danger
-            ? "border border-red-200 bg-white text-brand-error"
-            : action === "approve"
-              ? "bg-brand-blue text-white"
-              : "border border-brand-border bg-white text-brand-blue"
+          action === "approve"
+            ? "bg-brand-blue text-white"
+            : "border border-brand-border bg-white text-brand-blue"
         }`}
       >
         {label}
       </button>
     </form>
+  );
+}
+
+function DecisionForm({
+  email,
+  action,
+  basePath,
+}: {
+  email: string;
+  action: "needs_revision" | "reject";
+  basePath: Props["basePath"];
+}) {
+  const revision = action === "needs_revision";
+  return (
+    <details className="relative">
+      <summary
+        className={`focus-ring flex min-h-11 cursor-pointer list-none items-center rounded-xl border px-4 text-sm font-semibold ${
+          revision
+            ? "border-amber-200 bg-amber-50 text-amber-900"
+            : "border-red-200 bg-white text-brand-error"
+        }`}
+      >
+        {revision ? "Minta perbaikan" : "Reject"}
+      </summary>
+      <div className="mt-2 w-full rounded-2xl border border-brand-border bg-white p-4 shadow-sm lg:absolute lg:right-0 lg:z-20 lg:w-[390px]">
+        <form action={moderateEarlyAccess} className="space-y-4">
+          <input type="hidden" name="email" value={email} />
+          <input type="hidden" name="action" value={action} />
+          <input type="hidden" name="returnTo" value={basePath} />
+          <fieldset>
+            <legend className="text-sm font-semibold text-brand-navy">
+              Alasan keputusan
+            </legend>
+            <p className="mt-1 text-xs leading-5 text-brand-muted">
+              Pilih minimal satu. Alasan ini akan dijelaskan ke pendaftar lewat email.
+            </p>
+            <div className="mt-3 space-y-2">
+              {EARLY_ACCESS_REVIEW_REASONS.map((reason) => (
+                <label
+                  key={reason.code}
+                  className="flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border px-3 py-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    name="reasonCode"
+                    value={reason.code}
+                    className="mt-1 size-4"
+                  />
+                  <span>
+                    <span className="font-semibold text-brand-navy">{reason.label}</span>
+                    <span className="mt-0.5 block text-xs leading-5 text-brand-muted">
+                      {reason.description}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <label className="block text-sm font-semibold text-brand-navy">
+            Catatan untuk pendaftar (opsional)
+            <textarea
+              name="userNote"
+              maxLength={500}
+              rows={3}
+              className="focus-ring mt-2 w-full rounded-xl border border-brand-border px-3 py-2 text-sm font-normal"
+              placeholder="Contoh: gunakan nama lengkap Universitas Indonesia, bukan UI."
+            />
+          </label>
+          <label className="block text-sm font-semibold text-brand-navy">
+            Catatan internal (opsional)
+            <textarea
+              name="internalNote"
+              maxLength={800}
+              rows={2}
+              className="focus-ring mt-2 w-full rounded-xl border border-brand-border px-3 py-2 text-sm font-normal"
+              placeholder="Hanya Owner/Staff Early Access yang dapat melihat catatan ini."
+            />
+          </label>
+          <button
+            type="submit"
+            className={`focus-ring min-h-11 w-full rounded-xl px-4 text-sm font-semibold ${
+              revision
+                ? "bg-amber-500 text-brand-navy"
+                : "bg-brand-error text-white"
+            }`}
+          >
+            {revision ? "Kirim permintaan perbaikan" : "Tolak & kirim email"}
+          </button>
+        </form>
+      </div>
+    </details>
   );
 }
 
@@ -139,6 +243,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
   const status =
     query.status === "waiting" ||
     query.status === "approved" ||
+    query.status === "needs_revision" ||
     query.status === "rejected" ||
     query.status === "claimed"
       ? query.status
@@ -204,14 +309,14 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
         </p>
         <div className="mt-6 border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
           <p>
-            <strong className="text-brand-navy">Approve:</strong> sistem
-            mengirim email resmi berisi tautan login sekali pakai. Setelah email
-            yang sama terautentikasi, akses diklaim secara server-side lalu user
-            masuk ke onboarding.
+            <strong className="text-brand-navy">Approve:</strong> kirim undangan
+            login sekali pakai. <strong className="text-brand-navy">Minta perbaikan:</strong>{" "}
+            kirim alasan dan tautan revisi aman. <strong className="text-brand-navy">Reject:</strong>{" "}
+            simpan penolakan dan kirim alasannya melalui email.
           </p>
           <p className="mt-1">
-            Approval Akses Awal bukan Student Verification dan tidak membuka
-            badge, identitas, atau akses staff apa pun.
+            Catatan internal tidak pernah dimasukkan ke email pendaftar. Approval
+            Akses Awal tetap terpisah dari Student Verification.
           </p>
         </div>
 
@@ -220,7 +325,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
         {!canReview ? (
           <p className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
             Mode baca saja. Hubungi Owner bila tugasmu membutuhkan Approve,
-            Reject, atau kirim ulang undangan.
+            Minta perbaikan, Reject, atau kirim ulang undangan.
           </p>
         ) : null}
 
@@ -249,6 +354,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
               <option value="">Semua</option>
               <option value="waiting">Menunggu review</option>
               <option value="approved">Disetujui</option>
+              <option value="needs_revision">Perlu diperbaiki</option>
               <option value="rejected">Tidak disetujui</option>
               <option value="claimed">Akses diklaim</option>
             </select>
@@ -304,12 +410,12 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
         ) : null}
 
         <section
-          className="mt-8 overflow-hidden rounded-[22px] border border-brand-border bg-white"
+          className="mt-8 overflow-visible rounded-[22px] border border-brand-border bg-white"
           aria-labelledby="early-access-list"
         >
           <div className="border-b border-brand-border p-5">
             <h2 id="early-access-list" className="font-heading text-xl font-semibold">
-              Antrean ({Number(total)})
+              Early Access ({Number(total)})
             </h2>
           </div>
           <div className="divide-y divide-brand-border">
@@ -332,7 +438,28 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                       {row.reviewed_at
                         ? ` · direview ${dateFmt.format(new Date(row.reviewed_at))}`
                         : ""}
+                      {row.resubmitted_at
+                        ? ` · diperbaiki ${dateFmt.format(new Date(row.resubmitted_at))}`
+                        : ""}
                     </p>
+                    {row.review_reason_codes?.length ? (
+                      <div className="mt-3 rounded-xl bg-brand-surface px-3 py-2 text-xs leading-5 text-brand-muted">
+                        <p className="font-semibold text-brand-navy">Review terakhir</p>
+                        <ul className="mt-1 list-disc pl-4">
+                          {row.review_reason_codes.map((code) => (
+                            <li key={code}>{getEarlyAccessReviewReasonLabel(code)}</li>
+                          ))}
+                        </ul>
+                        {row.review_user_note ? (
+                          <p className="mt-1">Untuk pendaftar: {row.review_user_note}</p>
+                        ) : null}
+                        {row.review_internal_note ? (
+                          <p className="mt-1 font-medium text-brand-navy">
+                            Internal: {row.review_internal_note}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="text-sm leading-6 text-brand-muted">
                     <p>
@@ -341,38 +468,39 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                     <p>Status: {statusLabels[row.status] ?? row.status}</p>
                     <p>{row.activation_label}</p>
                     {row.invitation_sent_at ? (
-                      <p>
-                        Email terakhir: {dateFmt.format(new Date(row.invitation_sent_at))}
-                      </p>
+                      <p>Email terakhir: {dateFmt.format(new Date(row.invitation_sent_at))}</p>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap items-start gap-2 lg:max-w-[270px] lg:justify-end">
+                  <div className="flex flex-wrap items-start gap-2 lg:max-w-[320px] lg:justify-end">
                     {canReview && row.status !== "claimed" ? (
                       <>
                         {row.status !== "approved" ? (
-                          <ReviewAction
+                          <DirectReviewAction
                             email={row.email}
                             action="approve"
                             label="Approve & kirim email"
                             basePath={basePath}
                           />
                         ) : (
-                          <ReviewAction
+                          <DirectReviewAction
                             email={row.email}
                             action="resend"
                             label="Kirim ulang undangan"
                             basePath={basePath}
                           />
                         )}
-                        {row.status !== "rejected" ? (
-                          <ReviewAction
+                        {row.status !== "approved" ? (
+                          <DecisionForm
                             email={row.email}
-                            action="reject"
-                            label="Reject"
+                            action="needs_revision"
                             basePath={basePath}
-                            danger
                           />
                         ) : null}
+                        <DecisionForm
+                          email={row.email}
+                          action="reject"
+                          basePath={basePath}
+                        />
                       </>
                     ) : null}
                   </div>

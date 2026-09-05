@@ -289,13 +289,16 @@ The Early Access flow includes:
 - Consent version/timestamp, honeypot, bounded payload, and durable DB-backed rate limiting
 - One shared moderation queue at `/owner/early-access` and `/staff/early-access`
 - Owner role-implied full Early Access access; Staff read/review capabilities are explicit and least-privilege
-- Lifecycle `waiting → approved|rejected`; only `approved → claimed` with the same authenticated email
+- Lifecycle `waiting → approved|needs_revision|rejected`; only `approved → claimed` with the same authenticated email
+- `needs_revision` stores structured reason codes, keeps internal notes separate, and sends a hashed one-time revision link; corrected submissions return to `waiting`
 - Branded StudyDate one-time invitation email after Approve, with safe resend when delivery fails
 - New-account student magic-link eligibility gate that remains enumeration-safe to public callers
 - Claim before onboarding; Early Access approval never substitutes Student/Alumni Verification or legal/product consent
 - RLS/revoked direct table permissions; review and claim occur through server-authoritative RPCs
 
 `202608250002_early_access_moderation_invitation_v1.sql` is forward-only and must be migration-preflighted before app deployment. Deploy the database contract first because the public magic-link gate fails closed when the new RPC is unavailable.
+
+`202608260001_early_access_revision_reasons_v1.sql` extends review outcomes with `needs_revision`, structured applicant-facing reasons, private internal notes, branded rejection/revision email, and a SHA-256-hashed one-time correction token. Apply this migration before deploying the revision UI/actions.
 
 ### Available scripts
 

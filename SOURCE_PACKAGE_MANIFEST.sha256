@@ -3,7 +3,7 @@
 69c79b60bdcf4a76ff2dbea59d7be5a6531c0a7a8a5075bd70a07437a4d1e3eb  ./.vercelignore
 63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb  ./AGENTS.md
 336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49  ./CLAUDE.md
-cc3ec104cab695c42fbb2d0baae593f5c8112711ee20b35d719a671f1ab872fa  ./README.md
+b3cd3c77e7661562fd925c0c43979d26b73443f3c00f588e2310eab55d6325f9  ./README.md
 88ba353b394e8b17f4523462a756c63d05c5e00a28ef46bf520236ce28be5dcf  ./app/(public-docs)/community-guidelines/page.tsx
 2696457eb6433ab77ab64b907d474837180a647b1439fe9cc47242f3501d9056  ./app/(public-docs)/help/page.tsx
 43b3589393817f8cbe21e116eee5ac457bf1066049586f761e82d8070a33ed91  ./app/(public-docs)/insight/[slug]/page.tsx
@@ -23,6 +23,7 @@ bd45272bd3eada17a3460d2b067e4e25ac6f71f692facec13106a8f31e3c456f  ./app/admin/ve
 ad346f9ccdc9c04a78d3101821678e4c7be2e62b56cbf3bce78575b921da42bb  ./app/api/auth/magic-link/route.ts
 6ec0d4c81e3fa9aeb2a4619175ace257133cfa76a14b82b9d3dc96b21f7d39f3  ./app/api/auth/staff-magic-link/route.ts
 886dbd13fd2c76a566138af147e60a8789e91bb40713e16550df0b6a3f22f314  ./app/api/contact-reveal/prepare/route.ts
+e257b32715ac8a54801ebe0485b864562bf1351457152f23d85ff7284878aba7  ./app/api/early-access/revise/route.ts
 de7e80850f0597cf1bc6ecf52905e9547fd53025a75693a241b06f89d2b3d95b  ./app/api/early-access/route.ts
 1e49b477a260a867ee6a8924f214e7d4138bd1e99f8826a5078f3e7fcb1ce960  ./app/api/identity-reveal/media/route.ts
 cc17c7bbc090649911ca9e4d23e1efea31a7dae8c8a8c50c751e557b24d26bcb  ./app/api/identity-reveal/profile/route.ts
@@ -97,6 +98,7 @@ e0f8785ada42a1ac78fec71044fcc6f8c35ce291d06f73326eca4d505f13fd62  ./app/auth/cal
 5a1cc40ecc351a04ab9ea1a95e74505cf3c807b6097574928ff8f8e1f9efcda1  ./app/auth/sign-up-success/page.tsx
 5a1cc40ecc351a04ab9ea1a95e74505cf3c807b6097574928ff8f8e1f9efcda1  ./app/auth/sign-up/page.tsx
 5a1cc40ecc351a04ab9ea1a95e74505cf3c807b6097574928ff8f8e1f9efcda1  ./app/auth/update-password/page.tsx
+f54e525817ddc30bb73c381d34965fb7c9ae05eb01a357e9e3cc7dfb8ef7f8df  ./app/early-access/revise/page.tsx
 8048d1ff86c463c53ea53c728723a17252a01c0875c165b3dd2227a19f1406f8  ./app/favicon.ico
 d8ce3ab23a98524d7e3e513dc2d5a461c53a1cda60511142327c23271d903f58  ./app/global-error.tsx
 76708d2794bdcc582b8593ebf0ef6f9c1e30bdc5e72a3480025f325975e3e7b3  ./app/globals.css
@@ -126,7 +128,7 @@ d9f42ccf50299a256b15c411be70560bcbb702128a9d551e564cc5d3e911a04d  ./app/robots.t
 36eb22308b025ee3e7167f3a4867a8f42ef7c30963895a6b3ffd88717ccf3650  ./app/sitemap.ts
 ba6decf03c678171ffaa40e4b87f1677ead659598d7b4c81c212cc03205b7d67  ./app/staff/actions.ts
 372905a6c109e8a8ade085f8224a02c32b2556f45390646b3d6ce86319a04093  ./app/staff/campus-actions.ts
-12c69bff90ed316733c83a76836c1b1a315fd826cd603e318784b9ca648c0c6a  ./app/staff/early-access/actions.ts
+adaad245e032ba4157f623c1fa4c581263a1825f682710208ed61545d58faf4a  ./app/staff/early-access/actions.ts
 8fb125c1106f318025ac90f13bcac547ec93ecd6a8d10cf04bb753c5787c6afa  ./app/staff/early-access/page.tsx
 df2e2f7935b6b11b185aef0979b96ab52b2479fc3a9965c3841c186856ba51d1  ./app/staff/login/page.tsx
 59b671856ff288eac4f26e5a3e602d54616d0ab7a9c412dbe5d339f2c17528d4  ./app/staff/study-program-actions.ts
@@ -145,6 +147,7 @@ c598e76fa7898f49bd29cce5fdcad28463a0e06c4e812a307b28d85b9af184b4  ./components/c
 f506593bf72b05d58a878c652b8fef77a604acad5c3446d2d9d933dafd2caf02  ./components/circles/circle-list-item.tsx
 3354ddedc5a4655ff84c39b2e858d61ee27e11439805cab35cfe7b63e27ec268  ./components/circles/circle-message-form.tsx
 9036d4ff6342b8c5487e0c9111012f4d7a8df4fa2f036487892d5f650dbda03b  ./components/deploy-button.tsx
+ebab6befc258aaac6035dcc3249ef4ea880a06fe2846811ae7623437878794b3  ./components/early-access/revision-form.tsx
 fe38cff6a3294970757b34ffb38b5471041fc50e464667820f3577c99ceb4d6a  ./components/env-var-warning.tsx
 17611225f66b56b48c8d3d627ea57d13faf9fb96993fd4b76ed10291f8ed9999  ./components/events/event-filter-form.tsx
 a2eb3afbf9c3139f0bb6cd85f8f3cec0ffa8b270baa62c8fe868950f9124c8b6  ./components/events/event-form.tsx
@@ -189,7 +192,7 @@ c98ec09dd36bef2d8c24c1946311f6d6ab703a99cd0c80e506129ea0cbaffd10  ./components/p
 3af468bb85af1121ccb3691393ae7af59328c81d761e2134289bfc5b8ae33cd9  ./components/settings/blocked-students-list.tsx
 bdeb7c9398078c99052fbcbf1a245c73dcfa69b55c35e5255f4a00f2c661a6c7  ./components/settings/telegram-companion-setting.tsx
 d58039aaaa1e0663f0ee857cb631dccefb608159efd43c5c2f859f5318ed163e  ./components/staff/campus-directory.tsx
-5851efab6629c9b09f550c23ebbd93242fa9c25157d51313d9cdc1eef6eabc39  ./components/staff/early-access-queue.tsx
+a163c37c3b5c143f7f4b91a2599a3600508d902fe625858c753a64c2ce8a711c  ./components/staff/early-access-queue.tsx
 4a380db698d20b23d04021316a2bd7f646b0dfdd7e9cbcf771c28026f4f5c308  ./components/staff/onboarding-catalog-directory.tsx
 cb5f4a268e166f1d2bb37bf83a732cee85ac220133b54b1e4256c2f07b21a833  ./components/staff/staff-magic-link-form.tsx
 56f20790c55f51cbb0a51b72399f37c865cf512fcd36b4e40f8ae3a45463c9a8  ./components/staff/staff-shell.tsx
@@ -217,9 +220,9 @@ ad090771eefed0193a0a161a7fdc637f37bb0e3c8a563b0f5f17a07fd590d8ce  ./content/insi
 8ce12304f4d484cdb1e1ae06739f33441d53f46c21d4a3cc794c982ad47b758b  ./content/public-docs/terms.ts
 e48aa3c5ccd7e1b3207679e27e5aa7c4ce502c0ab51a4d3609212582e0f5895d  ./context/ARCHITECTURE.md
 a6a4a15fe59864b07e714872c5b1ca8f7578c52262a026a4d7d863770035945b  ./context/DESIGN.md
-9a7158ae156c725cf6dad08f669183e112f21a5b8c756a999811b16b122705ce  ./context/PRD.md
+6b9cb14eb4537aed4458edb8bd66512dea0c8cf15a66ec0b2c8d145a6c32ecef  ./context/PRD.md
 d725bfb7066b01e5ed335b4e59d37bc9bc8b9cd1809f6e59ad4bc87e747b412b  ./context/RULES.md
-622280c3825b81dffe21fadbd9d7b5202c208f5b21f03377234d88c7041c6abd  ./context/SCHEMA.md
+b96ee86cc935b6fbfa95eb079055bd6c8d45bc3f563edc4dbd02cd5848703c4f  ./context/SCHEMA.md
 b65290c0dc0cd068f5109f2c732596c9a29163b2d1f7542a925b9bfd505e415c  ./docs/audits/2026-08-09-project-audit-closure.md
 d7b1b3b909f5b15848547b55b38fbae09ed51e03b0641e594ae14006c2cc1d80  ./docs/operations/account-privacy-controls-v1.md
 223376e71b8f077ea8de086304c10c51aca65e6947db73b54d9f11781cf61ecd  ./docs/operations/autogopay-billing.md
@@ -272,9 +275,12 @@ cdea45b98cd4b5901c35891b8205da779d2b10bcd2cbe0cffe81092f3a9dfc0e  ./lib/early-ac
 045db6888a4b2325207aff4809cdc8564c684328dd7a72386006107202951aa4  ./lib/early-access/claim-state.ts
 469134c3cfa12b49202ea61d2f24d4027bcc84122dde51ccb226c92e0b0cf3e7  ./lib/early-access/claim.ts
 276e1aa87f7aeb73d1fa88db44f9a3a00087609d4260b854450cae83a22d056a  ./lib/early-access/rate-limit.ts
+9563432bf9d5d363289411231030782c3579e5941627a5b2246603d8896537a4  ./lib/early-access/review-reasons.ts
 c76fc636e95dd9636157bbcf4b3bbd00231018efbeb9dde703219379673cb793  ./lib/early-access/service.test.ts
 c5f1edc57ccc41e241ff3dcef6c8022696c984273fd59327975ec5a18c9d7858  ./lib/early-access/service.ts
-a39c2900946419bf203a80fc2327741d702b22548aaafe60f2519b8757387c9b  ./lib/early-access/validation.ts
+d8b49fba536a1bad4ee007052e0a0db2c0bfcb27710f635f9efc5c043786b679  ./lib/early-access/validation.ts
+5a8556e2748a839ab7b257ba45ece87a8d0d0eeaa833ce12eeee72aadb97fcdd  ./lib/email/early-access-review-delivery.ts
+83164e2dc536227ec222a5476c7d6947a877c7ab140b520bb84004f78f06609d  ./lib/email/early-access-review-template.ts
 35482cd35b57e9fcec34a63b8bc0f82e2ec042bc725fb9799656cdd00a9ff02e  ./lib/email/magic-link-template.ts
 7af3e59215781c6b3c96a5aeb8ee7a42f6bcde07761877ba5faa54dc4b05bfec  ./lib/email/mailer.ts
 79eae9adb412d309a2bde9b9192dc5638b95042c51eac6f4f5f61e69f507526b  ./lib/events/behavior-model.ts
@@ -340,8 +346,8 @@ d5c3740d2c49051dde5e631c9daae7dc9a741ddaaa382e4eee575cb9730468bf  ./lib/profile/
 2f0d757d44ebf0d1286301c76dea52aa7f9b205ee5166ac72f8b9f7a50b0ac47  ./lib/security/rate-limit.ts
 79550e0f204762a804de215784ca6773cc2f7649de7b380052b68ed5a379097e  ./lib/staff/authorization.ts
 e5f7c063388cb2ee36cae5c52e64a2bb2d849008b62f467c8d2652f4ce6e16a3  ./lib/staff/capabilities.ts
-f3016b13ad046debd6276079d0d5d5f9fd4fb7869cbdc795b1bd12787b51583b  ./lib/staff/service.ts
-e47e7b8425f17fac0c39b02dc884fea529f17932a39ec14ec5b6c2a2fdd90677  ./lib/staff/validation.ts
+8fa5398053ce1278babb7bcd694113e2cb5146794d4a9a4f6a5d471638c3d6d5  ./lib/staff/service.ts
+0f2f5407ae0083ff843ea00e70b4d6ed674f60ce6de0f69beb51438c9e994e63  ./lib/staff/validation.ts
 0fabdeefe82859d102edf33f68b01a2671f7230983d481b51bc1e06513253a59  ./lib/study-program/service.ts
 b2aa079047803d588e134c0d2865943417197e77671d8fcb2f0bfbc6ee87eae9  ./lib/study-program/validation.ts
 bd8d72141922315670ab99b6b5e1917c31aa39363538b23c24f57eb31c090e33  ./lib/supabase/admin.ts
@@ -483,6 +489,7 @@ ee65d7070a61527500906cc54799f051ea48ca7e58e9885c7e186bdcfb4f8558  ./supabase/mig
 6e4ef0da599beeb2617848d452160d9beaf2cb241d26166b3d7fd5bff73a2a8e  ./supabase/migrations/202608240001_fix_event_registration_question_alias.sql
 ec7b2e2c7d3ff9ac91cd4150b4605b3829987275ed67b9fa9a3d2b968cced083  ./supabase/migrations/202608250001_anonymous_chat_official_stickers_v1.sql
 aa3e96137c94cd295881ee58de8f7f44d440f732a296ec58a99cc61b51e78297  ./supabase/migrations/202608250002_early_access_moderation_invitation_v1.sql
+3262d3288a0bfec0f7ae9c1590a5d7a1ff2c83d93f4d6556ba95f462d1e453d6  ./supabase/migrations/202608260001_early_access_revision_reasons_v1.sql
 8b7fdfbbdc70728cb5cc569fb55db731e2f286af7d0f2238ac3b9799e3acb2ec  ./tailwind.config.ts
 6b7fca7e45b759b63672459e052e732a98dc33473e714449cce5ca2ba3f7c474  ./tests/account-lifecycle.test.ts
 68d1516a4dceacd213e9d4ec2c077c8c48f158a9cd40c234abd741cdff8f6d2a  ./tests/account-privacy-controls.test.ts
@@ -499,7 +506,7 @@ c0562d753f568d78552dd7aa316caf8e59f6cb3accfd0e8bbd96b631b26885d7  ./tests/circle
 46f1b0c1681d6af5f2a090fe7cec330598f50b77b951d802abdfff3a7ec09a41  ./tests/contact-reveal-crypto-recovery.test.ts
 f3ac55bcb58fbfb68b98410425bc685088792bbf03d961cf2e9f2cff0faeec96  ./tests/contact-reveal.test.ts
 18313f02be931fa29ec13ff25cf525a274cabae686550eb8a56957127a5ec623  ./tests/early-access-claim.test.ts
-59d418682651301dd750fc8178dea6d2904c7e055bad4dca478d8063c5b51bc8  ./tests/early-access-moderation.test.ts
+d6b5bf84e7e2a86e7777618d82c721ddcd8ff76b23f155ca473b75b6de2fd090  ./tests/early-access-moderation.test.ts
 f78c90d244a94388045c1f549a93958f6863bdf93ae9060e1c8430fc7a039ca9  ./tests/event-roadmap.test.ts
 f24954f23261e1f50eaec1634cf9672e961542db84c0e6e5911a97067d985fc8  ./tests/events-v2-database.test.ts
 b799b5db79778c814aa1a1235355db9ef31d4ea10d818d0d706f9eec3c5131b5  ./tests/events-v2-owner.test.ts
@@ -529,7 +536,7 @@ da30227789a99cbf12fbf876deddc8cb8c19a6e1179f80a571bc0aac8139a163  ./tests/safety
 e7e6ddacb1ec1ac944df58a73a3bf5f45df956b95d948d49d51187e41acdaa4f  ./tests/staff-operations.test.ts
 ccce2a65307df98a37529406dec4fc48c8abe08bb6a470c9851143512d809ec4  ./tests/study-circles.test.ts
 d841c910ae724947070d7b54ea8f8b5b0c94da4efd2f209311f6673940f4e353  ./tests/study-program-options.test.ts
-edc24c83827f32356e32d9a2b0dbafe76a9ef75f78c771ab8817d553268ad038  ./tests/studydate-email.test.ts
+7e7ce3356abea126a045654872cb8bb1794e76149f7d8ee5f3041ee93f69d689  ./tests/studydate-email.test.ts
 149e07ee87ec810a7936c1bc6ef825a13e969275e52e7aad2fcae8b6466edc07  ./tests/telegram-companion-security-matrix.test.ts
 07829686a8becab109b25782684c84b80c55490a2bbeac4651500fd8d15d8546  ./tests/telegram-companion.test.ts
 878fb778f25f3be092f1e8cae1c68eb13dafbabdee595a2a886ae086f628eb18  ./tests/verification-evidence.test.ts
