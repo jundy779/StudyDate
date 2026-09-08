@@ -9,7 +9,7 @@ export type ModerationStatus = (typeof MODERATION_STATUSES)[number];
 
 export const MODERATION_STATUS_LABELS: Record<ModerationStatus, string> = {
   submitted: "Baru",
-  under_review: "Sedang ditinjau",
+  under_review: "Sedang diperiksa",
   resolved: "Selesai",
   dismissed: "Diabaikan",
 };
@@ -18,20 +18,20 @@ export const MODERATION_TARGET_LABELS: Record<string, string> = {
   introduction: "Perkenalan",
   conversation: "Percakapan",
   message: "Pesan",
-  circle: "Study Circle",
-  circle_message: "Pesan Study Circle",
-  event: "Campus Event",
-  event_organizer: "Organizer Campus Event",
-  event_message: "Pesan Campus Event",
+  circle: "Circle belajar",
+  circle_message: "Pesan circle belajar",
+  event: "Acara kampus",
+  event_organizer: "Penyelenggara acara kampus",
+  event_message: "Pesan acara kampus",
   other: "Lainnya",
 };
 
 export const MODERATION_COPY = {
-  heading: "Moderasi laporan",
+  heading: "Laporan pengguna",
   description:
-    "Antrean laporan peserta. Moderator tidak membaca seluruh riwayat chat atau Contact Reveal.",
+    "Periksa laporan yang masuk tanpa membuka seluruh riwayat percakapan atau kontak pribadi.",
   empty: "Tidak ada laporan pada filter ini.",
-  loading: "Menyiapkan antrean moderasi…",
+  loading: "Menyiapkan laporan…",
   genericError: "Laporan belum dapat diproses. Coba lagi sebentar.",
   noteLabel: "Catatan internal (opsional)",
   noteHint: "Teks biasa, maksimal 500 karakter. Tidak terlihat oleh mahasiswa.",

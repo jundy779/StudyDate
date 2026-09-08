@@ -9,25 +9,25 @@ import { Suspense } from "react";
 
 const productAreas = [
   {
-    title: "People",
-    description: "Temukan koneksi dengan konteks dan privasi yang jelas.",
+    title: "Cari Teman",
+    description: "Temukan orang yang punya minat dan tujuan yang sama.",
     icon: Users,
     href: "/app/people",
-    action: "Jelajahi People",
+    action: "Cari teman",
   },
   {
-    title: "Study Circle",
-    description: "Mulai dari Study Circle dan kelompok kecil kampus.",
+    title: "Circle Belajar",
+    description: "Belajar dan bertumbuh bersama kelompok kecil di kampus.",
     icon: Network,
     href: "/app/circles",
-    action: "Jelajahi Circle",
+    action: "Cari circle",
   },
   {
-    title: "Campus Events",
-    description: "Jelajahi kegiatan, workshop, dan kesempatan networking.",
+    title: "Acara Kampus",
+    description: "Temukan seminar, workshop, dan kegiatan kampus yang ingin kamu ikuti.",
     icon: CalendarDays,
     href: "/app/events",
-    action: "Jelajahi Events",
+    action: "Cari acara",
   },
 ] as const;
 
@@ -73,7 +73,7 @@ async function PrivateAppHome() {
               />
               <div>
                 <h2 className="font-heading text-lg font-semibold">
-                  Onboarding selesai
+                  Pengaturan awal selesai
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-brand-muted">
                   Profilmu tersimpan secara privat dan belum dapat ditemukan
@@ -119,7 +119,7 @@ async function PrivateAppHome() {
               </h2>
             </div>
             <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">
-              People, Circle & Events tersedia
+              Teman, Circle & Acara tersedia
             </span>
           </div>
 

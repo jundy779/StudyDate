@@ -70,9 +70,9 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <section className="grid gap-7 lg:grid-cols-[1fr_360px] lg:items-end">
           <div className="max-w-3xl">
-            <p className="section-label">People Discovery</p>
+            <p className="section-label">Cari yang nyambung</p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-              Temukan orang dari konteks yang sama
+              Temukan orang yang punya kesamaan denganmu
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
               Jelajahi profil anonim mahasiswa berdasarkan kampus, minat, dan tujuan koneksi—tanpa membuka identitas privat.
@@ -82,8 +82,8 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
             <div className="flex items-start gap-3">
               {isDiscoverable ? <Eye className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" /> : <EyeOff className="mt-0.5 h-5 w-5 shrink-0 text-brand-muted" aria-hidden="true" />}
               <div>
-                <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di People</label>
-                <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil anonim yang disetujui untuk discovery yang ditampilkan.</p>
+                <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di pencarian</label>
+                <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil anonim yang memilih untuk ditemukan yang akan ditampilkan.</p>
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4">
@@ -98,8 +98,8 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
 
         <section className="mt-10 rounded-[22px] border border-brand-border bg-white p-5 sm:p-7" aria-labelledby="people-filter-title">
           <div>
-            <h2 id="people-filter-title" className="font-heading text-xl font-semibold text-brand-navy">Saring dengan konteks</h2>
-            <p className="mt-2 text-sm leading-6 text-brand-muted">Semua filter bersifat opsional dan dijalankan di server.</p>
+            <h2 id="people-filter-title" className="font-heading text-xl font-semibold text-brand-navy">Pilih yang kamu cari</h2>
+            <p className="mt-2 text-sm leading-6 text-brand-muted">Semua pilihan bersifat opsional. Pilih yang paling penting buatmu.</p>
           </div>
           <PeopleFilterForm
             filters={filters}
@@ -114,13 +114,13 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="section-label">Profil yang dapat ditemukan</p>
-              <h2 id="people-results-title" className="mt-2 font-heading text-2xl font-semibold tracking-[-0.02em] text-brand-navy">People</h2>
+              <h2 id="people-results-title" className="mt-2 font-heading text-2xl font-semibold tracking-[-0.02em] text-brand-navy">Orang yang bisa kamu kenal</h2>
             </div>
           </div>
 
           {quotaReached ? (
             <p role="status" className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
-              Kuota People harian untuk paket kamu sudah terpakai.{" "}
+              Batas pencarian harian paketmu sudah terpakai.{" "}
               <Link href="/app/membership" className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline">
                 Lihat StudyDate Plus
               </Link>
@@ -141,8 +141,8 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
             <div className="mt-6">
               <MascotEmptyState
                 pose="study"
-                title="Belum ada profil yang cocok"
-                description="Coba longgarkan filter. Hanya profil yang memilih tampil di People dan telah menyelesaikan onboarding yang dapat ditemukan."
+                title="Belum ada yang cocok"
+                description="Coba kurangi beberapa pilihan. Hanya profil yang memilih untuk ditemukan dan sudah menyelesaikan pengaturan awal yang akan muncul."
               />
             </div>
           ) : null}
@@ -155,7 +155,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
 
 export default function PeoplePage(props: PeoplePageProps) {
   return (
-    <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-sm text-brand-muted">Menyiapkan People…</p></main>}>
+    <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-sm text-brand-muted">Menyiapkan pencarian…</p></main>}>
       <PeopleContent {...props} />
     </Suspense>
   );

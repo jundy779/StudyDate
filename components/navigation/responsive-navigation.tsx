@@ -115,16 +115,16 @@ const iconMap = {
 
 const studentItems: NavigationItem[] = [
   { href: "/app", label: "Beranda", key: "home", icon: "home" },
-  { href: "/app/people", label: "People", key: "people", icon: "people" },
+  { href: "/app/people", label: "Cari Teman", key: "people", icon: "people" },
   {
     href: "/app/circles",
-    label: "Study Circle",
+    label: "Circle Belajar",
     key: "circles",
     icon: "circles",
   },
   {
     href: "/app/events",
-    label: "Campus Events",
+    label: "Acara Kampus",
     key: "events",
     icon: "events",
   },
@@ -243,7 +243,7 @@ function getStaffItems(
 
   return [
     { href: "/owner", label: "Ringkasan", key: "overview", icon: "overview" },
-    { href: "/owner/staff", label: "Staff", key: "staff", icon: "staff" },
+    { href: "/owner/staff", label: "Tim", key: "staff", icon: "staff" },
     {
       href: "/owner/memberships",
       label: "Paket & pembayaran",
@@ -252,7 +252,7 @@ function getStaffItems(
     },
     {
       href: "/owner/events",
-      label: "Campus Events",
+      label: "Acara Kampus",
       key: "events",
       icon: "events",
     },
@@ -295,7 +295,7 @@ function getStaffItems(
     },
     {
       href: "/owner/moderation",
-      label: "Moderasi",
+      label: "Laporan",
       key: "moderation",
       icon: "moderation",
     },
@@ -467,8 +467,8 @@ export function ResponsiveNavigation({
   const areaLabel =
     variant === "staff"
       ? role === "owner"
-        ? "Ruang operasional Owner"
-        : "Ruang operasional Admin"
+        ? "Area Owner"
+        : "Area Admin"
       : "Ruang mahasiswa";
 
   useEffect(() => {

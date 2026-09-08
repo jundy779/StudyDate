@@ -100,7 +100,7 @@ async function StaffContent({ searchParams }: Props) {
               >
                 <option value="grant_admin">Tambah Admin tanpa akses tugas</option>
                 <option value="grant_early_access">Boleh melihat Akses Awal</option>
-                <option value="grant_early_access_review">Boleh review & kirim undangan Akses Awal</option>
+                <option value="grant_early_access_review">Boleh periksa & kirim undangan Akses Awal</option>
                 <option value="grant_users_read">Boleh melihat ringkasan akun</option>
                 <option value="grant_users_support">Boleh mencari akun dengan email</option>
                 <option value="grant_reviewer">Boleh meninjau verifikasi</option>
@@ -128,10 +128,11 @@ async function StaffContent({ searchParams }: Props) {
                 >
                   <div>
                     <p className="font-semibold capitalize">
-                      {member.role} · {member.status}
+                      {member.role === "owner" ? "Owner" : "Admin"} ·{" "} 
+                      {member.status === "active" ? "Aktif" : "Nonaktif"}
                     </p>
                     <p className="mt-1 font-mono text-xs text-brand-muted">
-                      UUID suffix {member.user_id.slice(-8)} · dibuat{" "}
+                      Nomor akun {member.user_id.slice(-8)} · dibuat{" "}
                       {date.format(new Date(member.created_at))}
                     </p>
                     <ul className="mt-2 space-y-1 text-sm text-brand-muted">
@@ -146,7 +147,7 @@ async function StaffContent({ searchParams }: Props) {
                           : "Nonaktif"}
                       </li>
                       <li>
-                        Review & undang Akses Awal:{" "}
+                        Periksa & undang Akses Awal:{" "}
                         {member.can_early_access_review ? "Aktif" : "Nonaktif"}
                       </li>
                       <li>
@@ -172,8 +173,8 @@ async function StaffContent({ searchParams }: Props) {
                             }
                             label={
                               member.verification_reviewer
-                                ? "Cabut reviewer"
-                                : "Aktifkan reviewer"
+                                ? "Cabut akses pemeriksa"
+                                : "Aktifkan pemeriksa"
                             }
                           />
                           <CapabilityForm
@@ -198,8 +199,8 @@ async function StaffContent({ searchParams }: Props) {
                             }
                             label={
                               member.can_early_access_review
-                                ? "Cabut review Akses Awal"
-                                : "Boleh review Akses Awal"
+                                ? "Cabut akses pemeriksaan Akses Awal"
+                                : "Boleh periksa Akses Awal"
                             }
                           />
                           <CapabilityForm

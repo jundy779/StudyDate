@@ -14,7 +14,7 @@ async function AdminContent() {
       ? {
           href: "/staff/users",
           title: "Akun mahasiswa",
-          description: "Bantu kendala akun, onboarding, dan status membership.",
+          description: "Bantu kendala akun, pengaturan awal, dan status paket.",
           icon: Users,
         }
       : null,
@@ -37,13 +37,13 @@ async function AdminContent() {
     {
       href: "/admin/campuses",
       title: "Kampus",
-      description: "Kurasi kampus yang tersedia saat onboarding.",
+      description: "Atur daftar kampus yang tersedia saat pendaftaran.",
       icon: GraduationCap,
     },
     {
       href: "/admin/study-programs",
       title: "Program studi",
-      description: "Kurasi program studi yang tersedia saat onboarding.",
+      description: "Atur daftar program studi yang tersedia saat pendaftaran.",
       icon: BookOpen,
     },
   ].filter((tool) => tool !== null);
@@ -52,13 +52,13 @@ async function AdminContent() {
     <StaffShell role={access.role} current="overview" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Ruang operasional Admin</p>
+          <p className="section-label">Area Admin</p>
           <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
             Pilih pekerjaan yang perlu ditangani
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-muted">
-            Menu hanya menampilkan akses yang diberikan Owner. Data sensitif
-            mahasiswa tetap dibatasi berdasarkan tugas.
+            Menu hanya menampilkan tugas yang diizinkan oleh Owner. Data pribadi
+            mahasiswa tetap dibatasi sesuai kebutuhan.
           </p>
           <div className="mt-10 divide-y divide-brand-border border-y border-brand-border">
             {tools.map(({ href, title, description, icon: Icon }) => (
@@ -87,7 +87,7 @@ export default function AdminPage() {
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
-          <p className="page-shell py-10 text-brand-muted">Menyiapkan ruang operasional…</p>
+          <p className="page-shell py-10 text-brand-muted">Menyiapkan halaman Admin…</p>
         </main>
       }
     >

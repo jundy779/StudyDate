@@ -29,7 +29,7 @@ const dateFmt = new Intl.DateTimeFormat("id-ID", {
 function ComparisonTable() {
   const rows: { label: string; free: string; plus: string }[] = [
     {
-      label: "People Discovery per hari",
+      label: "Pencarian teman per hari",
       free: String(MEMBERSHIP_LIMITS.free.peopleDiscoveryDaily),
       plus: String(MEMBERSHIP_LIMITS.plus.peopleDiscoveryDaily),
     },
@@ -54,17 +54,17 @@ function ComparisonTable() {
       plus: String(MEMBERSHIP_LIMITS.plus.joinedCirclesActive),
     },
     {
-      label: "Event mendatang yang kamu kelola",
+      label: "Acara mendatang yang kamu kelola",
       free: String(MEMBERSHIP_LIMITS.free.createdEventsActive),
       plus: String(MEMBERSHIP_LIMITS.plus.createdEventsActive),
     },
     {
-      label: "Event mendatang yang kamu ikuti",
+      label: "Acara mendatang yang kamu ikuti",
       free: String(MEMBERSHIP_LIMITS.free.joinedEventsActive),
       plus: String(MEMBERSHIP_LIMITS.plus.joinedEventsActive),
     },
     {
-      label: "Filter People lanjutan",
+      label: "Pilihan pencarian lanjutan",
       free: "Kampus dan program studi",
       plus: "Termasuk semester, kota, tujuan, dan minat",
     },

@@ -1,18 +1,20 @@
 # StudyDate ID
 
-StudyDate ID helps students find study partners, small circles, and campus events without immediately sharing their
-real name or personal contact details. A conversation starts only after an introduction is accepted, and identity or
-contact details are shared gradually with mutual consent.
+StudyDate ID is a connection ecosystem for students and alumni in Indonesia. People can meet through shared interests,
+study circles, and campus events, then decide together whether the connection grows into study, collaboration,
+friendship, networking, or a personal relationship. Real names and contacts are shared gradually with mutual consent.
 
 ## Agent context
 
 Any coding agent must read the project context in this order before changing code, migrations, dependencies, or UI:
 
 1. [`context/RULES.md`](context/RULES.md)
-2. [`context/PRD.md`](context/PRD.md)
-3. [`context/ARCHITECTURE.md`](context/ARCHITECTURE.md)
-4. [`context/SCHEMA.md`](context/SCHEMA.md)
-5. [`context/DESIGN.md`](context/DESIGN.md)
+2. [`context/PRODUCT_DIRECTION.md`](context/PRODUCT_DIRECTION.md)
+3. [`context/MOBILE_APP_ROADMAP.md`](context/MOBILE_APP_ROADMAP.md)
+4. [`context/PRD.md`](context/PRD.md)
+5. [`context/ARCHITECTURE.md`](context/ARCHITECTURE.md)
+6. [`context/SCHEMA.md`](context/SCHEMA.md)
+7. [`context/DESIGN.md`](context/DESIGN.md)
 
 These documents are the primary product and engineering context, but agents must still inspect the actual repository
 before editing. When code and documentation conflict, stop, inspect the implementation, and report the conflict instead
