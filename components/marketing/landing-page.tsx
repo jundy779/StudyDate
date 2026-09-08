@@ -15,6 +15,7 @@ import {
   EarlyAccessTrigger,
 } from "@/components/marketing/early-access-dialog";
 import { MobileNav } from "@/components/marketing/mobile-nav";
+import { PublicFooter } from "@/components/marketing/public-footer";
 
 const navigation = [
   { label: "Cari Teman", href: "/#people" },
@@ -23,16 +24,6 @@ const navigation = [
   { label: "Cara Kerja", href: "/#cara-kerja" },
   { label: "Tentang", href: "/about" },
   { label: "Keamanan", href: "/safety" },
-];
-
-const footerLinks = [
-  { label: "Tentang", href: "/about" },
-  { label: "Insight", href: "/insight" },
-  { label: "Privasi", href: "/privacy" },
-  { label: "Ketentuan", href: "/terms" },
-  { label: "Pedoman Komunitas", href: "/community-guidelines" },
-  { label: "Keamanan", href: "/safety" },
-  { label: "Bantuan", href: "/help" },
 ];
 
 const peopleFlow = [
@@ -765,38 +756,6 @@ function EarlyAccessCTA() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-brand-border bg-white">
-      <div className="page-shell flex flex-col gap-8 py-10 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <BrandLogo />
-          <p className="mt-4 max-w-sm text-sm leading-6 text-brand-muted">
-            Tempat mahasiswa dan alumni menemukan teman, circle, dan acara kampus
-            tanpa harus langsung membagikan nama atau kontak pribadi.
-          </p>
-        </div>
-        <div className="text-sm text-brand-muted sm:text-right">
-          <nav className="flex flex-wrap gap-x-6 gap-y-3" aria-label="Legal dan bantuan">
-            {footerLinks.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="focus-ring transition-colors hover:text-brand-navy"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-          <p className="mt-5">
-            © 2026 StudyDate ID · Kenalan tanpa perlu terburu-buru.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 export function LandingPage() {
   return (
     <EarlyAccessProvider>
@@ -812,7 +771,7 @@ export function LandingPage() {
         <OnlineFirst />
         <EarlyAccessCTA />
       </main>
-      <Footer />
+      <PublicFooter />
     </EarlyAccessProvider>
   );
 }
