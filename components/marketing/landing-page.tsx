@@ -201,7 +201,7 @@ function ConnectionPreview() {
   const connectionGoals = [
     "Belajar bersama",
     "Obrolan kampus",
-    "Networking",
+    "Jejaring",
   ];
 
   return (
@@ -310,15 +310,15 @@ function Hero() {
       <div className="page-shell grid gap-12 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-14 lg:py-16 xl:grid-cols-[1.14fr_0.86fr]">
         <div className="animate-enter min-w-0 max-w-[640px] lg:max-w-[680px]">
           <p className="mb-6 border-l-2 border-brand-blue pl-4 text-sm font-semibold leading-6 text-brand-navy">
-            Mulai dari kesamaan di kampus. Kenalan tanpa perlu terburu-buru.
+            Ketemu lewat hal yang sama. Kenalan tanpa perlu terburu-buru.
           </p>
           <h1 className="text-balance font-heading max-w-none text-[1.9rem] font-semibold leading-[1.03] tracking-[-0.035em] text-brand-navy sm:text-[3.35rem] sm:leading-[1.08] sm:tracking-[-0.04em] lg:text-[3.65rem] xl:text-[3.9rem]">
-            Temukan teman belajar dan koneksi baru{" "}
-            <span className="text-brand-blue">dari lingkungan kampus.</span>
+            Temukan koneksi baru{" "}
+            <span className="text-brand-blue">lewat hal yang sama.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-[1.6] text-brand-muted sm:mt-7 sm:leading-8">
-            Cari mahasiswa dengan minat yang sama, gabung circle belajar, dan
-            temukan acara kampus. Nama asli dan kontak tidak langsung ditampilkan.
+            Cari teman belajar, gabung circle, dan temukan acara kampus. Mulai dari
+            lingkungan mahasiswa dan alumni, tanpa harus langsung membuka nama atau kontak.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row">
             <EarlyAccessTrigger
@@ -387,7 +387,7 @@ function MascotCompanion() {
         <div className="max-w-2xl">
           <p className="section-label">Cara StudyDate bekerja</p>
           <h2 id="mascot-companion-title" className="section-title mt-4">
-            Kenalan dengan ritme yang kamu tentukan sendiri.
+            Mulai dari satu kesamaan. Lanjut kalau sama-sama nyaman.
           </h2>
           <p className="mt-4 max-w-xl text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
             Mulai dari hal yang sama-sama kalian sukai, lanjutkan percakapan jika
@@ -455,12 +455,12 @@ function PillarsOverview() {
           <div>
             <p className="section-label">Teman · Circle · Acara</p>
             <h2 className="section-title mt-4 max-w-lg">
-              Mulai dari cara yang paling nyaman buatmu.
+              Mulai dari yang paling kamu butuhkan.
             </h2>
           </div>
           <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            Cari teman belajar, gabung circle kecil, atau datang ke acara kampus.
-            Kamu yang menentukan koneksi itu ingin dibawa ke mana.
+            Cari teman belajar, gabung circle, atau datang ke acara kampus. Bisa jadi
+            teman diskusi, rekan proyek, atau seseorang yang lebih berarti.
           </p>
         </div>
 
@@ -598,7 +598,7 @@ function ProgressivePrivacy() {
 
 function Groups() {
   const groupTypes = [
-    ["Study Circle", "Belajar rutin bersama mahasiswa dengan target yang sejalan."],
+    ["Circle belajar", "Belajar rutin bersama mahasiswa dengan target yang sejalan."],
     ["Circle terbuka", "Mahasiswa dapat meminta bergabung sesuai topik dan tujuan circle."],
     ["Circle satu kampus", "Admin dapat membatasi anggota dari kampus yang sama."],
   ];
@@ -662,7 +662,7 @@ function CampusEvents() {
     "Komunitas kampus",
     "Study gathering",
     "Kompetisi",
-    "Acara karier & networking",
+    "Acara karier & jejaring",
   ];
 
   return (
@@ -710,12 +710,11 @@ function OnlineFirst() {
         </p>
         <div>
           <h2 className="max-w-4xl font-heading text-3xl font-medium leading-[1.35] tracking-[-0.025em] text-brand-navy sm:text-4xl lg:text-[2.75rem]">
-            Ngobrol dulu secara online sampai kalian merasa cukup nyaman untuk
-            melanjutkan koneksi.
+            Ngobrol dulu secara online. Bertemu nanti kalau sama-sama nyaman.
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-brand-muted">
-            Tidak harus berujung pada pertemuan. Koneksi bisa tetap menjadi teman
-            belajar, rekan proyek, teman ngobrol, atau hubungan lain yang kalian sepakati.
+            Koneksi bisa tumbuh menjadi teman belajar, rekan proyek, teman ngobrol,
+            atau hubungan personal. Tidak perlu ditentukan dari awal.
           </p>
         </div>
       </div>
@@ -745,11 +744,11 @@ function EarlyAccessCTA() {
                 Akses awal
               </p>
               <h2 className="mt-5 font-heading text-3xl font-semibold leading-tight sm:text-4xl">
-                Temukan teman, circle belajar, dan acara kampus dalam satu tempat.
+                Mulai temukan koneksi dari lingkungan kampusmu.
               </h2>
               <p className="mt-5 leading-7 text-white/70">
-                Daftar akses awal untuk mencoba StudyDate ID dan membantu kami
-                membangun pengalaman yang lebih berguna bagi mahasiswa.
+                Daftar akses awal untuk mencoba StudyDate ID dan bantu kami membangun
+                jaringan mahasiswa dan alumni Indonesia.
               </p>
               <EarlyAccessTrigger
                 source="final-cta"
@@ -773,8 +772,8 @@ function Footer() {
         <div>
           <BrandLogo />
           <p className="mt-4 max-w-sm text-sm leading-6 text-brand-muted">
-            Tempat mahasiswa menemukan teman belajar, circle kecil, dan acara
-            kampus tanpa langsung membagikan nama atau kontak pribadi.
+            Tempat mahasiswa dan alumni menemukan teman, circle, dan acara kampus
+            tanpa harus langsung membagikan nama atau kontak pribadi.
           </p>
         </div>
         <div className="text-sm text-brand-muted sm:text-right">

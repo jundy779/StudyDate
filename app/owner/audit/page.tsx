@@ -12,8 +12,8 @@ const eventLabels: Record<string, string> = {
   admin_granted: "Admin ditambahkan",
   admin_deactivated: "Admin dinonaktifkan",
   admin_reactivated: "Admin diaktifkan kembali",
-  reviewer_granted: "Akses tinjau verifikasi diberikan",
-  reviewer_removed: "Akses tinjau verifikasi dicabut",
+  reviewer_granted: "Akses pemeriksaan verifikasi diberikan",
+  reviewer_removed: "Akses pemeriksaan verifikasi dicabut",
   early_access_granted: "Akses daftar Akses Awal diberikan",
   early_access_removed: "Akses daftar Akses Awal dicabut",
   users_read_granted: "Akses ringkasan akun diberikan",
@@ -24,8 +24,8 @@ const eventLabels: Record<string, string> = {
   early_access_approved: "Pendaftaran Akses Awal disetujui",
   early_access_rejected: "Pendaftaran Akses Awal tidak disetujui",
   early_access_invitation_sent: "Undangan Akses Awal dikirim",
-  early_access_review_capability_granted: "Akses review Akses Awal diberikan",
-  early_access_review_capability_removed: "Akses review Akses Awal dicabut",
+  early_access_review_capability_granted: "Akses pemeriksaan Akses Awal diberikan",
+  early_access_review_capability_removed: "Akses pemeriksaan Akses Awal dicabut",
   user_support_viewed: "Pencarian akun dengan email dilakukan",
   student_account_viewed: "Ringkasan akun mahasiswa dibuka",
   staff_capability_changed: "Akses tugas Admin diubah",
@@ -60,10 +60,10 @@ async function AuditContent() {
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
           <p className="section-label">Khusus Owner</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold">Riwayat akses operasional</h1>
+          <h1 className="mt-4 font-heading text-4xl font-semibold">Riwayat tindakan tim</h1>
           <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
             Perubahan tim dan pembukaan data dukungan dicatat tanpa email lengkap,
-            isi profil privat, atau identifier akun mentah.
+            isi profil privat, atau nomor internal akun.
           </p>
           <div className="mt-8 overflow-hidden rounded-[22px] border border-brand-border bg-white">
             <div className="divide-y divide-brand-border">
@@ -90,7 +90,7 @@ async function AuditContent() {
                   </article>
                 ))
               ) : (
-                <p className="p-6 text-brand-muted">Belum ada aktivitas operasional.</p>
+                <p className="p-6 text-brand-muted">Belum ada tindakan tim yang tercatat.</p>
               )}
             </div>
           </div>
@@ -101,5 +101,5 @@ async function AuditContent() {
 }
 
 export default function AuditPage() {
-  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan audit…</p></main>}><AuditContent /></Suspense>;
+  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan riwayat…</p></main>}><AuditContent /></Suspense>;
 }

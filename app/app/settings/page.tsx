@@ -115,7 +115,7 @@ async function SettingsContent() {
             <SettingsSection
               id="profil"
               title="Profil"
-              description="Kelola informasi yang membantu kamu ditemukan oleh partner belajar."
+              description="Kelola informasi yang membantu kamu ditemukan oleh teman belajar."
             >
               <div className="rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted sm:px-5">
                 <strong className="text-brand-navy">{profile.publicAlias}</strong>{" "}
@@ -137,41 +137,38 @@ async function SettingsContent() {
               <div className="space-y-6 border-l-2 border-brand-border pl-5 sm:pl-6">
                 <div>
                   <h3 className="font-heading text-lg font-semibold text-brand-navy">
-                    Terlihat sebelum private reveal
+                    Terlihat saat berkenalan
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
-                    Alias anonim, maskot resmi, kampus, program studi, semester,
-                    wilayah umum, intro singkat, minat, tujuan, dan badge
-                    verifikasi hanya bila statusnya benar-benar verified.
+                    Nama samaran, avatar, kampus, program studi, semester,
+                    wilayah umum, perkenalan singkat, minat, tujuan, dan tanda
+                    verifikasi hanya jika sudah disetujui.
                   </p>
                 </div>
                 <div>
                   <h3 className="font-heading text-lg font-semibold text-brand-navy">
-                    Privat secara default
+                    Tetap pribadi
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
-                    Nama depan/belakang privat, email, NIM, identitas legal,
-                    lokasi presisi, foto wajah, dan kontak tidak tampil di
-                    People.
+                    Nama lengkap, email, NIM, identitas resmi, lokasi pasti,
+                    foto wajah, dan kontak tidak tampil di pencarian.
                   </p>
                 </div>
                 <div>
                   <h3 className="font-heading text-lg font-semibold text-brand-navy">
-                    Dibuka melalui persetujuan existing
+                    Dibuka jika sama-sama setuju
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
-                    Identity Reveal membuka nama depan dan foto yang disiapkan
-                    untuk percakapan itu. Contact Reveal membuka Telegram,
-                    Instagram, atau LinkedIn per saluran setelah persetujuan dua
-                    arah. StudyDate tidak menjanjikan anonimitas atau keamanan
-                    mutlak.
+                    Nama depan dan foto hanya dibuka untuk percakapan yang kamu
+                    pilih. Telegram, Instagram, atau LinkedIn juga dibagikan satu
+                    per satu setelah kedua pihak setuju. Tetap berhati-hati saat
+                    mengenal orang baru.
                   </p>
                 </div>
               </div>
               <p className="mt-6 text-sm leading-6 text-brand-muted">
-                V1 memakai satu safe projection global yang sama dengan People.
-                Toggle per-field dan riwayat consent satu sisi tidak tersedia.
-                Baca juga{" "}
+                Informasi yang ditampilkan tetap mengikuti pilihan privasimu.
+                Untuk penjelasan lengkap, baca{" "}
                 <Link
                   href="/privacy"
                   className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline"
@@ -193,7 +190,7 @@ async function SettingsContent() {
             <SettingsSection
               id="notifikasi"
               title="Notifikasi"
-              description="Pilih notifikasi in-app yang ingin kamu terima. Email, browser push, SMS, dan Telegram tetap nonaktif."
+              description="Pilih pemberitahuan yang ingin kamu terima di StudyDate. Email, notifikasi perangkat, SMS, dan Telegram dapat diatur saat fiturnya tersedia."
             >
               <div className="divide-y divide-brand-border rounded-xl border border-brand-border bg-white">
                 {notificationPreferences.map((preference) => (
@@ -221,7 +218,7 @@ async function SettingsContent() {
             <SettingsSection
               id="paket"
               title="StudyDate Plus"
-              description="Paket menentukan kapasitas People, perkenalan, dan Circle. Privasi dan keamanan tetap sama."
+              description="Paket menentukan batas pencarian teman, perkenalan, dan circle. Fitur keamanan dan privasi tetap sama untuk semua pengguna."
             >
               <Link
                 href="/app/membership"

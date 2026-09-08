@@ -47,14 +47,14 @@ async function ModerationInboxContent({ searchParams }: Props) {
     ]);
   } catch {
     loadError =
-      "Antrean belum tersedia. Pastikan migrasi moderasi sudah diterapkan, lalu muat ulang.";
+      "Daftar laporan belum dapat dibuka. Coba muat ulang atau periksa kesiapan sistem.";
   }
 
   return (
     <StaffShell role={access.role} current="moderation">
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Owner only</p>
+          <p className="section-label">Khusus Owner</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">
             {MODERATION_COPY.heading}
           </h1>
@@ -75,7 +75,7 @@ async function ModerationInboxContent({ searchParams }: Props) {
           )}
 
           <nav
-            aria-label="Filter status moderasi"
+            aria-label="Pilih status laporan"
             className="mt-7 flex gap-2 overflow-x-auto pb-2"
           >
             <Link
@@ -97,7 +97,7 @@ async function ModerationInboxContent({ searchParams }: Props) {
 
           <section
             className="mt-6 overflow-hidden rounded-[22px] border border-brand-border bg-white"
-            aria-label="Antrean laporan"
+            aria-label="Daftar laporan"
           >
             {loadError ? (
               <p className="p-7 text-brand-muted">{loadError}</p>
@@ -129,7 +129,7 @@ async function ModerationInboxContent({ searchParams }: Props) {
                         href={`/owner/moderation/${item.report_id}`}
                         className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white"
                       >
-                        Buka
+                        Periksa
                       </Link>
                     </article>
                   ))
