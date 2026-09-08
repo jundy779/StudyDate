@@ -1,7 +1,7 @@
 import { EarlyAccessProvider } from "@/components/marketing/early-access-dialog";
 import { PublicNavbar } from "@/components/marketing/landing-page";
+import { PublicFooter } from "@/components/marketing/public-footer";
 import { getAuthenticatedUser } from "@/lib/auth/session";
-import { PUBLIC_DOC_ROUTES } from "@/lib/marketing/public-routes";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -70,37 +70,7 @@ export function PublicDocShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="mt-auto border-t border-brand-border bg-white">
-        <div className="page-shell flex flex-col gap-6 py-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="font-heading text-base font-semibold text-brand-navy">
-              StudyDate ID
-            </p>
-            <p className="mt-2 max-w-sm text-sm leading-6 text-brand-muted">
-              Kenalan tanpa perlu terburu-buru.
-            </p>
-          </div>
-          <div className="text-sm text-brand-muted sm:text-right">
-            <nav
-              className="flex flex-wrap gap-x-5 gap-y-2 sm:justify-end"
-              aria-label="Legal dan bantuan"
-            >
-              {PUBLIC_DOC_ROUTES.map((item) => (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  className="focus-ring transition-colors hover:text-brand-navy"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <p className="mt-4">
-              © 2026 StudyDate ID · Kenalan tanpa perlu terburu-buru.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
