@@ -8,7 +8,8 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 
 async function PublicHeader() {
-  const user = await getAuthenticatedUser();
+  // Public documents must remain available when auth is not configured or is temporarily unavailable.
+  const user = await getAuthenticatedUser().catch(() => null);
   if (!user) {
     return (
       <EarlyAccessProvider>
