@@ -8,8 +8,6 @@ import {
   Check,
   Flag,
   LockKeyhole,
-  MapPin,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 import {
@@ -24,7 +22,7 @@ const navigation = [
   { label: "Acara Kampus", href: "/#events" },
   { label: "Cara Kerja", href: "/#cara-kerja" },
   { label: "Tentang", href: "/about" },
-  { label: "Keamanan", href: "/#keamanan" },
+  { label: "Keamanan", href: "/safety" },
 ];
 
 const footerLinks = [
@@ -725,72 +723,6 @@ function OnlineFirst() {
   );
 }
 
-function OfflineSafety() {
-  const allowed = [
-    "Perpustakaan",
-    "Area publik kampus",
-    "Kafe atau coffee shop",
-    "Coworking space",
-    "Food court",
-    "Lobi kantor atau venue publik",
-  ];
-  return (
-    <section id="keamanan" className="scroll-mt-20 bg-white py-20 sm:py-32">
-      <div className="page-shell">
-        <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr]">
-          <div>
-            <p className="section-label">Keamanan offline</p>
-            <h2 className="section-title mt-4 max-w-lg">
-              Jika bertemu, pilih ruang publik dan pertahankan kendali.
-            </h2>
-          </div>
-          <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            Tidak ada pertemuan yang bebas risiko. Beri tahu orang tepercaya,
-            atur transportasi sendiri, dan tinggalkan situasi kapan pun kamu
-            merasa tidak nyaman.
-          </p>
-        </div>
-
-        <div className="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="border-t-2 border-brand-blue pt-5">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-5 w-5 text-brand-blue" aria-hidden="true" />
-              <h3 className="font-heading text-xl font-semibold text-brand-navy">
-                Pilih lokasi ini
-              </h3>
-            </div>
-            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-              {allowed.map((item) => (
-                <li key={item} className="flex gap-3 text-sm text-brand-navy/75">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="border-t-2 border-brand-navy pt-5">
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="h-5 w-5 text-brand-navy" aria-hidden="true" />
-              <h3 className="font-heading text-xl font-semibold text-brand-navy">
-                Bertemu di tempat umum
-              </h3>
-            </div>
-            <p className="mt-5 max-w-xl text-sm leading-6 text-brand-navy/75">
-              Pilih lokasi yang ramai, terang, mudah diakses, dan masih
-              beroperasi—seperti area publik kampus, perpustakaan, kafe, atau
-              coworking space.
-            </p>
-            <p className="mt-4 text-sm font-semibold text-brand-navy">
-              Pertemuan di lokasi pribadi tidak diperbolehkan.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function EarlyAccessCTA() {
   return (
     <section id="mulai" className="bg-brand-surface py-14 sm:py-20">
@@ -879,7 +811,6 @@ export function LandingPage() {
         <Groups />
         <CampusEvents />
         <OnlineFirst />
-        <OfflineSafety />
         <EarlyAccessCTA />
       </main>
       <Footer />

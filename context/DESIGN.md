@@ -53,9 +53,8 @@ Struktur yang telah disetujui:
 6. Groups
 7. Campus Events
 8. Online-first
-9. Offline safety
-10. Early Access CTA
-11. Footer (tautan publik: `/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`)
+9. Early Access CTA
+10. Footer (tautan publik: `/about`, `/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`)
 
 Halaman legal/bantuan publik memakai shell editorial terpisah (`PublicDocShell`): Poppins heading,
 Inter body, `page-shell`, lebar baca ~42rem, tanpa ilustrasi dekoratif. Jangan redesign landing tanpa
