@@ -8,12 +8,12 @@ import {
 export const metadata: Metadata = {
   title: "Pedoman Komunitas — StudyDate ID",
   description:
-    "Norma komunitas StudyDate ID: saling menghormati, tanpa pelecehan, scam, doxxing, atau tekanan reveal.",
+    "Norma komunitas StudyDate ID: saling menghormati, tanpa pelecehan, penipuan, penyebaran data pribadi, atau tekanan membuka identitas.",
   alternates: { canonical: "/community-guidelines" },
   openGraph: {
     title: "Pedoman Komunitas — StudyDate ID",
     description:
-      "Aturan praktis agar StudyDate tetap hormat, aman, dan anonymous-first.",
+      "Aturan praktis agar StudyDate tetap saling menghormati dan menjaga data pribadi.",
     url: "/community-guidelines",
     type: "website",
   },

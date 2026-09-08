@@ -1,7 +1,8 @@
 # StudyDate ID
 
-StudyDate ID is a privacy-first student connection platform for discovering people, small groups, and campus events.
-Connections begin through private introductions and can develop gradually with mutual consent.
+StudyDate ID helps students find study partners, small circles, and campus events without immediately sharing their
+real name or personal contact details. A conversation starts only after an introduction is accepted, and identity or
+contact details are shared gradually with mutual consent.
 
 ## Agent context
 
@@ -26,15 +27,16 @@ instruction.
 
 ### Product overview
 
-StudyDate is organized around three product pillars:
+StudyDate has a defined product stack:
 
-- **People** — discover students through shared context while keeping private identity data protected.
-- **Groups** — join small campus groups, Study Circles, and Open Tables.
-- **Campus Events** — discover seminars, workshops, communities, study gatherings, competitions, and career events.
+- **MVP core loop** — People → Introduction → Anonymous Chat → Mutual Interest → Identity Reveal → Contact Reveal.
+- **Growth loops** — Study Circles and Campus Events create more reasons to return and start a connection.
+- **Trust layer** — consent, block, report, privacy controls, account deletion, and verification only when its rollout is active.
+- **Business model** — StudyDate Free for the core experience and StudyDate Plus for additional capacity or convenience. Safety and privacy are never paywalled.
 
-Connections begin with a private introduction before anonymous chat. Identity is revealed progressively, and every
-contact type requires separate mutual consent. Interaction is online-first; offline meetings are allowed only in public
-locations.
+Repository implementation does not automatically mean a capability is live. Features that depend on remote migrations,
+secrets, webhooks, schedulers, or operational review must be verified in the target environment before being described
+as active.
 
 ### Technology stack
 
@@ -51,7 +53,7 @@ locations.
 Implemented:
 
 - Public landing page
-- Early Access waitlist
+- Early Access waitlist with moderation, invitation, revision reasons, one-time correction links, and account claim
 - Passwordless email authentication
 - Supabase PKCE callback
 - Protected `/onboarding` and `/app` routes
@@ -84,12 +86,12 @@ Implemented:
   `202608100003` are deployed and live-verified; they implement retryable
   server-only cleanup, shared-history tombstones, Circle/Event policy, and
   Auth-last finalization.
-- Telegram Anonymous Chat Companion v1 is implemented **LOCAL-ONLY** behind
+- Telegram Anonymous Chat Companion v1 is implemented in the repository behind
   `TELEGRAM_COMPANION_ENABLED=false`: two-step web-confirmed linking,
   private text-only bot ingress, one active relay conversation per user,
-  encrypted routing, update dedupe, durable outbox, and a protected Vercel Cron
-  delivery runner. Migration `202608110001` is not applied; production secrets
-  and webhook are not configured.
+  encrypted routing, update dedupe, durable outbox, and a protected delivery
+  runner. Remote migration state, production secrets, webhook, scheduler, and
+  a controlled real-bot audit must be verified before enabling it.
 - PDDIKTI Academic Lookup + Manual Verification Fallback v1 database migration
   is **DEPLOYED** behind both `STUDENT_VERIFICATION_ENABLED=false` and
   `PDDIKTI_LOOKUP_PROVIDER_ENABLED=false`. It adds a replaceable server-only
@@ -186,11 +188,11 @@ StudyDate migrations must be applied in this order:
 3. `supabase/migrations/202607310001_create_student_verification_center.sql`
 4. `supabase/migrations/202607310002_refine_academic_verification.sql`
 5. `supabase/migrations/202607310003_harden_verification_cleanup.sql`
-6. `supabase/migrations/202607310004_create_people_discovery.sql` (local-only until a separate approved preflight)
-7. `supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql` (local-only; do not apply without approval)
+6. `supabase/migrations/202607310004_create_people_discovery.sql`
+7. `supabase/migrations/202607310005_create_staff_roles_and_admin_shell.sql`
 8. `supabase/migrations/202608060001_create_introduction_requests_v1.sql`
 9. `supabase/migrations/202608060002_fix_introduction_rpc_volatility.sql`
-10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql` (local-only; do not apply without approval)
+10. `supabase/migrations/202608060003_create_anonymous_chat_v1.sql`
 
 Only after the linked project has been manually verified:
 

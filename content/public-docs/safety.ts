@@ -1,12 +1,12 @@
 import type { PublicDocSection } from "@/components/marketing/public-doc-article";
 
 export const safetyIntro =
-  "Pusat Keamanan ini merangkum cara StudyDate menjaga ruang yang lebih tenang: mulai anonim, buka identitas perlahan, dan bertemu hanya di tempat umum bila kalian siap.";
+  "Pusat Keamanan ini merangkum cara StudyDate menjaga ruang yang lebih tenang: mulai dengan profil anonim, bagikan nama dan kontak secara bertahap, dan bertemu hanya di tempat umum bila kalian siap.";
 
 export const safetySections: PublicDocSection[] = [
   {
     id: "anonim-dulu",
-    title: "Prinsip anonymous-first",
+    title: "Mulai tanpa membuka identitas lengkap",
     blocks: [
       {
         type: "p",
@@ -16,14 +16,14 @@ export const safetySections: PublicDocSection[] = [
   },
   {
     id: "reveal-bertahap",
-    title: "Reveal identitas dan kontak secara bertahap",
+    title: "Buka identitas dan kontak secara bertahap",
     blocks: [
       {
         type: "ol",
         items: [
-          "Mutual Interest — keduanya memilih “Kenal Lebih Jauh”.",
-          "Identity Reveal — nama depan dan foto yang disiapkan, setelah persetujuan bersama.",
-          "Contact Reveal — Telegram, Instagram, atau LinkedIn per saluran, dengan persetujuan terpisah.",
+          "Keduanya memilih “Kenal Lebih Jauh”.",
+          "Nama depan dan foto dibuka setelah persetujuan bersama.",
+          "Kontak Telegram, Instagram, atau LinkedIn dibagikan satu per satu dengan persetujuan terpisah.",
         ],
       },
       {
@@ -34,7 +34,7 @@ export const safetySections: PublicDocSection[] = [
   },
   {
     id: "jangan-tekan",
-    title: "Jangan menekan orang lain untuk reveal",
+    title: "Jangan menekan orang lain untuk membuka identitas",
     blocks: [
       {
         type: "p",
@@ -62,7 +62,7 @@ export const safetySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Fitur blokir dan laporkan tersedia pada alur yang relevan (perkenalan dan percakapan). Gunakan bila ada pelecehan, scam, spam, atau tekanan reveal. Laporan ditinjau oleh staf yang berwenang sesuai kapasitas moderasi.",
+        text: "Fitur blokir dan laporkan tersedia pada alur yang relevan (perkenalan dan percakapan). Gunakan bila ada pelecehan, scam, spam, atau tekanan untuk membuka identitas. Laporan ditinjau oleh staf yang berwenang sesuai kapasitas moderasi.",
       },
     ],
   },

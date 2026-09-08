@@ -2,22 +2,25 @@
 
 ## 1. Ringkasan produk
 
-StudyDate ID adalah platform koneksi mahasiswa untuk menemukan orang, grup kecil, dan kegiatan kampus. Belajar serta
-kehidupan kampus menjadi konteks awal.
+StudyDate ID membantu mahasiswa menemukan teman belajar, circle kecil, dan acara kampus. Belajar serta kehidupan
+kampus menjadi konteks awal. Nama asli, foto, dan kontak tidak langsung dibagikan saat pengguna mulai berkenalan.
 
-Koneksi dapat berkembang menjadi teman belajar, teman baru, networking, kolaborasi, teman dekat, koneksi berarti, atau
-hubungan romantis yang tumbuh alami. Tidak ada kewajiban atau jaminan arah romantis.
+Koneksi dapat berkembang menjadi teman belajar, teman baru, rekan proyek, networking, atau hubungan yang lebih dekat.
+Tidak ada kewajiban atau jaminan arah romantis.
 
 ## 2. Positioning
 
 Headline:
-> Temukan seseorang untuk belajar, ngobrol, dan membangun koneksi yang berarti.
+> Temukan teman belajar dan koneksi baru dari lingkungan kampus.
+
+Penjelasan singkat untuk publik:
+> Cari mahasiswa dengan minat yang sama, gabung circle belajar, dan temukan acara kampus. Nama asli dan kontak tidak langsung ditampilkan.
 
 Brand statement:
-> Mulai dari belajar. Kenal perlahan. Biarkan koneksi menemukan arahnya.
+> Mulai dari kesamaan di kampus. Kenalan tanpa perlu terburu-buru.
 
 Tagline:
-> MEET • CONNECT • GROW
+> TEMUKAN • KENALAN • TERHUBUNG
 
 ## 3. Pilar produk
 
@@ -37,12 +40,10 @@ Alur utama:
 
 ### Groups
 
-Kelompok kecil untuk belajar, ngobrol, networking, dan aktivitas kampus:
+Circle kecil untuk belajar, berdiskusi, networking, dan aktivitas kampus:
 - Study Circle;
-- Open Table;
-- small campus group;
-- networking circle;
-- women-only, verified-only, atau campus-only option.
+- circle terbuka;
+- circle satu kampus.
 
 Groups dapat menjadi jalur sebelum perkenalan one-on-one.
 
@@ -52,6 +53,15 @@ Discovery dan registrasi kegiatan kampus seperti seminar, workshop, study gather
 volunteering, organisasi, language exchange, seni, dan olahraga.
 
 Visibility: public, unlisted, campus-only, invite-only.
+
+## 3b. Lapisan produk dan batas MVP
+
+- **MVP inti:** People → Perkenalan → Anonymous Chat → Kenal Lebih Jauh → Identity Reveal → Contact Reveal.
+- **Lapisan pertumbuhan:** Study Circle dan Campus Events memberi alasan tambahan untuk kembali dan memulai koneksi.
+- **Lapisan kepercayaan:** consent, block, report, privacy controls, account deletion, serta verification hanya bila rollout-nya aktif dan sudah diverifikasi.
+- **Kanal opsional:** Telegram Companion hanya menjadi transport untuk chat StudyDate yang sudah ada, bukan produk terpisah.
+- **Monetisasi:** StudyDate Free sebagai dasar dan StudyDate Plus untuk kapasitas atau fitur tambahan. Keamanan dan privasi tidak boleh menjadi paywall.
+- **Bahasa status:** gunakan `repository implemented`, `remote rollout verified`, atau `not implemented`. Keberadaan code atau migration tidak boleh disebut live tanpa pemeriksaan environment tujuan.
 
 ## 4. Prinsip produk
 
@@ -69,7 +79,7 @@ Diimplementasikan pada code dan migration repository saat ini:
 - public landing page;
 - public legal/safety/help pages (`/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`);
 - Early Access waitlist;
-- Early Access moderation + invitation: satu queue untuk Owner/Staff ber-capability, status waiting/approved/rejected/claimed, branded one-time invitation email, approved-only claim, lalu onboarding;
+- Early Access moderation + invitation: satu queue untuk Owner/Staff ber-capability, status waiting/needs_revision/approved/rejected/claimed, branded one-time invitation email, approved-only claim, lalu onboarding;
 - passwordless email authentication;
 - Supabase PKCE callback;
 - protected routes;
@@ -152,7 +162,7 @@ UI tidak boleh menampilkan data palsu untuk fitur tersebut.
 
 ### Student Verification Center
 
-Badge mahasiswa hanya diberikan bila dua syarat terpenuhi:
+Badge mahasiswa hanya diberikan bila tiga syarat terpenuhi:
 1. data akademik cocok melalui pemeriksaan manual PDDikti;
 2. kepemilikan akun dibuktikan melalui email kampus yang domainnya disetujui atau review kartu mahasiswa;
 3. reviewer aktif memberi persetujuan akhir sebelum badge diterbitkan.
@@ -258,13 +268,13 @@ Rules:
 - accepted menciptakan tepat satu `conversation_shells` berstatus `awaiting_chat` sebagai handoff Anonymous Chat v1
   tanpa composer pesan.
 
-## 10. Planned — Anonymous conversation
+## 10. Implemented — Anonymous Chat v1
 
-Chat terbuka hanya setelah introduction diterima dan shell `awaiting_chat` diaktifkan pada tahap berikutnya.
+Chat terbuka setelah introduction diterima. Shell `awaiting_chat` berubah menjadi `active` saat pesan pertama berhasil disimpan.
 
-Actions: reply dengan teks/emoji, kirim official StudyDate sticker, end, block, report, mutual interest.
+Actions: kirim teks dan emoji Unicode, kirim official StudyDate sticker bila migration terkait sudah diterapkan, tandai pesan dibaca, end, block, report, dan mutual interest. Delivery v1 memakai authenticated polling; Realtime belum menjadi bagian MVP.
 
-Jangan bocorkan Telegram metadata, email, sender ID, atau kontak sebelum reveal.
+Jangan bocorkan Telegram metadata, email, sender ID, UUID peserta, atau kontak sebelum reveal.
 
 ## 11. Implemented — Identity Reveal v1
 
@@ -487,7 +497,7 @@ maksimum 180 hari. Migrations `202608100001`–`202608100003` telah diterapkan
 dan live-verified pada project StudyDate. Student Verification tetap
 dinonaktifkan.
 
-## 13c. Local-only — Telegram Anonymous Chat Companion v1
+## 13c. Repository implemented — Telegram Anonymous Chat Companion v1
 
 Telegram Companion adalah transport teks opsional untuk satu Anonymous Chat
 existing, bukan login, discovery, matching, DM baru, atau Contact Reveal.
@@ -508,9 +518,10 @@ ditolak.
 Outbound memakai outbox durable dan executor server-only dengan lease/retry.
 Vercel Cron memanggil protected runner endpoint sekali per menit untuk bounded
 batch maksimal 25 delivery. Migration
-`202608110001_create_telegram_anonymous_chat_companion_v1.sql` tetap
-**LOCAL-ONLY**, kill switch default OFF, BotFather/webhook production belum
-dikonfigurasi, dan fitur belum deployed/live.
+`202608110001_create_telegram_anonymous_chat_companion_v1.sql` tersedia di
+repository dan kill switch default OFF. Status migration remote, secret,
+BotFather/webhook, scheduler, serta controlled real-bot audit harus diverifikasi
+pada environment tujuan sebelum fitur disebut aktif.
 
 ## 13d. Membership & AutoGoPay billing (schema deployed; checkout OFF)
 

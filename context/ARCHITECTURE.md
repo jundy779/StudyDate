@@ -14,12 +14,12 @@ Jangan menambahkan framework auth lain.
 Browser
   -> Next.js App Router
        -> Public UI: landing page + Early Access dialog
-       -> Public docs: /privacy, /terms, /community-guidelines, /safety, /help
+       -> Public docs: /about, /privacy, /terms, /community-guidelines, /safety, /help
          (legacy /privasi, /ketentuan, /pedoman-komunitas, /bantuan, /keamanan redirect)
        -> Public knowledge: /insight, /insight/[publishedSlug]
        -> Public search discovery: /sitemap.xml, /robots.txt, canonical metadata,
           public-only Web Analytics, dan JSON-LD Organization/WebSite/Article/Breadcrumb
-       -> Public handler: /api/early-access
+       -> Public handlers: /api/early-access, /api/early-access/revise
        -> Auth: /login, /staff/login, /auth/callback, /auth/confirm
        -> Protected student: /onboarding, /app, /app/people, /app/people/[alias], /app/introductions,
           /app/messages, /app/messages/[publicId], /app/circles, /app/circles/create,
@@ -135,7 +135,9 @@ Waitlist entry (waiting; bukan akun)
  -> shared moderation queue
     -> Owner: full access
     -> Staff: read/review hanya jika capability diberikan Owner
- -> approve | reject
+ -> approve | request revision | reject
+ -> needs_revision: kirim alasan publik + tautan koreksi sekali pakai
+ -> koreksi valid: status kembali ke waiting dan masuk queue lagi
  -> approved: StudyDate mengirim branded one-time magic link
  -> Auth callback dengan email yang sama
  -> RPC claim_early_access_for_me() (auth.uid + auth.users.email)
@@ -148,7 +150,7 @@ Waitlist entry (waiting; bukan akun)
 Prinsip:
 
 - Waitlist ≠ account dan approval Early Access ≠ Student/Alumni Verification.
-- Status lifecycle: `waiting | approved | rejected | claimed`.
+- Status lifecycle: `waiting | needs_revision | approved | rejected | claimed`.
 - Owner selalu memiliki `early_access.read` dan `early_access.review` melalui role. Admin default deny; capability review diberikan secara eksplisit oleh Owner dan tidak memberi capability staff lain.
 - Claim idempotent dan server-authoritative; tidak menerima email/user_id dari client. Hanya row `approved` dengan email Auth yang sama yang dapat diklaim.
 - Login akun yang onboarding-nya sudah selesai tetap dapat berlangsung. Pembuatan/login akun Beta baru tidak menghasilkan akses onboarding sebelum Early Access disetujui; public magic-link endpoint menjaga respons enumeration-safe.
@@ -236,8 +238,8 @@ List RPC Phase 1 juga menolak kuota People harian dan mengabaikan filter lanjuta
 `set_people_discovery_visibility` mengambil target hanya dari `auth.uid()` dan mengubah satu protected field milik
 sendiri. Direct column update atas `is_discoverable` tetap tidak diberikan kepada client.
 
-Belum ada block model pada repository saat ini; cross-user block exclusion menjadi syarat sebelum fitur block atau
-Introduction ditambahkan.
+Fondasi block/report berada pada Introduction Requests. Block berlaku dua arah untuk discovery dan introduction,
+menutup request pending yang relevan, serta menjadi gate pada chat, reveal, circle, event, dan proyeksi privat.
 
 ## 12. Introduction Requests v1 architecture
 
@@ -663,9 +665,9 @@ migration diterapkan dan jangan gunakan endpoint publik.
 Entities lanjutan: reveal requests. Anonymous Chat v1 sudah menyediakan `anonymous_messages`,
 `conversation_events`, lifecycle shell, serta RPC pesan.
 
-## 15. Future Telegram architecture
+## 15. Controlled Telegram architecture
 
-### Local-only — Telegram Anonymous Chat Companion v1
+### Repository implemented — remote rollout must be verified
 
 ```text
 eligible Anonymous Chat
@@ -684,7 +686,7 @@ anonymous_messages insert
  -> delivered | bounded retry | cancelled
 ```
 
-Migration `202608110001` tetap LOCAL-ONLY. Webhook route adalah
+Migration `202608110001` tersedia di repository. Status remote migration harus diverifikasi sebelum capability disebut aktif. Webhook route adalah
 `/api/integrations/telegram/webhook`, POST-only, bounded JSON, verified dengan
 official `X-Telegram-Bot-Api-Secret-Token`, dan update dedupe memakai
 `update_id`. Bot menerima private chat, teks, `/start`, `/help`, dan `/unlink`

@@ -311,7 +311,12 @@ dan token typography yang ada. Jangan menambah UI library untuk satu komponen.
 
 ## 13. Content style
 
-Bahasa Indonesia yang natural, warm, respectful, clear, non-judgmental, dan tidak manipulatif.
+Bahasa Indonesia yang natural, hangat, menghargai pengguna, jelas, tidak menghakimi, dan tidak manipulatif.
+
+Untuk halaman publik, utamakan istilah konkret yang langsung dipahami mahasiswa: **nama asli**, **foto**, **kontak**,
+**circle belajar**, **acara kampus**, dan **perkenalan diterima**. Istilah internal seperti `anonymous-first`,
+`progressive privacy`, `mutual interest`, atau `social discovery` hanya dipakai di PRD/architecture atau langsung
+dijelaskan dengan bahasa sehari-hari.
 
 Preferred:
 - Kirim Perkenalan

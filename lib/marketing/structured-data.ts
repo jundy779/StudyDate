@@ -7,7 +7,7 @@ export const organizationJsonLd = {
   url: getPublicSiteUrl(),
   logo: getPublicSiteUrl("/brand/logo-horizontal-color.png"),
   description:
-    "Platform sosial privacy-first untuk mahasiswa Indonesia yang membantu mereka menemukan teman belajar, ngobrol, membangun networking, dan mengenal orang baru secara perlahan.",
+    "StudyDate ID membantu mahasiswa menemukan teman belajar, circle kecil, dan acara kampus tanpa langsung membagikan nama asli atau kontak pribadi.",
 } as const;
 
 export const websiteJsonLd = {

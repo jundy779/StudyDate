@@ -60,10 +60,10 @@ Sumber migration:
 25. `supabase/migrations/202608110001_create_telegram_anonymous_chat_companion_v1.sql` —
     private two-step Telegram binding, one-conversation relay, update dedupe,
     shared Anonymous Chat ingress, durable delivery outbox, dan deletion
-    integration; **DEPLOYED**
+    integration; **REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED**
 26. `supabase/migrations/202608110002_fix_telegram_delivery_claim_ambiguity.sql` —
-    forward-only qualification fix untuk worker claim Telegram yang sudah deployed;
-    **DEPLOYED**
+    forward-only qualification fix untuk worker claim Telegram;
+    **REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED**
 27. `supabase/migrations/202608110003_extend_student_verification_pddikti_lookup_v1.sql` —
     provider-assisted academic match, manual fallback, minimal provider
     metadata, ownership completion, dan reviewer academic-only action;
@@ -124,10 +124,12 @@ Sumber migration:
 49. `supabase/migrations/202608220002_event_organizer_registration_v2.sql` —
     organizer eligibility, official flag, team Event-scoped, quota Free/Plus,
     registration approval, pertanyaan aman, lifecycle RSVP v2, capacity/waitlist,
-    management projection, dan notification types; **DEPLOYED**
+    management projection, dan notification types;
+    **REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED**
 50. `supabase/migrations/202608220003_event_ticket_checkin_v2.sql` —
     registration-scoped ticket hash, issuance/regeneration, QR/manual check-in,
-    undo, audit, dan account cleanup; **DEPLOYED**
+    undo, audit, dan account cleanup;
+    **REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED**
 51. `supabase/migrations/202608240001_fix_event_registration_question_alias.sql` —
     forward fix konflik alias PL/pgSQL pada validasi jawaban registrasi Event;
     **DEPLOYED / REMOTE LINT CLEAN**
@@ -135,6 +137,10 @@ Sumber migration:
     official allowlisted StudyDate stickers pada Anonymous Chat; **LOCAL / REQUIRE REMOTE PREFLIGHT**
 53. `supabase/migrations/202608250002_early_access_moderation_invitation_v1.sql` —
     moderation lifecycle `waiting|approved|rejected|claimed`, Owner/full + explicit Staff review capability, branded invitation tracking, approved-only claim, dan new-account magic-link eligibility gate; **LOCAL / REQUIRE REMOTE PREFLIGHT**
+54. `supabase/migrations/202608260001_early_access_revision_reasons_v1.sql` —
+    outcome `needs_revision`, alasan terstruktur untuk pendaftar, catatan internal privat,
+    token koreksi sekali pakai yang disimpan sebagai hash, dan resubmission ke queue;
+    **REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED**
 
 ### `early_access_waitlist`
 
@@ -147,12 +153,18 @@ email text not null
 campus text null
 interests text[] not null default '{}'   -- people | groups | events (CTA categories)
 source text null                         -- navbar | hero | final-cta (internal)
-status text not null default 'waiting'   -- waiting | approved | rejected | claimed
+status text not null default 'waiting'   -- waiting | needs_revision | approved | rejected | claimed
 consent_version text not null
 consented_at timestamptz not null
 created_at timestamptz not null
 reviewed_at timestamptz null
 reviewed_by uuid null -> auth.users(id) on delete set null
+review_reason_codes text[] not null default '{}'
+review_user_note text null
+review_internal_note text null
+revision_token_hash text null
+revision_token_expires_at timestamptz null
+resubmitted_at timestamptz null
 invitation_sent_at timestamptz null
 claimed_user_id uuid null -> auth.users(id) on delete set null
 claimed_at timestamptz null
@@ -162,7 +174,8 @@ Moderation/claim rules:
 - satu baris waitlist eligible → paling banyak satu `claimed_user_id`;
 - unique partial index pada `claimed_user_id` (non-null);
 - Owner role-implied `early_access.read` + `early_access.review`; Admin hanya jika capability eksplisit diberikan;
-- `review_early_access_entry` hanya menghasilkan `approved` atau `rejected`; `claimed` tidak dapat direview ulang;
+- `review_early_access_entry_v2` menghasilkan `approved`, `needs_revision`, atau `rejected`; `claimed` tidak dapat direview ulang;
+- `needs_revision` wajib memiliki alasan untuk pendaftar dan memakai token koreksi sekali pakai; koreksi valid mengembalikan row ke `waiting`;
 - invitation hanya dipersiapkan/dicatat server-side untuk row `approved`;
 - claim hanya via RPC `claim_early_access_for_me()` (auth.uid + email auth.users) dan hanya dari status `approved`;
 - service-role-only `can_issue_student_magic_link(email)` dipakai public login untuk mengizinkan existing Auth account atau waitlist `approved|claimed`, tanpa mengekspos status ke browser;
@@ -246,7 +259,7 @@ event category, dan waktu—tanpa user ID, email, object path, isi privat, atau
 raw error. Shared history memakai nullable Auth FK agar Auth dapat dihapus
 terakhir tanpa menghapus pesan, Circle, Event, RSVP, atau report.
 
-### Telegram Companion v1 (LOCAL-ONLY)
+### Telegram Companion v1 (REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED)
 
 - `telegram_link_sessions` — sesi 10 menit
   `created | telegram_pending | confirmed | expired | revoked`; token plaintext

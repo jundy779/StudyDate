@@ -1,7 +1,7 @@
 import type { PublicDocSection } from "@/components/marketing/public-doc-article";
 
 export const communityIntro =
-  "Pedoman ini membantu StudyDate tetap tenang, hormat, dan aman. StudyDate adalah ruang social mahasiswa—bukan layanan yang hanya berorientasi kencan.";
+  "Pedoman ini membantu StudyDate tetap tenang, hormat, dan aman. StudyDate adalah ruang sosial mahasiswa—bukan layanan yang hanya berorientasi kencan.";
 
 export const communitySections: PublicDocSection[] = [
   {
@@ -25,7 +25,7 @@ export const communitySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Pelecehan, perundungan, intimidasi, penghinaan berulang, atau perilaku yang membuat orang lain merasa terancam dilarang—baik di perkenalan, chat, maupun setelah reveal.",
+        text: "Pelecehan, perundungan, intimidasi, penghinaan berulang, atau perilaku yang membuat orang lain merasa terancam dilarang—baik di perkenalan, chat, maupun setelah identitas dibuka.",
       },
     ],
   },
@@ -58,7 +58,7 @@ export const communitySections: PublicDocSection[] = [
         items: [
           "Jangan menyebarkan nama, foto, kontak, atau data pribadi orang lain tanpa izin.",
           "Jangan mengancam akan mengekspos identitas anonim seseorang.",
-          "Hormati data yang terbuka hanya karena Mutual Interest, Identity Reveal, atau Contact Reveal.",
+          "Hormati nama, foto, dan kontak yang dibagikan karena persetujuan bersama.",
         ],
       },
     ],
@@ -105,13 +105,13 @@ export const communitySections: PublicDocSection[] = [
   },
   {
     id: "consent-reveal",
-    title: "Persetujuan di setiap tahap reveal",
+    title: "Persetujuan saat membuka identitas dan kontak",
     blocks: [
       {
         type: "ul",
         items: [
-          "Jangan memaksa Mutual Interest, Identity Reveal, atau Contact Reveal.",
-          "Contact Reveal hanya untuk Telegram, Instagram, atau LinkedIn sesuai persetujuan saluran tersebut—jangan menuntut saluran lain yang tidak didukung.",
+          "Jangan memaksa orang lain memilih Kenal Lebih Jauh, membuka identitas, atau membagikan kontak.",
+          "Kontak hanya dibagikan untuk Telegram, Instagram, atau LinkedIn sesuai persetujuan saluran tersebut. Jangan menuntut saluran lain yang tidak didukung.",
           "Data yang sudah dibuka tetap harus dipakai dengan hormat.",
         ],
       },

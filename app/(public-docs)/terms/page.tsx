@@ -5,12 +5,12 @@ import { termsIntro, termsSections } from "@/content/public-docs/terms";
 export const metadata: Metadata = {
   title: "Ketentuan Layanan — StudyDate ID",
   description:
-    "Aturan penggunaan StudyDate ID sebagai platform social mahasiswa: akun, perilaku, reveal, dan pertemuan di tempat umum.",
+    "Aturan penggunaan StudyDate ID: akun, perilaku, pembagian identitas dan kontak, serta pertemuan di tempat umum.",
   alternates: { canonical: "/terms" },
   openGraph: {
     title: "Ketentuan Layanan — StudyDate ID",
     description:
-      "Ketentuan penggunaan StudyDate ID—jelas, calm, dan selaras perilaku produk.",
+      "Ketentuan penggunaan StudyDate ID yang jelas dan sesuai dengan perilaku produk.",
     url: "/terms",
     type: "website",
   },

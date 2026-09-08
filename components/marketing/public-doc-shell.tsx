@@ -76,7 +76,7 @@ export function PublicDocShell({ children }: { children: ReactNode }) {
               StudyDate ID
             </p>
             <p className="mt-2 max-w-sm text-sm leading-6 text-brand-muted">
-              Mulai dari belajar. Kenal perlahan.
+              Kenalan tanpa perlu terburu-buru.
             </p>
           </div>
           <div className="text-sm text-brand-muted sm:text-right">
@@ -95,7 +95,7 @@ export function PublicDocShell({ children }: { children: ReactNode }) {
               ))}
             </nav>
             <p className="mt-4">
-              © 2026 StudyDate ID · Mulai dari belajar. Kenal perlahan.
+              © 2026 StudyDate ID · Kenalan tanpa perlu terburu-buru.
             </p>
           </div>
         </div>

@@ -31,7 +31,7 @@ export const insightArticles = [
         title: "Bagaimana study date bekerja?",
         paragraphs: [
           "Mulailah dengan tujuan yang jelas: topik belajar, durasi, format online atau offline, dan batas kenyamanan masing-masing. Jika bertemu offline, sepakati tempat publik yang ramai, terang, mudah diakses, dan masih beroperasi.",
-          "StudyDate ID memakai pendekatan anonymous-first. Mahasiswa mengenal konteks, minat, dan tujuan koneksi lebih dulu; identitas serta kontak dibuka bertahap hanya setelah persetujuan bersama.",
+          "Di StudyDate ID, mahasiswa melihat minat dan tujuan koneksi lebih dulu. Nama asli, foto, dan kontak baru dibagikan bertahap setelah ada persetujuan bersama.",
         ],
       },
       {

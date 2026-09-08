@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-export const alt = "StudyDate ID — Temukan koneksi di kampus";
+export const alt = "StudyDate ID — Teman, circle, dan acara kampus";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -42,7 +42,7 @@ export default async function OpenGraphImage() {
               maxWidth: 920,
             }}
           >
-            Temukan koneksi di kampus
+            Temukan teman dan kegiatan di kampus
           </div>
           <div
             style={{
@@ -53,8 +53,8 @@ export default async function OpenGraphImage() {
               maxWidth: 820,
             }}
           >
-            People, groups, dan campus events — mulai dari belajar, kenal
-            perlahan.
+            Cari teman belajar, gabung circle kecil, dan temukan acara kampus
+            tanpa langsung membagikan nama atau kontak.
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export default async function OpenGraphImage() {
               fontWeight: 700,
             }}
           >
-            MEET · CONNECT · GROW
+            TEMUKAN · KENALAN · TERHUBUNG
           </div>
           <div
             style={{
