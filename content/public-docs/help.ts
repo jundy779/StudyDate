@@ -10,17 +10,17 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID adalah platform koneksi mahasiswa untuk menemukan orang, Study Circle, dan Campus Events dengan konteks belajar dan kampus. Kamu mulai anonim, saling berkenalan, lalu membuka identitas dan kontak hanya jika keduanya setuju.",
+        text: "StudyDate ID adalah platform koneksi mahasiswa untuk menemukan teman, circle belajar, dan acara kampus dengan konteks belajar dan kampus. Kamu mulai anonim, saling berkenalan, lalu membuka identitas dan kontak hanya jika keduanya setuju.",
       },
     ],
   },
   {
     id: "people",
-    title: "Bagaimana People bekerja",
+    title: "Bagaimana Cari Teman bekerja",
     blocks: [
       {
         type: "p",
-        text: "Setelah masuk dan menyelesaikan onboarding, kamu dapat menelusuri profil anonim di People (jika mereka memilih dapat ditemukan). Filter membantu menyempitkan kampus, minat, atau tujuan koneksi. Detail memakai alias publik, bukan identitas lengkap.",
+        text: "Setelah masuk dan menyelesaikan onboarding, kamu dapat menelusuri profil anonim di Cari Teman (jika mereka memilih dapat ditemukan). Filter membantu menyempitkan kampus, minat, atau tujuan koneksi. Detail menampilkan nama samaran, bukan nama asli atau kontak.",
       },
     ],
   },
@@ -30,7 +30,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Dari profil People, kirim pesan perkenalan singkat. Penerima dapat menerima, menolak, atau membiarkan kedaluwarsa. Ada batas frekuensi agar ruang tetap tenang. Penerimaan membuka jalur ke percakapan—bukan ke kontak.",
+        text: "Dari profil mahasiswa, kirim pesan perkenalan singkat. Penerima dapat menerima, menolak, atau membiarkan kedaluwarsa. Ada batas frekuensi agar ruang tetap tenang. Penerimaan membuka jalur ke percakapan—bukan ke kontak.",
       },
     ],
   },
@@ -50,46 +50,46 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Dari Anonymous Chat yang masih aktif, kamu dapat memilih Lanjut di Telegram, membuka @StudyDateBot, lalu kembali ke StudyDate untuk mengonfirmasi koneksi. Bot hanya mendukung pesan teks dan satu percakapan aktif per akun pada v1.",
+        text: "Jika Telegram Companion sudah diaktifkan untuk akunmu, dari chat yang masih aktif kamu dapat memilih Lanjut di Telegram, membuka @StudyDateBot, lalu kembali ke StudyDate untuk mengonfirmasi koneksi. Bot hanya mendukung pesan teks dan satu percakapan aktif per akun pada v1.",
       },
       {
         type: "ul",
         items: [
-          "Detail akun Telegram tidak ditampilkan kepada counterpart.",
-          "Mutual Interest, Identity Reveal, Contact Reveal, dan pengaturan privasi tetap dilakukan di web StudyDate.",
+          "Detail akun Telegram tidak ditampilkan kepada lawan bicara.",
+          "Pilihan Kenal Lebih Jauh, pembukaan identitas, pembagian kontak, dan pengaturan privasi tetap dilakukan di web StudyDate.",
           "Gunakan /unlink di bot atau Putuskan di Pengaturan untuk berhenti. Riwayat StudyDate tidak terhapus.",
-          "Delivery Telegram dapat tertunda atau gagal; Anonymous Chat web tetap menjadi sumber riwayat.",
+          "Pesan Telegram dapat tertunda atau gagal; chat di web StudyDate tetap menjadi sumber riwayat.",
         ],
       },
     ],
   },
   {
     id: "mutual",
-    title: "Mutual Interest",
+    title: "Sama-sama ingin kenal lebih jauh",
     blocks: [
       {
         type: "p",
-        text: "Di percakapan aktif, kalian dapat memilih “Kenal Lebih Jauh”. Pilihan satu pihak tetap privat sampai keduanya setuju. Mutual Interest tidak otomatis membuka nama, foto, atau kontak.",
+        text: "Di percakapan aktif, kalian dapat memilih “Kenal Lebih Jauh”. Pilihan satu pihak tetap privat sampai keduanya setuju. Pilihan bersama ini tidak otomatis membuka nama, foto, atau kontak.",
       },
     ],
   },
   {
     id: "identity",
-    title: "Identity Reveal",
+    title: "Membuka identitas",
     blocks: [
       {
         type: "p",
-        text: "Setelah Mutual Interest, siapkan nama depan dan foto untuk percakapan itu, lalu setujui pembukaan bersama. Yang terbuka hanya nama depan dan foto yang disiapkan—bukan kontak atau dokumen.",
+        text: "Setelah kalian sama-sama memilih Kenal Lebih Jauh, siapkan nama depan dan foto untuk percakapan itu, lalu setujui pembukaan bersama. Yang terbuka hanya nama depan dan foto yang disiapkan—bukan kontak atau dokumen.",
       },
     ],
   },
   {
     id: "contact",
-    title: "Contact Reveal",
+    title: "Membagikan kontak",
     blocks: [
       {
         type: "p",
-        text: "Setelah Identity Reveal selesai, bagikan kontak per saluran: Telegram, Instagram, atau LinkedIn. Setiap saluran butuh persetujuan sendiri. WhatsApp, telepon, dan email tidak tersedia sebagai Contact Reveal saat ini.",
+        text: "Setelah identitas dibuka, bagikan kontak per saluran: Telegram, Instagram, atau LinkedIn. Setiap saluran butuh persetujuan sendiri. WhatsApp, telepon, dan email tidak tersedia untuk dibagikan melalui fitur ini saat ini.",
       },
     ],
   },

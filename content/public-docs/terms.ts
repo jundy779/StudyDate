@@ -45,21 +45,21 @@ export const termsSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID adalah platform social mahasiswa untuk menemukan orang, (ke depan) grup kecil, dan kegiatan kampus. Belajar dan kehidupan kampus menjadi konteks awal. Koneksi dapat berkembang menjadi teman belajar, teman baru, networking, kolaborasi, atau hubungan yang lebih dekat secara alami—tanpa kewajiban atau jaminan arah romantis.",
+        text: "StudyDate ID adalah platform sosial mahasiswa untuk menemukan teman, circle kecil, dan kegiatan kampus. Belajar dan kehidupan kampus menjadi konteks awal. Koneksi dapat berkembang menjadi teman belajar, teman baru, networking, kolaborasi, atau hubungan yang lebih dekat secara alami—tanpa kewajiban atau jaminan arah romantis.",
       },
       {
         type: "note",
-        text: "StudyDate bukan marketplace tutor, job board, random chat, atau aplikasi swipe cepat. StudyDate juga bukan layanan yang menjamin keamanan 100% atau hasil hubungan tertentu.",
+        text: "StudyDate bukan tempat jual-beli jasa tutor, papan lowongan kerja, atau ruang chat acak. StudyDate juga bukan layanan yang menjamin keamanan 100% atau hasil hubungan tertentu.",
       },
     ],
   },
   {
     id: "anonim-dulu",
-    title: "Sifat anonymous-first",
+    title: "Mulai tanpa membuka identitas lengkap",
     blocks: [
       {
         type: "p",
-        text: "Pengenalan dimulai dari profil anonim dan percakapan privat. Identitas terbatas dan kontak hanya dibuka melalui tahap persetujuan yang relevan. Kamu tidak boleh memaksa orang lain membuka identitas atau kontak, atau menyalahgunakan data yang sudah dibuka.",
+        text: "Pengenalan dimulai dari profil anonim dan percakapan privat. Nama, foto, dan kontak hanya dibuka melalui tahap persetujuan yang relevan. Kamu tidak boleh memaksa orang lain membuka identitas atau kontak, atau menyalahgunakan data yang sudah dibuka.",
       },
     ],
   },
@@ -73,7 +73,7 @@ export const termsSections: PublicDocSection[] = [
       },
       {
         type: "p",
-        text: "Kamu bertanggung jawab menjaga akses akun Telegram. Delivery melalui Telegram dapat terlambat, gagal, atau tetap terlihat pada perangkat dan layanan Telegram. Memutuskan companion tidak menghapus riwayat StudyDate dan tidak mengubah Contact Reveal.",
+        text: "Kamu bertanggung jawab menjaga akses akun Telegram. Pesan melalui Telegram dapat terlambat, gagal, atau tetap terlihat pada perangkat dan layanan Telegram. Memutuskan companion tidak menghapus riwayat StudyDate dan tidak otomatis membagikan kontak Telegram.",
       },
     ],
   },
@@ -91,7 +91,7 @@ export const termsSections: PublicDocSection[] = [
           "Doxxing atau menyebarkan data pribadi orang lain tanpa izin.",
           "Mengunggah atau menyebarkan konten ilegal atau berbahaya.",
           "Mengganggu layanan, mencoba akses tidak sah, atau menyalahgunakan celah keamanan.",
-          "Menggunakan Contact Reveal atau Identity Reveal di luar persetujuan dan tujuan koneksi yang sehat.",
+          "Menggunakan nama, foto, atau kontak yang dibagikan di luar persetujuan dan tujuan koneksi yang sehat.",
         ],
       },
     ],

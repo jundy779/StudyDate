@@ -5,12 +5,12 @@ import { safetyIntro, safetySections } from "@/content/public-docs/safety";
 export const metadata: Metadata = {
   title: "Pusat Keamanan — StudyDate ID",
   description:
-    "Prinsip anonymous-first, tip keamanan akun, block/lapor, dan pertemuan offline hanya di tempat umum.",
+    "Panduan menjaga identitas dan kontak, keamanan akun, blokir/lapor, serta pertemuan hanya di tempat umum.",
   alternates: { canonical: "/safety" },
   openGraph: {
     title: "Pusat Keamanan — StudyDate ID",
     description:
-      "Panduan keamanan StudyDate: reveal bertahap, tempat umum, dan tanda scam.",
+      "Panduan keamanan StudyDate: membuka identitas bertahap, bertemu di tempat umum, dan mengenali penipuan.",
     url: "/safety",
     type: "website",
   },

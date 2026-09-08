@@ -15,9 +15,9 @@ export const privacySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Masuk memakai tautan email (passwordless), bukan kata sandi.",
-          "Profil discovery menampilkan alias anonim dan konteks kampus yang kamu pilih, bukan identitas lengkap.",
-          "Chat, Mutual Interest, Identity Reveal, dan Contact Reveal berjalan bertahap dengan persetujuan terpisah.",
+          "Masuk memakai tautan yang dikirim ke email, bukan kata sandi.",
+          "Cari Teman menampilkan nama samaran dan konteks kampus yang kamu pilih, bukan nama asli atau kontak.",
+          "Chat, pilihan Kenal Lebih Jauh, pembukaan identitas, dan pembagian kontak berjalan bertahap dengan persetujuan terpisah.",
           "Verifikasi mahasiswa saat ini dinonaktifkan secara global dan tidak digambarkan sebagai fitur aktif.",
         ],
       },
@@ -57,7 +57,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Saat onboarding, kamu dapat mengisi data seperti nama depan, nama belakang, kampus, program studi, jenjang, semester (opsional), kota/wilayah umum (opsional), minat, tujuan koneksi, preferensi cara memulai, serta persetujuan Ketentuan, Privasi, dan Pedoman Komunitas. Nama depan dan nama belakang disimpan privat; People menampilkan alias anonim, bukan nama lengkap.",
+        text: "Saat onboarding, kamu dapat mengisi data seperti nama depan, nama belakang, kampus, program studi, jenjang, semester (opsional), kota/wilayah umum (opsional), minat, tujuan koneksi, preferensi cara memulai, serta persetujuan Ketentuan, Privasi, dan Pedoman Komunitas. Nama depan dan nama belakang disimpan privat; Cari Teman menampilkan nama samaran, bukan nama lengkap.",
       },
       {
         type: "ul",
@@ -75,21 +75,21 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Setiap akun mendapat alias publik anonim yang dibuat sistem. Alias inilah yang muncul di People Discovery dan alur perkenalan sebelum Identity Reveal selesai. Alias bukan nama legal dan bukan email.",
+        text: "Setiap akun mendapat alias publik anonim yang dibuat sistem. Alias inilah yang muncul di Cari Teman dan alur perkenalan sebelum identitas dibuka. Alias bukan nama legal dan bukan email.",
       },
     ],
   },
   {
     id: "people-discovery",
-    title: "People Discovery",
+    title: "Cari Teman",
     blocks: [
       {
         type: "p",
-        text: "Jika kamu memilih dapat ditemukan, profil anonim dapat muncul di People bagi pengguna yang sudah masuk dan menyelesaikan onboarding. Yang ditampilkan mencakup konteks seperti alias, kampus, program studi, minat, tujuan koneksi, dan intro singkat—bukan kontak atau identitas lengkap.",
+        text: "Jika kamu memilih dapat ditemukan, profil anonim dapat muncul di Cari Teman bagi pengguna yang sudah masuk dan menyelesaikan onboarding. Yang ditampilkan mencakup konteks seperti alias, kampus, program studi, minat, tujuan koneksi, dan intro singkat—bukan kontak atau identitas lengkap.",
       },
       {
         type: "note",
-        text: "Profilmu tidak ditampilkan ke pengguna lain bila onboarding belum selesai atau kamu tidak memilih untuk dapat ditemukan. Detail People memakai alias, bukan pengenal internal.",
+        text: "Profilmu tidak ditampilkan ke pengguna lain bila onboarding belum selesai atau kamu tidak memilih untuk dapat ditemukan. Detail Cari Teman memakai nama samaran, bukan pengenal internal.",
       },
     ],
   },
@@ -123,7 +123,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Telegram Companion adalah pilihan tambahan untuk meneruskan pesan teks dari satu Anonymous Chat StudyDate yang sudah ada melalui @StudyDateBot. Menggunakannya tidak membuka username, ID, nama, foto, atau metadata akun Telegram kepada counterpart dan tidak sama dengan Contact Reveal Telegram.",
+        text: "Telegram Companion adalah pilihan tambahan untuk meneruskan pesan teks dari satu chat anonim StudyDate yang sudah ada melalui @StudyDateBot. Menggunakannya tidak membuka username, ID, nama, foto, atau metadata akun Telegram kepada lawan bicara dan tidak sama dengan membagikan kontak Telegram.",
       },
       {
         type: "ul",
@@ -138,27 +138,27 @@ export const privacySections: PublicDocSection[] = [
   },
   {
     id: "mutual-interest",
-    title: "Mutual Interest (“Kenal Lebih Jauh”)",
+    title: "Pilihan “Kenal Lebih Jauh”",
     blocks: [
       {
         type: "p",
-        text: "Pilihan “Kenal Lebih Jauh” bersifat privat sampai kedua pihak menyetujui. Persetujuan satu pihak tidak dibocorkan ke pihak lain sebelum menjadi mutual. Tahap ini tidak otomatis membuka Identity Reveal atau Contact Reveal.",
+        text: "Pilihan “Kenal Lebih Jauh” bersifat privat sampai kedua pihak menyetujui. Persetujuan satu pihak tidak dibocorkan ke pihak lain sebelum keduanya memilih. Tahap ini tidak otomatis membuka nama, foto, atau kontak.",
       },
     ],
   },
   {
     id: "identity-reveal",
-    title: "Identity Reveal",
+    title: "Membuka identitas",
     blocks: [
       {
         type: "p",
-        text: "Setelah Mutual Interest selesai, kalian dapat menyiapkan dan menyetujui pembukaan identitas terbatas untuk percakapan itu: nama depan yang kamu siapkan dan foto yang kamu unggah khusus untuk reveal. Data ini bersifat lingkup percakapan dan membutuhkan persetujuan dua arah.",
+        text: "Setelah kalian sama-sama memilih Kenal Lebih Jauh, kalian dapat menyiapkan dan menyetujui pembukaan identitas terbatas untuk percakapan itu: nama depan yang kamu siapkan dan foto yang kamu unggah khusus untuk dibagikan. Data ini bersifat lingkup percakapan dan membutuhkan persetujuan dua arah.",
       },
       {
         type: "ul",
         items: [
           "Tidak membuka nama legal, NIM, email akun, atau kontak.",
-          "Tidak mengklaim bahwa Identity Reveal sama dengan “identitas terverifikasi secara resmi”.",
+          "Membuka nama dan foto tidak berarti identitas sudah terverifikasi secara resmi.",
           "Jika percakapan diakhiri setelah selesai, akses nama depan dan foto yang sudah dibuka dapat tetap tersedia. Jika pemilik data menghapus akun, StudyDate berhenti menyajikan identitas tersebut melalui layanan.",
           "Jika ada pemblokiran, proyeksi identitas lawan dihentikan pada permintaan berikutnya—tanpa menjamin penghapusan konten yang sudah dilihat.",
         ],
@@ -167,27 +167,27 @@ export const privacySections: PublicDocSection[] = [
   },
   {
     id: "contact-reveal",
-    title: "Contact Reveal",
+    title: "Membagikan kontak",
     blocks: [
       {
         type: "p",
-        text: "Setelah Identity Reveal selesai, kontak dibuka per saluran dengan persetujuan terpisah. Saluran yang didukung saat ini hanya:",
+        text: "Setelah identitas dibuka, kontak dibuka per saluran dengan persetujuan terpisah. Saluran yang didukung saat ini hanya:",
       },
       {
         type: "ul",
         items: [
           "LinkedIn (URL profil publik) — diprioritaskan; di Edit profil LinkedIn wajib untuk tampil di People",
-          "Instagram (username) — opsional di profil dan Contact Reveal",
+          "Instagram (username) — opsional di profil dan saat membagikan kontak",
           "Telegram (username)",
         ],
       },
       {
         type: "p",
-        text: "Di Edit profil kamu dapat menyimpan LinkedIn (wajib) dan Instagram (opsional) sebagai default privat. Nilai itu tidak tampil di People; saat Contact Reveal, form dapat diisi otomatis dari default tersebut, lalu tetap membutuhkan persetujuan dua arah per saluran.",
+        text: "Di Edit profil kamu dapat menyimpan LinkedIn (wajib) dan Instagram (opsional) sebagai default privat. Nilai itu tidak tampil di Cari Teman; saat membagikan kontak, form dapat diisi otomatis dari nilai tersebut, lalu tetap membutuhkan persetujuan dua arah per saluran.",
       },
       {
         type: "note",
-        text: "StudyDate tidak mendukung pembukaan WhatsApp, nomor telepon, atau email sebagai Contact Reveal pada versi ini. Nilai kontak dilindungi di sisi layanan dan bersifat lingkup percakapan. Tidak ada tombol “buka semua kontak”.",
+        text: "StudyDate tidak mendukung pembukaan WhatsApp, nomor telepon, atau email melalui fitur ini pada versi ini. Nilai kontak dilindungi di sisi layanan dan bersifat lingkup percakapan. Tidak ada tombol “buka semua kontak”.",
       },
     ],
   },
@@ -207,7 +207,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "File yang kamu unggah untuk Identity Reveal (foto) disimpan secara privat dan diakses hanya melalui jalur produk yang diizinkan. Bila fitur verifikasi mahasiswa diaktifkan di kemudian hari, bukti pendukung juga akan diperlakukan sebagai penyimpanan privat dengan akses terbatas untuk review—fitur tersebut saat ini tidak aktif secara global.",
+        text: "Foto yang kamu unggah untuk dibagikan kepada lawan bicara disimpan secara privat dan diakses hanya melalui jalur produk yang diizinkan. Bila fitur verifikasi mahasiswa diaktifkan di kemudian hari, bukti pendukung juga akan diperlakukan sebagai penyimpanan privat dengan akses terbatas untuk review—fitur tersebut saat ini tidak aktif secara global.",
       },
     ],
   },
@@ -247,7 +247,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Di Pengaturan, akun mahasiswa dapat dinonaktifkan sementara atau diminta untuk dihapus. Permintaan penghapusan bersifat tidak dapat dibatalkan melalui antarmuka mahasiswa: profil dan akses akun langsung dinonaktifkan, lalu sistem menghapus data privat, media Identity Reveal, nilai Contact Reveal, dan data verifikasi milik akun. Circle milik akun diarsipkan dan Event mendatang yang diorganisasi dibatalkan. Riwayat percakapan, pesan Circle, Event, dan bukti moderasi yang masih diperlukan dapat tetap tersedia dengan identitas “Akun dihapus”. Informasi yang sebelumnya sudah dilihat atau disalin orang lain di luar StudyDate tidak selalu dapat dihapus dari perangkat mereka. Akun staf tidak memakai alur self-service ini.",
+        text: "Di Pengaturan, akun mahasiswa dapat dinonaktifkan sementara atau diminta untuk dihapus. Permintaan penghapusan bersifat tidak dapat dibatalkan melalui antarmuka mahasiswa: profil dan akses akun langsung dinonaktifkan, lalu sistem menghapus data privat, foto yang dibagikan, nilai kontak, dan data verifikasi milik akun. Circle milik akun diarsipkan dan Event mendatang yang diorganisasi dibatalkan. Riwayat percakapan, pesan Circle, Event, dan bukti moderasi yang masih diperlukan dapat tetap tersedia dengan identitas “Akun dihapus”. Informasi yang sebelumnya sudah dilihat atau disalin orang lain di luar StudyDate tidak selalu dapat dihapus dari perangkat mereka. Akun staf tidak memakai alur self-service ini.",
       },
     ],
   },
@@ -257,7 +257,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kami menerapkan kontrol akses berbasis sesi di server, pembatasan data yang terlihat antar pengguna, enkripsi untuk data sensitif tertentu (misalnya nilai Contact Reveal dan klaim NIM opsional), serta penyimpanan privat untuk unggahan sensitif. Tidak ada sistem yang menjamin keamanan mutlak. Lindungi akses emailmu karena tautan masuk dikirim ke sana.",
+        text: "Kami menerapkan kontrol akses berbasis sesi di server, pembatasan data yang terlihat antar pengguna, enkripsi untuk data sensitif tertentu (misalnya nilai kontak yang dibagikan dan klaim NIM opsional), serta penyimpanan privat untuk unggahan sensitif. Tidak ada sistem yang menjamin keamanan mutlak. Lindungi akses emailmu karena tautan masuk dikirim ke sana.",
       },
     ],
   },

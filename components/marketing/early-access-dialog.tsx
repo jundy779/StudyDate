@@ -38,9 +38,9 @@ type ApiResponse = {
 const EarlyAccessDialogContext = createContext<DialogContextValue | null>(null);
 
 const interestOptions = [
-  { value: "people", label: "People" },
-  { value: "groups", label: "Groups" },
-  { value: "events", label: "Campus Events" },
+  { value: "people", label: "Cari Teman" },
+  { value: "groups", label: "Circle Belajar" },
+  { value: "events", label: "Acara Kampus" },
 ] as const;
 
 export function EarlyAccessProvider({ children }: { children: ReactNode }) {
@@ -329,7 +329,7 @@ function EarlyAccessDialog({
               className="mt-6 font-heading text-2xl font-semibold leading-tight sm:text-3xl"
             >
               {phase === "success"
-                ? "Kamu sudah masuk daftar awal 💙"
+                ? "Kamu sudah masuk daftar akses awal 💙"
                 : "Kamu sudah tercatat 💙"}
             </h2>
             <p
@@ -337,7 +337,7 @@ function EarlyAccessDialog({
               className="mt-4 max-w-lg leading-7 text-brand-muted"
             >
               {phase === "success"
-                ? "Pendaftaranmu masuk ke antrean review. Jika disetujui, StudyDate akan mengirim email resmi berisi tautan login sekali pakai untuk klaim akses dan melanjutkan onboarding."
+                ? "Pendaftaranmu akan diperiksa. Jika disetujui, StudyDate akan mengirim email resmi berisi tautan sekali pakai untuk masuk dan melengkapi profil."
                 : "Email ini sudah ada di antrean Akses Awal. Jika akses disetujui, tautan login resmi akan dikirim ke email tersebut."}
             </p>
             <button
@@ -358,15 +358,15 @@ function EarlyAccessDialog({
                 id={titleId}
                 className="mt-3 font-heading text-2xl font-semibold leading-tight sm:text-3xl"
               >
-                Jadi bagian awal StudyDate ID
+                Daftar untuk akses awal StudyDate ID
               </h2>
               <p
                 id={descriptionId}
                 className="mt-4 max-w-lg text-sm leading-6 text-brand-muted sm:text-base sm:leading-7"
               >
-                Daftarkan emailmu untuk mendapatkan kabar akses awal StudyDate.
-                Temukan orang, grup, dan kegiatan kampus dengan privasi yang dibuka
-                secara bertahap.
+                Daftarkan emailmu untuk mencoba StudyDate. Cari teman belajar,
+                gabung circle kecil, dan temukan acara kampus tanpa langsung
+                membagikan nama atau kontak pribadi.
               </p>
             </div>
 
@@ -542,7 +542,7 @@ function EarlyAccessDialog({
                     </>
                   ) : (
                     <>
-                      Gabung Daftar Awal
+                      Daftar Akses Awal
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </>
                   )}

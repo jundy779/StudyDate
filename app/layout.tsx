@@ -4,13 +4,13 @@ import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
 import "./globals.css";
 
 const description =
-  "StudyDate ID adalah platform sosial privacy-first untuk mahasiswa Indonesia yang membantu mereka menemukan teman belajar, ngobrol, membangun networking, dan mengenal orang baru secara perlahan.";
+  "StudyDate ID membantu mahasiswa menemukan teman belajar, circle kecil, dan acara kampus tanpa langsung membagikan nama asli atau kontak pribadi.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getPublicSiteOrigin()),
   applicationName: "StudyDate ID",
   title: {
-    default: "StudyDate ID — Koneksi mahasiswa yang privacy-first",
+    default: "StudyDate ID — Teman, circle, dan acara kampus",
     template: "%s",
   },
   description,
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: "StudyDate ID",
-    title: "StudyDate ID — Koneksi mahasiswa yang privacy-first",
+    title: "StudyDate ID — Teman, circle, dan acara kampus",
     description,
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "StudyDate ID — Koneksi mahasiswa yang privacy-first",
+    title: "StudyDate ID — Teman, circle, dan acara kampus",
     description,
   },
 };

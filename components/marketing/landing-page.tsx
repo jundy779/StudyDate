@@ -19,15 +19,16 @@ import {
 import { MobileNav } from "@/components/marketing/mobile-nav";
 
 const navigation = [
-  { label: "People", href: "/#people" },
-  { label: "Groups", href: "/#groups" },
-  { label: "Events", href: "/#events" },
+  { label: "Cari Teman", href: "/#people" },
+  { label: "Circle Belajar", href: "/#groups" },
+  { label: "Acara Kampus", href: "/#events" },
   { label: "Cara Kerja", href: "/#cara-kerja" },
-  { label: "Insight", href: "/insight" },
+  { label: "Tentang", href: "/about" },
   { label: "Keamanan", href: "/#keamanan" },
 ];
 
 const footerLinks = [
+  { label: "Tentang", href: "/about" },
   { label: "Insight", href: "/insight" },
   { label: "Privasi", href: "/privacy" },
   { label: "Ketentuan", href: "/terms" },
@@ -37,14 +38,12 @@ const footerLinks = [
 ];
 
 const peopleFlow = [
-  ["01", "Profil anonim", "Mulai dari minat, kampus, dan konteks yang ingin kamu bagikan."],
-  ["02", "Kirim perkenalan", "Sampaikan alasan ingin terhubung sebelum ruang chat dibuka."],
-  ["03", "Perkenalan dibalas", "Percakapan hanya dimulai ketika penerima memilih untuk membalas."],
-  ["04", "Chat privat anonim", "Kenal perlahan tanpa membuka kontak atau identitas lengkap."],
-  ["05", "Minat dua arah", "Keduanya menyatakan ingin melanjutkan koneksi."],
-  ["06", "Identitas dibuka", "Nama depan dan foto jelas muncul setelah persetujuan bersama."],
-  ["07", "Interaksi online", "Bangun rasa percaya melalui percakapan dan aktivitas online."],
-  ["08", "Bertemu di ruang publik", "Jika siap, pilih tempat publik dan biarkan koneksi berkembang alami."],
+  ["01", "Lihat profil anonim", "Kenali minat, kampus, dan tujuan koneksinya lebih dulu."],
+  ["02", "Kirim perkenalan", "Tulis alasan singkat kenapa kamu ingin terhubung."],
+  ["03", "Tunggu persetujuan", "Chat terbuka hanya jika perkenalanmu diterima."],
+  ["04", "Ngobrol tanpa buru-buru", "Nama asli, foto, dan kontak tetap disembunyikan."],
+  ["05", "Sama-sama ingin lanjut", "Kalian berdua memilih apakah ingin saling mengenal lebih jauh."],
+  ["06", "Bagikan seperlunya", "Identitas dan kontak dibuka bertahap dengan persetujuan bersama."],
 ];
 
 type BrandAssetPath =
@@ -222,7 +221,7 @@ function ConnectionPreview() {
             className="h-6 w-6 object-contain"
           />
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
-            PEOPLE • PROFIL ANONIM
+            CONTOH TAMPILAN • PROFIL ANONIM
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-muted">
@@ -247,18 +246,18 @@ function ConnectionPreview() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="font-heading text-xl font-semibold tracking-[-0.025em] text-brand-navy sm:text-[1.4rem]">
-                Mahasiswa #184
+                Profil mahasiswa
               </h2>
               <span className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-2.5 py-1 text-xs font-semibold text-brand-blue">
-                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                Terverifikasi
+                <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />
+                Nama dan kontak belum dibagikan
               </span>
             </div>
             <p className="mt-3 font-heading text-lg font-semibold leading-tight text-brand-navy">
-              Teknik Informatika
+              Program studi
             </p>
             <p className="mt-1 text-sm text-brand-muted">
-              Semester 3 • satu kampus
+              Semester • wilayah umum
             </p>
           </div>
         </div>
@@ -300,7 +299,7 @@ function ConnectionPreview() {
             className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue"
             aria-hidden="true"
           />
-          Nama asli &amp; foto jelas terbuka setelah mutual interest.
+          Nama asli, foto, dan kontak baru dibagikan jika kalian sama-sama setuju.
         </p>
       </div>
     </div>
@@ -313,23 +312,22 @@ function Hero() {
       <div className="page-shell grid gap-12 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-14 lg:py-16 xl:grid-cols-[1.14fr_0.86fr]">
         <div className="animate-enter min-w-0 max-w-[640px] lg:max-w-[680px]">
           <p className="mb-6 border-l-2 border-brand-blue pl-4 text-sm font-semibold leading-6 text-brand-navy">
-            Mulai dari belajar. Kenal perlahan. Biarkan koneksi menemukan arahnya.
+            Mulai dari kesamaan di kampus. Kenalan tanpa perlu terburu-buru.
           </p>
           <h1 className="text-balance font-heading max-w-none text-[1.9rem] font-semibold leading-[1.03] tracking-[-0.035em] text-brand-navy sm:text-[3.35rem] sm:leading-[1.08] sm:tracking-[-0.04em] lg:text-[3.65rem] xl:text-[3.9rem]">
-            Temukan seseorang untuk belajar, ngobrol, dan membangun{" "}
-            <span className="text-brand-blue">koneksi yang berarti.</span>
+            Temukan teman belajar dan koneksi baru{" "}
+            <span className="text-brand-blue">dari lingkungan kampus.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-[1.6] text-brand-muted sm:mt-7 sm:leading-8">
-            Kenalan secara privat, bergabung dalam kelompok, dan temukan kegiatan
-            kampus—untuk teman belajar, relasi, networking, atau seseorang yang
-            ingin kamu kenal lebih jauh.
+            Cari mahasiswa dengan minat yang sama, gabung circle belajar, dan
+            temukan acara kampus. Nama asli dan kontak tidak langsung ditampilkan.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row">
             <EarlyAccessTrigger
               source="hero"
               className="focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-[12px] bg-brand-blue px-6 py-4 font-semibold text-white transition-colors hover:bg-[#013FC7]"
             >
-              Mulai Berkenalan
+              Daftar Akses Awal
               <ArrowRight className="h-4 w-4" />
             </EarlyAccessTrigger>
             <a
@@ -337,7 +335,7 @@ function Hero() {
               className="focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-[12px] border border-brand-border bg-white px-6 py-4 font-semibold text-brand-navy transition-colors hover:border-brand-navy"
             >
               <CalendarDays className="h-4 w-4 text-brand-blue" />
-              Jelajahi Campus Events
+              Lihat Acara Kampus
             </a>
           </div>
         </div>
@@ -346,7 +344,7 @@ function Hero() {
           <div className="absolute -right-5 -top-5 h-[72%] w-[68%] bg-brand-surface" />
           <ConnectionPreview />
           <p className="relative mt-4 text-right text-xs text-brand-muted">
-            Kenali konteksnya lebih dulu. Identitas lengkap tetap privat.
+            Contoh tampilan, bukan akun mahasiswa sungguhan.
           </p>
         </div>
       </div>
@@ -358,26 +356,25 @@ function MascotCompanion() {
   const moments = [
     {
       pose: "/brand/mascot/hello.png" as const,
-      label: "Sambut",
-      title: "Mulai dengan sapaan yang aman",
-      copy: "Maskot StudyDate menemani onboarding dan empty state—supaya ruang digital terasa hangat sebelum kamu kenal siapa pun.",
+      label: "Temukan",
+      title: "Mulai dari kesamaan",
+      copy: "Lihat minat, tujuan, dan konteks kampus sebelum memutuskan untuk menyapa.",
       imageClass:
         "h-[17.5rem] w-[17.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[19rem] sm:w-[19rem]",
     },
     {
       pose: "/brand/mascot/study.png" as const,
-      label: "Belajar",
-      title: "Konteks belajar dulu, identitas belakangan",
-      copy: "People menampilkan minat dan tujuan koneksi. Nama asli dan foto jelas baru muncul setelah minat dua arah.",
+      label: "Kenalan",
+      title: "Kirim alasan untuk terhubung",
+      copy: "Percakapan baru terbuka setelah perkenalan diterima.",
       imageClass:
         "h-[15.5rem] w-[15.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[16.5rem] sm:w-[16.5rem]",
     },
     {
       pose: "/brand/mascot/chat.png" as const,
-      label: "Ngobrol",
-      title: "Chat privat tanpa kontak terbuka",
-      copy: "Ruang percakapan tetap anonim sampai keduanya siap. Kontak seperti LinkedIn dibuka bertahap, bukan sekaligus.",
-      // Half-body crop — slight bump only so it doesn't dwarf the hello pose.
+      label: "Bagikan",
+      title: "Buka identitas bertahap",
+      copy: "Nama, foto, dan kontak dibagikan hanya dengan persetujuan bersama.",
       imageClass:
         "h-[16rem] w-[16rem] origin-bottom scale-[1.02] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[17rem] sm:w-[17rem] sm:scale-[1.03]",
     },
@@ -390,13 +387,13 @@ function MascotCompanion() {
     >
       <div className="page-shell">
         <div className="max-w-2xl">
-          <p className="section-label">Teman digital StudyDate</p>
+          <p className="section-label">Cara StudyDate bekerja</p>
           <h2 id="mascot-companion-title" className="section-title mt-4">
-            Maskot yang menemani, bukan menggantikan orang nyata.
+            Kenalan dengan ritme yang kamu tentukan sendiri.
           </h2>
           <p className="mt-4 max-w-xl text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
-            Dipakai di hero produk, empty state, dan halaman sistem—supaya
-            pengalaman web terasa konsisten dari landing sampai ruang mahasiswa.
+            Mulai dari hal yang sama-sama kalian sukai, lanjutkan percakapan jika
+            perkenalan diterima, lalu bagikan identitas hanya saat sudah nyaman.
           </p>
         </div>
         <ul className="mt-12 grid gap-6 lg:grid-cols-3">
@@ -437,19 +434,19 @@ function MascotCompanion() {
 function PillarsOverview() {
   const pillars = [
     {
-      label: "People",
-      title: "Temukan seseorang",
-      copy: "Kenalan lewat profil anonim dan perkenalan yang punya konteks—untuk belajar, berteman, networking, kolaborasi, atau hubungan yang tumbuh alami.",
+      label: "Cari Teman",
+      title: "Cari teman yang nyambung",
+      copy: "Temukan mahasiswa lewat minat, tujuan, dan konteks kampus.",
     },
     {
-      label: "Groups",
-      title: "Masuk ke lingkaran yang tepat",
-      copy: "Bergabung dalam kelompok kampus kecil berdasarkan topik, tujuan, komunitas, dan tingkat verifikasi yang kamu pilih.",
+      label: "Circle Belajar",
+      title: "Gabung circle belajar",
+      copy: "Belajar, berdiskusi, atau mengerjakan proyek bersama dalam kelompok kecil.",
     },
     {
-      label: "Campus Events",
-      title: "Datang karena ada kegiatan",
-      copy: "Temukan seminar, workshop, kompetisi, study gathering, komunitas, serta acara karier dan networking di sekitarmu.",
+      label: "Acara Kampus",
+      title: "Temukan acara kampus",
+      copy: "Lihat kegiatan yang sesuai minat, waktu, dan lingkunganmu.",
     },
   ];
 
@@ -458,14 +455,14 @@ function PillarsOverview() {
       <div className="page-shell">
         <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr]">
           <div>
-            <p className="section-label">People · Groups · Events</p>
+            <p className="section-label">Teman · Circle · Acara</p>
             <h2 className="section-title mt-4 max-w-lg">
-              Tiga jalan untuk menemukan koneksi di kampus.
+              Mulai dari cara yang paling nyaman buatmu.
             </h2>
           </div>
           <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            StudyDate membantu mahasiswa bertemu lewat orang, kelompok, dan
-            kegiatan—tanpa menentukan sejak awal hubungan itu harus menjadi apa.
+            Cari teman belajar, gabung circle kecil, atau datang ke acara kampus.
+            Kamu yang menentukan koneksi itu ingin dibawa ke mana.
           </p>
         </div>
 
@@ -498,18 +495,18 @@ function IntroductionFlow() {
       <div className="page-shell">
         <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr]">
           <div>
-            <p className="section-label">Introduction before chat</p>
+            <p className="section-label">Kenalan sebelum chat</p>
             <h2 className="section-title mt-4 max-w-lg">
-              Percakapan dimulai dengan alasan untuk saling mengenal.
+              Kenalan dulu, chat setelah perkenalan diterima.
             </h2>
           </div>
           <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            Tidak ada chat tiba-tiba. Kamu mengirim perkenalan, penerima memilih
-            untuk membalas, lalu ruang privat anonim baru dibuka.
+            Tulis alasan singkat kenapa kamu ingin terhubung. Jika penerima setuju,
+            barulah kalian bisa mulai ngobrol tanpa langsung membuka identitas.
           </p>
         </div>
 
-        <ol className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {peopleFlow.map(([number, title, description]) => (
             <li key={number} className="border-t-2 border-brand-border pt-5">
               <span className="font-heading text-3xl font-semibold tracking-tight text-brand-muted/55">
@@ -532,14 +529,13 @@ function ProgressivePrivacy() {
     <section className="relative overflow-hidden bg-brand-navy py-24 text-white sm:pb-40 sm:pt-32 lg:pb-44">
       <div className="page-shell grid items-center gap-16 lg:grid-cols-[0.78fr_1.22fr]">
         <div>
-          <p className="section-label text-[#8DB9F6]">Progressive privacy</p>
+          <p className="section-label text-[#8DB9F6]">Privasi bertahap</p>
           <h2 className="mt-5 max-w-lg font-heading text-3xl font-semibold leading-tight sm:text-4xl lg:text-[2.75rem]">
-            Identitas dibuka perlahan, hanya dengan persetujuan bersama.
+            Nama dan kontak tidak langsung ditampilkan.
           </h2>
           <p className="mt-6 max-w-lg text-lg leading-8 text-white/65">
-            Nama lengkap, media sosial, nomor telepon, email, dan lokasi presisi
-            tetap tersembunyi. Nama depan dan foto jelas baru muncul setelah ada
-            minat dua arah.
+            Saat mulai kenalan, orang lain hanya melihat informasi yang kamu pilih.
+            Nama, foto, dan kontak baru dibagikan setelah kalian sama-sama setuju.
           </p>
           <ul className="mt-9 space-y-4 text-sm text-white/75">
             {[
@@ -562,8 +558,8 @@ function ProgressivePrivacy() {
           >
             <div className="flex items-center justify-between border-b border-white/15 px-5 py-4">
               <div>
-                <p className="font-semibold">Mahasiswa #274</p>
-                <p className="mt-1 text-xs text-white/45">Identitas &amp; kontak disembunyikan</p>
+                <p className="font-semibold">Profil anonim</p>
+                <p className="mt-1 text-xs text-white/45">Nama, foto, dan kontak belum dibagikan</p>
               </div>
               <LockKeyhole className="h-4 w-4 text-[#8DB9F6]" aria-hidden="true" />
             </div>
@@ -604,9 +600,9 @@ function ProgressivePrivacy() {
 
 function Groups() {
   const groupTypes = [
-    ["Study Circle", "Kelompok kecil untuk belajar rutin, menyelesaikan target, dan menjaga ritme bersama."],
-    ["Open Table", "Meja terbuka bertema tertentu yang bisa diikuti mahasiswa untuk belajar atau mengobrol."],
-    ["Campus circles", "Kelompok kampus kecil, lingkaran networking, serta opsi women-only atau verified-only."],
+    ["Study Circle", "Belajar rutin bersama mahasiswa dengan target yang sejalan."],
+    ["Circle terbuka", "Mahasiswa dapat meminta bergabung sesuai topik dan tujuan circle."],
+    ["Circle satu kampus", "Admin dapat membatasi anggota dari kampus yang sama."],
   ];
 
   return (
@@ -614,14 +610,14 @@ function Groups() {
       <div className="page-shell">
         <div className="grid items-end gap-8 lg:grid-cols-[1fr_0.75fr]">
           <div>
-            <p className="section-label">Groups</p>
+            <p className="section-label">Circle Belajar</p>
             <h2 className="section-title mt-5 max-w-2xl">
-              Bergabung lewat tujuan bersama, bukan sekadar daftar anggota.
+              Belajar dan berdiskusi dalam circle kecil.
             </h2>
           </div>
           <p className="max-w-lg leading-7 text-brand-muted lg:justify-self-end">
-            Pilih kelompok berdasarkan aktivitas, skala, dan batas komunitas
-            yang membuatmu nyaman.
+            Pilih circle berdasarkan topik, tujuan, dan lingkungan kampus yang
+            membuatmu nyaman.
           </p>
         </div>
 
@@ -639,7 +635,7 @@ function Groups() {
             <div className="mt-7 border-t border-white/15 pt-5">
               <p className="flex items-center gap-3 text-base">
                 <Users className="h-5 w-5 shrink-0 text-[#8DB9F6]" />
-                6–10 anggota · verified-only
+                3–30 anggota · terbuka atau satu kampus
               </p>
               <p className="mt-3 text-base text-white/60">Online · Kamis malam</p>
             </div>
@@ -675,19 +671,19 @@ function CampusEvents() {
     <section id="events" className="scroll-mt-20 bg-white py-20 sm:py-28">
       <div className="page-shell grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <div>
-          <p className="section-label">Campus Events</p>
+          <p className="section-label">Acara Kampus</p>
           <h2 className="section-title mt-4 max-w-md">
-            Temukan kegiatan yang memberimu alasan untuk hadir dan terhubung.
+            Cari kegiatan kampus yang benar-benar ingin kamu ikuti.
           </h2>
           <p className="mt-5 max-w-md leading-7 text-brand-muted">
-            Jelajahi aktivitas kampus berdasarkan minat, tujuan, dan lingkungan
-            yang ingin kamu kenal lebih jauh.
+            Lihat waktu, tempat, dan cara mendaftar. Setelah masuk, tiket acaramu
+            tersimpan di akun StudyDate.
           </p>
           <a
             href="#mulai"
             className="focus-ring mt-7 inline-flex items-center gap-2 font-semibold text-brand-blue"
           >
-            Jelajahi Campus Events
+            Daftar untuk Mencoba
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>
@@ -712,17 +708,16 @@ function OnlineFirst() {
     <section className="border-y border-brand-border bg-brand-surface">
       <div className="page-shell grid gap-10 py-20 md:grid-cols-[160px_1fr] md:py-24 lg:gap-16">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-blue">
-          Online first
+          Kenalan online lebih dulu
         </p>
         <div>
           <h2 className="max-w-4xl font-heading text-3xl font-medium leading-[1.35] tracking-[-0.025em] text-brand-navy sm:text-4xl lg:text-[2.75rem]">
-            Kenal secara online lebih dulu. Bangun konteks, batas, dan rasa
-            percaya sebelum mempertimbangkan pertemuan.
+            Ngobrol dulu secara online sampai kalian merasa cukup nyaman untuk
+            melanjutkan koneksi.
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-brand-muted">
-            Pertemuan offline bukan tujuan wajib. Koneksi dapat tetap online,
-            berkembang menjadi kerja sama, pertemanan, networking, hubungan
-            dekat, atau bergerak ke arah lain yang disepakati bersama.
+            Tidak harus berujung pada pertemuan. Koneksi bisa tetap menjadi teman
+            belajar, rekan proyek, teman ngobrol, atau hubungan lain yang kalian sepakati.
           </p>
         </div>
       </div>
@@ -818,12 +813,11 @@ function EarlyAccessCTA() {
                 Akses awal
               </p>
               <h2 className="mt-5 font-heading text-3xl font-semibold leading-tight sm:text-4xl">
-                Temukan orang, kelompok, dan kegiatan yang membuat kehidupan
-                kampus terasa lebih terhubung.
+                Temukan teman, circle belajar, dan acara kampus dalam satu tempat.
               </h2>
               <p className="mt-5 leading-7 text-white/70">
-                Ikuti kabar StudyDate ID dan jadilah bagian dari akses awal
-                platform social-discovery untuk mahasiswa.
+                Daftar akses awal untuk mencoba StudyDate ID dan membantu kami
+                membangun pengalaman yang lebih berguna bagi mahasiswa.
               </p>
               <EarlyAccessTrigger
                 source="final-cta"
@@ -847,8 +841,8 @@ function Footer() {
         <div>
           <BrandLogo />
           <p className="mt-4 max-w-sm text-sm leading-6 text-brand-muted">
-            Platform sosial privacy-first untuk mahasiswa Indonesia yang ingin
-            belajar, ngobrol, networking, dan mengenal orang baru perlahan.
+            Tempat mahasiswa menemukan teman belajar, circle kecil, dan acara
+            kampus tanpa langsung membagikan nama atau kontak pribadi.
           </p>
         </div>
         <div className="text-sm text-brand-muted sm:text-right">
@@ -864,7 +858,7 @@ function Footer() {
             ))}
           </nav>
           <p className="mt-5">
-            © 2026 StudyDate ID · Mulai dari belajar. Kenal perlahan.
+            © 2026 StudyDate ID · Kenalan tanpa perlu terburu-buru.
           </p>
         </div>
       </div>

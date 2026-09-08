@@ -5,7 +5,7 @@ import { helpIntro, helpSections } from "@/content/public-docs/help";
 export const metadata: Metadata = {
   title: "Bantuan — StudyDate ID",
   description:
-    "Panduan singkat StudyDate ID: People, Perkenalan, chat anonim, Mutual Interest, Identity Reveal, Contact Reveal, dan login.",
+    "Panduan singkat untuk mencari teman, mengirim perkenalan, chat anonim, membuka identitas dan kontak, serta login.",
   alternates: { canonical: "/help" },
   openGraph: {
     title: "Bantuan — StudyDate ID",
