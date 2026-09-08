@@ -38,7 +38,7 @@ const footerGroups = [
 
 export function PublicFooter() {
   return (
-    <footer className="bg-brand-navy text-white">
+    <footer id="footer" className="bg-brand-navy text-white">
       <div className="page-shell">
         <div className="grid gap-12 py-14 sm:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)] lg:gap-16 lg:py-20">
           <div className="max-w-md">
