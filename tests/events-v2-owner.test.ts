@@ -73,6 +73,7 @@ test("EV2O-03 official control validates safe slug and stays server-authoritativ
   );
   assert.match(ownerActions, /ownerSetCampusEventOfficial/);
   assert.match(ownerActions, /URLSearchParams/);
-  assert.match(ownerPage, /Belum ada listing operasional[\s\S]*Owner/);
+  assert.match(ownerPage, /OwnerEventDirectory/);
+  assert.match(ownerPage, /listStaffCampusEvents/);
   assert.doesNotMatch(ownerPage, /listCampusEvents|fake|contoh Event/i);
 });

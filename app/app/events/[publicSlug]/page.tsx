@@ -150,22 +150,22 @@ export default async function EventDetailPage({
     new Date(event.registration_closes_at!).getTime() <= new Date().getTime();
 
   const successCopy: Record<string, string> = {
-    created: "Campus Event berhasil dibuat.",
-    updated: "Detail Event berhasil diperbarui.",
+    created: "Acara kampus berhasil dibuat.",
+    updated: "Detail acara berhasil diperbarui.",
     "registration-pending": "Registrasimu sedang menunggu persetujuan organizer.",
     "registration-going": "Registrasimu sudah dikonfirmasi.",
-    "registration-waitlisted": "Kamu masuk waitlist Event.",
+    "registration-waitlisted": "Kamu masuk daftar tunggu acara.",
     "registration-declined": "Registrasimu tidak disetujui.",
     "registration-cancelled": "Registrasimu telah dibatalkan.",
-    "team-accept": "Undangan tim diterima. Workspace Event sudah tersedia.",
+    "team-accept": "Undangan tim diterima. Ruang kerja acara sudah tersedia.",
     "team-decline": "Undangan tim ditolak.",
     "cancel-rsvp": "Keikutsertaanmu telah dibatalkan.",
-    "cancel-event": "Acara dibatalkan. Riwayat RSVP tetap tersimpan.",
-    archive: "Event telah diarsipkan.",
+    "cancel-event": "Acara dibatalkan. Riwayat pendaftaran tetap tersimpan.",
+    archive: "Acara telah diarsipkan.",
     reported: "Laporan telah dikirim secara privat untuk ditinjau.",
-    waitlisted: "Kamu masuk waitlist Event.",
+    waitlisted: "Kamu masuk daftar tunggu acara.",
     "left-waitlist": "Kamu keluar dari waitlist Event.",
-    "message-sent": "Pesan Event terkirim.",
+    "message-sent": "Pesan acara terkirim.",
     "message-reported": "Laporan pesan dikirim secara privat untuk ditinjau.",
     "circle-linked": "Tautan Study Circle diperbarui.",
   };
@@ -189,7 +189,7 @@ export default async function EventDetailPage({
             href="/app/events"
             className="focus-ring inline-flex min-h-11 items-center rounded-lg text-sm font-semibold text-brand-muted hover:text-brand-blue"
           >
-            ← Kembali ke Campus Events
+            ← Kembali ke Acara Kampus
           </Link>
 
           {state && successCopy[state] ? (
@@ -225,7 +225,7 @@ export default async function EventDetailPage({
                 {event.is_official ? (
                   <span className="inline-flex items-center gap-1 text-brand-navy">
                     <BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />
-                    Official
+                    Resmi
                   </span>
                 ) : null}
                 <span className="text-brand-navy">{statusLabel}</span>
@@ -252,7 +252,7 @@ export default async function EventDetailPage({
                   href={managementHref}
                   className="focus-ring inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
                 >
-                  Manage Event
+                  Kelola acara
                 </Link>
               ) : null}
               {event.rsvp_status === "pending" ? (
@@ -581,7 +581,7 @@ export default async function EventDetailPage({
                   href={managementHref}
                   className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white"
                 >
-                  Manage Event
+                  Kelola acara
                 </Link>
                 {event.can_check_in ? (
                   <Link

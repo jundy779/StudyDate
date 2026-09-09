@@ -61,7 +61,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
         <div className="page-shell py-8 sm:py-12 lg:py-16">
           <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="section-label">Campus Events</p>
+              <p className="section-label">Acara Kampus</p>
               <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
                 Kegiatan kampus, bertemu di tempat publik
               </h1>
@@ -76,11 +76,11 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
-                Buat Event
+                Buat acara
               </Link>
             ) : (
               <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-                <p className="font-semibold text-brand-navy">Pembuatan Event terbatas</p>
+                <p className="font-semibold text-brand-navy">Pembuatan acara terbatas</p>
                 <p className="mt-1">
                   Diperlukan verifikasi mahasiswa atau eligibility dari Owner. StudyDate
                   Plus menambah kapasitas, bukan kepercayaan organizer.
@@ -153,12 +153,12 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               className="mt-9 border-y border-brand-border py-6"
               aria-labelledby="event-team-active-title"
             >
-              <p className="section-label">Event yang kamu bantu</p>
+              <p className="section-label">Acara yang kamu bantu</p>
               <h2
                 id="event-team-active-title"
                 className="mt-2 font-heading text-xl font-semibold text-brand-navy"
               >
-                Workspace tim Event
+                Ruang kerja tim acara
               </h2>
               <div className="mt-4 divide-y divide-brand-border">
                 {activeAssignments.map((assignment) => (
@@ -232,13 +232,13 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                   pose="study"
                   title={
                     filters.search || filters.category || filters.scope
-                      ? "Belum ada Event yang cocok"
+                      ? "Belum ada acara yang cocok"
                       : "Belum ada acara mendatang"
                   }
                   description="Coba ubah filter atau buat kegiatan kecil di tempat publik."
                   action={
                     eligibility?.eligible
-                      ? { href: "/app/events/create", label: "Buat Event" }
+                      ? { href: "/app/events/create", label: "Buat acara" }
                       : undefined
                   }
                 />

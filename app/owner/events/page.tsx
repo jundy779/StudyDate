@@ -3,8 +3,10 @@ import {
   manageEventOrganizerEligibility,
   setCampusEventOfficial,
 } from "@/app/owner/events/actions";
+import { OwnerEventDirectory } from "@/components/events/owner-event-directory";
 import { StaffShell } from "@/components/staff/staff-shell";
 import { ownerLookupEventOrganizerEligibility } from "@/lib/events/service";
+import { listStaffCampusEvents } from "@/lib/events/staff-service";
 import { eventOrganizerEligibilityLookupSchema } from "@/lib/events/validation";
 import { requireOwner } from "@/lib/staff/authorization";
 import { Suspense } from "react";
@@ -39,9 +41,12 @@ async function OwnerEventsContent({ searchParams }: Props) {
   const alias = eventOrganizerEligibilityLookupSchema.safeParse({
     publicAlias: aliasInput,
   });
-  const organizer = alias.success
-    ? await ownerLookupEventOrganizerEligibility(alias.data.publicAlias)
-    : null;
+  const [organizer, events] = await Promise.all([
+    alias.success
+      ? ownerLookupEventOrganizerEligibility(alias.data.publicAlias)
+      : Promise.resolve(null),
+    listStaffCampusEvents("all").catch(() => []),
+  ]);
   const message = query.state ? stateMessage[query.state] : null;
 
   return (
@@ -69,6 +74,8 @@ async function OwnerEventsContent({ searchParams }: Props) {
               {message}
             </p>
           ) : null}
+
+          <OwnerEventDirectory events={events} />
 
           <section className="mt-10 border-y border-brand-border py-8">
             <h2 className="font-heading text-2xl font-semibold text-brand-navy">

@@ -8,7 +8,7 @@ const footerGroups = [
     links: [
       { label: "Cari Teman", href: "/#people" },
       { label: "Circle Belajar", href: "/#groups" },
-      { label: "Acara Kampus", href: "/#events" },
+      { label: "Acara Kampus", href: "/events" },
       { label: "Cara Kerja", href: "/#cara-kerja" },
     ],
   },

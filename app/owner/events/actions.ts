@@ -70,6 +70,8 @@ export async function setCampusEventOfficial(formData: FormData) {
     redirectWithState("official_error", { slug: parsed.data.publicSlug });
   }
   revalidatePath(`/app/events/${parsed.data.publicSlug}`);
+  revalidatePath("/events");
+  revalidatePath(`/events/${parsed.data.publicSlug}`);
   redirectWithState(changed ? "official_saved" : "official_unchanged", {
     slug: parsed.data.publicSlug,
   });
