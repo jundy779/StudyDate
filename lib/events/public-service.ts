@@ -103,6 +103,7 @@ async function hydratePublicEvents(rows: EventRow[]) {
     const profile = profiles.get(row.organizer_user_id);
     if (!profile) return [];
     const { id, organizer_user_id: _organizerUserId, ...event } = row;
+    void _organizerUserId;
     return [
       {
         ...event,
@@ -131,7 +132,7 @@ export async function listPublicCampusEvents(category?: EventCategory) {
   if (category) query = query.eq("category", category);
   const { data, error } = await query;
   if (error) throw new Error("Daftar acara publik belum dapat dimuat.");
-  return hydratePublicEvents((data ?? []) as EventRow[]);
+  return hydratePublicEvents((data ?? []) as unknown as EventRow[]);
 }
 
 export const getPublicCampusEvent = cache(async (publicSlug: string) => {
@@ -150,6 +151,6 @@ export const getPublicCampusEvent = cache(async (publicSlug: string) => {
 
   if (error) throw new Error("Acara belum dapat dimuat.");
   if (!data) return null;
-  const [event] = await hydratePublicEvents([data as EventRow]);
+  const [event] = await hydratePublicEvents([data as unknown as EventRow]);
   return event ?? null;
 });

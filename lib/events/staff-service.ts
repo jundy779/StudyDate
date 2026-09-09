@@ -71,7 +71,7 @@ export async function listStaffCampusEvents(status: StaffEventStatus = "schedule
   const { data, error } = await query;
   if (error) throw new Error("Daftar acara untuk tim belum dapat dimuat.");
 
-  const rows = (data ?? []) as StaffEventRow[];
+  const rows = (data ?? []) as unknown as StaffEventRow[];
   if (rows.length === 0) return [];
   const eventIds = rows.map((event) => event.id);
   const organizerIds = [...new Set(rows.map((event) => event.organizer_user_id))];
@@ -105,6 +105,7 @@ export async function listStaffCampusEvents(status: StaffEventStatus = "schedule
     const profile = profiles.get(row.organizer_user_id);
     if (!profile) return [];
     const { id, organizer_user_id: _organizerUserId, ...event } = row;
+    void _organizerUserId;
     return [{
       ...event,
       attendee_count: attendance.get(id) ?? 0,
