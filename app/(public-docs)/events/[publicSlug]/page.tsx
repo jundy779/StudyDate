@@ -21,6 +21,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type EventDetailProps = {
   params: Promise<{ publicSlug: string }>;
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: EventDetailProps): Promise<Me
   };
 }
 
-export default async function PublicEventDetailPage({ params }: EventDetailProps) {
+async function PublicEventDetailContent({ params }: EventDetailProps) {
   const { publicSlug } = await params;
   const event = await resolveEvent(publicSlug);
   if (!event) notFound();
@@ -194,5 +195,32 @@ export default async function PublicEventDetailPage({ params }: EventDetailProps
         </div>
       </section>
     </article>
+  );
+}
+
+function PublicEventDetailFallback() {
+  return (
+    <article aria-busy="true">
+      <section className="border-b border-brand-border bg-brand-surface py-12 sm:py-16">
+        <div className="page-shell">
+          <div className="h-5 w-44 animate-pulse rounded bg-white" />
+          <div className="mt-8 h-12 max-w-3xl animate-pulse rounded-xl bg-white" />
+          <div className="mt-5 h-24 max-w-4xl animate-pulse rounded-xl bg-white" />
+        </div>
+      </section>
+      <section className="page-shell grid gap-5 py-12 sm:grid-cols-2 lg:grid-cols-4 sm:py-16">
+        {[0, 1, 2, 3].map((item) => (
+          <div key={item} className="h-28 animate-pulse rounded-xl bg-brand-surface" />
+        ))}
+      </section>
+    </article>
+  );
+}
+
+export default function PublicEventDetailPage(props: EventDetailProps) {
+  return (
+    <Suspense fallback={<PublicEventDetailFallback />}>
+      <PublicEventDetailContent {...props} />
+    </Suspense>
   );
 }
