@@ -5,6 +5,7 @@ import { listPublicCampusEvents } from "@/lib/events/public-service";
 import { CalendarDays, ShieldCheck, TicketCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Acara Kampus — StudyDate ID",
@@ -24,7 +25,7 @@ type EventsPageProps = {
   searchParams: Promise<{ category?: string }>;
 };
 
-export default async function PublicEventsPage({ searchParams }: EventsPageProps) {
+async function PublicEventsContent({ searchParams }: EventsPageProps) {
   const query = await searchParams;
   const category = EVENT_CATEGORIES.includes(query.category as EventCategory)
     ? (query.category as EventCategory)
@@ -143,5 +144,41 @@ export default async function PublicEventsPage({ searchParams }: EventsPageProps
         )}
       </section>
     </article>
+  );
+}
+
+function PublicEventsFallback() {
+  return (
+    <article aria-busy="true">
+      <section className="bg-brand-navy py-16 text-white sm:py-20">
+        <div className="page-shell">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-blue-light">
+            Acara Kampus
+          </p>
+          <h1 className="mt-4 max-w-4xl font-heading text-4xl font-semibold leading-tight tracking-[-0.035em] sm:text-5xl lg:text-6xl">
+            Menyiapkan acara yang layak masuk kalendermu.
+          </h1>
+        </div>
+      </section>
+      <section className="page-shell py-14 sm:py-20">
+        <div className="h-10 w-64 animate-pulse rounded-lg bg-brand-surface" />
+        <div className="mt-8 space-y-4">
+          {[0, 1, 2].map((item) => (
+            <div
+              key={item}
+              className="h-36 animate-pulse rounded-2xl border border-brand-border bg-brand-surface"
+            />
+          ))}
+        </div>
+      </section>
+    </article>
+  );
+}
+
+export default function PublicEventsPage(props: EventsPageProps) {
+  return (
+    <Suspense fallback={<PublicEventsFallback />}>
+      <PublicEventsContent {...props} />
+    </Suspense>
   );
 }
