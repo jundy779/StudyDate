@@ -30,6 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const events: MetadataRoute.Sitemap[number] = {
+    url: `${origin}/events`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 0.9,
+  };
+
   const articles: MetadataRoute.Sitemap = insightArticles.map((article) => ({
     url: `${origin}/insight/${article.slug}`,
     lastModified: new Date(`${article.modifiedAt}T00:00:00.000Z`),
@@ -37,5 +44,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }));
 
-  return [home, ...docs, ...articles];
+  return [home, events, ...docs, ...articles];
 }

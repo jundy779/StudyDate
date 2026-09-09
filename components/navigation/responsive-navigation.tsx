@@ -199,6 +199,12 @@ function getStaffItems(
         key: "overview",
         icon: "overview",
       },
+      {
+        href: "/admin/events",
+        label: "Acara Kampus",
+        key: "events",
+        icon: "events",
+      },
     ];
     if (canEarlyAccess) {
       items.push({

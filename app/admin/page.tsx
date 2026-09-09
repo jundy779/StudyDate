@@ -1,6 +1,6 @@
 import { StaffShell } from "@/components/staff/staff-shell";
 import { requireActiveStaff } from "@/lib/staff/authorization";
-import { BookOpen, GraduationCap, ScrollText, ShieldCheck, Users } from "lucide-react";
+import { BookOpen, CalendarDays, GraduationCap, ScrollText, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -10,6 +10,12 @@ async function AdminContent() {
   if (access.role === "owner") redirect("/owner");
 
   const tools = [
+    {
+      href: "/admin/events",
+      title: "Acara Kampus",
+      description: "Pantau acara yang dibuat mahasiswa dan status tampil publiknya.",
+      icon: CalendarDays,
+    },
     access.canUsersRead || access.canUsersSupport
       ? {
           href: "/staff/users",

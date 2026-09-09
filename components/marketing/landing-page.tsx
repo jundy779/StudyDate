@@ -20,7 +20,7 @@ import { PublicFooter } from "@/components/marketing/public-footer";
 const navigation = [
   { label: "Cari Teman", href: "/#people" },
   { label: "Circle Belajar", href: "/#groups" },
-  { label: "Acara Kampus", href: "/#events" },
+  { label: "Acara Kampus", href: "/events" },
   { label: "Cara Kerja", href: "/#cara-kerja" },
   { label: "Tentang", href: "/about" },
   { label: "Keamanan", href: "/safety" },
@@ -668,13 +668,13 @@ function CampusEvents() {
             Lihat waktu, tempat, dan cara mendaftar. Setelah masuk, tiket acaramu
             tersimpan di akun StudyDate.
           </p>
-          <a
-            href="#mulai"
+          <Link
+            href="/events"
             className="focus-ring mt-7 inline-flex items-center gap-2 font-semibold text-brand-blue"
           >
-            Daftar untuk Mencoba
-            <ArrowRight className="h-4 w-4" />
-          </a>
+            Lihat acara mendatang
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
 
         <div className="divide-y divide-brand-border border-y border-brand-border">

@@ -50,7 +50,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           {event.is_official ? (
             <span className="inline-flex items-center gap-1 text-brand-navy">
               <BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />
-              Official
+              Resmi
             </span>
           ) : null}
           {event.rsvp_status === "going" ? (
@@ -115,7 +115,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           href={`/app/events/${event.public_slug}`}
           className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue transition hover:bg-brand-blue hover:text-white"
         >
-          Lihat Event
+          Lihat acara
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         {canManage ? (
@@ -123,7 +123,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
             href={manageHref}
             className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
           >
-            Manage Event
+            Kelola acara
           </Link>
         ) : null}
       </div>
