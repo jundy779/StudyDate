@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { EventManagementShell } from "@/components/events/event-management-shell";
 import { getCampusEventManagement } from "@/lib/events/management";
 import {
+  BarChart3,
   CalendarCheck,
   ClipboardList,
   QrCode,
@@ -18,29 +19,36 @@ const destinations = [
   {
     permission: "registrations",
     suffix: "/registrations",
-    title: "Registrations",
-    description: "Tinjau status, jawaban aman, dan keputusan registrasi.",
+    title: "Pendaftaran",
+    description: "Tinjau status, jawaban, dan keputusan pendaftaran.",
     icon: ClipboardList,
+  },
+  {
+    permission: "registrations",
+    suffix: "/report",
+    title: "Laporan & kesiapan",
+    description: "Lihat ringkasan pendaftaran, kehadiran, dan hal yang perlu disiapkan.",
+    icon: BarChart3,
   },
   {
     permission: "check-in",
     suffix: "/check-in",
-    title: "Check-In",
-    description: "Pantau kehadiran dan lakukan check-in manual.",
+    title: "Check-in",
+    description: "Pantau kehadiran dan lakukan check-in peserta.",
     icon: QrCode,
   },
   {
     permission: "team",
     suffix: "/team",
-    title: "Team",
-    description: "Undang cohost atau petugas check-in melalui alias tepat.",
+    title: "Tim acara",
+    description: "Undang cohost atau petugas check-in melalui alias.",
     icon: UserRoundCog,
   },
   {
     permission: "team",
     suffix: "/settings",
-    title: "Settings",
-    description: "Atur registrasi, pertanyaan, detail, dan lifecycle Event.",
+    title: "Pengaturan",
+    description: "Atur detail acara, pendaftaran, pertanyaan, dan status acara.",
     icon: Settings,
   },
 ] as const;
@@ -60,16 +68,16 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <EventManagementShell active="overview" event={event} overview={overview}>
           <section aria-labelledby="manage-overview-title">
-            <p className="section-label">Overview</p>
+            <p className="section-label">Ringkasan</p>
             <h2
               id="manage-overview-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
             >
-              Operasikan Event dari satu tempat
+              Kelola acara dari satu tempat
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
-              Data di workspace ini dibatasi pada projection organizer yang aman.
-              Informasi akun dan kontak peserta tidak tersedia.
+              Pilih bagian yang ingin dikelola. Informasi akun dan kontak pribadi
+              peserta tidak tersedia di ruang penyelenggara.
             </p>
 
             <div className="mt-7 divide-y divide-brand-border border-y border-brand-border">
@@ -98,8 +106,8 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
             <aside className="mt-8 flex max-w-3xl items-start gap-3 border-l-2 border-brand-blue pl-4 text-sm leading-7 text-brand-muted">
               <CalendarCheck className="mt-1 h-4 w-4 shrink-0 text-brand-blue" aria-hidden="true" />
               <p>
-                Check-in manual dan QR hanya diproses pada jendela dua jam sebelum
-                sampai dua jam setelah Event.
+                Check-in manual dan QR hanya dapat diproses mulai dua jam sebelum
+                sampai dua jam setelah acara.
               </p>
             </aside>
           </section>

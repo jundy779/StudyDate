@@ -9,6 +9,9 @@ const detail = read("app/app/events/[publicSlug]/page.tsx");
 const events = read("app/app/events/page.tsx");
 const create = read("app/app/events/create/page.tsx");
 const manage = read("app/app/events/[publicSlug]/manage/page.tsx");
+const report = read("app/app/events/[publicSlug]/manage/report/page.tsx");
+const managementShell = read("components/events/event-management-shell.tsx");
+const reporting = read("lib/events/reporting.ts");
 const registrations = read(
   "app/app/events/[publicSlug]/manage/registrations/page.tsx",
 );
@@ -30,10 +33,10 @@ test("EV2UI-01 management routes use RPC authorization and safe not-found", () =
   assert.match(managementGuard, /message\.includes\("event management required"\)/);
   assert.match(managementGuard, /throw error/);
   assert.doesNotMatch(managementGuard, /\.from\("profiles"\)/);
-  assert.match(manage, /Registrations/);
-  assert.match(manage, /Check-In/);
-  assert.match(manage, /Team/);
-  assert.match(manage, /Settings/);
+  assert.match(manage, /Pendaftaran/);
+  assert.match(manage, /Check-in/);
+  assert.match(manage, /Tim acara/);
+  assert.match(manage, /Pengaturan/);
   assert.match(manage, /visibleDestinations/);
 });
 
@@ -117,4 +120,21 @@ test("EV2UI-07 eligibility gates creation and Plus copy is not trust", () => {
   assert.match(events, /Buka workspace/);
   assert.match(create, /getMyEventOrganizerEligibility/);
   assert.match(create, /if \(!eligibility\?\.eligible\) notFound\(\)/);
+});
+
+test("EV2UI-08 aggregate reporting stays permission-gated and privacy-safe", () => {
+  assert.match(report, /getCampusEventManagement\([\s\S]*"registrations"/);
+  assert.match(report, /buildCampusEventReport/);
+  assert.match(report, /Tingkat kehadiran/);
+  assert.match(report, /Kesiapan acara/);
+  assert.doesNotMatch(report, /listCampusEventRegistrations|listCampusEventAttendees/);
+  assert.doesNotMatch(report, /targetUserId|user_id|UUID/);
+  assert.match(managementShell, /\["report", "Laporan", "\/report"\]/);
+  assert.match(
+    managementShell,
+    /key !== "registrations" && key !== "report"[\s\S]*event\.can_manage_registrations/,
+  );
+  assert.match(reporting, /Math\.min\(100, Math\.max\(0/);
+  assert.match(reporting, /overview\.checked_in_count, overview\.going_count/);
+  assert.match(reporting, /event\.scope === "open" && event\.is_official/);
 });
