@@ -28,7 +28,7 @@ export function EventFilterForm({ filters }: { filters: EventFilters }) {
     >
       <div>
         <label htmlFor="event-search" className="text-sm font-semibold text-brand-navy">
-          Cari judul Event
+          Cari judul acara
         </label>
         <input
           id="event-search"

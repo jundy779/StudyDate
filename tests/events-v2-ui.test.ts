@@ -44,12 +44,12 @@ test("EV2UI-02 detail does not enumerate attendees and links organizer workspace
   assert.doesNotMatch(detail, /listCampusEventAttendees/);
   assert.doesNotMatch(detail, /SendIntroductionDialog/);
   assert.match(detail, /Direktori peserta tetap privat/);
-  assert.match(detail, /Manage Event/);
+  assert.match(detail, /Kelola acara/);
   assert.match(detail, /event\.is_official/);
   assert.match(detail, /event\.registration_mode/);
   assert.match(detail, /event\.waitlist_enabled/);
   assert.match(detail, /blockCampusEventOrganizerAction/);
-  assert.match(detail, /Blokir organizer/);
+  assert.match(detail, /Blokir penyelenggara/);
 });
 
 test("EV2UI-03 registration form serializes only typed question answers", () => {
@@ -113,11 +113,11 @@ test("EV2UI-07 eligibility gates creation and Plus copy is not trust", () => {
   assert.match(events, /eligibility\?\.eligible/);
   assert.match(
     events,
-    /StudyDate\s+Plus menambah kapasitas, bukan kepercayaan organizer/,
+    /StudyDate\s+Plus menambah kapasitas, bukan kepercayaan penyelenggara/,
   );
   assert.match(events, /listMyCampusEventTeamInvitations/);
   assert.match(events, /activeAssignments/);
-  assert.match(events, /Buka workspace/);
+  assert.match(events, /Buka ruang kerja/);
   assert.match(create, /getMyEventOrganizerEligibility/);
   assert.match(create, /if \(!eligibility\?\.eligible\) notFound\(\)/);
 });
@@ -137,4 +137,22 @@ test("EV2UI-08 aggregate reporting stays permission-gated and privacy-safe", () 
   assert.match(reporting, /Math\.min\(100, Math\.max\(0/);
   assert.match(reporting, /overview\.checked_in_count, overview\.going_count/);
   assert.match(reporting, /event\.scope === "open" && event\.is_official/);
+});
+
+test("EV2UI-09 organizer surfaces use plain Indonesian operational copy", () => {
+  const surfaces = [events, create, detail, registrations, checkIn, team, settings]
+    .join("\n");
+  assert.doesNotMatch(
+    surfaces,
+    /Team invitations|Campus Events|Checked in|Not yet|Custom questions|Event detail|Instant|Approval/,
+  );
+  for (const copy of [
+    "Undangan tim",
+    "Daftar tunggu",
+    "Sudah hadir",
+    "Pertanyaan tambahan",
+    "Perlu persetujuan penyelenggara",
+  ]) {
+    assert.match(surfaces, new RegExp(copy));
+  }
 });

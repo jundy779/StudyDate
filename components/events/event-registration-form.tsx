@@ -61,7 +61,7 @@ export function EventRegistrationForm({
           {profile.semester ? ` · Semester ${profile.semester}` : ""}
         </p>
         <p className="mt-1 text-xs">
-          Data ini berasal dari profilmu dan tidak perlu ditanyakan ulang oleh organizer.
+          Data ini berasal dari profilmu dan tidak perlu ditanyakan ulang oleh penyelenggara.
         </p>
       </aside>
 

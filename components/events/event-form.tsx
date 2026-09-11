@@ -113,7 +113,7 @@ export function EventForm({
 
       <div>
         <label htmlFor="event-title" className="text-sm font-semibold text-brand-navy">
-          Judul Event
+          Judul acara
         </label>
         <input
           id="event-title"
@@ -171,7 +171,7 @@ export function EventForm({
         </div>
         <div>
           <label htmlFor="event-capacity" className="text-sm font-semibold text-brand-navy">
-            Kapasitas termasuk organizer
+            Kapasitas termasuk penyelenggara
           </label>
           <input
             id="event-capacity"
@@ -208,8 +208,8 @@ export function EventForm({
                   </span>
                   <span className="mt-1 block text-xs leading-5 text-brand-muted">
                     {scope === "open"
-                      ? "Mahasiswa eligible dari kampus lain dapat menemukan Event."
-                      : "Kampus diturunkan dari profil organizer dan diperiksa server."}
+                      ? "Mahasiswa yang memenuhi syarat dari kampus lain dapat menemukan acara."
+                      : "Kampus mengikuti profil penyelenggara dan diperiksa oleh sistem."}
                   </span>
                 </span>
               </span>
@@ -234,8 +234,8 @@ export function EventForm({
                 defaultValue="instant"
                 className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
               >
-                <option value="instant">Instant — langsung dikonfirmasi</option>
-                <option value="approval">Approval — perlu ditinjau</option>
+                <option value="instant">Langsung diterima</option>
+                <option value="approval">Perlu persetujuan penyelenggara</option>
               </select>
             </label>
             <label className="text-sm font-semibold text-brand-navy">
@@ -258,7 +258,7 @@ export function EventForm({
               defaultChecked
               className="mt-1 h-4 w-4 accent-brand-blue"
             />
-            <span>Aktifkan waitlist saat kapasitas penuh.</span>
+            <span>Aktifkan daftar tunggu saat kapasitas penuh.</span>
           </label>
         </fieldset>
       ) : (

@@ -34,9 +34,9 @@ test("EV2O-01 owner Events route is protected and linked", () => {
 
 test("EV2O-02 organizer trust UI uses exact public alias without private IDs", () => {
   assert.match(ownerPage, /ownerLookupEventOrganizerEligibility/);
-  assert.match(ownerPage, /StudyDate Plus[\s\S]*tidak memberi kepercayaan organizer/);
+  assert.match(ownerPage, /StudyDate Plus[\s\S]*tidak otomatis memberi izin penyelenggara/);
   assert.match(ownerPage, /Terverifikasi/);
-  assert.match(ownerPage, /Status eksplisit Owner/);
+  assert.match(ownerPage, /Keputusan Owner/);
   assert.match(ownerPage, /Izin efektif/);
   assert.doesNotMatch(ownerPage, /userId|user_id|UUID|email/i);
   assert.doesNotMatch(ownerActions, /userId|user_id|targetUserId/);
@@ -75,5 +75,7 @@ test("EV2O-03 official control validates safe slug and stays server-authoritativ
   assert.match(ownerActions, /URLSearchParams/);
   assert.match(ownerPage, /OwnerEventDirectory/);
   assert.match(ownerPage, /listStaffCampusEvents/);
+  assert.match(ownerPage, /Gunakan daftar acara di atas/);
+  assert.doesNotMatch(ownerPage, /Belum ada listing operasional/);
   assert.doesNotMatch(ownerPage, /listCampusEvents|fake|contoh Event/i);
 });

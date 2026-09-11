@@ -6,7 +6,7 @@ export default function EventsLoading() {
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <div
           role="status"
-          aria-label="Memuat Campus Events"
+          aria-label="Memuat acara kampus"
           aria-busy="true"
           className="page-shell py-8 sm:py-12 lg:py-16"
         >

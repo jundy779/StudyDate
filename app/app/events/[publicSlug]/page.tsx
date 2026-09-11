@@ -152,11 +152,11 @@ export default async function EventDetailPage({
   const successCopy: Record<string, string> = {
     created: "Acara kampus berhasil dibuat.",
     updated: "Detail acara berhasil diperbarui.",
-    "registration-pending": "Registrasimu sedang menunggu persetujuan organizer.",
-    "registration-going": "Registrasimu sudah dikonfirmasi.",
+    "registration-pending": "Pendaftaranmu sedang menunggu persetujuan penyelenggara.",
+    "registration-going": "Pendaftaranmu sudah dikonfirmasi.",
     "registration-waitlisted": "Kamu masuk daftar tunggu acara.",
-    "registration-declined": "Registrasimu tidak disetujui.",
-    "registration-cancelled": "Registrasimu telah dibatalkan.",
+    "registration-declined": "Pendaftaranmu tidak disetujui.",
+    "registration-cancelled": "Pendaftaranmu telah dibatalkan.",
     "team-accept": "Undangan tim diterima. Ruang kerja acara sudah tersedia.",
     "team-decline": "Undangan tim ditolak.",
     "cancel-rsvp": "Keikutsertaanmu telah dibatalkan.",
@@ -164,7 +164,7 @@ export default async function EventDetailPage({
     archive: "Acara telah diarsipkan.",
     reported: "Laporan telah dikirim secara privat untuk ditinjau.",
     waitlisted: "Kamu masuk daftar tunggu acara.",
-    "left-waitlist": "Kamu keluar dari waitlist Event.",
+    "left-waitlist": "Kamu keluar dari daftar tunggu acara.",
     "message-sent": "Pesan acara terkirim.",
     "message-reported": "Laporan pesan dikirim secara privat untuk ditinjau.",
     "circle-linked": "Tautan Study Circle diperbarui.",
@@ -242,7 +242,7 @@ export default async function EventDetailPage({
                   {event.organizer_alias}
                 </strong>
                 {event.organizer_is_verified ? (
-                  <BadgeCheck className="h-4 w-4 text-brand-blue" aria-label="Organizer terverifikasi" />
+                  <BadgeCheck className="h-4 w-4 text-brand-blue" aria-label="Penyelenggara terverifikasi" />
                 ) : null}
               </p>
             </div>
@@ -257,23 +257,23 @@ export default async function EventDetailPage({
               ) : null}
               {event.rsvp_status === "pending" ? (
                 <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-                  Registrasimu sedang ditinjau organizer.
+                  Pendaftaranmu sedang ditinjau penyelenggara.
                 </p>
               ) : event.rsvp_status === "going" ? (
                 <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-                  Registrasimu sudah dikonfirmasi.
+                  Pendaftaranmu sudah dikonfirmasi.
                 </p>
               ) : event.rsvp_status === "waitlisted" ? (
                 <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-                  Kamu berada di waitlist dan akan dipromosikan otomatis jika slot tersedia.
+                  Kamu berada di daftar tunggu dan akan masuk sebagai peserta secara otomatis jika ada tempat.
                 </p>
               ) : event.rsvp_status === "declined" ? (
                 <p className="border-l-2 border-brand-border pl-4 text-sm leading-6 text-brand-muted">
-                  Registrasimu sebelumnya tidak disetujui. Kamu dapat mendaftar ulang selama registrasi masih terbuka.
+                  Pendaftaranmu sebelumnya tidak disetujui. Kamu dapat mendaftar ulang selama pendaftaran masih terbuka.
                 </p>
               ) : event.rsvp_status === "cancelled" ? (
                 <p className="border-l-2 border-brand-border pl-4 text-sm leading-6 text-brand-muted">
-                  Registrasimu telah dibatalkan.
+                  Pendaftaranmu telah dibatalkan.
                 </p>
               ) : null}
               {!event.is_organizer &&
@@ -288,9 +288,9 @@ export default async function EventDetailPage({
                   <input type="hidden" name="answers" value="{}" />
                   <button className="focus-ring min-h-12 w-full rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white">
                     {event.registration_mode === "approval"
-                      ? "Kirim registrasi"
+                      ? "Kirim pendaftaran"
                       : isFull && event.waitlist_enabled
-                        ? "Masuk waitlist"
+                        ? "Masuk daftar tunggu"
                         : "Ikut acara"}
                   </button>
                 </form>
@@ -301,8 +301,8 @@ export default async function EventDetailPage({
                     Batalkan keikutsertaan
                   </summary>
                   <p className="mt-3 text-xs leading-5 text-brand-muted">
-                    Slot akan tersedia kembali. Kamu dapat RSVP lagi jika acara masih
-                    eligible dan belum penuh.
+                    Tempatmu akan tersedia kembali. Kamu dapat mendaftar lagi jika acara
+                    masih terbuka dan belum penuh.
                   </p>
                   <form action={cancelCampusEventRsvpAction} className="mt-3">
                     <input type="hidden" name="publicSlug" value={event.public_slug} />
@@ -321,14 +321,14 @@ export default async function EventDetailPage({
                 <form action={cancelCampusEventRsvpAction}>
                   <input type="hidden" name="publicSlug" value={event.public_slug} />
                   <button className="focus-ring min-h-11 w-full rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy">
-                    Batalkan registrasi
+                    Batalkan pendaftaran
                   </button>
                 </form>
               ) : null}
               {!event.is_organizer ? (
                 <details className="rounded-xl border border-brand-border bg-white p-4">
                   <summary className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-muted">
-                    Laporkan Event
+                    Laporkan acara
                   </summary>
                   <form action={reportCampusEventAction} className="mt-4">
                     <input type="hidden" name="publicSlug" value={event.public_slug} />
@@ -337,7 +337,7 @@ export default async function EventDetailPage({
                       type="submit"
                       className="focus-ring mt-4 min-h-11 w-full rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error"
                     >
-                      Kirim laporan Event
+                      Kirim laporan acara
                     </button>
                   </form>
                 </details>
@@ -349,10 +349,10 @@ export default async function EventDetailPage({
             <section className="border-b border-brand-border py-9" aria-labelledby="registration-form-title">
               <p className="section-label">Registrasi</p>
               <h2 id="registration-form-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
-                Lengkapi registrasi Event
+                Lengkapi pendaftaran acara
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
-                Jawaban dibagikan hanya kepada organizer/cohost melalui projection registrasi yang aman.
+                Jawaban hanya dapat dilihat oleh penyelenggara dan rekan penyelenggara melalui daftar pendaftaran yang dilindungi.
               </p>
               <div className="mt-6 max-w-2xl">
                 <EventRegistrationForm
@@ -365,9 +365,9 @@ export default async function EventDetailPage({
                   }}
                   submitLabel={
                     event.registration_mode === "approval"
-                      ? "Kirim registrasi"
+                      ? "Kirim pendaftaran"
                       : isFull && event.waitlist_enabled
-                        ? "Masuk waitlist"
+                        ? "Masuk daftar tunggu"
                         : "Ikut acara"
                   }
                 />
@@ -411,7 +411,7 @@ export default async function EventDetailPage({
                   : "Registrasi dikonfirmasi langsung"}
                 {isFull
                   ? event.waitlist_enabled
-                    ? " · Waitlist tersedia"
+                    ? " · Daftar tunggu tersedia"
                     : " · Penuh"
                   : ""}
                 {registrationClosed ? " · Registrasi ditutup" : ""}
@@ -448,7 +448,7 @@ export default async function EventDetailPage({
               </h2>
               <p className="mt-3 text-sm leading-7 text-brand-muted">
                 Pastikan tempat ramai, mudah diakses, dan masih beroperasi. Konfirmasi
-                organizer dan filter StudyDate merupakan kontrol best-effort, bukan
+                informasi penyelenggara dan pemeriksaan StudyDate membantu mengurangi risiko, tetapi bukan
                 jaminan keselamatan.
               </p>
             </div>
@@ -460,13 +460,13 @@ export default async function EventDetailPage({
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
               Peserta biasa tidak dapat melihat siapa saja yang hadir. Daftar peserta
-              hanya tersedia bagi organizer dan tim Event pada route pengelolaan.
+              hanya tersedia bagi penyelenggara dan tim acara di ruang pengelolaan.
             </p>
           </section>
 
           {canUseParticipantFeatures ? (
             <section className="border-t border-brand-border py-10" aria-labelledby="event-chat-title">
-              <p className="section-label">Diskusi Event</p>
+              <p className="section-label">Diskusi acara</p>
               <h2 id="event-chat-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Koordinasi peserta
               </h2>
@@ -534,7 +534,7 @@ export default async function EventDetailPage({
             <section className="border-t border-brand-border py-8" aria-labelledby="event-organizer-report-title">
               <details className="max-w-xl rounded-xl border border-brand-border bg-white p-4">
                 <summary id="event-organizer-report-title" className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-muted">
-                  Laporkan organizer
+                  Laporkan penyelenggara
                 </summary>
                 <form action={reportCampusEventAction} className="mt-4">
                   <input type="hidden" name="publicSlug" value={event.public_slug} />
@@ -543,17 +543,17 @@ export default async function EventDetailPage({
                     type="submit"
                     className="focus-ring mt-4 min-h-11 w-full rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error"
                   >
-                    Kirim laporan organizer
+                    Kirim laporan penyelenggara
                   </button>
                 </form>
               </details>
               <details className="mt-3 max-w-xl rounded-xl border border-brand-border bg-white p-4">
                 <summary className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-muted">
-                  Blokir organizer
+                  Blokir penyelenggara
                 </summary>
                 <p className="mt-3 text-sm leading-6 text-brand-muted">
                   Organizer tidak dapat berinteraksi atau memberi akses tim kepadamu.
-                  Riwayat Event dan registrasi yang perlu dipertahankan tidak otomatis
+                  Riwayat acara dan pendaftaran yang perlu dipertahankan tidak otomatis
                   dihapus.
                 </p>
                 <form action={blockCampusEventOrganizerAction} className="mt-4">
@@ -563,7 +563,7 @@ export default async function EventDetailPage({
                     type="submit"
                     className="focus-ring min-h-11 w-full rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error"
                   >
-                    Ya, blokir organizer
+                    Ya, blokir penyelenggara
                   </button>
                 </form>
               </details>
@@ -588,7 +588,7 @@ export default async function EventDetailPage({
                     href={`/app/events/${event.public_slug}/manage/check-in/scan`}
                     className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
                   >
-                    Buka scanner QR
+                    Buka pemindai QR
                   </Link>
                 ) : null}
               </div>

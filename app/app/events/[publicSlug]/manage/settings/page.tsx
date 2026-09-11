@@ -43,6 +43,13 @@ function localTimestamp(value: string | null, timezone: string) {
   return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
 }
 
+const questionTypeLabels: Record<string, string> = {
+  short_text: "Jawaban singkat",
+  single_select: "Pilih satu",
+  multi_select: "Pilih beberapa",
+  checkbox: "Kotak persetujuan",
+};
+
 export default async function SettingsPage({
   params,
   searchParams,
@@ -58,7 +65,7 @@ export default async function SettingsPage({
   const state = first(query.state);
   const notice = first(query.notice);
   const successCopy: Record<string, string> = {
-    updated: "Detail Event berhasil diperbarui.",
+    updated: "Detail acara berhasil diperbarui.",
     "settings-updated": "Pengaturan registrasi berhasil diperbarui.",
     "question-added": "Pertanyaan registrasi berhasil ditambahkan.",
     "question-deleted": "Pertanyaan registrasi berhasil dihapus.",
@@ -80,7 +87,7 @@ export default async function SettingsPage({
           ) : null}
 
           <section aria-labelledby="registration-settings-title">
-            <p className="section-label">Registration</p>
+            <p className="section-label">Pendaftaran</p>
             <h2 id="registration-settings-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
               Pengaturan registrasi
             </h2>
@@ -90,13 +97,13 @@ export default async function SettingsPage({
               <label className="block text-sm font-semibold text-brand-navy">
                 Mode registrasi
                 <select name="registrationMode" defaultValue={event.registration_mode} className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm">
-                  <option value="instant">Instant — langsung dikonfirmasi</option>
-                  <option value="approval">Approval — perlu keputusan organizer</option>
+                  <option value="instant">Langsung diterima</option>
+                  <option value="approval">Perlu persetujuan penyelenggara</option>
                 </select>
               </label>
               <label className="flex min-h-11 items-start gap-3 text-sm leading-6 text-brand-navy">
                 <input type="checkbox" name="waitlistEnabled" defaultChecked={event.waitlist_enabled} className="mt-1 h-4 w-4 accent-brand-blue" />
-                <span>Aktifkan waitlist saat kapasitas penuh.</span>
+                <span>Aktifkan daftar tunggu saat kapasitas penuh.</span>
               </label>
               <label className="block text-sm font-semibold text-brand-navy">
                 Registrasi ditutup
@@ -107,7 +114,7 @@ export default async function SettingsPage({
                   className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
                 />
                 <span className="mt-2 block text-xs font-normal leading-5 text-brand-muted">
-                  Kosongkan untuk membuka registrasi sampai Event dimulai.
+                  Kosongkan agar pendaftaran tetap terbuka sampai acara dimulai.
                 </span>
               </label>
               <button className="focus-ring min-h-12 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
@@ -117,7 +124,7 @@ export default async function SettingsPage({
           </section>
 
           <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="registration-questions-title">
-            <p className="section-label">Custom questions</p>
+            <p className="section-label">Pertanyaan tambahan</p>
             <h2 id="registration-questions-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
               Pertanyaan registrasi
             </h2>
@@ -132,7 +139,7 @@ export default async function SettingsPage({
                     <div className="min-w-0">
                       <p className="break-words font-semibold text-brand-navy">{question.prompt}</p>
                       <p className="mt-1 text-xs uppercase tracking-[0.08em] text-brand-muted">
-                        {question.question_type.replaceAll("_", " ")} · {question.is_required ? "Wajib" : "Opsional"}
+                        {questionTypeLabels[question.question_type] ?? "Pertanyaan"} · {question.is_required ? "Wajib" : "Opsional"}
                       </p>
                       {question.options.length ? (
                         <p className="mt-2 break-words text-sm leading-6 text-brand-muted">{question.options.join(" · ")}</p>
@@ -185,9 +192,9 @@ export default async function SettingsPage({
           </section>
 
           <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-detail-settings-title">
-            <p className="section-label">Event detail</p>
+            <p className="section-label">Detail acara</p>
             <h2 id="event-detail-settings-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
-              Edit detail Event
+              Edit detail acara
             </h2>
             {event.can_edit ? (
               <div className="mt-6 max-w-3xl">
@@ -195,14 +202,14 @@ export default async function SettingsPage({
               </div>
             ) : (
               <p className="mt-4 text-sm leading-7 text-brand-muted">
-                Detail Event tidak dapat diedit pada status atau jendela waktu ini.
+                Detail acara tidak dapat diedit pada status atau rentang waktu ini.
               </p>
             )}
           </section>
 
           <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-link-settings-title">
             <h2 id="event-link-settings-title" className="font-heading text-2xl font-semibold text-brand-navy">
-              Study Circle dan lifecycle
+              Study Circle dan status acara
             </h2>
             <form action={setCampusEventCircleAction} className="mt-6 max-w-2xl">
               <input type="hidden" name="publicSlug" value={event.public_slug} />
@@ -223,7 +230,7 @@ export default async function SettingsPage({
             <div className="mt-7 grid max-w-3xl gap-4 sm:grid-cols-2">
               {event.can_cancel_event ? (
                 <details className="border border-brand-border bg-white p-5">
-                  <summary className="focus-ring cursor-pointer rounded-lg font-semibold text-brand-navy">Batalkan Event</summary>
+                  <summary className="focus-ring cursor-pointer rounded-lg font-semibold text-brand-navy">Batalkan acara</summary>
                   <p className="mt-3 text-sm leading-6 text-brand-muted">Riwayat registrasi dan evidence tetap disimpan.</p>
                   <form action={cancelCampusEventAction} className="mt-4">
                     <input type="hidden" name="publicSlug" value={event.public_slug} />
@@ -236,7 +243,7 @@ export default async function SettingsPage({
               ) : null}
               {event.can_archive ? (
                 <details className="border border-brand-border bg-white p-5">
-                  <summary className="focus-ring cursor-pointer rounded-lg font-semibold text-brand-navy">Arsipkan Event</summary>
+                  <summary className="focus-ring cursor-pointer rounded-lg font-semibold text-brand-navy">Arsipkan acara</summary>
                   <p className="mt-3 text-sm leading-6 text-brand-muted">Arsip menutup discovery dan registrasi baru.</p>
                   <form action={archiveCampusEventAction} className="mt-4">
                     <input type="hidden" name="publicSlug" value={event.public_slug} />

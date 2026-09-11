@@ -75,7 +75,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           ) : null}
           {event.rsvp_status === "waitlisted" ? (
             <span className="normal-case tracking-normal text-brand-navy">
-              Kamu di waitlist
+              Kamu di daftar tunggu
             </span>
           ) : null}
         </div>

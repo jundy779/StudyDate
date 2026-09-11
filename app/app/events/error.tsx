@@ -15,7 +15,7 @@ export default function EventsError({ reset }: { reset: () => void }) {
           >
             <CalendarDays className="mx-auto h-9 w-9 text-brand-blue" aria-hidden="true" />
             <h1 className="mt-5 font-heading text-2xl font-semibold text-brand-navy">
-              Campus Events belum dapat dimuat
+              Acara kampus belum dapat dimuat
             </h1>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted">
               Coba lagi sebentar. RSVP dan data acaramu tidak berubah.

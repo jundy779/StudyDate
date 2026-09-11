@@ -33,15 +33,15 @@ export default async function CreateEventPage({
             className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-brand-muted hover:text-brand-blue"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Kembali ke Campus Events
+            Kembali ke acara kampus
           </Link>
           <header className="mt-7 max-w-2xl">
-            <p className="section-label">Buat Campus Event</p>
+            <p className="section-label">Buat acara kampus</p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
               Mulai kegiatan di tempat publik
             </h1>
             <p className="mt-5 text-lg leading-8 text-brand-muted">
-              Kamu menjadi organizer Event ini, bukan staff platform. Organizer tidak
+              Kamu menjadi penyelenggara acara ini, bukan bagian dari tim internal StudyDate. Penyelenggara tidak
               mendapat akses ke identitas atau kontak privat peserta.
             </p>
           </header>
@@ -71,15 +71,15 @@ export default async function CreateEventPage({
               id="event-create-form-title"
               className="font-heading text-2xl font-semibold text-brand-navy"
             >
-              Detail Event
+              Detail acara
             </h2>
             <p className="mt-2 text-sm leading-6 text-brand-muted">
-              Semua informasi di bawah dapat terlihat oleh mahasiswa yang eligible.
+              Semua informasi di bawah dapat terlihat oleh mahasiswa yang memenuhi syarat.
             </p>
             <div className="mt-7">
               <EventForm
                 action={createCampusEventAction}
-                submitLabel="Buat Campus Event"
+                submitLabel="Buat acara"
               />
             </div>
           </section>

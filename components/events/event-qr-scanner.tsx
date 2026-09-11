@@ -37,13 +37,13 @@ function scanMessage(
     case "duplicate":
       return `Tiket sudah pernah digunakan.${alias}`;
     case "wrong_event":
-      return "QR ini diterbitkan untuk Event lain.";
+      return "QR ini diterbitkan untuk acara lain.";
     case "invalid":
       return "QR bukan tiket StudyDate yang valid.";
     case "revoked":
       return "Tiket ini sudah dicabut dan tidak berlaku.";
     case "not_eligible":
-      return "Peserta tidak memiliki registrasi aktif untuk check-in.";
+      return "Peserta tidak memiliki pendaftaran aktif untuk check-in.";
     case "outside_window":
       return "Check-in belum dibuka atau jendelanya sudah berakhir.";
     case "rate_limited":

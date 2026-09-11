@@ -16,15 +16,15 @@ type Props = {
 };
 
 const stateMessage: Record<string, string> = {
-  eligibility_saved: "Izin organizer berhasil diperbarui.",
-  eligibility_unchanged: "Status izin organizer sudah sesuai.",
-  eligibility_error: "Izin organizer belum dapat diperbarui.",
-  official_saved: "Status resmi Event berhasil diperbarui.",
+  eligibility_saved: "Izin penyelenggara berhasil diperbarui.",
+  eligibility_unchanged: "Status izin penyelenggara sudah sesuai.",
+  eligibility_error: "Izin penyelenggara belum dapat diperbarui.",
+  official_saved: "Status resmi acara berhasil diperbarui.",
   official_unchanged:
-    "Event tidak ditemukan atau status resminya sudah sesuai. Periksa kembali slug publik.",
-  official_error: "Status resmi Event belum dapat diperbarui.",
+    "Acara tidak ditemukan atau status resminya sudah sesuai. Periksa kembali slug publik.",
+  official_error: "Status resmi acara belum dapat diperbarui.",
   invalid_alias: "Alias publik tidak valid.",
-  invalid_slug: "Slug publik Event tidak valid.",
+  invalid_slug: "Slug publik acara tidak valid.",
 };
 
 const errorStates = new Set([
@@ -53,13 +53,13 @@ async function OwnerEventsContent({ searchParams }: Props) {
     <StaffShell role={access.role} current="events" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Khusus Owner</p>
+          <p className="section-label">Khusus owner</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Operasional Campus Events
+            Operasional acara kampus
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
-            Kelola kepercayaan organizer dan penanda Event resmi menggunakan
-            identifier publik yang aman. Perubahan diputuskan kembali oleh server.
+            Kelola izin penyelenggara dan penanda acara resmi menggunakan
+            identitas publik yang aman. Setiap perubahan tetap diperiksa oleh sistem.
           </p>
 
           {message ? (
@@ -79,12 +79,12 @@ async function OwnerEventsContent({ searchParams }: Props) {
 
           <section className="mt-10 border-y border-brand-border py-8">
             <h2 className="font-heading text-2xl font-semibold text-brand-navy">
-              Izin organizer
+              Izin penyelenggara
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-              Cari alias publik secara exact. StudyDate Plus menambah kapasitas
-              produk, tetapi tidak memberi kepercayaan organizer. Mahasiswa dapat
-              menjadi organizer karena terverifikasi atau mendapat grant Owner.
+              Cari alias publik secara tepat. StudyDate Plus menambah kapasitas
+              produk, tetapi tidak otomatis memberi izin penyelenggara. Mahasiswa dapat
+              menjadi penyelenggara karena terverifikasi atau mendapat izin Owner.
             </p>
 
             <form
@@ -110,7 +110,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
 
             {aliasInput && alias.success && !organizer ? (
               <p className="mt-6 text-sm text-brand-muted">
-                Tidak ada mahasiswa non-staff dengan alias publik tersebut.
+                Tidak ada mahasiswa di luar tim internal dengan alias publik tersebut.
               </p>
             ) : null}
 
@@ -145,7 +145,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-brand-muted">Status eksplisit Owner</dt>
+                    <dt className="text-sm text-brand-muted">Keputusan Owner</dt>
                     <dd className="mt-1 font-semibold text-brand-navy">
                       {organizer.eligibility_status === "eligible"
                         ? "Diberi izin"
@@ -162,7 +162,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                   </div>
                 </dl>
                 <p className="border-t border-brand-border pt-5 text-sm leading-6 text-brand-muted">
-                  Status dicabut oleh Owner selalu menonaktifkan izin organizer,
+                  Status dicabut oleh Owner selalu menonaktifkan izin penyelenggara,
                   termasuk untuk akun terverifikasi, sampai izin diberikan kembali.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
@@ -174,7 +174,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                     />
                     <input type="hidden" name="action" value="grant" />
                     <button className="focus-ring min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white">
-                      Beri izin organizer
+                      Beri izin penyelenggara
                     </button>
                   </form>
                   <form action={manageEventOrganizerEligibility}>
@@ -185,7 +185,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                     />
                     <input type="hidden" name="action" value="revoke" />
                     <button className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy">
-                      Cabut izin organizer
+                      Cabut izin penyelenggara
                     </button>
                   </form>
                 </div>
@@ -195,19 +195,19 @@ async function OwnerEventsContent({ searchParams }: Props) {
 
           <section className="py-8">
             <h2 className="font-heading text-2xl font-semibold text-brand-navy">
-              Penanda Event resmi
+              Penanda acara resmi
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-              Masukkan slug publik Event secara exact. Belum ada listing operasional
-              Owner, jadi halaman ini tidak membuat daftar Event semu. Server
-              menentukan Event yang diubah dan menolak slug yang tidak sesuai.
+              Gunakan daftar acara di atas untuk mengubah status dengan cepat. Formulir
+              ini tetap tersedia ketika kamu ingin membuka acara langsung melalui slug
+              publiknya. Sistem akan menolak slug yang tidak sesuai.
             </p>
             <form
               action={setCampusEventOfficial}
               className="mt-6 grid gap-4 border-l-4 border-brand-blue bg-white p-6 sm:grid-cols-[1fr_auto] sm:items-end"
             >
               <label className="text-sm font-semibold">
-                Slug publik Event
+                Slug publik acara
                 <input
                   name="publicSlug"
                   required
@@ -249,7 +249,7 @@ export default function OwnerEventsPage(props: Props) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan operasional Campus Events…
+            Menyiapkan operasional acara kampus…
           </p>
         </main>
       }

@@ -19,11 +19,11 @@ type RegistrationsPageProps = {
 };
 
 const statusLabels: Record<EventRegistrationStatus, string> = {
-  pending: "Pending",
-  going: "Going",
-  waitlisted: "Waitlisted",
-  declined: "Declined",
-  cancelled: "Cancelled",
+  pending: "Menunggu",
+  going: "Diterima",
+  waitlisted: "Daftar tunggu",
+  declined: "Ditolak",
+  cancelled: "Dibatalkan",
 };
 
 function first(value: string | string[] | undefined) {
@@ -96,7 +96,7 @@ export default async function RegistrationsPage({
             </p>
           ) : null}
           <section aria-labelledby="registration-list-title">
-            <p className="section-label">Registrations</p>
+            <p className="section-label">Pendaftaran</p>
             <h2
               id="registration-list-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -123,7 +123,7 @@ export default async function RegistrationsPage({
                       : "border-brand-border bg-white text-brand-muted"
                   }`}
                 >
-                  {status === "all" ? "All" : statusLabels[status]}
+                  {status === "all" ? "Semua" : statusLabels[status]}
                 </Link>
               ))}
             </nav>
@@ -145,7 +145,7 @@ export default async function RegistrationsPage({
                         </span>
                         {registration.checked_in_at ? (
                           <span className="text-xs font-semibold text-emerald-700">
-                            Checked in
+                            Sudah hadir
                           </span>
                         ) : null}
                       </div>

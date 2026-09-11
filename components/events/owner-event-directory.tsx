@@ -30,7 +30,7 @@ export function OwnerEventDirectory({ events }: { events: StaffCampusEvent[] }) 
                   {event.is_official ? <span className="inline-flex items-center gap-1 text-brand-navy"><BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />Resmi</span> : null}
                 </div>
                 <h3 className="mt-2 break-words font-heading text-xl font-semibold text-brand-navy">{event.title}</h3>
-                <p className="mt-2 text-sm text-brand-muted">Oleh {event.organizer_alias}{event.organizer_is_verified ? " · terverifikasi" : ""}</p>
+                <p className="mt-2 text-sm text-brand-muted">Oleh {event.organizer_alias}{event.organizer_is_verified ? " · penyelenggara terverifikasi" : ""}</p>
                 <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-brand-muted">
                   <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4" aria-hidden="true" />{formatEventDateTime(event.starts_at, event.timezone_name)}</span>
                   <span className="inline-flex items-center gap-2"><UsersRound className="h-4 w-4" aria-hidden="true" />{event.attendee_count}/{event.capacity} peserta</span>

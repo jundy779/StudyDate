@@ -133,7 +133,7 @@ export async function createCampusEventAction(formData: FormData) {
   if (!parsed.success) {
     redirect(
       `/app/events/create?state=invalid&notice=${encodeURIComponent(
-        firstIssueMessage(parsed, "Periksa kembali detail Event."),
+        firstIssueMessage(parsed, "Periksa kembali detail acara."),
       )}`,
     );
   }
@@ -143,7 +143,7 @@ export async function createCampusEventAction(formData: FormData) {
     publicSlug = await createCampusEvent(parsed.data);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Event belum dapat dibuat.";
+      error instanceof Error ? error.message : "Acara belum dapat dibuat.";
     redirect(
       `/app/events/create?state=error&notice=${encodeURIComponent(message)}`,
     );
@@ -185,7 +185,7 @@ export async function updateCampusEventAction(formData: FormData) {
     await updateCampusEvent(slug.data, parsed.data);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Event belum dapat diperbarui.";
+      error instanceof Error ? error.message : "Acara belum dapat diperbarui.";
     redirect(
       managePath(
         slug.data,
@@ -334,7 +334,7 @@ export async function sendCampusEventMessageAction(formData: FormData) {
     );
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Pesan Event belum dapat dikirim.";
+      error instanceof Error ? error.message : "Pesan acara belum dapat dikirim.";
     redirect(
       detailPath(
         parsed.data.publicSlug,
@@ -562,7 +562,7 @@ export async function updateCampusEventRegistrationSettingsAction(formData: Form
         `?state=error&notice=${encodeURIComponent(
           error instanceof Error
             ? error.message
-            : "Pengaturan registrasi belum dapat disimpan.",
+            : "Pengaturan pendaftaran belum dapat disimpan.",
         )}`,
       ),
     );
@@ -591,7 +591,7 @@ export async function manageCampusEventRegistrationAction(formData: FormData) {
         `?state=error&notice=${encodeURIComponent(
           error instanceof Error
             ? error.message
-            : "Keputusan registrasi belum dapat diproses.",
+            : "Keputusan pendaftaran belum dapat diproses.",
         )}`,
       ),
     );
@@ -692,7 +692,7 @@ export async function manualCheckInCampusEventRegistrationAction(formData: FormD
     registrationPublicId: formData.get("registrationPublicId"),
   });
   if (!parsed.success) {
-    return { status: "not_eligible" as const, attendeeAlias: null, checkedInAt: null, message: "Registrasi tidak valid." };
+    return { status: "not_eligible" as const, attendeeAlias: null, checkedInAt: null, message: "Pendaftaran tidak valid." };
   }
   try {
     const result = await manualCheckInCampusEventRegistration(

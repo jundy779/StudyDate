@@ -32,7 +32,7 @@ export default async function TeamPage({
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <EventManagementShell active="team" event={event} overview={overview}>
           <section aria-labelledby="event-team-title">
-            <p className="section-label">Team</p>
+            <p className="section-label">Tim acara</p>
             <h2
               id="event-team-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -57,7 +57,7 @@ export default async function TeamPage({
                 role="status"
                 className="mt-5 border-l-2 border-brand-blue pl-4 text-sm font-medium text-brand-blue"
               >
-                Anggota telah dihapus dari tim Event.
+                Anggota telah dihapus dari tim acara.
               </p>
             ) : null}
             {notice ? (
@@ -106,10 +106,10 @@ export default async function TeamPage({
                     />
                     <span>
                       <span className="block text-sm font-semibold text-brand-navy">
-                        Cohost
+                        Rekan penyelenggara
                       </span>
                       <span className="mt-1 block text-xs leading-5 text-brand-muted">
-                        Mengelola registrasi dan check-in.
+                        Mengelola pendaftaran dan kehadiran peserta.
                       </span>
                     </span>
                   </label>
@@ -122,10 +122,10 @@ export default async function TeamPage({
                     />
                     <span>
                       <span className="block text-sm font-semibold text-brand-navy">
-                        Check-in staff
+                        Petugas kehadiran
                       </span>
                       <span className="mt-1 block text-xs leading-5 text-brand-muted">
-                        Hanya daftar hadir dan scanner tiket.
+                        Hanya mengelola daftar hadir dan pemindai tiket.
                       </span>
                     </span>
                   </label>
@@ -151,8 +151,8 @@ export default async function TeamPage({
                         </p>
                         <p className="text-xs text-brand-muted">
                           {member.team_role === "cohost"
-                            ? "Cohost"
-                            : "Check-in staff"}{" "}
+                            ? "Rekan penyelenggara"
+                            : "Petugas kehadiran"}{" "}
                           ·{" "}
                           {member.invitation_status === "active"
                             ? "Aktif"

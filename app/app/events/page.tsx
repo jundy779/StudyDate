@@ -66,7 +66,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 Kegiatan kampus, bertemu di tempat publik
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan acara belajar dan komunitas yang akan datang. RSVP tidak
+                Temukan acara belajar dan komunitas yang akan datang. Mendaftar tidak
                 membuka identitas, kontak, atau percakapan privat.
               </p>
             </div>
@@ -82,8 +82,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
                 <p className="font-semibold text-brand-navy">Pembuatan acara terbatas</p>
                 <p className="mt-1">
-                  Diperlukan verifikasi mahasiswa atau eligibility dari Owner. StudyDate
-                  Plus menambah kapasitas, bukan kepercayaan organizer.
+                  Diperlukan verifikasi mahasiswa atau izin dari Owner. StudyDate
+                  Plus menambah kapasitas, bukan kepercayaan penyelenggara.
                 </p>
               </aside>
             )}
@@ -94,12 +94,12 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               className="mt-9 border-y border-brand-border py-6"
               aria-labelledby="event-team-invitations-title"
             >
-              <p className="section-label">Team invitations</p>
+              <p className="section-label">Undangan tim</p>
               <h2
                 id="event-team-invitations-title"
                 className="mt-2 font-heading text-xl font-semibold text-brand-navy"
               >
-                Undangan untuk membantu Event
+                Undangan untuk membantu acara
               </h2>
               <div className="mt-4 divide-y divide-brand-border">
                 {pendingInvitations.map((invitation) => (
@@ -113,8 +113,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                       </h3>
                       <p className="mt-1 text-sm text-brand-muted">
                         {invitation.team_role === "cohost"
-                          ? "Cohost · registrasi dan check-in"
-                          : "Check-in staff · daftar hadir dan scanner"}
+                          ? "Rekan penyelenggara · pendaftaran dan kehadiran"
+                          : "Petugas kehadiran · daftar hadir dan pemindai QR"}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -172,8 +172,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                       </h3>
                       <p className="mt-1 text-sm text-brand-muted">
                         {assignment.team_role === "cohost"
-                          ? "Cohost · registrasi dan check-in"
-                          : "Check-in staff · daftar hadir dan scanner"}
+                          ? "Rekan penyelenggara · pendaftaran dan kehadiran"
+                          : "Petugas kehadiran · daftar hadir dan pemindai QR"}
                       </p>
                     </div>
                     <Link
@@ -184,7 +184,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                       }
                       className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue"
                     >
-                      Buka workspace
+                      Buka ruang kerja
                     </Link>
                   </article>
                 ))}
@@ -267,7 +267,7 @@ export default function EventsPage(props: EventsPageProps) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-sm text-brand-muted">
-            Menyiapkan Campus Events…
+            Menyiapkan acara kampus…
           </p>
         </main>
       }

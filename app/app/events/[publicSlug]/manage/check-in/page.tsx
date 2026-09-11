@@ -50,7 +50,7 @@ export default async function CheckInPage({
               role="status"
               className="mb-7 border-l-2 border-brand-blue pl-4 text-sm font-medium text-brand-blue"
             >
-              Check-in berhasil dibatalkan dan tercatat dalam audit.
+              Kehadiran berhasil dibatalkan dan tercatat dalam riwayat aktivitas.
             </p>
           ) : null}
           {notice ? (
@@ -62,7 +62,7 @@ export default async function CheckInPage({
             </p>
           ) : null}
           <section aria-labelledby="checkin-title">
-            <p className="section-label">Check-In</p>
+            <p className="section-label">Kehadiran peserta</p>
             <h2
               id="checkin-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -72,7 +72,7 @@ export default async function CheckInPage({
             <div
               className="mt-4 h-2 max-w-2xl overflow-hidden rounded-full bg-brand-border"
               role="progressbar"
-              aria-label="Progres check-in"
+              aria-label="Progres kehadiran"
               aria-valuemin={0}
               aria-valuemax={overview.going_count}
               aria-valuenow={overview.checked_in_count}
@@ -84,9 +84,9 @@ export default async function CheckInPage({
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               {[
-                ["all", "All"],
-                ["checked-in", "Checked in"],
-                ["not-yet", "Not yet"],
+                ["all", "Semua"],
+                ["checked-in", "Sudah hadir"],
+                ["not-yet", "Belum hadir"],
               ].map(([value, label]) => (
                 <Link
                   key={value}
@@ -105,7 +105,7 @@ export default async function CheckInPage({
                 href={`${base}/scan`}
                 className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-brand-navy px-4 text-sm font-semibold text-brand-navy"
               >
-                Buka scanner QR
+                Buka pemindai QR
               </Link>
             </div>
 
@@ -124,8 +124,8 @@ export default async function CheckInPage({
                     </p>
                     <p className="mt-1 text-xs font-semibold text-brand-blue">
                       {registration.checked_in_at
-                        ? `Checked in · ${registration.checkin_method === "manual" ? "Manual" : "QR"}`
-                        : "Not yet"}
+                        ? `Sudah hadir · ${registration.checkin_method === "manual" ? "Dicatat manual" : "Tiket QR"}`
+                        : "Belum hadir"}
                     </p>
                   </div>
                   {registration.checked_in_at && canUndo ? (
@@ -141,7 +141,7 @@ export default async function CheckInPage({
                         value={registration.registration_public_id}
                       />
                       <button className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy">
-                        Undo check-in
+                        Batalkan kehadiran
                       </button>
                     </form>
                   ) : !registration.checked_in_at ? (
@@ -160,8 +160,8 @@ export default async function CheckInPage({
             </div>
             {overview.going_count > registrations.length ? (
               <p className="mt-5 text-xs leading-5 text-brand-muted">
-                Menampilkan 50 peserta pertama. Gunakan scanner QR untuk peserta
-                berikutnya atau buka halaman registrasi berikutnya.
+                Menampilkan 50 peserta pertama. Gunakan pemindai QR untuk peserta
+                berikutnya atau buka halaman pendaftaran berikutnya.
               </p>
             ) : null}
           </section>
