@@ -56,6 +56,7 @@ test("PUBE-05 public detail supports calendar export and safe sharing", () => {
   assert.match(calendar, /calendar\.google\.com\/calendar\/render/);
   assert.match(calendarRoute, /text\/calendar; charset=utf-8/);
   assert.match(calendarRoute, /getPublicCampusEvent/);
+  assert.doesNotMatch(calendarRoute, /force-dynamic/);
   assert.match(publicActions, /navigator\.share/);
   assert.match(publicActions, /navigator\.clipboard/);
   assert.match(publicActions, /aria-live="polite"/);

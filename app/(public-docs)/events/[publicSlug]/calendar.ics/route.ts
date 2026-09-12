@@ -7,8 +7,6 @@ type CalendarRouteProps = {
   params: Promise<{ publicSlug: string }>;
 };
 
-export const dynamic = "force-dynamic";
-
 export async function GET(_request: Request, { params }: CalendarRouteProps) {
   const { publicSlug } = await params;
   const parsedSlug = eventSlugSchema.safeParse(publicSlug);
