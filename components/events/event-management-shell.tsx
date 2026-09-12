@@ -10,7 +10,7 @@ const sections = [
   ["overview", "Ringkasan", ""],
   ["registrations", "Pendaftaran", "/registrations"],
   ["report", "Laporan", "/report"],
-  ["check-in", "Check-in", "/check-in"],
+  ["check-in", "Kehadiran", "/check-in"],
   ["team", "Tim", "/team"],
   ["settings", "Pengaturan", "/settings"],
 ] as const;

@@ -34,7 +34,7 @@ test("EV2UI-01 management routes use RPC authorization and safe not-found", () =
   assert.match(managementGuard, /throw error/);
   assert.doesNotMatch(managementGuard, /\.from\("profiles"\)/);
   assert.match(manage, /Pendaftaran/);
-  assert.match(manage, /Check-in/);
+  assert.match(manage, /Kehadiran/);
   assert.match(manage, /Tim acara/);
   assert.match(manage, /Pengaturan/);
   assert.match(manage, /visibleDestinations/);
@@ -108,6 +108,13 @@ test("EV2UI-06 settings use strict action field names", () => {
   assert.match(service, /p_waitlist_enabled: input\.waitlistEnabled/);
 });
 
+test("EV2UI-06b participant-facing event copy avoids internal workspace terms", () => {
+  assert.match(detail, /Pendaftaran, kehadiran, tim, dan pengaturan/);
+  assert.doesNotMatch(detail, /Registrasi, check-in, team, dan settings/);
+  assert.doesNotMatch(manage, />Check-in<|cohost atau petugas check-in/);
+  assert.doesNotMatch(events, /Ruang kerja tim acara|Buka ruang kerja|Filter tidak valid/);
+});
+
 test("EV2UI-07 eligibility gates creation and Plus copy is not trust", () => {
   assert.match(events, /getMyEventOrganizerEligibility/);
   assert.match(events, /eligibility\?\.eligible/);
@@ -117,7 +124,7 @@ test("EV2UI-07 eligibility gates creation and Plus copy is not trust", () => {
   );
   assert.match(events, /listMyCampusEventTeamInvitations/);
   assert.match(events, /activeAssignments/);
-  assert.match(events, /Buka ruang kerja/);
+  assert.match(events, /Buka pengelolaan acara/);
   assert.match(create, /getMyEventOrganizerEligibility/);
   assert.match(create, /if \(!eligibility\?\.eligible\) notFound\(\)/);
 });

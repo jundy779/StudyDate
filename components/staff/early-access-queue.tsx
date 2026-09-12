@@ -32,7 +32,7 @@ const dateFmt = new Intl.DateTimeFormat("id-ID", {
 const PAGE_SIZE = 25;
 
 const statusLabels: Record<string, string> = {
-  waiting: "Menunggu review",
+  waiting: "Menunggu pemeriksaan",
   approved: "Disetujui",
   needs_revision: "Perlu diperbaiki",
   rejected: "Tidak disetujui",
@@ -40,9 +40,15 @@ const statusLabels: Record<string, string> = {
 };
 
 const sourceLabels: Record<string, string> = {
-  navbar: "Navigasi",
-  hero: "Bagian utama landing",
-  "final-cta": "Ajakan akhir landing",
+  navbar: "Navigasi atas",
+  hero: "Bagian pembuka",
+  "final-cta": "Ajakan di bagian akhir",
+};
+
+const interestLabels: Record<string, string> = {
+  people: "Cari teman",
+  groups: "Circle belajar",
+  events: "Acara kampus",
 };
 
 const stateMessages: Record<
@@ -74,7 +80,7 @@ const stateMessages: Record<
     tone: "warning",
   },
   rejected_email_error: {
-    text: "Status penolakan sudah tersimpan, tetapi email pemberitahuan belum terkirim. Keputusan dapat dikirim ulang dengan Reject lagi.",
+    text: "Status penolakan sudah tersimpan, tetapi email pemberitahuan belum terkirim. Pilih Tolak lagi untuk mencoba mengirim ulang.",
     tone: "warning",
   },
   email_error: {
@@ -86,7 +92,7 @@ const stateMessages: Record<
     tone: "error",
   },
   invalid: {
-    text: "Permintaan review tidak valid. Untuk Reject atau Minta perbaikan, pilih minimal satu alasan.",
+    text: "Permintaan pemeriksaan tidak valid. Untuk Tolak atau Minta perbaikan, pilih minimal satu alasan.",
     tone: "error",
   },
 };
@@ -162,7 +168,7 @@ function DecisionForm({
             : "border-red-200 bg-white text-brand-error"
         }`}
       >
-        {revision ? "Minta perbaikan" : "Reject"}
+        {revision ? "Minta perbaikan" : "Tolak"}
       </summary>
       <div className="mt-2 w-full rounded-2xl border border-brand-border bg-white p-4 shadow-sm lg:absolute lg:right-0 lg:z-20 lg:w-[390px]">
         <form action={moderateEarlyAccess} className="space-y-4">
@@ -215,7 +221,7 @@ function DecisionForm({
               maxLength={800}
               rows={2}
               className="focus-ring mt-2 w-full rounded-xl border border-brand-border px-3 py-2 text-sm font-normal"
-              placeholder="Hanya Owner/Staff Early Access yang dapat melihat catatan ini."
+              placeholder="Hanya Owner atau Admin yang bertugas yang dapat melihat catatan ini."
             />
           </label>
           <button
@@ -297,26 +303,26 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
     <main className="min-h-svh bg-brand-surface">
       <div className="page-shell py-10 sm:py-14">
         <p className="section-label">
-          {access.role === "owner" ? "Khusus Owner" : "Operasional staff"}
+          {access.role === "owner" ? "Khusus Owner" : "Area Admin"}
         </p>
         <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-          Moderasi Akses Awal
+          Pemeriksaan Akses Awal
         </h1>
         <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
-          Satu antrean untuk pendaftar dari landing page. Owner selalu dapat
-          meninjau. Staff hanya dapat melihat atau mengambil keputusan bila
-          capability Akses Awal diberikan secara eksplisit.
+          Satu antrean untuk pendaftar dari halaman utama. Owner selalu dapat
+          memeriksa. Admin hanya dapat melihat atau mengambil keputusan jika
+          sudah diberi izin untuk menangani Akses Awal.
         </p>
         <div className="mt-6 border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
           <p>
-            <strong className="text-brand-navy">Approve:</strong> kirim undangan
+            <strong className="text-brand-navy">Setujui:</strong> kirim undangan
             login sekali pakai. <strong className="text-brand-navy">Minta perbaikan:</strong>{" "}
-            kirim alasan dan tautan revisi aman. <strong className="text-brand-navy">Reject:</strong>{" "}
+            kirim alasan dan tautan perbaikan yang aman. <strong className="text-brand-navy">Tolak:</strong>{" "}
             simpan penolakan dan kirim alasannya melalui email.
           </p>
           <p className="mt-1">
-            Catatan internal tidak pernah dimasukkan ke email pendaftar. Approval
-            Akses Awal tetap terpisah dari Student Verification.
+            Catatan untuk tim tidak pernah dimasukkan ke email pendaftar.
+            Persetujuan Akses Awal tetap terpisah dari verifikasi mahasiswa.
           </p>
         </div>
 
@@ -324,8 +330,8 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
 
         {!canReview ? (
           <p className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
-            Mode baca saja. Hubungi Owner bila tugasmu membutuhkan Approve,
-            Minta perbaikan, Reject, atau kirim ulang undangan.
+            Kamu hanya dapat melihat daftar ini. Hubungi Owner jika perlu
+            menyetujui, meminta perbaikan, menolak, atau mengirim ulang undangan.
           </p>
         ) : null}
 
@@ -334,7 +340,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
           className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           <label className="text-sm font-semibold">
-            Email (tepat)
+            Email lengkap
             <input
               name="email"
               type="email"
@@ -352,7 +358,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
               className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
             >
               <option value="">Semua</option>
-              <option value="waiting">Menunggu review</option>
+              <option value="waiting">Menunggu pemeriksaan</option>
               <option value="approved">Disetujui</option>
               <option value="needs_revision">Perlu diperbaiki</option>
               <option value="rejected">Tidak disetujui</option>
@@ -375,22 +381,22 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
               className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
             >
               <option value="">Semua</option>
-              <option value="people">People</option>
-              <option value="groups">Groups</option>
-              <option value="events">Events</option>
+              <option value="people">Cari teman</option>
+              <option value="groups">Circle belajar</option>
+              <option value="events">Acara kampus</option>
             </select>
           </label>
           <label className="text-sm font-semibold">
-            Sumber CTA
+            Bagian asal pendaftaran
             <select
               name="source"
               defaultValue={source ?? ""}
               className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
             >
               <option value="">Semua</option>
-              <option value="navbar">Navbar</option>
-              <option value="hero">Hero</option>
-              <option value="final-cta">Final CTA</option>
+              <option value="navbar">Navigasi atas</option>
+              <option value="hero">Bagian pembuka</option>
+              <option value="final-cta">Ajakan di bagian akhir</option>
             </select>
           </label>
           <div className="flex items-end">
@@ -398,7 +404,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
               type="submit"
               className="focus-ring min-h-11 w-full rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
             >
-              Filter
+              Terapkan filter
             </button>
           </div>
         </form>
@@ -415,12 +421,12 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
         >
           <div className="border-b border-brand-border p-5">
             <h2 id="early-access-list" className="font-heading text-xl font-semibold">
-              Early Access ({Number(total)})
+              Pendaftar Akses Awal ({Number(total)})
             </h2>
           </div>
           <div className="divide-y divide-brand-border">
             {rows.length === 0 ? (
-              <p className="p-6 text-brand-muted">Tidak ada pendaftar untuk filter ini.</p>
+              <p className="p-6 text-brand-muted">Tidak ada pendaftar untuk pilihan ini.</p>
             ) : (
               rows.map((row) => (
                 <article
@@ -431,12 +437,14 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                     <p className="break-all font-semibold">{row.email}</p>
                     <p className="mt-1 text-sm text-brand-muted">
                       {row.campus || "Kampus tidak diisi"} ·{" "}
-                      {(row.interests ?? []).join(", ") || "Tanpa minat"}
+                      {(row.interests ?? [])
+                        .map((item) => interestLabels[item] ?? item)
+                        .join(", ") || "Tanpa minat"}
                     </p>
                     <p className="mt-2 text-xs leading-5 text-brand-muted">
                       Daftar {dateFmt.format(new Date(row.created_at))}
                       {row.reviewed_at
-                        ? ` · direview ${dateFmt.format(new Date(row.reviewed_at))}`
+                        ? ` · diperiksa ${dateFmt.format(new Date(row.reviewed_at))}`
                         : ""}
                       {row.resubmitted_at
                         ? ` · diperbaiki ${dateFmt.format(new Date(row.resubmitted_at))}`
@@ -444,7 +452,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                     </p>
                     {row.review_reason_codes?.length ? (
                       <div className="mt-3 rounded-xl bg-brand-surface px-3 py-2 text-xs leading-5 text-brand-muted">
-                        <p className="font-semibold text-brand-navy">Review terakhir</p>
+                        <p className="font-semibold text-brand-navy">Hasil pemeriksaan terakhir</p>
                         <ul className="mt-1 list-disc pl-4">
                           {row.review_reason_codes.map((code) => (
                             <li key={code}>{getEarlyAccessReviewReasonLabel(code)}</li>
@@ -455,7 +463,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                         ) : null}
                         {row.review_internal_note ? (
                           <p className="mt-1 font-medium text-brand-navy">
-                            Internal: {row.review_internal_note}
+                            Catatan tim: {row.review_internal_note}
                           </p>
                         ) : null}
                       </div>
@@ -478,7 +486,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                           <DirectReviewAction
                             email={row.email}
                             action="approve"
-                            label="Approve & kirim email"
+                            label="Setujui dan kirim email"
                             basePath={basePath}
                           />
                         ) : (
@@ -513,7 +521,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
         {totalPages > 1 ? (
           <nav
             className="mt-6 flex flex-wrap items-center gap-3"
-            aria-label="Paginasi Akses Awal"
+            aria-label="Navigasi halaman Akses Awal"
           >
             {page > 1 ? (
               <Link

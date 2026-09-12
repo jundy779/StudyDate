@@ -87,7 +87,7 @@ async function StaffContent({ searchParams }: Props) {
                 required
                 maxLength={254}
                 className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
-                placeholder="staff@contoh.com"
+                placeholder="admin@contoh.com"
                 autoComplete="off"
               />
             </label>

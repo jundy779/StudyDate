@@ -25,17 +25,21 @@ const interestLabels: Record<string, string> = {
   organizations: "Organisasi",
   career: "Karier",
   research: "Riset",
-  volunteering: "Volunteering",
+  volunteering: "Kegiatan sosial",
 };
 
 const goalLabels: Record<string, string> = {
   study: "Belajar",
   friendship: "Pertemanan",
-  networking: "Networking",
+  networking: "Memperluas relasi",
   collaboration: "Kolaborasi",
   campus_activities: "Kegiatan kampus",
   meaningful_connection: "Koneksi bermakna",
 };
+
+function onboardingLabel(value: string) {
+  return value.replace("Onboarding", "Penyiapan akun");
+}
 
 async function UserDetailContent({ params }: Props) {
   const access = await requireStaffCapability("users.read");
@@ -61,7 +65,7 @@ async function UserDetailContent({ params }: Props) {
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
             Data yang relevan untuk membantu akun. Pembukaan halaman ini dicatat.
-            NIM, email lengkap, kontak, chat, foto identitas, dan bukti verifikasi
+            NIM, email lengkap, kontak, percakapan, foto identitas, dan bukti verifikasi
             tetap tertutup.
           </p>
 
@@ -72,8 +76,8 @@ async function UserDetailContent({ params }: Props) {
             <dl className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
               <div><dt className="text-sm text-brand-muted">Email tersamarkan</dt><dd className="mt-1 font-semibold">{account.email_display}</dd></div>
               <div><dt className="text-sm text-brand-muted">Status</dt><dd className="mt-1 font-semibold">{account.account_status}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Onboarding</dt><dd className="mt-1 font-semibold">{account.onboarding_status}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Tampil di People</dt><dd className="mt-1 font-semibold">{account.is_discoverable ? "Ya" : "Tidak"}</dd></div>
+              <div><dt className="text-sm text-brand-muted">Penyiapan akun</dt><dd className="mt-1 font-semibold">{onboardingLabel(account.onboarding_status)}</dd></div>
+              <div><dt className="text-sm text-brand-muted">Tampil di pencarian teman</dt><dd className="mt-1 font-semibold">{account.is_discoverable ? "Ya" : "Tidak"}</dd></div>
               <div><dt className="text-sm text-brand-muted">Verifikasi mahasiswa</dt><dd className="mt-1 font-semibold">{account.verification_summary}</dd></div>
               <div><dt className="text-sm text-brand-muted">Akun dibuat</dt><dd className="mt-1 font-semibold">{dateFmt.format(new Date(account.created_at))}</dd></div>
             </dl>
@@ -83,7 +87,7 @@ async function UserDetailContent({ params }: Props) {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h2 id="membership-state" className="font-heading text-2xl font-semibold">
-                  Membership
+                  Paket akun
                 </h2>
                 <p className="mt-2 text-brand-muted">
                   {account.membership_plan}

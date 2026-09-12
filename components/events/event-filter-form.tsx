@@ -14,7 +14,7 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   exam_prep: "Persiapan Ujian",
   workshop: "Workshop",
   discussion: "Diskusi",
-  networking: "Networking",
+  networking: "Relasi profesional",
   community: "Komunitas",
   other: "Lainnya",
 };

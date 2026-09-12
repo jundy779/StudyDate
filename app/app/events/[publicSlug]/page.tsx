@@ -44,7 +44,7 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   exam_prep: "Persiapan Ujian",
   workshop: "Workshop",
   discussion: "Diskusi",
-  networking: "Networking",
+  networking: "Relasi profesional",
   community: "Komunitas",
   other: "Lainnya",
 };
@@ -347,7 +347,7 @@ export default async function EventDetailPage({
 
           {registrationQuestions.length && event.can_rsvp ? (
             <section className="border-b border-brand-border py-9" aria-labelledby="registration-form-title">
-              <p className="section-label">Registrasi</p>
+              <p className="section-label">Pendaftaran</p>
               <h2 id="registration-form-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Lengkapi pendaftaran acara
               </h2>
@@ -407,14 +407,14 @@ export default async function EventDetailPage({
                 {event.attendee_count} dari {event.capacity} peserta
                 <br />
                 {event.registration_mode === "approval"
-                  ? "Registrasi perlu persetujuan"
-                  : "Registrasi dikonfirmasi langsung"}
+                  ? "Pendaftaran perlu persetujuan"
+                  : "Pendaftaran langsung diterima"}
                 {isFull
                   ? event.waitlist_enabled
                     ? " · Daftar tunggu tersedia"
                     : " · Penuh"
                   : ""}
-                {registrationClosed ? " · Registrasi ditutup" : ""}
+                {registrationClosed ? " · Pendaftaran ditutup" : ""}
                 {event.scope === "campus" && event.campus_scope ? (
                   <>
                     <br />
@@ -574,7 +574,7 @@ export default async function EventDetailPage({
             <section className="border-t border-brand-border py-8" aria-labelledby="event-manage-link-title">
               <p className="section-label">Organizer</p>
               <h2 id="event-manage-link-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
-                Registrasi, check-in, team, dan settings
+                Pendaftaran, kehadiran, tim, dan pengaturan
               </h2>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Link

@@ -154,7 +154,7 @@ export default async function CheckInPage({
               ))}
               {!visible.length ? (
                 <p className="py-10 text-sm text-brand-muted">
-                  Tidak ada peserta pada filter ini.
+                  Tidak ada peserta dengan pilihan ini.
                 </p>
               ) : null}
             </div>

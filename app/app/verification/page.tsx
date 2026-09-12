@@ -37,7 +37,7 @@ async function VerificationContent() {
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <div className="max-w-3xl">
-          <p className="section-label">Student Verification Center</p>
+          <p className="section-label">Pusat verifikasi mahasiswa</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
             Verifikasi status mahasiswa
           </h1>
@@ -70,7 +70,7 @@ async function VerificationContent() {
               Verifikasi mahasiswa belum tersedia
             </h2>
             <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
-              Student Verification Center sedang dipersiapkan untuk pengujian
+              Pusat verifikasi mahasiswa sedang dipersiapkan untuk pengujian
               terkontrol. Data akademik dan bukti kepemilikan belum dapat
               dikirim saat ini.
             </p>
@@ -79,7 +79,7 @@ async function VerificationContent() {
           <section className="rounded-[20px] border border-brand-border bg-white p-6">
             <p className="leading-7 text-brand-muted">
               {request.status === "needs_action"
-                ? "Reviewer meminta perbaikan bukti. Batalkan permintaan ini untuk mengirim pengajuan baru."
+                ? "Petugas pemeriksa meminta perbaikan bukti. Batalkan permintaan ini untuk mengirim pengajuan baru."
                 : "Permintaan aktif sedang diproses. Status akan diperbarui tanpa membuka data sensitifmu."}
             </p>
             <form action={cancelVerificationRequest} className="mt-5">
@@ -103,7 +103,7 @@ async function VerificationContent() {
 
 export default function VerificationPage() {
   return (
-    <Suspense fallback={<main className="min-h-svh bg-brand-surface p-8"><p className="page-shell text-sm text-brand-muted">Menyiapkan Verification Center…</p></main>}>
+    <Suspense fallback={<main className="min-h-svh bg-brand-surface p-8"><p className="page-shell text-sm text-brand-muted">Menyiapkan pusat verifikasi…</p></main>}>
       <VerificationContent />
     </Suspense>
   );

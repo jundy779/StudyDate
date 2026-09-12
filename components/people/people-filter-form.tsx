@@ -16,7 +16,7 @@ export function PeopleFilterForm({
   advancedEnabled = false,
 }: PeopleFilterFormProps) {
   return (
-    <form action="/app/people" method="get" className="mt-6" aria-label="Filter People">
+    <form action="/app/people" method="get" className="mt-6" aria-label="Pilihan pencarian teman">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="text-sm font-semibold text-brand-navy">
           Kampus
@@ -78,15 +78,15 @@ export function PeopleFilterForm({
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
         <button type="submit" className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-          <Search className="h-4 w-4" aria-hidden="true" /> Terapkan filter
+          <Search className="h-4 w-4" aria-hidden="true" /> Tampilkan hasil
         </button>
         <Link href="/app/people" className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy">
-          Hapus filter
+          Hapus pilihan
         </Link>
       </div>
       {!advancedEnabled ? (
         <p className="mt-3 text-sm leading-6 text-brand-muted">
-          Filter semester, kota, tujuan, dan minat tersedia di StudyDate Plus.{" "}
+          Pilihan semester, kota, tujuan, dan minat tersedia di StudyDate Plus.{" "}
           <Link
             href="/app/membership"
             className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline"

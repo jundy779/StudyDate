@@ -135,8 +135,10 @@ test("User ops projection excludes NIM legal name evidence and chat", () => {
   assert.match(usersPage, /requireStaffCapability\("users\.read"\)/);
   assert.match(usersPage, /users\.support/);
   assert.match(usersPage, />\s*Akun mahasiswa\s*</);
-  assert.match(usersPage, /NIM, kontak, chat, foto/);
+  assert.match(usersPage, /NIM, kontak, percakapan, foto/);
   assert.match(usersPage, /tidak tersedia di sini/);
+  assert.match(usersPage, /Area Admin/);
+  assert.doesNotMatch(usersPage, /Operasional staff|onboarding|membership|Tampil di People/);
   assert.doesNotMatch(opsMigration, /\bnim\b|legal_name|telegram_id|ciphertext/i);
 });
 
@@ -312,9 +314,9 @@ test("Early Access decisions approve or reject and invitation is server-side", (
   assert.match(earlyAccessActions, /requireStaffCapability\("early_access\.review"\)/);
   assert.match(earlyAccessActions, /kind: "early-access"/);
   assert.match(earlyAccessActions, /nextPath: "\/onboarding"/);
-  assert.match(earlyAccessQueue, /Approve & kirim email/);
+  assert.match(earlyAccessQueue, /Setujui dan kirim email/);
   assert.match(earlyAccessQueue, /Kirim ulang undangan/);
-  assert.match(earlyAccessQueue, /Reject/);
+  assert.match(earlyAccessQueue, /Tolak/);
   assert.doesNotMatch(earlyAccessActions, /studydateid@gmail\.com|admin@studydate\.id/i);
 });
 
@@ -343,7 +345,9 @@ test("student support detail is opaque, audited, and privacy-scoped", () => {
     userDetailPage,
     /account\.(nim|legalName|telegram|instagram|linkedin|photo_object_key|user_id)/i,
   );
-  assert.match(userDetailPage, /NIM, email lengkap, kontak, chat, foto identitas/);
+  assert.match(userDetailPage, /NIM, email lengkap, kontak, percakapan, foto identitas/);
+  assert.match(userDetailPage, /Penyiapan akun|Paket akun|Tampil di pencarian teman/);
+  assert.doesNotMatch(userDetailPage, />Onboarding<|>Membership<|Tampil di People|Volunteering|Networking/);
 });
 
 test("admin has a capability-aware operational landing page", () => {

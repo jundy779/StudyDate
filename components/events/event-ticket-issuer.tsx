@@ -19,9 +19,9 @@ function statusText(status: CampusEventTicketState["status"] | "ready") {
   switch (status) {
     case "ready":
     case "issued":
-      return "Siap dipindai saat check-in.";
+      return "Siap dipindai saat mencatat kehadiran.";
     case "checked_in":
-      return "Sudah digunakan untuk check-in.";
+      return "Sudah digunakan untuk mencatat kehadiran.";
     case "revoked":
       return "Tiket sebelumnya sudah dicabut.";
     default: {
@@ -135,7 +135,7 @@ export function EventTicketIssuer({
         <>
           {ticketState?.status === "revoked" ? (
             <p className="mb-3 text-sm leading-6 text-brand-muted">
-              Tiket sebelumnya sudah dicabut. Kamu dapat menerbitkan tiket baru untuk RSVP aktif ini.
+              Tiket sebelumnya sudah dicabut. Kamu dapat menerbitkan tiket baru untuk pendaftaran aktif ini.
             </p>
           ) : null}
           <form action={action}>
@@ -155,8 +155,8 @@ export function EventTicketIssuer({
             Buat ulang QR tiket
           </summary>
           <p className="mt-3 text-sm leading-6 text-brand-muted">
-            QR lama langsung tidak berlaku. Screenshot tiket lama juga tidak dapat
-            dipakai untuk check-in.
+            QR lama langsung tidak berlaku. Tangkapan layar tiket lama juga tidak dapat
+            dipakai untuk mencatat kehadiran.
           </p>
           <form action={action} className="mt-4">
             <input type="hidden" name="publicSlug" value={publicSlug} />

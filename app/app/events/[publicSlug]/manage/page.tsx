@@ -33,15 +33,15 @@ const destinations = [
   {
     permission: "check-in",
     suffix: "/check-in",
-    title: "Check-in",
-    description: "Pantau kehadiran dan lakukan check-in peserta.",
+    title: "Kehadiran",
+    description: "Pantau peserta yang sudah hadir dan catat kehadiran mereka.",
     icon: QrCode,
   },
   {
     permission: "team",
     suffix: "/team",
     title: "Tim acara",
-    description: "Undang cohost atau petugas check-in melalui alias.",
+    description: "Undang rekan penyelenggara atau petugas kehadiran melalui alias.",
     icon: UserRoundCog,
   },
   {
@@ -106,8 +106,8 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
             <aside className="mt-8 flex max-w-3xl items-start gap-3 border-l-2 border-brand-blue pl-4 text-sm leading-7 text-brand-muted">
               <CalendarCheck className="mt-1 h-4 w-4 shrink-0 text-brand-blue" aria-hidden="true" />
               <p>
-                Check-in manual dan QR hanya dapat diproses mulai dua jam sebelum
-                sampai dua jam setelah acara.
+                Kehadiran dari daftar peserta atau tiket QR hanya dapat dicatat
+                mulai dua jam sebelum sampai dua jam setelah acara.
               </p>
             </aside>
           </section>

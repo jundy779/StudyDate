@@ -19,7 +19,7 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   exam_prep: "Persiapan Ujian",
   workshop: "Workshop",
   discussion: "Diskusi",
-  networking: "Networking",
+  networking: "Relasi profesional",
   community: "Komunitas",
   other: "Lainnya",
 };
@@ -70,7 +70,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           </span>
           {event.rsvp_status === "pending" ? (
             <span className="normal-case tracking-normal text-brand-navy">
-              Registrasi pending
+              Menunggu persetujuan
             </span>
           ) : null}
           {event.rsvp_status === "waitlisted" ? (

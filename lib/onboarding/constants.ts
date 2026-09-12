@@ -1,7 +1,7 @@
 export const CONNECTION_GOALS = [
   { value: "study", label: "Teman belajar" },
   { value: "friendship", label: "Teman baru" },
-  { value: "networking", label: "Networking" },
+  { value: "networking", label: "Memperluas relasi" },
   { value: "collaboration", label: "Kolaborasi" },
   { value: "campus_activities", label: "Kegiatan kampus" },
   { value: "meaningful_connection", label: "Koneksi yang berarti" },
@@ -19,7 +19,7 @@ export const INTERESTS = [
   { value: "organizations", label: "Organisasi" },
   { value: "career", label: "Karier" },
   { value: "research", label: "Riset" },
-  { value: "volunteering", label: "Volunteering" },
+  { value: "volunteering", label: "Kegiatan sosial" },
 ] as const;
 
 export const CONSENT_POLICY_VERSION = "2026-07-30";

@@ -288,7 +288,7 @@ export async function registerCampusEventAction(formData: FormData) {
     status = result.status;
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Registrasi belum dapat diproses.";
+      error instanceof Error ? error.message : "Pendaftaran belum dapat diproses.";
     redirect(detailPath(slug.data, `?state=error&notice=${encodeURIComponent(message)}`));
   }
   revalidatePath(detailPath(slug.data));
@@ -416,7 +416,7 @@ export async function issueCampusEventTicketAction(formData: FormData) {
     return {
       ticketToken: ticket.ticket_token,
       message: parsed.data.regenerate
-        ? "QR tiket baru siap. QR dan screenshot lama sudah tidak berlaku."
+        ? "QR tiket baru siap. QR dan tangkapan layar lama sudah tidak berlaku."
         : "QR tiket siap ditampilkan.",
     };
   } catch (error) {
@@ -455,7 +455,7 @@ export async function checkInCampusEventTicketAction(formData: FormData) {
       attendeeAlias: null,
       checkedInAt: null,
       message:
-        error instanceof Error ? error.message : "Check-in belum dapat diproses.",
+        error instanceof Error ? error.message : "Kehadiran belum dapat dicatat.",
     };
   }
 }
@@ -702,7 +702,7 @@ export async function manualCheckInCampusEventRegistrationAction(formData: FormD
     revalidatePath(detailPath(parsed.data.publicSlug));
     return { ...result, message: null };
   } catch (error) {
-    return { status: "not_eligible" as const, attendeeAlias: null, checkedInAt: null, message: error instanceof Error ? error.message : "Check-in belum dapat diproses." };
+    return { status: "not_eligible" as const, attendeeAlias: null, checkedInAt: null, message: error instanceof Error ? error.message : "Kehadiran belum dapat dicatat." };
   }
 }
 
@@ -724,7 +724,7 @@ export async function undoCampusEventCheckInAction(formData: FormData) {
         parsed.data.publicSlug,
         "/check-in",
         `?state=error&notice=${encodeURIComponent(
-          error instanceof Error ? error.message : "Check-in belum dapat dibatalkan.",
+          error instanceof Error ? error.message : "Catatan kehadiran belum dapat dibatalkan.",
         )}`,
       ),
     );

@@ -60,7 +60,7 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
                 pose="chat"
                 title="Belum ada percakapan"
                 description="Percakapan anonim akan muncul setelah sebuah perkenalan diterima."
-                action={{ href: "/app/people", label: "Jelajahi People" }}
+                action={{ href: "/app/people", label: "Cari teman" }}
               />
             ) : (
               conversations.map((item) => (

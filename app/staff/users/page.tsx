@@ -18,6 +18,10 @@ type Props = {
 const dateFmt = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" });
 const PAGE_SIZE = 25;
 
+function onboardingLabel(value: string) {
+  return value.replace("Onboarding", "Penyiapan akun");
+}
+
 async function UsersContent({ searchParams }: Props) {
   const access = await requireStaffCapability("users.read");
   const canSupport = staffHasCapability(access, "users.support");
@@ -56,13 +60,13 @@ async function UsersContent({ searchParams }: Props) {
     <StaffShell role={access.role} current="users" access={access}>
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Operasional staff</p>
+          <p className="section-label">Area Admin</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
             Akun mahasiswa
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
             Cari dan periksa status akun mahasiswa untuk membantu kendala masuk,
-            onboarding, membership, atau visibilitas. NIM, kontak, chat, foto
+            penyiapan akun, paket, atau tampilan profil. NIM, kontak, percakapan, foto
             identitas, dan bukti verifikasi tidak tersedia di sini.
           </p>
 
@@ -125,7 +129,7 @@ async function UsersContent({ searchParams }: Props) {
             </div>
             <div className="divide-y divide-brand-border">
               {rows.length === 0 ? (
-                <p className="p-6 text-brand-muted">Tidak ada akun untuk filter ini.</p>
+                <p className="p-6 text-brand-muted">Tidak ada akun dengan pilihan ini.</p>
               ) : (
                 rows.map((row) => (
                   <article
@@ -144,11 +148,11 @@ async function UsersContent({ searchParams }: Props) {
                     </div>
                     <div className="text-sm text-brand-muted">
                       <p>{row.account_status}</p>
-                      <p>{row.onboarding_status}</p>
+                      <p>{onboardingLabel(row.onboarding_status)}</p>
                       <p>Verifikasi: {row.verification_summary}</p>
                       <p>Paket: {row.membership_plan}</p>
                       <p>
-                        Tampil di People: {row.is_discoverable ? "Ya" : "Tidak"}
+                        Tampil di pencarian teman: {row.is_discoverable ? "Ya" : "Tidak"}
                       </p>
                     </div>
                     <div className="flex flex-col items-start gap-3">

@@ -75,7 +75,7 @@ async function AuditContent() {
                   >
                     <div>
                       <p className="font-semibold">
-                        {eventLabels[event.eventType] ?? event.eventType.replaceAll("_", " ")}
+                        {eventLabels[event.eventType] ?? "Aktivitas lain"}
                       </p>
                       <p className="mt-1 font-mono text-xs text-brand-muted">
                         Petugas …{event.actorSuffix ?? "dihapus"}

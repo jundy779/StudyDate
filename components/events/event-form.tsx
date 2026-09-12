@@ -25,7 +25,7 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   exam_prep: "Persiapan Ujian",
   workshop: "Workshop",
   discussion: "Diskusi",
-  networking: "Networking",
+  networking: "Relasi profesional",
   community: "Komunitas",
   other: "Lainnya",
 };
@@ -221,14 +221,14 @@ export function EventForm({
       {!event ? (
         <fieldset className="border-t border-brand-border pt-7">
           <legend className="font-heading text-xl font-semibold text-brand-navy">
-            Registrasi
+            Pendaftaran
           </legend>
           <p className="mt-2 text-sm leading-6 text-brand-muted">
             Pilih apakah peserta langsung dikonfirmasi atau perlu persetujuanmu.
           </p>
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <label className="text-sm font-semibold text-brand-navy">
-              Mode registrasi
+              Cara menerima peserta
               <select
                 name="registrationMode"
                 defaultValue="instant"
@@ -449,8 +449,8 @@ export function EventForm({
       {event ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
           {event.schedule_venue_locked
-            ? "Waktu dan lokasi dikunci karena peserta lain sudah RSVP. Judul, deskripsi, kategori, dan kapasitas masih dapat diperbarui."
-            : "Perubahan tidak mengirim notifikasi pada v1. Waktu dan lokasi akan dikunci setelah peserta lain RSVP."}
+            ? "Waktu dan lokasi dikunci karena sudah ada peserta yang mendaftar. Judul, deskripsi, kategori, dan kapasitas masih dapat diperbarui."
+            : "Perubahan saat ini belum mengirim pemberitahuan kepada peserta. Waktu dan lokasi akan dikunci setelah ada peserta yang mendaftar."}
         </p>
       ) : null}
 

@@ -74,6 +74,10 @@ test("projections stay privacy-safe", () => {
     /decryptContact|ciphertext|dangerouslySetInnerHTML/,
   );
   assert.match(detail, /Cuplikan pesan terkait|Contact/i);
+  assert.doesNotMatch(
+    detail,
+    /Owner only|diperlukan untuk triage|Mutual Interest|sudah terminal/,
+  );
 });
 
 test("owner pages use requireOwner; actions ignore client reviewer identity", () => {

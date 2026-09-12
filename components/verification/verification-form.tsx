@@ -114,12 +114,12 @@ export function VerificationForm({
       return;
     }
     if (step === 0 && lookupOutcome !== "academic_match" && !manualFlow) {
-      setMessage("Periksa data akademik atau pilih verifikasi manual.");
+      setMessage("Periksa data akademik atau pilih pemeriksaan manual.");
       setMessageTone("error");
       return;
     }
     if (step === 0 && manualFlow && !pddiktiEvidence) {
-      setMessage("Unggah screenshot PDDIKTI untuk verifikasi manual.");
+      setMessage("Unggah tangkapan layar PDDIKTI untuk pemeriksaan manual.");
       setMessageTone("error");
       return;
     }
@@ -319,7 +319,7 @@ export function VerificationForm({
       }
       setIsComplete(true);
       setMessage(
-        "Email kampus terkonfirmasi. Reviewer akan memberi keputusan akhir setelah memeriksa seluruh bukti.",
+        "Email kampus terkonfirmasi. Petugas akan memberi keputusan akhir setelah memeriksa seluruh bukti.",
       );
     } catch {
       setMessage("Kode belum dapat dikonfirmasi. Coba lagi.");
@@ -344,7 +344,7 @@ export function VerificationForm({
         </h2>
         <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
           {message} Badge hanya diterbitkan setelah data akademik dan bukti
-          kepemilikan selesai diperiksa oleh reviewer.
+          kepemilikan selesai diperiksa oleh petugas.
         </p>
       </section>
     );
@@ -549,19 +549,19 @@ export function VerificationForm({
                 type="button"
                 onClick={() => {
                   setManualFlow(true);
-                  setMessage("Isi data akademikmu dan unggah screenshot PDDIKTI sebagai bukti pendukung.");
+                  setMessage("Isi data akademikmu dan unggah tangkapan layar PDDIKTI sebagai bukti pendukung.");
                   setMessageTone("info");
                 }}
                 className="focus-ring min-h-12 rounded-xl border border-brand-border px-5 font-semibold"
               >
-                Lanjutkan verifikasi manual
+                Lanjutkan pemeriksaan manual
               </button>
             ) : null}
           </div>
           ) : (
             <p className="mt-7 rounded-xl border border-brand-border bg-brand-surface p-4 text-sm leading-6 text-brand-muted">
               Pemeriksaan otomatis belum tersedia untuk pilot ini. Unggah
-              screenshot PDDIKTI agar reviewer memeriksa data akademikmu.
+              tangkapan layar PDDIKTI agar petugas memeriksa data akademikmu.
             </p>
           )}
           {capabilities.provider ? (
@@ -596,10 +596,10 @@ export function VerificationForm({
               </div>
               <div>
                 <h3 className="font-heading text-lg font-semibold">
-                  Screenshot PDDIKTI
+                  Tangkapan layar PDDIKTI
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-brand-muted">
-                  Unggah screenshot halaman PDDIKTI yang menampilkan data
+                  Unggah tangkapan layar halaman PDDIKTI yang menampilkan data
                   akademik yang ingin kamu verifikasi.
                 </p>
               </div>
@@ -628,7 +628,7 @@ export function VerificationForm({
                     aria-hidden="true"
                   />
                   <span className="mt-3 text-sm font-semibold text-brand-navy">
-                    Pilih screenshot PDDIKTI
+                    Pilih tangkapan layar PDDIKTI
                   </span>
                   <span className="mt-1 text-xs text-brand-muted">
                     JPG, PNG, atau WebP · maksimal 5 MB
@@ -657,7 +657,7 @@ export function VerificationForm({
                 className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue"
                 aria-hidden="true"
               />
-              Pastikan screenshot hanya memuat informasi yang diperlukan.
+              Pastikan tangkapan layar hanya memuat informasi yang diperlukan.
               Hindari menyertakan data lain yang tidak berkaitan dengan verifikasi.
               Bukti ini hanya mendukung pencocokan akademik, bukan bukti kepemilikan.
             </p>
@@ -711,7 +711,7 @@ export function VerificationForm({
             <p>
               Proses ini menggunakan NIM, nama legal, data kampus, dan bukti
               kepemilikan. Pencocokan otomatis dapat memakai layanan data
-              akademik eksternal; provider tidak menerima akses ke profil publikmu.
+              akademik eksternal. Layanan tersebut tidak menerima akses ke profil publikmu.
               Bukti disimpan sementara dan dijadwalkan untuk dihapus.
             </p>
             <p className="mt-3">

@@ -158,7 +158,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 id="event-team-active-title"
                 className="mt-2 font-heading text-xl font-semibold text-brand-navy"
               >
-                Ruang kerja tim acara
+                Acara yang kamu kelola
               </h2>
               <div className="mt-4 divide-y divide-brand-border">
                 {activeAssignments.map((assignment) => (
@@ -184,7 +184,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                       }
                       className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue"
                     >
-                      Buka ruang kerja
+                      Buka pengelolaan acara
                     </Link>
                   </article>
                 ))}
@@ -205,7 +205,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
             <EventFilterForm filters={filters} />
             {!parsed.success ? (
               <p role="alert" className="mt-4 text-sm font-medium text-brand-error">
-                Filter tidak valid. Hapus filter lalu coba lagi.
+                Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.
               </p>
             ) : null}
           </section>

@@ -194,69 +194,69 @@ export function mapCampusEventError(message?: string) {
   if (value.includes("private venue")) {
     return "Lokasi pribadi tidak diperbolehkan. Pilih tempat umum.";
   }
-  if (value.includes("event full")) return "Kapasitas event sudah penuh.";
+  if (value.includes("event full")) return "Kapasitas acara sudah penuh.";
   if (value.includes("event ownership quota")) {
-    return "Batas Event aktif untuk paketmu sudah tercapai. Kelola Event lama atau lihat StudyDate Plus.";
+    return "Batas acara aktif untuk paketmu sudah tercapai. Kelola acara lama atau lihat StudyDate Plus.";
   }
   if (
     value.includes("event attendance quota") ||
     value.includes("joined event quota")
   ) {
-    return "Batas Event yang dapat diikuti untuk paketmu sudah tercapai. Batalkan RSVP lain atau lihat StudyDate Plus.";
+    return "Batas acara yang dapat diikuti untuk paketmu sudah tercapai. Batalkan pendaftaran lain atau lihat StudyDate Plus.";
   }
   if (
     value.includes("organizer eligibility") ||
     value.includes("student access required")
   ) {
-    return "Akunmu belum memenuhi syarat untuk membuat atau mengelola Campus Event.";
+    return "Akunmu belum memenuhi syarat untuk membuat atau mengelola Acara Kampus.";
   }
   if (value.includes("participant capacity quota")) {
     return "Kapasitas peserta melampaui batas paketmu.";
   }
   if (value.includes("event team quota")) {
-    return "Batas anggota tim Event untuk paketmu sudah tercapai.";
+    return "Batas anggota tim acara untuk paketmu sudah tercapai.";
   }
   if (value.includes("registration question quota")) {
-    return "Batas pertanyaan registrasi untuk paketmu sudah tercapai.";
+    return "Batas pertanyaan pendaftaran untuk paketmu sudah tercapai.";
   }
   if (
     value.includes("invalid registration question") ||
     value.includes("question options")
   ) {
-    return "Pertanyaan registrasi tidak valid atau meminta data sensitif.";
+    return "Pertanyaan pendaftaran tidak valid atau meminta data sensitif.";
   }
   if (
     value.includes("required registration answer")
   ) {
-    return "Lengkapi semua jawaban registrasi yang wajib.";
+    return "Lengkapi semua jawaban pendaftaran yang wajib.";
   }
   if (
     value.includes("registration answer") ||
     value.includes("short answer") ||
     value.includes("selection")
   ) {
-    return "Jawaban registrasi tidak valid.";
+    return "Jawaban pendaftaran tidak valid.";
   }
   if (value.includes("registration unavailable")) {
-    return "Registrasi ini sudah tidak dapat dikelola.";
+    return "Pendaftaran ini sudah tidak dapat dikelola.";
   }
   if (value.includes("ticket regeneration rate")) {
-    return "Batas regenerasi tiket hari ini sudah tercapai.";
+    return "Batas penerbitan ulang tiket hari ini sudah tercapai.";
   }
   if (value.includes("checked-in ticket cannot regenerate")) {
-    return "Tiket yang sudah digunakan tidak dapat diregenerasi.";
+    return "Tiket yang sudah digunakan tidak dapat diterbitkan ulang.";
   }
   if (
     value.includes("ticket request unavailable") ||
     value.includes("event participation required")
   ) {
-    return "Tiket hanya tersedia untuk peserta dengan registrasi aktif.";
+    return "Tiket hanya tersedia untuk peserta dengan pendaftaran aktif.";
   }
   if (
     value.includes("event management required") ||
     value.includes("check-in unavailable")
   ) {
-    return "Kamu tidak memiliki akses untuk mengelola registrasi Event ini.";
+    return "Kamu tidak memiliki izin untuk mengelola pendaftaran acara ini.";
   }
   if (
     value.includes("owner authorization") ||
@@ -268,28 +268,28 @@ export function mapCampusEventError(message?: string) {
     return "Mahasiswa tidak ditemukan atau tidak tersedia.";
   }
   if (value.includes("organizer limit")) {
-    return "Maksimal lima event mendatang dapat kamu kelola.";
+    return "Kamu dapat mengelola maksimal lima acara mendatang.";
   }
   if (value.includes("rsvp limit")) {
-    return "Maksimal sepuluh event mendatang dapat kamu ikuti.";
+    return "Kamu dapat mengikuti maksimal sepuluh acara mendatang.";
   }
   if (value.includes("capacity below")) {
     return "Kapasitas tidak boleh lebih kecil dari jumlah peserta.";
   }
   if (value.includes("schedule venue locked")) {
-    return "Waktu dan lokasi tidak dapat diubah setelah peserta lain RSVP.";
+    return "Waktu dan lokasi tidak dapat diubah setelah peserta lain mendaftar.";
   }
   if (value.includes("start too soon")) {
-    return "Event harus dimulai setidaknya dua jam dari sekarang.";
+    return "Acara harus dimulai setidaknya dua jam dari sekarang.";
   }
   if (value.includes("start too far")) {
-    return "Event hanya dapat dijadwalkan hingga 180 hari ke depan.";
+    return "Acara hanya dapat dijadwalkan hingga 180 hari ke depan.";
   }
   if (value.includes("invalid duration")) {
-    return "Durasi event harus antara 30 menit dan 12 jam.";
+    return "Durasi acara harus antara 30 menit dan 12 jam.";
   }
   if (value.includes("organizer rsvp")) {
-    return "Organizer harus tetap terdaftar sebagai peserta.";
+    return "Penyelenggara harus tetap terdaftar sebagai peserta.";
   }
   if (value.includes("rate limited")) {
     return "Terlalu banyak aktivitas dalam waktu singkat. Coba lagi nanti.";
@@ -299,7 +299,7 @@ export function mapCampusEventError(message?: string) {
     value.includes("authorization") ||
     value.includes("rsvp required")
   ) {
-    return "Event atau tindakan ini sudah tidak tersedia.";
+    return "Acara atau tindakan ini sudah tidak tersedia.";
   }
   return EVENT_GENERIC_ERROR;
 }

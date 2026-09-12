@@ -18,7 +18,7 @@ export default function EventsError({ reset }: { reset: () => void }) {
               Acara kampus belum dapat dimuat
             </h1>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted">
-              Coba lagi sebentar. RSVP dan data acaramu tidak berubah.
+              Coba lagi sebentar. Pendaftaran dan data acaramu tidak berubah.
             </p>
             <button
               type="button"

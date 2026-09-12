@@ -106,7 +106,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
             advancedEnabled={limits.advancedDiscoveryFilters}
           />
           {!parsed.success && (
-            <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-brand-error">Filter tidak valid. Hapus filter lalu coba lagi.</p>
+            <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-brand-error">Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.</p>
           )}
         </section>
 

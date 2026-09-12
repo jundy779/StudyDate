@@ -122,6 +122,11 @@ test("academic match cannot directly verify and ownership proof remains mandator
   assert.doesNotMatch(create, /verification_status = 'verified'/);
   assert.match(migration, /final_status := case[\s\S]*pddikti_match_status = 'matched'/);
   assert.match(reviewerUi, /Setujui data akademik/);
+  assert.match(reviewerUi, /Pemeriksaan data akademik manual/);
+  assert.doesNotMatch(
+    reviewerUi,
+    /Manual academic review|Auto lookup match|Review claim akademik|Sedang direview/,
+  );
   assert.doesNotMatch(reviewerUi, />Verify user</);
 });
 

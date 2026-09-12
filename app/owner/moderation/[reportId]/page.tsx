@@ -50,13 +50,14 @@ async function ModerationDetailContent({ params, searchParams }: Props) {
     <StaffShell role={access.role} current="moderation">
       <main className="min-h-svh bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Owner only</p>
+          <p className="section-label">Khusus Owner</p>
           <h1 className="mt-4 font-heading text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
             Laporan …{report.report_id.slice(-8)}
           </h1>
           <p className="mt-4 max-w-2xl text-brand-muted">
-            Hanya cuplikan yang diperlukan untuk triage. Tidak ada Contact
-            Reveal, Mutual Interest satu arah, atau riwayat chat penuh.
+            Hanya informasi yang berkaitan dengan laporan yang ditampilkan.
+            Kontak pribadi, persetujuan yang belum disepakati kedua pihak, dan
+            seluruh riwayat percakapan tetap tidak dibuka.
           </p>
 
           {query.state === "saved" && (
@@ -189,9 +190,9 @@ async function ModerationDetailContent({ params, searchParams }: Props) {
             </section>
           ) : (
             <p className="mt-6 text-sm text-brand-muted">
-              Laporan ini sudah terminal (
-              {MODERATION_STATUS_LABELS[report.moderation_status]}). Tidak dibuka
-              ulang dari UI.
+              Laporan ini sudah ditutup dengan status {" "}
+              {MODERATION_STATUS_LABELS[report.moderation_status]}. Statusnya
+              tidak dapat dibuka kembali dari halaman ini.
             </p>
           )}
 

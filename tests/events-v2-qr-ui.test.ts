@@ -38,9 +38,9 @@ test("EV2QR-01 participant ticket renders an accessible QR without raw token UI"
   assert.doesNotMatch(ticket, />\s*\{state\.ticketToken\}\s*</);
 });
 
-test("EV2QR-02 regeneration warns that old QR screenshots become invalid", () => {
+test("EV2QR-02 regeneration warns that old QR captures become invalid", () => {
   assert.match(ticket, /name="regenerate" value="true"/);
-  assert.match(ticket, /Screenshot tiket lama juga tidak dapat\s+dipakai/);
+  assert.match(ticket, /Tangkapan layar tiket lama juga tidak dapat\s+dipakai/);
   assert.match(ticket, /Ya, buat ulang dan batalkan QR lama/);
 });
 
@@ -76,7 +76,9 @@ test("EV2QR-04 express scanner handles every safe result with live feedback", ()
   }
   assert.match(scanner, /inFlightRef\.current/);
   assert.match(scanner, /aria-live=\{isSuccess \? "assertive" : "polite"\}/);
-  assert.match(scanner, /Check-in manual tanpa kamera/);
+  assert.match(scanner, /Catat kehadiran tanpa kamera/);
+  assert.match(scanner, /Kehadiran berhasil dicatat/);
+  assert.doesNotMatch(scanner, /Check-in manual|menunggu check-in/);
 });
 
 test("EV2QR-05 scanner route fails closed and detail no longer accepts ticket token input", () => {

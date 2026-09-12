@@ -33,7 +33,7 @@ function scanMessage(
   const alias = attendeeAlias ? ` ${attendeeAlias}` : "";
   switch (status) {
     case "checked_in":
-      return `Check-in berhasil.${alias}`;
+      return `Kehadiran berhasil dicatat.${alias}`;
     case "duplicate":
       return `Tiket sudah pernah digunakan.${alias}`;
     case "wrong_event":
@@ -43,9 +43,9 @@ function scanMessage(
     case "revoked":
       return "Tiket ini sudah dicabut dan tidak berlaku.";
     case "not_eligible":
-      return "Peserta tidak memiliki pendaftaran aktif untuk check-in.";
+      return "Peserta tidak memiliki pendaftaran aktif, sehingga kehadirannya belum dapat dicatat.";
     case "outside_window":
-      return "Check-in belum dibuka atau jendelanya sudah berakhir.";
+      return "Pencatatan kehadiran belum dibuka atau waktunya sudah berakhir.";
     case "rate_limited":
       return "Pemindaian terlalu cepat. Tunggu sebentar lalu coba lagi.";
     default: {
@@ -66,7 +66,7 @@ function cameraMessage(state: CameraState) {
     case "permission_denied":
       return "Akses kamera ditolak. Izinkan kamera di pengaturan browser lalu coba lagi.";
     case "no_camera":
-      return "Kamera tidak ditemukan pada perangkat ini. Gunakan check-in manual.";
+      return "Kamera tidak ditemukan pada perangkat ini. Catat kehadiran dari daftar peserta.";
     case "error":
       return "Kamera belum dapat digunakan. Tutup aplikasi kamera lain lalu coba lagi.";
     default: {
@@ -129,7 +129,7 @@ export function EventQrScanner({
       if (!mountedRef.current) return;
       setFeedback({
         status: "invalid",
-        message: "Check-in belum dapat diproses. Coba lagi.",
+        message: "Kehadiran belum dapat dicatat. Coba lagi.",
       });
     } finally {
       cooldownRef.current = setTimeout(() => {
@@ -341,7 +341,7 @@ export function EventQrScanner({
 
       <details className="rounded-xl border border-brand-border bg-white p-4">
         <summary className="focus-ring cursor-pointer rounded-lg text-sm font-semibold text-brand-navy">
-          Check-in manual tanpa kamera
+          Catat kehadiran tanpa kamera
         </summary>
         <p className="mt-3 text-sm leading-6 text-brand-muted">
           Gunakan alias peserta hanya jika QR tidak dapat dipindai.
@@ -371,12 +371,12 @@ export function EventQrScanner({
               disabled={manualPending}
               className="focus-ring mt-3 min-h-12 w-full rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white disabled:opacity-60"
             >
-              {manualPending ? "Memproses…" : "Check-in manual"}
+              {manualPending ? "Memproses…" : "Catat kehadiran"}
             </button>
           </form>
         ) : (
           <p className="mt-3 text-sm text-brand-muted">
-            Tidak ada peserta aktif yang menunggu check-in.
+            Semua peserta aktif yang tampil sudah tercatat hadir.
           </p>
         )}
       </details>

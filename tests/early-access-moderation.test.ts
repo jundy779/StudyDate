@@ -72,7 +72,7 @@ test("Owner and Staff render the same moderation queue with separate guards", ()
   assert.match(staffPage, /requireStaffCapability\("early_access\.read"\)/);
   assert.match(staffPage, /<EarlyAccessQueue/);
   assert.match(staffPage, /basePath="\/staff\/early-access"/);
-  assert.match(queue, /Mode baca saja/);
+  assert.match(queue, /Kamu hanya dapat melihat daftar ini/);
 });
 
 test("Approve sends a branded one-time invitation and supports safe resend", () => {
@@ -82,9 +82,15 @@ test("Approve sends a branded one-time invitation and supports safe resend", () 
   assert.match(actions, /nextPath: "\/onboarding"/);
   assert.match(actions, /prepareEarlyAccessInvitation/);
   assert.match(actions, /markEarlyAccessInvitationSent/);
-  assert.match(queue, /Approve & kirim email/);
+  assert.match(queue, /Setujui dan kirim email/);
   assert.match(queue, /Kirim ulang undangan/);
   assert.match(delivery, /MagicLinkEmailKind/);
+});
+
+test("Early Access queue uses plain Indonesian for operational copy", () => {
+  assert.match(queue, /Menunggu pemeriksaan/);
+  assert.match(queue, /Pemeriksaan Akses Awal/);
+  assert.doesNotMatch(queue, /Approve:|Reject:|capability Akses|Operasional staff/);
 });
 
 test("Public login is enumeration-safe and new/pre-onboarding accounts require approval", () => {
