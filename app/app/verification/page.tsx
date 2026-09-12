@@ -1,11 +1,19 @@
 import { VerificationForm } from "@/components/verification/verification-form";
-import { cancelVerificationRequest } from "./actions";
+import { LinkedInVerificationCard } from "@/components/verification/linkedin-verification-card";
+import {
+  cancelVerificationRequest,
+  unlinkLinkedInVerification,
+} from "./actions";
 import { AppShell } from "@/components/app/app-shell";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   VERIFICATION_STATUS_LABELS,
 } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
+import {
+  getLinkedInVerificationStatus,
+  isLinkedInVerificationConfigured,
+} from "@/lib/verification/linkedin";
 import {
   getVerificationCapabilities,
   isVerificationRequestAllowed,
@@ -14,16 +22,25 @@ import { ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-async function VerificationContent() {
+async function VerificationContent({
+  searchParams,
+}: {
+  searchParams: Promise<{ linkedin?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const linkedInResult =
+    typeof params.linkedin === "string" ? params.linkedin : undefined;
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
-  const [verificationAllowed, capabilities, request] = await Promise.all([
-    isVerificationRequestAllowed(user.id),
-    getVerificationCapabilities(user.id),
-    getLatestVerificationStatus(user.id),
-  ]);
+  const [verificationAllowed, capabilities, request, linkedInStatus] =
+    await Promise.all([
+      isVerificationRequestAllowed(user.id),
+      getVerificationCapabilities(user.id),
+      getLatestVerificationStatus(user.id),
+      getLinkedInVerificationStatus(user.id),
+    ]);
   const awaitingOwnership =
     request?.method === "academic_pending" &&
     request.pddikti_match_status === "matched";
@@ -95,16 +112,26 @@ async function VerificationContent() {
             matchedRequestId={awaitingOwnership ? request.id : undefined}
           />
         )}
+        <LinkedInVerificationCard
+          enabled={isLinkedInVerificationConfigured()}
+          result={linkedInResult}
+          status={linkedInStatus}
+          unlinkAction={unlinkLinkedInVerification}
+        />
       </div>
       </main>
     </AppShell>
   );
 }
 
-export default function VerificationPage() {
+export default function VerificationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ linkedin?: string | string[] }>;
+}) {
   return (
     <Suspense fallback={<main className="min-h-svh bg-brand-surface p-8"><p className="page-shell text-sm text-brand-muted">Menyiapkan pusat verifikasi…</p></main>}>
-      <VerificationContent />
+      <VerificationContent searchParams={searchParams} />
     </Suspense>
   );
 }

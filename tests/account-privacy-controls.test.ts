@@ -392,7 +392,7 @@ test("Auth finalization is last and completion requires Auth FK cleanup", () => 
 
 test("settings projection and copy contain no forbidden privacy fields", () => {
   assert.match(settingsPage, /Pengaturan/);
-  assert.match(settingsPage, /Privat secara default/);
+  assert.match(settingsPage, /Pahami bagaimana profil kamu muncul/);
   assert.match(settingsPage, /Alias anonim dibuat untuk menjaga/);
   assert.doesNotMatch(
     settingsPage,

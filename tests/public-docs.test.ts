@@ -12,6 +12,7 @@ const root = process.cwd();
 test("public doc routes cover privacy terms community safety help", () => {
   const paths = PUBLIC_DOC_ROUTES.map((route) => route.path);
   assert.deepEqual(paths, [
+    "/about",
     "/insight",
     "/privacy",
     "/terms",
@@ -28,16 +29,16 @@ test("production URL list matches studydate.id public docs", () => {
 });
 
 test("footer links point at English public doc paths", () => {
-  const landing = readFileSync(
-    join(root, "components/marketing/landing-page.tsx"),
+  const footer = readFileSync(
+    join(root, "components/marketing/public-footer.tsx"),
     "utf8",
   );
   for (const route of PUBLIC_DOC_ROUTES) {
-    assert.match(landing, new RegExp(`href: "${route.path}"`));
+    assert.match(footer, new RegExp(`href: "${route.path}"`));
   }
   assert.match(
-    landing,
-    /© 2026 StudyDate ID · Mulai dari belajar\. Kenal perlahan\./,
+    footer,
+    /© 2026 StudyDate ID\. Hak cipta dilindungi\./,
   );
 });
 

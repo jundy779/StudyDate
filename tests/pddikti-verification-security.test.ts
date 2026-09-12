@@ -339,7 +339,7 @@ test("student UI distinguishes lookup outcomes and manual supporting evidence", 
     "Data mahasiswa belum berhasil ditemukan.",
     "Layanan pengecekan akademik sedang tidak tersedia.",
     "Data yang ditemukan belum cocok",
-    "Lanjutkan verifikasi manual",
+    "Lanjutkan pemeriksaan manual",
     "bukan bukti kepemilikan",
   ]) {
     assert.match(studentUi, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));

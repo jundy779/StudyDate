@@ -59,8 +59,7 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
   if (!event) notFound();
 
   const full = event.attendee_count >= event.capacity;
-  const registrationClosed = Boolean(event.registration_closes_at) &&
-    new Date(event.registration_closes_at!).getTime() <= Date.now();
+  const registrationClosed = !event.registration_open;
   const registrationLabel = registrationClosed
     ? "Pendaftaran sudah ditutup"
     : full && event.waitlist_enabled

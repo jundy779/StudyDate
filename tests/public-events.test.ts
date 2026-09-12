@@ -24,6 +24,8 @@ test("PUBE-01 public discovery exposes only official open scheduled events", () 
   assert.match(publicService, /\.eq\("is_official", true\)/);
   assert.match(publicService, /\.gt\("starts_at"/);
   assert.match(publicService, /import "server-only"/);
+  assert.match(publicService, /registration_open/);
+  assert.doesNotMatch(publicDetail, /Date\.now\(\)/);
   assert.doesNotMatch(publicService, /NEXT_PUBLIC_.*SERVICE|serviceRoleKey|SUPABASE_SERVICE_ROLE_KEY/);
 });
 

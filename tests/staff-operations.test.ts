@@ -135,10 +135,13 @@ test("User ops projection excludes NIM legal name evidence and chat", () => {
   assert.match(usersPage, /requireStaffCapability\("users\.read"\)/);
   assert.match(usersPage, /users\.support/);
   assert.match(usersPage, />\s*Akun mahasiswa\s*</);
-  assert.match(usersPage, /NIM, kontak, percakapan, foto/);
-  assert.match(usersPage, /tidak tersedia di sini/);
+  assert.match(
+    usersPage,
+    /NIM, kontak, percakapan, foto\s+identitas, dan bukti verifikasi tidak tersedia di sini/,
+  );
   assert.match(usersPage, /Area Admin/);
-  assert.doesNotMatch(usersPage, /Operasional staff|onboarding|membership|Tampil di People/);
+  assert.doesNotMatch(usersPage, /Operasional staff|Tampil di People/);
+  assert.match(usersPage, /onboardingLabel/);
   assert.doesNotMatch(opsMigration, /\bnim\b|legal_name|telegram_id|ciphertext/i);
 });
 
@@ -301,7 +304,7 @@ test("Early Access moderation is one queue with owner-full and explicit staff re
   assert.match(ownerEarlyAccessPage, /basePath="\/owner\/early-access"/);
   assert.match(earlyAccessPage, /requireStaffCapability\("early_access\.read"\)/);
   assert.match(earlyAccessQueue, /staffHasCapability\(access, "early_access\.review"\)/);
-  assert.match(earlyAccessQueue, /Mode baca saja/);
+  assert.match(earlyAccessQueue, /Kamu hanya dapat melihat daftar ini/);
 });
 
 test("Early Access decisions approve or reject and invitation is server-side", () => {
@@ -352,7 +355,7 @@ test("student support detail is opaque, audited, and privacy-scoped", () => {
 
 test("admin has a capability-aware operational landing page", () => {
   assert.match(adminOverview, /requireActiveStaff/);
-  assert.match(adminOverview, /Ruang operasional Admin/);
+  assert.match(adminOverview, /Pilih pekerjaan yang perlu ditangani/);
   assert.match(adminOverview, /access\.canUsersRead/);
   assert.match(adminOverview, /access\.verificationReviewer/);
   assert.match(authorization, /if \(access\?\.role === "admin"\) return "\/admin"/);

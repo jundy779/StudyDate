@@ -181,6 +181,13 @@ pada controlled test allowlist selama flag global OFF. Status akademik yang
 dikembalikan provider hanya menjadi metadata untuk reviewer, bukan keputusan
 otomatis.
 
+Verified on LinkedIn menjadi lapisan kepercayaan opsional yang terpisah.
+StudyDate hanya boleh menampilkan status akun terhubung serta kategori
+`IDENTITY` atau `WORKPLACE` yang benar-benar dikirim oleh LinkedIn. LinkedIn
+login, profil dasar, dan pendidikan yang ditulis sendiri tidak boleh diubah
+menjadi badge mahasiswa. LinkedIn tidak menggantikan PDDikti, bukti kepemilikan
+akun kampus, atau persetujuan akhir reviewer.
+
 ## 7. Onboarding
 
 ### Step 1 — Perkenalan dasar

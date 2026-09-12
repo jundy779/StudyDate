@@ -324,6 +324,14 @@ bukan pengganti ownership proof.
 Registry domain email kampus dengan status pending_review, approved, atau rejected. Tidak ada asumsi bahwa semua
 alamat `.ac.id` otomatis valid.
 
+### `linkedin_verification_links`
+
+Menyimpan lapisan kepercayaan LinkedIn yang terpisah dari badge mahasiswa:
+HMAC-SHA-256 atas app-scoped member ID, boolean kategori `IDENTITY` dan
+`WORKPLACE`, serta timestamp pemeriksaan. Raw member ID, access token,
+email, nama, dan response LinkedIn tidak disimpan. Authenticated user hanya
+dapat membaca row miliknya melalui RLS; insert dan update tetap server-only.
+
 ### `campus_email_verifications`
 
 Challenge email privat dengan normalized email, keyed code hash, expiry, attempt count, resend cooldown, dan

@@ -25,13 +25,17 @@ export type PublicCampusEvent = {
   registration_mode: EventRegistrationMode;
   waitlist_enabled: boolean;
   registration_closes_at: string | null;
+  registration_open: boolean;
   organizer_alias: string;
   organizer_is_verified: boolean;
 };
 
 type EventRow = Omit<
   PublicCampusEvent,
-  "attendee_count" | "organizer_alias" | "organizer_is_verified"
+  | "attendee_count"
+  | "registration_open"
+  | "organizer_alias"
+  | "organizer_is_verified"
 > & {
   id: string;
   organizer_user_id: string;
@@ -92,6 +96,7 @@ async function hydratePublicEvents(rows: EventRow[]) {
     ]),
   );
   const attendance = new Map<string, number>();
+  const checkedAt = Date.now();
   for (const registration of registrationsResult.data ?? []) {
     attendance.set(
       registration.event_id,
@@ -108,6 +113,9 @@ async function hydratePublicEvents(rows: EventRow[]) {
       {
         ...event,
         attendee_count: attendance.get(id) ?? 0,
+        registration_open:
+          !event.registration_closes_at ||
+          new Date(event.registration_closes_at).getTime() > checkedAt,
         organizer_alias: profile.public_alias,
         organizer_is_verified: profile.verification_status === "verified",
       },

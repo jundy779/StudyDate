@@ -212,7 +212,7 @@ test("reporting is participant-only with constrained reasons", () => {
 
 test("messages UI uses product terminology and escaped text rendering", () => {
   assert.match(messagesPage, /Belum ada percakapan/);
-  assert.match(messagesPage, /Jelajahi People/);
+  assert.match(messagesPage, /Cari teman/);
   assert.match(room, /Tulis pesan/);
   assert.match(room, /Akhiri percakapan/);
   assert.match(messageBubble, /whitespace-pre-wrap break-words/);

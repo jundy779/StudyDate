@@ -56,6 +56,12 @@ Server-only:
 - `PDDIKTI_LOOKUP_PROVIDER_ENABLED` (default OFF)
 - `PDDIKTI_PROVIDER_BASE_URL`
 - `PDDIKTI_PROVIDER_ACCESS_KEY`
+- `LINKEDIN_VERIFICATION_ENABLED` (default OFF)
+- `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, dan exact HTTPS
+  `LINKEDIN_REDIRECT_URI`
+- `LINKEDIN_IDENTITY_API_VERSION` dan
+  `LINKEDIN_VERIFICATION_API_VERSION`
+- `LINKEDIN_MEMBER_HASH_KEY` (32-byte HMAC key terpisah)
 - `CONTACT_REVEAL_ENCRYPTION_KEY` (AES-256-GCM; see `docs/operations/contact-reveal-key-recovery.md`)
 - optional `CONTACT_REVEAL_KEY_VERSION` and `CONTACT_REVEAL_ENCRYPTION_KEY_V{n}` during rotation
 - StudyDate-branded SMTP atau Resend untuk email verifikasi kampus.
@@ -219,6 +225,15 @@ hanya menyetujui academic match. Badge tetap diturunkan atomik setelah academic
 dan ownership sama-sama approved. Migration `202608110003` sudah deployed dan
 live-verified dengan akun sintetis; kedua feature flag tetap default OFF,
 controlled rollout belum dimulai, dan provider nyata belum diuji.
+
+Verified on LinkedIn berjalan sebagai OAuth account-linking yang terpisah dari
+login utama StudyDate. Route `/api/verification/linkedin/start` memerlukan
+session aktif dan membuat state acak dalam cookie HttpOnly berumur sepuluh
+menit. Callback memvalidasi state dan session, menukar authorization code hanya
+di server, lalu membaca `/identityMe` dan `/verificationReport`. Access
+token serta response mentah tidak disimpan. Database hanya menerima HMAC
+fingerprint member ID, kategori `IDENTITY`/`WORKPLACE`, dan timestamp.
+Status ini tidak pernah memperbarui `profiles.verification_status`.
 
 Operasional manual memerlukan reviewer dengan `app_metadata.verification_reviewer = true`, domain kampus berstatus
 `approved`, delivery email StudyDate SMTP/Resend, dan Vercel Cron evidence

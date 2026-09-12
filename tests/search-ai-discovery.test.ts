@@ -35,12 +35,12 @@ test("public navbar links homepage sections and Insight with crawlable anchors",
   const landingPage = read("components/marketing/landing-page.tsx");
   const publicDocs = read("components/marketing/public-doc-shell.tsx");
   const expectedNavigation = [
-    '{ label: "People", href: "/#people" }',
-    '{ label: "Groups", href: "/#groups" }',
-    '{ label: "Events", href: "/#events" }',
+    '{ label: "Cari Teman", href: "/#people" }',
+    '{ label: "Circle Belajar", href: "/#groups" }',
+    '{ label: "Acara Kampus", href: "/events" }',
     '{ label: "Cara Kerja", href: "/#cara-kerja" }',
-    '{ label: "Insight", href: "/insight" }',
-    '{ label: "Keamanan", href: "/#keamanan" }',
+    '{ label: "Tentang", href: "/about" }',
+    '{ label: "Keamanan", href: "/safety" }',
   ];
 
   for (const item of expectedNavigation) {
