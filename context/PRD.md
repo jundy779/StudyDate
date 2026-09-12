@@ -469,6 +469,10 @@ server-authoritative, event-scoped, race-safe, idempoten, dan dapat memakai QR a
 UI lokal menyediakan workspace organizer, registrasi, check-in, scanner kamera mobile,
 team, settings, tiket QR, serta Owner controls. Migration belum diterapkan ke production.
 
+Halaman acara resmi yang terbuka untuk publik menyediakan tautan berbagi, unduhan kalender
+`.ics`, dan pintasan Google Calendar. Fitur ini hanya memakai detail acara yang memang sudah
+publik dan tidak membuka daftar peserta atau data registrasi.
+
 ## 13b. Deployed — Account & Privacy Controls v1
 
 `/app/settings` menggabungkan Profil, Privasi, Blokir, dan Akun dalam satu

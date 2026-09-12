@@ -219,6 +219,10 @@ kapasitas, deskripsi, RSVP, attendee aman bila authorized, organizer projection,
 report/organizer controls. Full, cancelled, archived, dan past harus memakai teks selain
 warna. Venue/address panjang wajib wrap.
 
+Detail acara resmi publik menyediakan tindakan tenang untuk menyimpan jadwal (`.ics` atau
+Google Calendar) dan membagikan tautan. Jika Web Share tidak tersedia, tombol bagikan
+menyalin tautan dan mengumumkan hasilnya melalui `aria-live`; jangan menampilkan data peserta.
+
 Daftar attendee hanya untuk organizer atau RSVP `going`, memakai mascot anonim dan safe
 People projection. CTA `Kirim perkenalan` memakai dialog existing. RSVP, cancel RSVP,
 edit, cancel Event, archive, dan report harus keyboard-accessible dengan focus jelas.

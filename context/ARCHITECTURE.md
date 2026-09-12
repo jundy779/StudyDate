@@ -14,7 +14,8 @@ Jangan menambahkan framework auth lain.
 Browser
   -> Next.js App Router
        -> Public UI: landing page + Early Access dialog
-       -> Public docs: /about, /privacy, /terms, /community-guidelines, /safety, /help
+       -> Public docs: /about, /privacy, /terms, /community-guidelines, /safety, /help,
+          /events, /events/[publicSlug], /events/[publicSlug]/calendar.ics
          (legacy /privasi, /ketentuan, /pedoman-komunitas, /bantuan, /keamanan redirect)
        -> Public knowledge: /insight, /insight/[publishedSlug]
        -> Public search discovery: /sitemap.xml, /robots.txt, canonical metadata,
@@ -515,6 +516,11 @@ projection, block/Introduction integration, report scope, organizer/staff isolat
 cancel/archive retention, direct-table denial, zero automatic private-flow/Event
 Notification side effects, authenticated UI smoke, dan cleanup sintetis lengkap.
 Post-deploy migration dry-run kosong.
+
+Halaman detail untuk acara `open + official` menyediakan share URL kanonis, Google
+Calendar, dan endpoint `.ics`. Endpoint kalender memvalidasi opaque public slug lalu
+mengambil ulang projection acara publik; acara privat, tidak resmi, dibatalkan, atau
+sudah berakhir menghasilkan 404 dan tidak pernah masuk ekspor.
 
 ### Campus Events v2 architecture (REPOSITORY IMPLEMENTED / REMOTE STATE MUST BE VERIFIED)
 

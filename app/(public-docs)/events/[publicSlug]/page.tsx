@@ -1,4 +1,6 @@
 import { JsonLd } from "@/components/marketing/json-ld";
+import { PublicEventActions } from "@/components/events/public-event-actions";
+import { buildGoogleCalendarUrl } from "@/lib/events/calendar";
 import { eventSlugSchema } from "@/lib/events/validation";
 import {
   EVENT_CATEGORY_LABELS,
@@ -68,6 +70,17 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
         : event.registration_mode === "approval"
           ? "Ajukan pendaftaran"
           : "Daftar ke acara";
+  const publicUrl = getPublicSiteUrl(`/events/${event.public_slug}`);
+  const calendarEvent = {
+    publicSlug: event.public_slug,
+    title: event.title,
+    description: event.description,
+    startsAt: event.starts_at,
+    endsAt: event.ends_at,
+    timezone: event.timezone_name,
+    venue: `${event.venue_name}, ${event.venue_area}, ${event.city}`,
+    publicUrl,
+  };
 
   return (
     <article>
@@ -81,7 +94,7 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
           endDate: event.ends_at,
           eventStatus: "https://schema.org/EventScheduled",
           eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-          url: getPublicSiteUrl(`/events/${event.public_slug}`),
+          url: publicUrl,
           location: {
             "@type": "Place",
             name: event.venue_name,
@@ -147,6 +160,12 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
               >
                 Buka di ruang mahasiswa
               </Link>
+              <PublicEventActions
+                calendarDownloadHref={`/events/${event.public_slug}/calendar.ics`}
+                googleCalendarHref={buildGoogleCalendarUrl(calendarEvent)}
+                shareUrl={publicUrl}
+                title={event.title}
+              />
             </aside>
           </div>
         </div>
