@@ -63,7 +63,7 @@ test("profile interests/goals migration extends update RPC", () => {
 test("profile edit UI separates mascot from clear-face photos", () => {
   assert.match(page, /\/app\/settings#profil/);
   assert.match(form, /Avatar & visibilitas/);
-  assert.match(form, /Identity Reveal/);
+  assert.match(form, /berbagi nama dan foto/);
   assert.match(form, /PROFILE_MASCOT_OPTIONS/);
 });
 

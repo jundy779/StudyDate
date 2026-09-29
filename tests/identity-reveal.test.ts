@@ -200,7 +200,7 @@ test("photo pipeline validates content, re-encodes, and uses private bucket", ()
 
 test("first name is user-provided and not derived from legal or auth identity", () => {
   assert.match(constants, /Nama depan yang ingin kamu tampilkan/);
-  assert.match(constants, /bukan nama legal/i);
+  assert.match(constants, /tidak diperiksa sebagai nama resmi/i);
   assert.doesNotMatch(migration, /from public\.profiles[\s\S]*first_name/);
   assert.doesNotMatch(
     service,
@@ -277,10 +277,10 @@ test("RLS revoke-all and authenticated-only grants", () => {
 test("UI is gated on Mutual Interest and uses calm consent copy", () => {
   assert.match(room, /IdentityRevealPanel/);
   assert.match(room, /mutualCompleted=\{mutualInterest\.mutual\}/);
-  assert.match(constants, /Setujui Pembukaan Identitas/);
+  assert.match(constants, /Setuju bagikan nama dan foto/);
   assert.match(panel, /consentCta/);
   assert.match(panel, /privacyNote/);
-  assert.match(constants, /Identitas telah dibuka/);
+  assert.match(constants, /Nama dan foto sudah dibagikan/);
   assert.match(constants, /Nama lengkap dan kontak/);
 });
 

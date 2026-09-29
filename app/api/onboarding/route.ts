@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const MAX_REQUEST_BYTES = 12_288;
 const GENERIC_ERROR =
-  "Onboarding belum dapat disimpan. Periksa isian dan coba lagi.";
+  "Pengaturan awal belum dapat disimpan. Periksa isian dan coba lagi.";
 
 export async function POST(request: NextRequest) {
   const declaredLength = Number(request.headers.get("content-length") ?? "0");

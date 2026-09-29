@@ -265,9 +265,9 @@ async function MembershipContent({ searchParams }: MembershipPageProps) {
           <ComparisonTable />
 
           <p className="mt-8 max-w-2xl text-sm leading-6 text-brand-muted">
-            Blokir, laporkan, pusat keamanan, privasi, persetujuan, Identity
-            Reveal, Contact Reveal, dan penghapusan akun tetap tersedia untuk
-            semua paket.{" "}
+            Blokir, laporkan, pusat keamanan, privasi, berbagi nama dan foto,
+            berbagi kontak, serta penghapusan akun tetap tersedia untuk semua
+            paket.{" "}
             <Link
               href="/app/settings"
               className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline"

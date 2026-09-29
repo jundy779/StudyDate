@@ -5,7 +5,7 @@ import { privacyIntro, privacySections } from "@/content/public-docs/privacy";
 export const metadata: Metadata = {
   title: "Kebijakan Privasi — StudyDate ID",
   description:
-    "Bagaimana StudyDate ID mengumpulkan, memakai, dan melindungi data akun, profil anonim, percakapan, identitas, dan kontak.",
+    "Bagaimana StudyDate ID mengumpulkan, memakai, dan melindungi data akun, profil tanpa nama asli, percakapan, identitas, dan kontak.",
   alternates: { canonical: "/privacy" },
   openGraph: {
     title: "Kebijakan Privasi — StudyDate ID",

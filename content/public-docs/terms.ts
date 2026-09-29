@@ -10,7 +10,7 @@ export const termsSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Dengan mengakses StudyDate ID—termasuk beranda, Early Access, masuk, onboarding, atau aplikasi—kamu menyatakan telah membaca Ketentuan ini, Kebijakan Privasi, dan Pedoman Komunitas, serta bersedia mematuhinya.",
+        text: "Dengan mengakses StudyDate ID—termasuk beranda, Akses Awal, halaman masuk, pengaturan awal akun, atau aplikasi—kamu menyatakan telah membaca Ketentuan ini, Kebijakan Privasi, dan Pedoman Komunitas, serta bersedia mematuhinya.",
       },
     ],
   },
@@ -59,21 +59,21 @@ export const termsSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Pengenalan dimulai dari profil anonim dan percakapan privat. Nama, foto, dan kontak hanya dibuka melalui tahap persetujuan yang relevan. Kamu tidak boleh memaksa orang lain membuka identitas atau kontak, atau menyalahgunakan data yang sudah dibuka.",
+        text: "Pengenalan dimulai tanpa menampilkan nama asli. Nama, foto, dan kontak hanya dibagikan jika kalian berdua setuju. Kamu tidak boleh memaksa orang lain membagikan informasi pribadi atau menyalahgunakan informasi yang sudah dibagikan.",
       },
     ],
   },
   {
     id: "telegram-companion",
-    title: "Telegram Companion",
+    title: "Lanjut ngobrol lewat Telegram",
     blocks: [
       {
         type: "p",
-        text: "Telegram Companion adalah kanal pihak ketiga opsional untuk satu Anonymous Chat StudyDate yang sudah ada. StudyDate tetap menjadi sumber riwayat dan aturan: pengguna tidak boleh memakai bot untuk melewati filter kontak, consent, block, akhir percakapan, atau pembatasan akun.",
+        text: "Bot Telegram adalah pilihan tambahan untuk melanjutkan satu percakapan StudyDate yang sudah ada. Aturan StudyDate tetap berlaku. Bot tidak boleh dipakai untuk melewati penyaringan kontak, persetujuan, pemblokiran, percakapan yang sudah berakhir, atau pembatasan akun.",
       },
       {
         type: "p",
-        text: "Kamu bertanggung jawab menjaga akses akun Telegram. Pesan melalui Telegram dapat terlambat, gagal, atau tetap terlihat pada perangkat dan layanan Telegram. Memutuskan companion tidak menghapus riwayat StudyDate dan tidak otomatis membagikan kontak Telegram.",
+        text: "Kamu bertanggung jawab menjaga keamanan akun Telegram. Pesan dapat terlambat, gagal terkirim, atau tetap terlihat di perangkat dan layanan Telegram. Memutuskan koneksi Telegram tidak menghapus riwayat StudyDate dan tidak membagikan akun Telegram kamu kepada teman bicara.",
       },
     ],
   },

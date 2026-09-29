@@ -71,7 +71,7 @@ async function VerificationContent({
                 {VERIFICATION_STATUS_LABELS[request.status]}
               </p>
               <p className="mt-1 text-sm leading-6 text-brand-muted">
-                Badge hanya diberikan setelah data akademik cocok dan bukti
+                Tanda verifikasi hanya diberikan setelah data akademik cocok dan bukti
                 kepemilikan disetujui.
               </p>
             </div>

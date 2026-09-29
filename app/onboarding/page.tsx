@@ -72,7 +72,7 @@ export default function OnboardingPage() {
       fallback={
         <main className="min-h-svh bg-brand-surface px-5 py-10">
           <p className="mx-auto max-w-[820px] text-sm text-brand-muted">
-            Menyiapkan onboarding…
+            Menyiapkan pengaturan awal akun…
           </p>
         </main>
       }

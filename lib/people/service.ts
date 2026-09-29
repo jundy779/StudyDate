@@ -41,7 +41,7 @@ export async function listDiscoveryProfiles(
     if (text.includes("quota")) {
       throw new Error("discovery quota reached");
     }
-    throw new Error("People Discovery sedang tidak tersedia.");
+    throw new Error("Cari Teman sedang tidak tersedia.");
   }
 
   const rows = (data ?? []) as DiscoveryProfile[];
@@ -76,7 +76,7 @@ export async function getOwnDiscoveryVisibility(userId: string) {
     .maybeSingle<{ is_discoverable: boolean }>();
 
   if (error || !data) {
-    throw new Error("Pengaturan People belum dapat dimuat.");
+    throw new Error("Pengaturan Cari Teman belum dapat dimuat.");
   }
 
   return data.is_discoverable;
@@ -89,6 +89,6 @@ export async function setOwnDiscoveryVisibility(isDiscoverable: boolean) {
   });
 
   if (error) {
-    throw new Error("Pengaturan People belum dapat diperbarui.");
+    throw new Error("Pengaturan Cari Teman belum dapat diperbarui.");
   }
 }

@@ -175,7 +175,7 @@ test("contact versions are conversation-scoped immutable encrypted snapshots", (
 test("channels are independent; no global open-all operation", () => {
   assert.match(migration, /primary key \(conversation_id, channel\)/);
   assert.match(constants, /Bagikan kontak secara bertahap/);
-  assert.match(constants, /Setiap jenis kontak membutuhkan persetujuan dua arah/);
+  assert.match(constants, /Setiap kontak hanya dibagikan jika kalian berdua setuju/);
   assert.doesNotMatch(panel, /Buka semua kontak|Setujui semua/i);
   assert.doesNotMatch(constants, /Buka semua|Open all contacts/i);
 });

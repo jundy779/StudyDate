@@ -339,10 +339,7 @@ test("unlink is self-scoped, private, idempotent, and independent from Contact R
     migration.match(/create or replace function public\.unlink_my_telegram_companion[\s\S]*?\$\$;/)?.[0] ?? "",
     /conversation_contact|end_conversation|user_blocks|delete from public\.anonymous_messages/,
   );
-  assert.match(
-    setting,
-    /Contact\s*[\r\n]+\s*Reveal tetap tidak berubah/,
-  );
+  assert.match(setting, /kontak yang sudah dibagikan tetap tersimpan/);
 });
 
 test("all Telegram tables are private and helpers have narrow grants", () => {
@@ -386,7 +383,7 @@ test("no reveal or one-sided state is projected through Telegram", () => {
     webhook,
     /get_mutual_interest_state|get_identity_reveal_state|get_contact_reveal_state|selected_by_me|has_profile|has_contact|counterpart/,
   );
-  assert.match(webhook, /Atur privasi dan pembukaan informasi di StudyDate/);
+  assert.match(webhook, /Atur privasi dan informasi yang ingin dibagikan melalui StudyDate/);
   assert.doesNotMatch(
     botApi,
     /mineFirstName|counterpartFirstName|mineDisplay|counterpartDisplay/,

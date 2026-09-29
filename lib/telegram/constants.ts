@@ -2,7 +2,7 @@ export const TELEGRAM_BOT_USERNAME = "StudyDateBot";
 export const TELEGRAM_LINK_TTL_SECONDS = 600;
 export const TELEGRAM_WEBHOOK_MAX_BYTES = 16_384;
 export const TELEGRAM_MESSAGE =
-  "Telegram Companion belum dapat digunakan. Coba lagi beberapa saat.";
+  "Fitur lanjut lewat Telegram belum dapat digunakan. Coba lagi beberapa saat.";
 
 export type TelegramCompanionState =
   | "not_connected"

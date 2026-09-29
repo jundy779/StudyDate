@@ -210,13 +210,13 @@ export function ProfileEditForm({
           </div>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-blue">
-              Profil anonim
+              Profil tanpa nama asli
             </p>
             <p className="mt-1 truncate font-heading text-lg font-semibold text-brand-navy">
               {profile.publicAlias}
             </p>
             <p className="mt-1 truncate text-xs text-brand-muted">
-              {discoverable ? "Tampil di People" : "Disembunyikan"}
+              {discoverable ? "Tampil di Cari Teman" : "Disembunyikan"}
             </p>
           </div>
         </div>
@@ -393,8 +393,8 @@ export function ProfileEditForm({
         </Section>
 
         <Section
-          title="Kontak Mutual Reveal"
-          description="LinkedIn wajib untuk People. Instagram opsional. Privat — baru dibagikan setelah Contact Reveal dua arah."
+          title="Kontak yang dapat dibagikan"
+          description="LinkedIn wajib agar profil tampil di Cari Teman. Instagram opsional. Kontak hanya terbuka jika kalian berdua setuju."
         >
           <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             <label className="text-sm font-semibold">
@@ -423,7 +423,7 @@ export function ProfileEditForm({
           </div>
           {!linkedinUrl.trim() && discoverable ? (
             <p className="mt-3 text-sm font-semibold text-amber-800">
-              People butuh LinkedIn. Isi URL-nya, atau nonaktifkan visibilitas.
+              Isi LinkedIn agar profil tampil di Cari Teman, atau matikan pilihan tampil.
             </p>
           ) : null}
         </Section>
@@ -474,7 +474,7 @@ export function ProfileEditForm({
 
         <Section
           title="Avatar & visibilitas"
-          description="Maskot untuk People. Foto wajah hanya lewat Identity Reveal di percakapan."
+          description="Maskot tampil di Cari Teman. Foto wajah hanya dapat dibagikan dari percakapan setelah kalian berdua setuju."
         >
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {PROFILE_MASCOT_OPTIONS.map((key) => {
@@ -505,7 +505,7 @@ export function ProfileEditForm({
             })}
           </div>
           <p className="mt-3 text-xs leading-5 text-brand-muted">
-            Upload foto wajah saat Identity Reveal di{" "}
+            Unggah foto wajah saat kamu memilih berbagi nama dan foto di{" "}
             <Link
               href="/app/messages"
               className="font-semibold text-brand-blue underline-offset-2 hover:underline"
@@ -523,10 +523,10 @@ export function ProfileEditForm({
             />
             <span>
               <span className="block text-sm font-semibold text-brand-navy">
-                Tampilkan profil anonim di People
+                Tampilkan profil tanpa nama asli di Cari Teman
               </span>
               <span className="mt-0.5 block text-xs leading-5 text-brand-muted">
-                Saat dimatikan, profil hilang dari hasil People baru. Koneksi,
+                Saat dimatikan, profil tidak lagi muncul di Cari Teman. Koneksi,
                 percakapan, Circle, Event, dan data yang sudah dibuka tidak
                 otomatis dihapus.
               </span>

@@ -13,10 +13,10 @@ const date = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" });
 const stateMessage: Record<string, string> = {
   saved: "Perubahan tim tersimpan. Admin perlu masuk ulang agar akses baru aktif.",
   error: "Perubahan tim belum dapat disimpan.",
-  invalid: "Input tidak valid.",
+  invalid: "Data yang dimasukkan belum sesuai. Periksa kembali email dan pilihan tugas.",
   not_found:
     "Belum ada akun StudyDate dengan email ini. Minta orang tersebut masuk memakai email itu terlebih dahulu. Setelah akun dibuat, Owner dapat menambahkannya sebagai Admin.",
-  ambiguous: "Lebih dari satu akun cocok. Hubungi dukungan teknis secara privat.",
+  ambiguous: "Lebih dari satu akun ditemukan. Minta bantuan tim teknis sebelum melanjutkan.",
 };
 
 function CapabilityForm({
@@ -59,7 +59,7 @@ async function StaffContent({ searchParams }: Props) {
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
             Tambahkan Admin dengan email akun StudyDate yang sudah ada, lalu
-            pilih tugas yang boleh ditangani. Akses lain tetap nonaktif.
+            pilih tugas yang boleh ditangani. Tugas lain tidak akan diberikan.
           </p>
 
           {message ? (

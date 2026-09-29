@@ -52,16 +52,16 @@ async function PrivateAppHome() {
       <div className="page-shell py-10 sm:py-14 lg:py-20">
         <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
-            <p className="section-label">Ruang privatmu</p>
+            <p className="section-label">Beranda kamu</p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
               Halo, {profile.first_name} <span aria-hidden="true">👋</span>
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-              Profil publikmu masih menggunakan{" "}
+              Orang lain masih melihatmu dengan nama samaran{" "}
               <strong className="font-semibold text-brand-navy">
                 {profile.public_alias}
               </strong>
-              . Kamu memegang kendali kapan profil anonim ini dapat ditemukan.
+              . Kamu dapat memilih kapan profilmu muncul di Cari Teman.
             </p>
           </div>
 

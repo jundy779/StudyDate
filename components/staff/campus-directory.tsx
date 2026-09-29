@@ -14,7 +14,7 @@ export function CampusDirectory(props: CampusDirectoryProps) {
   return (
     <OnboardingCatalogDirectory
       title="Katalog kampus"
-      description="Kelola daftar kampus onboarding: tambah, edit, setujui usulan manual user, atau hapus. Usulan muncul saat mahasiswa mengisi kampus di luar daftar resmi."
+      description="Kelola pilihan kampus yang tersedia saat mahasiswa mengatur profil. Kamu dapat menambah, mengubah, menyetujui usulan mahasiswa, atau menghapus data."
       entitySingular="kampus"
       addPlaceholder="Contoh: Universitas Contoh"
       items={props.items}

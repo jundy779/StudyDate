@@ -32,7 +32,7 @@ export function getProfileCompletenessItems(
     },
     {
       id: "linkedin",
-      label: "LinkedIn (wajib untuk People)",
+      label: "LinkedIn (wajib untuk Cari Teman)",
       done: Boolean(profile.linkedinUrl?.trim()),
     },
     {
@@ -62,12 +62,12 @@ export function getProfileCompletenessItems(
     },
     {
       id: "mascot",
-      label: "Maskot People",
+      label: "Maskot Cari Teman",
       done: Boolean(profile.avatarMascot),
     },
     {
       id: "discoverable",
-      label: "Tampil di People",
+      label: "Tampil di Cari Teman",
       done: profile.isDiscoverable,
     },
   ];

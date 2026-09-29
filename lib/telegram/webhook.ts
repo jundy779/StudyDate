@@ -17,13 +17,13 @@ const COPY = {
   pending: "Kembali ke StudyDate untuk menyelesaikan koneksi.",
   privateOnly: "StudyDateBot hanya digunakan melalui chat pribadi.",
   help:
-    "StudyDateBot menghubungkan pesan teks ke Anonymous Chat yang sudah ada. Gunakan /unlink untuk memutuskan Telegram Companion. Atur privasi dan pembukaan informasi di StudyDate.",
+    "StudyDateBot meneruskan pesan teks ke percakapan StudyDate yang sudah ada. Gunakan /unlink untuk memutuskan koneksi Telegram. Atur privasi dan informasi yang ingin dibagikan melalui StudyDate.",
   unlinked:
-    "Telegram Companion telah diputus. Riwayat percakapan StudyDate tetap tersimpan.",
+    "Koneksi Telegram telah diputus. Riwayat percakapan StudyDate tetap tersimpan.",
   unsupported:
-    "Untuk sekarang, Telegram Companion hanya mendukung pesan teks.",
+    "Untuk sekarang, fitur lanjut lewat Telegram hanya mendukung pesan teks.",
   unavailable: "Percakapan ini tidak lagi tersedia melalui Telegram.",
-  relayed: "Pesan diteruskan ke Anonymous Chat StudyDate.",
+  relayed: "Pesan diteruskan ke percakapan StudyDate.",
 } as const;
 
 async function recordOutcome(updateId: number, outcome: string) {

@@ -27,9 +27,9 @@ const navigation = [
 ];
 
 const peopleFlow = [
-  ["01", "Lihat profil anonim", "Kenali minat, kampus, dan tujuan koneksinya lebih dulu."],
+  ["01", "Lihat profil tanpa nama asli", "Kenali minat, kampus, dan alasan mereka ingin berteman."],
   ["02", "Kirim perkenalan", "Tulis alasan singkat kenapa kamu ingin terhubung."],
-  ["03", "Tunggu persetujuan", "Chat terbuka hanya jika perkenalanmu diterima."],
+  ["03", "Tunggu persetujuan", "Kalian baru bisa ngobrol setelah perkenalanmu diterima."],
   ["04", "Ngobrol tanpa buru-buru", "Nama asli, foto, dan kontak tetap disembunyikan."],
   ["05", "Sama-sama ingin lanjut", "Kalian berdua memilih apakah ingin saling mengenal lebih jauh."],
   ["06", "Bagikan seperlunya", "Identitas dan kontak dibuka bertahap dengan persetujuan bersama."],
@@ -198,7 +198,7 @@ function ConnectionPreview() {
   return (
     <div
       className="product-window animate-enter-delay mx-auto w-full max-w-[500px] shadow-[0_20px_50px_rgba(15,27,51,0.10)]"
-      aria-label="Pratinjau profil anonim mahasiswa di StudyDate"
+      aria-label="Pratinjau profil mahasiswa tanpa nama asli di StudyDate"
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand-border px-4 py-3.5 sm:px-5">
         <div className="flex items-center gap-2.5">
@@ -210,7 +210,7 @@ function ConnectionPreview() {
             className="h-6 w-6 object-contain"
           />
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
-            CONTOH TAMPILAN • PROFIL ANONIM
+            CONTOH TAMPILAN • PROFIL TANPA NAMA ASLI
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-muted">
@@ -224,7 +224,7 @@ function ConnectionPreview() {
           <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_50%_24%,#ffffff_0%,#edf4ff_66%,#e3edfc_100%)]">
             <BrandAsset
               src="/brand/mascot/front-1024.png"
-              alt="Mascot StudyDate membawa buku"
+              alt="Maskot StudyDate membawa buku"
               width={1024}
               height={1024}
               sizes="(max-width: 639px) 96px, 116px"
@@ -347,7 +347,7 @@ function MascotCompanion() {
       pose: "/brand/mascot/hello.png" as const,
       label: "Temukan",
       title: "Mulai dari kesamaan",
-      copy: "Lihat minat, tujuan, dan konteks kampus sebelum memutuskan untuk menyapa.",
+      copy: "Lihat minat, kampus, dan alasan mereka ingin berteman sebelum menyapa.",
       imageClass:
         "h-[17.5rem] w-[17.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[19rem] sm:w-[19rem]",
     },
@@ -362,8 +362,8 @@ function MascotCompanion() {
     {
       pose: "/brand/mascot/chat.png" as const,
       label: "Bagikan",
-      title: "Buka identitas bertahap",
-      copy: "Nama, foto, dan kontak dibagikan hanya dengan persetujuan bersama.",
+      title: "Bagikan saat sudah siap",
+      copy: "Nama, foto, dan kontak baru dibagikan kalau kalian berdua setuju.",
       imageClass:
         "h-[16rem] w-[16rem] origin-bottom scale-[1.02] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[17rem] sm:w-[17rem] sm:scale-[1.03]",
     },
@@ -425,7 +425,7 @@ function PillarsOverview() {
     {
       label: "Cari Teman",
       title: "Cari teman yang nyambung",
-      copy: "Temukan mahasiswa lewat minat, tujuan, dan konteks kampus.",
+      copy: "Temukan mahasiswa lewat minat, kampus, dan alasan mereka ingin berteman.",
     },
     {
       label: "Circle Belajar",
@@ -484,9 +484,9 @@ function IntroductionFlow() {
       <div className="page-shell">
         <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr]">
           <div>
-            <p className="section-label">Kenalan sebelum chat</p>
+            <p className="section-label">Kenalan sebelum ngobrol</p>
             <h2 className="section-title mt-4 max-w-lg">
-              Kenalan dulu, chat setelah perkenalan diterima.
+              Kenalan dulu, ngobrol setelah perkenalan diterima.
             </h2>
           </div>
           <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
@@ -518,7 +518,7 @@ function ProgressivePrivacy() {
     <section className="relative overflow-hidden bg-brand-navy py-24 text-white sm:pb-40 sm:pt-32 lg:pb-44">
       <div className="page-shell grid items-center gap-16 lg:grid-cols-[0.78fr_1.22fr]">
         <div>
-          <p className="section-label text-[#8DB9F6]">Privasi bertahap</p>
+          <p className="section-label text-[#8DB9F6]">Kamu pegang kendali</p>
           <h2 className="mt-5 max-w-lg font-heading text-3xl font-semibold leading-tight sm:text-4xl lg:text-[2.75rem]">
             Nama dan kontak tidak langsung ditampilkan.
           </h2>
@@ -528,7 +528,7 @@ function ProgressivePrivacy() {
           </p>
           <ul className="mt-9 space-y-4 text-sm text-white/75">
             {[
-              "Setiap jenis kontak memerlukan persetujuan dua arah.",
+              "Kalian berdua harus setuju sebelum kontak dibagikan.",
               "Membuka satu kontak tidak otomatis membuka kontak lainnya.",
               "Blokir, laporkan, dan akhiri ruang selalu tersedia.",
             ].map((item) => (
@@ -543,11 +543,11 @@ function ProgressivePrivacy() {
         <div>
           <div
             className="mx-auto w-full max-w-xl overflow-hidden rounded-[20px] border border-white/15 bg-[#14233E] lg:max-w-[640px]"
-            aria-label="Pratinjau statis chat anonim StudyDate"
+            aria-label="Pratinjau percakapan StudyDate tanpa nama asli"
           >
             <div className="flex items-center justify-between border-b border-white/15 px-5 py-4">
               <div>
-                <p className="font-semibold">Profil anonim</p>
+                <p className="font-semibold">Profil tanpa nama asli</p>
                 <p className="mt-1 text-xs text-white/45">Nama, foto, dan kontak belum dibagikan</p>
               </div>
               <LockKeyhole className="h-4 w-4 text-[#8DB9F6]" aria-hidden="true" />
@@ -562,7 +562,7 @@ function ProgressivePrivacy() {
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-white/15 px-5 py-4 text-xs text-white/45">
-              <span>Ruang privat anonim</span>
+              <span>Percakapan tanpa nama asli</span>
               <span className="flex gap-4">
                 <span className="flex items-center gap-1.5">
                   <Flag className="h-3.5 w-3.5" /> Lapor
@@ -591,7 +591,7 @@ function Groups() {
   const groupTypes = [
     ["Circle belajar", "Belajar rutin bersama mahasiswa dengan target yang sejalan."],
     ["Circle terbuka", "Mahasiswa dapat meminta bergabung sesuai topik dan tujuan circle."],
-    ["Circle satu kampus", "Admin dapat membatasi anggota dari kampus yang sama."],
+    ["Circle satu kampus", "Khusus untuk mahasiswa dari kampus yang sama."],
   ];
 
   return (
@@ -613,7 +613,7 @@ function Groups() {
         <div className="product-showcase mt-14">
           <aside className="border-b border-brand-border bg-brand-navy p-5 text-white lg:border-b-0 lg:border-r lg:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/55">
-              Study Circle
+              Contoh circle
             </p>
             <p className="mt-5 font-heading text-[1.65rem] font-semibold leading-snug">
               Riset &amp; desain produk kampus
@@ -651,7 +651,7 @@ function CampusEvents() {
     "Seminar",
     "Workshop",
     "Komunitas kampus",
-    "Study gathering",
+    "Kumpul belajar",
     "Kompetisi",
     "Acara karier & jejaring",
   ];

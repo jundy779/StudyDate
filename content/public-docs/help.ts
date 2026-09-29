@@ -10,7 +10,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID adalah platform koneksi mahasiswa untuk menemukan teman, circle belajar, dan acara kampus dengan konteks belajar dan kampus. Kamu mulai anonim, saling berkenalan, lalu membuka identitas dan kontak hanya jika keduanya setuju.",
+        text: "StudyDate ID membantu mahasiswa dan alumni menemukan teman, circle belajar, dan acara kampus. Saat mulai kenalan, nama asli dan kontakmu belum ditampilkan. Kamu dapat membagikannya nanti jika kalian berdua setuju.",
       },
     ],
   },
@@ -20,7 +20,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Setelah masuk dan menyelesaikan onboarding, kamu dapat menelusuri profil anonim di Cari Teman (jika mereka memilih dapat ditemukan). Filter membantu menyempitkan kampus, minat, atau tujuan koneksi. Detail menampilkan nama samaran, bukan nama asli atau kontak.",
+        text: "Setelah masuk dan menyelesaikan pengaturan awal, kamu dapat melihat profil di Cari Teman jika pemiliknya memilih untuk tampil. Gunakan pilihan kampus, minat, atau tujuan untuk menemukan orang yang lebih sesuai. Profil menampilkan nama samaran, bukan nama asli atau kontak.",
       },
     ],
   },
@@ -36,21 +36,21 @@ export const helpSections: PublicDocSection[] = [
   },
   {
     id: "chat",
-    title: "Chat anonim",
+    title: "Ngobrol tanpa nama asli",
     blocks: [
       {
         type: "p",
-        text: "Setelah perkenalan diterima, kalian dapat berkirim pesan di Pesan. Kamu dapat mengakhiri percakapan, memblokir, atau melaporkan. Unread dihitung dari pesan yang belum kamu baca.",
+        text: "Setelah perkenalan diterima, kalian dapat berkirim pesan. Kamu bisa mengakhiri percakapan, memblokir, atau melaporkan. Jumlah pesan yang belum dibaca akan terlihat di menu Pesan.",
       },
     ],
   },
   {
     id: "telegram-companion",
-    title: "Telegram Companion",
+    title: "Lanjut ngobrol lewat Telegram",
     blocks: [
       {
         type: "p",
-        text: "Jika Telegram Companion sudah diaktifkan untuk akunmu, dari chat yang masih aktif kamu dapat memilih Lanjut di Telegram, membuka @StudyDateBot, lalu kembali ke StudyDate untuk mengonfirmasi koneksi. Bot hanya mendukung pesan teks dan satu percakapan aktif per akun pada v1.",
+        text: "Jika fitur Telegram sudah tersedia untuk akunmu, pilih Lanjut di Telegram dari percakapan yang masih aktif. Buka @StudyDateBot, lalu kembali ke StudyDate untuk memastikan akun yang dihubungkan benar. Saat ini bot mendukung pesan teks dan satu percakapan aktif per akun.",
       },
       {
         type: "ul",
@@ -58,7 +58,7 @@ export const helpSections: PublicDocSection[] = [
           "Detail akun Telegram tidak ditampilkan kepada lawan bicara.",
           "Pilihan Kenal Lebih Jauh, pembukaan identitas, pembagian kontak, dan pengaturan privasi tetap dilakukan di web StudyDate.",
           "Gunakan /unlink di bot atau Putuskan di Pengaturan untuk berhenti. Riwayat StudyDate tidak terhapus.",
-          "Pesan Telegram dapat tertunda atau gagal; chat di web StudyDate tetap menjadi sumber riwayat.",
+          "Pesan Telegram dapat terlambat atau gagal terkirim; riwayat utama tetap tersedia di web StudyDate.",
         ],
       },
     ],
@@ -99,7 +99,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Gunakan blokir untuk menghentikan interaksi. Gunakan laporkan untuk menandai pelanggaran Pedoman Komunitas. Staf dapat meninjau laporan melalui alur moderasi internal.",
+        text: "Gunakan Blokir untuk menghentikan interaksi. Pilih Laporkan jika ada pelanggaran Pedoman Komunitas. Laporan hanya dapat diperiksa oleh petugas yang berwenang.",
       },
     ],
   },
@@ -110,7 +110,7 @@ export const helpSections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Masuk lewat /login dengan Google atau tautan email StudyDate.",
+          "Masuk melalui halaman Masuk dengan Google atau tautan yang dikirim ke email.",
           "Email yang didukung: @gmail.com, @vk.com, atau berakhiran .ac.id / .sch.id.",
           "Periksa folder spam jika email tautan belum muncul.",
           "Pastikan kamu membuka tautan di perangkat yang sama dengan yang kamu maksudkan untuk memakai sesi.",
@@ -119,7 +119,7 @@ export const helpSections: PublicDocSection[] = [
       },
       {
         type: "note",
-        text: "Verifikasi mahasiswa saat ini tidak tersedia secara global. Pada pengujian terkontrol, pengecekan akademik dapat memakai layanan pihak ketiga dan menyediakan fallback manual. Pencocokan data atau screenshot saja tidak membuat akun terverifikasi; bukti kepemilikan tetap wajib.",
+        text: "Verifikasi mahasiswa belum dibuka untuk semua pengguna. Pada tahap uji terbatas, data akademik dapat diperiksa melalui layanan resmi atau oleh petugas. Data PDDikti atau tangkapan layar saja belum cukup; pengguna juga harus membuktikan bahwa akun kampus atau kartu mahasiswa tersebut benar miliknya.",
       },
     ],
   },

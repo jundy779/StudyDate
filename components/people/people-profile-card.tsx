@@ -30,7 +30,7 @@ export function PeopleProfileCard({
           <Image src={imageSrc} alt="" width={124} height={124} className="h-[88%] w-[88%] object-contain object-bottom" />
         </div>
         <div className="min-w-0 self-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">Profil anonim</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">Profil tanpa nama asli</p>
           <h2 className="mt-2 break-words font-heading text-xl font-semibold tracking-[-0.02em] text-brand-navy">{profile.public_alias}</h2>
           {profile.is_verified && (
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-brand-blue">
@@ -59,7 +59,7 @@ export function PeopleProfileCard({
         </p>
         {hideCta ? null : (
           <Link href={`/app/people/${toPeopleAliasPathSegment(profile.public_alias)}`} className="focus-ring mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue hover:bg-brand-blue hover:text-white">
-            Lihat profil anonim
+            Lihat profil tanpa nama asli
           </Link>
         )}
       </div>

@@ -83,7 +83,6 @@ async function AdminEventsContent({ searchParams }: Props) {
                       </div>
                     </div>
                     <div className="text-sm lg:text-right">
-                      <p className="font-mono text-xs text-brand-muted">{event.public_slug}</p>
                       {event.is_official && event.scope === "open" && event.status === "scheduled" ? (
                         <Link href={`/events/${event.public_slug}`} className="focus-ring mt-3 inline-flex font-semibold text-brand-blue">
                           Lihat halaman publik

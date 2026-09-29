@@ -192,7 +192,7 @@ test("privacy-safe projections exclude private identity fields", () => {
     detailPage,
     /profile\.first_name|\blegal_name\b|profile\.nim|@gmail/i,
   );
-  assert.match(detailPage, /NIM tidak dibagikan ke pengguna lain/);
+  assert.match(detailPage, /NIM tidak pernah\s+dibagikan ke pengguna lain/);
   assert.match(detailPage, /Kirim perkenalan/);
 });
 

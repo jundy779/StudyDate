@@ -369,7 +369,7 @@ export function OnboardingForm({
       const result = (await response.json()) as { message?: string };
 
       if (!response.ok) {
-        setError(result.message ?? "Onboarding belum dapat disimpan.");
+        setError(result.message ?? "Pengaturan awal belum dapat disimpan.");
         if (response.status === 401) {
           window.location.assign("/login");
         }
@@ -446,7 +446,7 @@ export function OnboardingForm({
             required
             maxLength={80}
             autoComplete="family-name"
-            helperText="Disimpan privat. Tidak ditampilkan di People."
+            helperText="Disimpan secara pribadi. Tidak ditampilkan di Cari Teman."
             error={stepOneErrors.lastName}
             onChange={(value) => updateStepOneField("lastName", value)}
           />
@@ -601,8 +601,8 @@ export function OnboardingForm({
             />
           </div>
           <p className="rounded-2xl bg-brand-surface p-4 text-sm leading-6 text-brand-muted sm:col-span-2">
-            Nama depan belum ditampilkan kepada pengguna lain. Sebelum Identity
-            Reveal, profilmu akan menggunakan alias anonim.
+            Nama depanmu belum ditampilkan kepada pengguna lain. Sebelum kamu
+            memilih membagikannya, profilmu akan memakai nama samaran.
           </p>
         </div>
       ) : null}
@@ -815,7 +815,7 @@ export function OnboardingForm({
             disabled={isSubmitting}
             className="focus-ring min-h-12 rounded-xl bg-brand-blue px-7 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Menyimpan..." : "Selesaikan Onboarding"}
+            {isSubmitting ? "Menyimpan..." : "Selesaikan Pengaturan Awal"}
           </button>
         )}
       </div>

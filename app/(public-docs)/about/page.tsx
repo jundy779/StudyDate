@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 
 const description =
-  "Kenali alasan StudyDate ID dibangun, cara kerja produk, batas MVP, dan peluang kolaborasi untuk ekosistem kampus.";
+  "Kenali alasan StudyDate ID dibangun, cara kerjanya saat ini, dan peluang kolaborasi untuk lingkungan kampus.";
 
 export const metadata: Metadata = {
   title: "Tentang StudyDate ID",
@@ -30,7 +30,7 @@ const entryPoints = [
   {
     icon: Users,
     title: "Cari teman",
-    copy: "Temukan mahasiswa lewat minat, tujuan, dan konteks kampus.",
+    copy: "Temukan mahasiswa lewat minat, kampus, dan alasan mereka ingin berteman.",
   },
   {
     icon: MessageCircle,
@@ -93,9 +93,9 @@ export default function AboutPage() {
                 identitas atau kontak pribadi.
               </p>
               <p>
-                StudyDate memberi konteks sebelum percakapan: apa yang sedang
-                dipelajari, minat yang sama, dan alasan ingin terhubung. Chat baru
-                terbuka setelah perkenalan diterima.
+                StudyDate memberi gambaran sebelum percakapan dimulai: apa yang
+                sedang dipelajari, minat yang sama, dan alasan ingin berkenalan.
+                Obrolan baru terbuka setelah perkenalan diterima.
               </p>
             </div>
           </div>
@@ -130,14 +130,14 @@ export default function AboutPage() {
               <LockKeyhole className="h-8 w-8 text-[#8DB9F6]" aria-hidden />
               <p className="section-label mt-6 text-[#8DB9F6]">Yang membedakan</p>
               <h2 className="mt-4 font-heading text-3xl font-semibold leading-tight sm:text-4xl">
-                Privasi adalah alur produk, bukan sekadar pengaturan.
+                Privasi dibangun sejak awal, bukan hanya pilihan di pengaturan.
               </h2>
             </div>
             <div className="space-y-5 text-lg leading-8 text-white/70">
               <p>
                 Profil awal tidak menampilkan nama asli, foto jelas, atau kontak.
                 Pengguna mengirim perkenalan, mengobrol setelah diterima, lalu
-                memilih bersama apakah ingin membuka identitas.
+                memilih bersama apakah ingin membagikan nama dan foto.
               </p>
               <p>
                 Setelah itu pun, setiap kontak seperti Telegram, Instagram, atau
@@ -150,13 +150,13 @@ export default function AboutPage() {
         <section className="page-shell py-16 sm:py-20">
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
-              <p className="section-label">Fokus produk</p>
-              <h2 className="section-title mt-4">MVP yang jelas, ruang tumbuh yang terukur.</h2>
+              <p className="section-label">Fokus awal</p>
+              <h2 className="section-title mt-4">Mulai dari kebutuhan utama, lalu tumbuh dengan terarah.</h2>
               <p className="mt-5 leading-8 text-brand-muted">
-                Inti MVP adalah alur mencari teman, mengirim perkenalan, chat
-                anonim, persetujuan dua arah, lalu membuka identitas dan kontak
-                bertahap. Circle belajar dan acara kampus memperluas alasan
-                mahasiswa untuk kembali dan membangun koneksi.
+                Pada tahap awal, StudyDate berfokus pada mencari teman, mengirim
+                perkenalan, mengobrol tanpa nama asli, lalu membagikan nama, foto,
+                dan kontak secara bertahap. Circle belajar dan acara kampus memberi
+                lebih banyak alasan untuk kembali dan membangun koneksi.
               </p>
             </div>
             <div className="rounded-[24px] border border-brand-border bg-brand-surface p-7">
@@ -164,10 +164,9 @@ export default function AboutPage() {
                 Status pengembangan yang transparan
               </h3>
               <p className="mt-4 leading-7 text-brand-muted">
-                Fitur yang ada di kode belum otomatis dianggap aktif untuk semua
-                pengguna. Fitur dengan migrasi, konfigurasi, atau operasional
-                tambahan baru disebut aktif setelah lingkungan tujuan dan alur
-                langsungnya sudah diperiksa.
+                Fitur yang sudah dibuat belum tentu langsung dibuka untuk semua
+                pengguna. Setiap fitur baru diaktifkan setelah penyimpanan data,
+                pengaturan, keamanan, dan alur penggunanya selesai diperiksa.
               </p>
               <p className="mt-4 text-sm font-semibold text-brand-blue">
                 Tidak memakai jumlah pengguna, testimoni, atau klaim pertumbuhan fiktif.

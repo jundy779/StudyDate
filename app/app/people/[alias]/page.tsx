@@ -89,19 +89,19 @@ export default async function PeopleDetailPage({
       id: "full-name",
       label: "Nama",
       state: "locked",
-      lockedHint: "Terbuka lewat Identity Reveal setelah Mutual Interest",
+      lockedHint: "Terbuka jika kalian sama-sama setuju berbagi nama",
     },
     {
       id: "linkedin",
       label: "LinkedIn",
       state: "locked",
-      lockedHint: "Terbuka lewat Contact Reveal LinkedIn",
+      lockedHint: "Terbuka jika kalian sama-sama setuju berbagi LinkedIn",
     },
     {
       id: "instagram",
       label: "Instagram",
       state: "locked",
-      lockedHint: "Terbuka lewat Contact Reveal Instagram",
+      lockedHint: "Terbuka jika kalian sama-sama setuju berbagi Instagram",
     },
     {
       id: "nim",
@@ -118,7 +118,7 @@ export default async function PeopleDetailPage({
             href="/app/people"
             className="focus-ring inline-flex min-h-11 items-center rounded-xl text-sm font-semibold text-brand-blue"
           >
-            ← Kembali ke People
+            ← Kembali ke Cari Teman
           </Link>
           {notice ? (
             <p
@@ -133,7 +133,7 @@ export default async function PeopleDetailPage({
             <div className="grid md:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)]">
               <div className="relative flex min-h-[240px] items-end justify-center overflow-hidden bg-[radial-gradient(circle_at_30%_25%,#ffffff_0%,#edf4ff_50%,#dfeaff_100%)] px-6 pb-6 pt-14 sm:min-h-[300px] sm:px-8 sm:pb-8 md:min-h-full md:pt-16">
                 <p className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue sm:left-7 sm:top-7">
-                  Avatar anonim
+                  Maskot profil
                 </p>
                 <Image
                   src={getMascotForAlias(profile.public_alias)}
@@ -160,7 +160,7 @@ export default async function PeopleDetailPage({
 
                 <p className="mt-4 text-base leading-7 text-brand-muted sm:mt-5 sm:text-lg sm:leading-8">
                   {profile.short_intro ??
-                    "Profil ini berbagi konteks akademik dan minat secara anonim."}
+                    "Profil ini menampilkan informasi kampus dan minat tanpa nama asli."}
                 </p>
 
                 <dl className="mt-6 grid gap-4 border-y border-brand-border py-6 sm:mt-8 sm:grid-cols-2 sm:gap-5 sm:py-7">
@@ -228,9 +228,9 @@ export default async function PeopleDetailPage({
                         Identitas & kontak
                       </h2>
                       <p className="mt-1.5 text-sm leading-6 text-brand-muted">
-                        Masih terkunci di People. Setelah Mutual Interest,
-                        terbuka bertahap lewat Identity Reveal dan Contact
-                        Reveal. NIM tidak dibagikan ke pengguna lain.
+                        Nama dan kontak masih terkunci. Informasi tersebut hanya
+                        terbuka jika kalian sama-sama setuju. NIM tidak pernah
+                        dibagikan ke pengguna lain.
                       </p>
                     </div>
                   </div>

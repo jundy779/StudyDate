@@ -54,7 +54,7 @@ test("Owner offer is bounded and checkout defaults off", () => {
   assert.match(packageMigration, /\(true, 'plus_30', 19000, 30, false/);
   assert.match(packageMigration, /\(true, 'plus_90', 49000, 90, false/);
   assert.doesNotMatch(packageMigration, /bool_or\(offer\.is_active\)/);
-  assert.match(ownerPage, /Harga \(IDR\)/);
+  assert.match(ownerPage, /Harga \(rupiah\)/);
   assert.match(ownerPage, /Tersedia/);
   assert.match(env, /AUTOGOPAY_ENABLED=false/);
   assert.doesNotMatch(env, /agp_[0-9a-f]+/i);

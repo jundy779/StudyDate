@@ -47,11 +47,11 @@ test("privacy content states verification disabled and contact channels", () => 
     join(root, "content/public-docs/privacy.ts"),
     "utf8",
   );
-  assert.match(privacy, /dinonaktifkan secara global/i);
+  assert.match(privacy, /belum dibuka untuk semua pengguna/i);
   assert.match(privacy, /Telegram/);
   assert.match(privacy, /Instagram/);
   assert.match(privacy, /LinkedIn/);
-  assert.match(privacy, /tidak mendukung pembukaan WhatsApp/i);
+  assert.match(privacy, /tidak mendukung pembagian WhatsApp/i);
   assert.match(privacy, /Masuk dengan Google/);
   assert.match(privacy, /@gmail\.com/);
   assert.doesNotMatch(privacy, /Masuk dengan Google \(belum aktif\)/i);

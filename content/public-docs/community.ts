@@ -1,7 +1,7 @@
 import type { PublicDocSection } from "@/components/marketing/public-doc-article";
 
 export const communityIntro =
-  "Pedoman ini membantu StudyDate tetap tenang, hormat, dan aman. StudyDate adalah ruang sosial mahasiswa—bukan layanan yang hanya berorientasi kencan.";
+  "Pedoman ini membantu StudyDate tetap nyaman, saling menghormati, dan aman. StudyDate adalah ruang sosial mahasiswa, bukan aplikasi yang hanya berfokus pada kencan.";
 
 export const communitySections: PublicDocSection[] = [
   {
@@ -11,9 +11,9 @@ export const communitySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Perlakukan orang lain dengan hormat, meski percakapan masih anonim.",
-          "Hormati batas pribadi dan tempo orang lain—kenal perlahan.",
-          "Gunakan StudyDate untuk koneksi yang sehat: belajar, berteman, networking, kolaborasi, atau koneksi berarti.",
+          "Perlakukan orang lain dengan hormat, meski percakapan belum menampilkan nama asli.",
+          "Hormati batas pribadi dan waktu orang lain. Kenal secara perlahan.",
+          "Gunakan StudyDate untuk belajar, berteman, membangun relasi, berkolaborasi, atau menemukan koneksi yang berarti.",
           "Jangan menekan orang lain agar hubungan bergerak ke arah tertentu.",
         ],
       },
@@ -25,7 +25,7 @@ export const communitySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Pelecehan, perundungan, intimidasi, penghinaan berulang, atau perilaku yang membuat orang lain merasa terancam dilarang—baik di perkenalan, chat, maupun setelah identitas dibuka.",
+        text: "Pelecehan, perundungan, intimidasi, penghinaan berulang, atau perilaku yang membuat orang lain merasa terancam dilarang, baik saat perkenalan, percakapan, maupun setelah nama dibagikan.",
       },
     ],
   },
@@ -51,13 +51,13 @@ export const communitySections: PublicDocSection[] = [
   },
   {
     id: "privasi",
-    title: "Privasi dan doxxing",
+    title: "Privasi dan penyebaran data pribadi",
     blocks: [
       {
         type: "ul",
         items: [
           "Jangan menyebarkan nama, foto, kontak, atau data pribadi orang lain tanpa izin.",
-          "Jangan mengancam akan mengekspos identitas anonim seseorang.",
+          "Jangan mengancam akan menyebarkan identitas asli seseorang.",
           "Hormati nama, foto, dan kontak yang dibagikan karena persetujuan bersama.",
         ],
       },
@@ -65,11 +65,11 @@ export const communitySections: PublicDocSection[] = [
   },
   {
     id: "scam",
-    title: "Scam, penipuan, dan spam",
+    title: "Penipuan dan pesan mengganggu",
     blocks: [
       {
         type: "p",
-        text: "Penipuan, permintaan transfer uang, investasi mencurigakan, phishing, promosi berulang yang tidak diinginkan, dan spam dilarang. Laporkan perilaku mencurigakan.",
+        text: "Penipuan, permintaan transfer uang, investasi mencurigakan, tautan untuk mencuri data, dan promosi berulang yang tidak diinginkan dilarang. Laporkan perilaku mencurigakan.",
       },
     ],
   },
@@ -99,7 +99,7 @@ export const communitySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Jangan membagikan konten ilegal, kekerasan ekstrem, eksploitasi, malware, atau materi yang membahayakan orang lain.",
+        text: "Jangan membagikan konten ilegal, kekerasan ekstrem, eksploitasi, perangkat lunak berbahaya, atau materi yang membahayakan orang lain.",
       },
     ],
   },
@@ -143,7 +143,7 @@ export const communitySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Jika bertemu offline, lakukan hanya di tempat umum yang aman dan beroperasi. Detail praktik ada di Pusat Keamanan. Memaksa pertemuan di lokasi pribadi melanggar pedoman ini.",
+        text: "Jika bertemu langsung, lakukan hanya di tempat umum yang aman dan masih buka. Panduan lengkap tersedia di Pusat Keamanan. Memaksa pertemuan di lokasi pribadi melanggar pedoman ini.",
       },
     ],
   },

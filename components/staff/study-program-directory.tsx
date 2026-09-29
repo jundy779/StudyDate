@@ -14,7 +14,7 @@ export function StudyProgramDirectory(props: StudyProgramDirectoryProps) {
   return (
     <OnboardingCatalogDirectory
       title="Katalog jurusan"
-      description="Kelola daftar program studi / jurusan onboarding: tambah, edit, setujui usulan manual user, atau hapus. Usulan muncul saat mahasiswa mengisi jurusan di luar daftar resmi."
+      description="Kelola pilihan program studi yang tersedia saat mahasiswa mengatur profil. Kamu dapat menambah, mengubah, menyetujui usulan mahasiswa, atau menghapus data."
       entitySingular="jurusan"
       addPlaceholder="Contoh: Teknik Informatika"
       items={props.items}

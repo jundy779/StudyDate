@@ -3,9 +3,9 @@
 import { useState, type FormEvent } from "react";
 
 const interests = [
-  { value: "people", label: "People" },
-  { value: "groups", label: "Groups" },
-  { value: "events", label: "Campus Events" },
+  { value: "people", label: "Cari Teman" },
+  { value: "groups", label: "Circle Belajar" },
+  { value: "events", label: "Acara Kampus" },
 ] as const;
 
 export function EarlyAccessRevisionForm({ token }: { token: string }) {

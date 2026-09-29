@@ -70,7 +70,7 @@ async function ModerationInboxContent({ searchParams }: Props) {
               role="status"
               className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-brand-error"
             >
-              Input tidak valid.
+              Pilihan laporan belum sesuai. Muat ulang halaman dan coba lagi.
             </p>
           )}
 

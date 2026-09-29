@@ -75,7 +75,7 @@ async function UsersContent({ searchParams }: Props) {
             className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-5 sm:grid-cols-2 lg:grid-cols-3"
           >
             <label className="text-sm font-semibold">
-              Alias
+              Nama samaran
               <input
                 name="alias"
                 defaultValue={alias ?? ""}

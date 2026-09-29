@@ -128,8 +128,8 @@ export default async function IntroductionsPage({
                 <MascotEmptyState
                   pose="hello"
                   title="Kamu belum mengirim perkenalan"
-                  description="Jelajahi People, buka profil anonim, lalu kirim pesan pembuka yang hangat."
-                  action={{ href: "/app/people", label: "Jelajahi People" }}
+                  description="Buka Cari Teman, lihat profil tanpa nama asli, lalu kirim pesan pembuka yang hangat."
+                  action={{ href: "/app/people", label: "Buka Cari Teman" }}
                 />
               )
             ) : (

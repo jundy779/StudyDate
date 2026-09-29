@@ -33,8 +33,8 @@ export function CounterpartPrivacyCard({
           Identitas & kontak
         </h2>
         <p className="mt-2 text-sm leading-6 text-brand-muted">
-          Belum Mutual Interest. Nama, LinkedIn, dan Instagram masih terkunci.
-          NIM tidak dibagikan.
+          Kalian belum sama-sama tertarik untuk kenal lebih jauh. Nama,
+          LinkedIn, dan Instagram masih terkunci. NIM tidak pernah dibagikan.
         </p>
         <div className="mt-4">
           <PrivacyFieldGrid
@@ -43,19 +43,19 @@ export function CounterpartPrivacyCard({
                 id: "name",
                 label: "Nama depan",
                 state: "locked",
-                lockedHint: "Terkunci sampai Identity Reveal",
+                lockedHint: "Terkunci sampai kalian setuju berbagi nama dan foto",
               },
               {
                 id: "linkedin",
                 label: "LinkedIn",
                 state: "locked",
-                lockedHint: "Terkunci sampai Contact Reveal",
+                lockedHint: "Terkunci sampai kalian setuju berbagi LinkedIn",
               },
               {
                 id: "instagram",
                 label: "Instagram",
                 state: "locked",
-                lockedHint: "Terkunci sampai Contact Reveal",
+                lockedHint: "Terkunci sampai kalian setuju berbagi Instagram",
               },
               { id: "nim", label: "NIM", state: "never" },
             ]}
@@ -85,21 +85,21 @@ export function CounterpartPrivacyCard({
       label: "Nama depan",
       state: nameUnlocked ? "unlocked" : "locked",
       value: identityCompleted?.counterpartFirstName,
-      lockedHint: "Selesaikan Identity Reveal bersama",
+      lockedHint: "Kalian berdua perlu setuju berbagi nama dan foto",
     },
     {
       id: "linkedin",
       label: "LinkedIn",
       state: linkedinCompleted ? "unlocked" : "locked",
       value: linkedinValue,
-      lockedHint: "Selesaikan Contact Reveal LinkedIn bersama",
+      lockedHint: "Kalian berdua perlu setuju berbagi LinkedIn",
     },
     {
       id: "instagram",
       label: "Instagram",
       state: instagramCompleted ? "unlocked" : "locked",
       value: instagramValue,
-      lockedHint: "Selesaikan Contact Reveal Instagram bersama",
+      lockedHint: "Kalian berdua perlu setuju berbagi Instagram",
     },
     { id: "nim", label: "NIM", state: "never" },
   ];
@@ -110,8 +110,8 @@ export function CounterpartPrivacyCard({
         Identitas & kontak
       </h2>
       <p className="mt-2 text-sm leading-6 text-brand-muted">
-        Mutual Interest tercapai. Nama lewat Identity Reveal; LinkedIn &
-        Instagram lewat Contact Reveal per saluran.
+        Kalian sama-sama ingin kenal lebih jauh. Nama, foto, LinkedIn, dan
+        Instagram hanya terbuka jika kalian berdua menyetujuinya.
       </p>
       <div className="mt-4">
         <PrivacyFieldGrid fields={fields} />

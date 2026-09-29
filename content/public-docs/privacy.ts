@@ -1,7 +1,7 @@
 import type { PublicDocSection } from "@/components/marketing/public-doc-article";
 
 export const privacyIntro =
-  "Kebijakan ini menjelaskan data yang StudyDate ID proses agar kamu bisa memakai layanan dengan tenang. Kami menulisnya berdasarkan perilaku produk yang sudah diimplementasikan, bukan janji fitur yang belum aktif.";
+  "Kebijakan ini menjelaskan data yang digunakan StudyDate ID, alasan penggunaannya, dan cara kami menjaganya. Isinya mengikuti fitur yang benar-benar tersedia, bukan janji fitur yang belum aktif.";
 
 export const privacySections: PublicDocSection[] = [
   {
@@ -10,15 +10,15 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID adalah platform koneksi mahasiswa yang mengutamakan privasi, persetujuan, dan pengenalan bertahap. Kami meminimalkan data yang terlihat publik dan membuka identitas atau kontak hanya setelah kedua pihak menyetujui tahap yang relevan.",
+        text: "StudyDate ID membantu mahasiswa berkenalan secara bertahap. Informasi yang terlihat orang lain dibatasi, sedangkan nama, foto, atau kontak baru dibagikan setelah kedua pihak setuju.",
       },
       {
         type: "ul",
         items: [
           "Masuk memakai tautan yang dikirim ke email, bukan kata sandi.",
-          "Cari Teman menampilkan nama samaran dan konteks kampus yang kamu pilih, bukan nama asli atau kontak.",
-          "Chat, pilihan Kenal Lebih Jauh, pembukaan identitas, dan pembagian kontak berjalan bertahap dengan persetujuan terpisah.",
-          "Verifikasi mahasiswa saat ini dinonaktifkan secara global dan tidak digambarkan sebagai fitur aktif.",
+          "Cari Teman menampilkan nama samaran dan informasi kampus yang kamu pilih, bukan nama asli atau kontak.",
+          "Percakapan, pilihan Kenal Lebih Jauh, pembagian nama dan foto, serta pembagian kontak memiliki persetujuan masing-masing.",
+          "Verifikasi mahasiswa belum dibuka untuk semua pengguna.",
         ],
       },
     ],
@@ -29,23 +29,23 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID mengoperasikan layanan di domain produksi yang dituju: studydate.id. Untuk pertanyaan privasi, gunakan halaman Bantuan. Alamat email dukungan publik resmi belum dipublikasikan di situs ini sampai Owner menetapkan kanal resmi domain studydate.id.",
+        text: "StudyDate ID menjalankan layanan melalui studydate.id. Untuk pertanyaan tentang privasi, gunakan halaman Bantuan. Alamat email dukungan resmi akan ditampilkan setelah saluran dukungan StudyDate tersedia.",
       },
     ],
   },
   {
     id: "akun-autentikasi",
-    title: "Akun dan autentikasi",
+    title: "Akun dan cara masuk",
     blocks: [
       {
         type: "p",
-        text: "Untuk membuat atau membuka sesi, kami memproses alamat email yang kamu masukkan dan mengirim tautan masuk bermerek StudyDate. Sesi diautentikasi di server; kami tidak memakai kata sandi akun mahasiswa di alur produk saat ini.",
+        text: "Untuk membuat atau membuka akun, kami menggunakan alamat email yang kamu masukkan dan mengirim tautan masuk bermerek StudyDate. Saat ini akun mahasiswa tidak memakai kata sandi StudyDate.",
       },
       {
         type: "ul",
         items: [
-          "Data: email akun, status sesi, dan metadata teknis yang dibutuhkan untuk keamanan login.",
-          "Tujuan: mengautentikasi pengguna, mencegah penyalahgunaan tautan masuk, dan mengarahkan ke onboarding atau aplikasi.",
+          "Data yang digunakan: email akun, status masuk, dan data teknis secukupnya untuk menjaga keamanan.",
+          "Tujuan: memastikan pemilik akun, mencegah penyalahgunaan tautan masuk, dan membuka halaman yang sesuai.",
           "Kami tidak memublikasikan email akun ke pengguna lain.",
         ],
       },
@@ -53,29 +53,29 @@ export const privacySections: PublicDocSection[] = [
   },
   {
     id: "onboarding-profil",
-    title: "Onboarding dan data profil",
+    title: "Pengaturan awal dan data profil",
     blocks: [
       {
         type: "p",
-        text: "Saat onboarding, kamu dapat mengisi data seperti nama depan, nama belakang, kampus, program studi, jenjang, semester (opsional), kota/wilayah umum (opsional), minat, tujuan koneksi, preferensi cara memulai, serta persetujuan Ketentuan, Privasi, dan Pedoman Komunitas. Nama depan dan nama belakang disimpan privat; Cari Teman menampilkan nama samaran, bukan nama lengkap.",
+        text: "Saat mengatur profil untuk pertama kali, kamu dapat mengisi nama, kampus, program studi, jenjang, semester, wilayah umum, minat, dan tujuan mencari teman. Kamu juga diminta menyetujui Ketentuan, Privasi, dan Pedoman Komunitas. Nama lengkap disimpan secara privat; Cari Teman hanya menampilkan nama samaran.",
       },
       {
         type: "ul",
         items: [
           "NIM bersifat opsional. Jika diisi, disimpan secara terpisah dan terlindungi—bukan bagian dari profil publik.",
-          "Kami tidak meminta nama lengkap, nomor telepon, alamat rumah, lokasi presisi, atau dokumen identitas sebagai syarat onboarding biasa.",
-          "Kamu juga menyetujui aturan pertemuan offline hanya di tempat umum.",
+          "Kami tidak meminta nomor telepon, alamat rumah, lokasi tepat, atau dokumen identitas sebagai syarat pengaturan profil biasa.",
+          "Kamu juga menyetujui aturan untuk bertemu langsung hanya di tempat umum.",
         ],
       },
     ],
   },
   {
     id: "alias-anonim",
-    title: "Alias anonim",
+    title: "Nama samaran",
     blocks: [
       {
         type: "p",
-        text: "Setiap akun mendapat alias publik anonim yang dibuat sistem. Alias inilah yang muncul di Cari Teman dan alur perkenalan sebelum identitas dibuka. Alias bukan nama legal dan bukan email.",
+        text: "Setiap akun mendapat nama samaran yang dibuat oleh sistem. Nama ini muncul di Cari Teman dan saat perkenalan sebelum kamu memilih membagikan nama asli. Nama samaran bukan nama resmi dan bukan email.",
       },
     ],
   },
@@ -85,11 +85,11 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Jika kamu memilih dapat ditemukan, profil anonim dapat muncul di Cari Teman bagi pengguna yang sudah masuk dan menyelesaikan onboarding. Yang ditampilkan mencakup konteks seperti alias, kampus, program studi, minat, tujuan koneksi, dan intro singkat—bukan kontak atau identitas lengkap.",
+        text: "Jika kamu memilih untuk tampil, profilmu dapat muncul di Cari Teman bagi pengguna yang sudah masuk dan selesai mengatur profil. Informasi yang terlihat meliputi nama samaran, kampus, program studi, minat, tujuan mencari teman, dan perkenalan singkat, bukan kontak atau identitas lengkap.",
       },
       {
         type: "note",
-        text: "Profilmu tidak ditampilkan ke pengguna lain bila onboarding belum selesai atau kamu tidak memilih untuk dapat ditemukan. Detail Cari Teman memakai nama samaran, bukan pengenal internal.",
+        text: "Profilmu tidak ditampilkan kepada orang lain jika pengaturan awal belum selesai atau kamu memilih untuk tidak tampil di Cari Teman.",
       },
     ],
   },
@@ -105,7 +105,7 @@ export const privacySections: PublicDocSection[] = [
   },
   {
     id: "chat-anonim",
-    title: "Percakapan anonim",
+    title: "Percakapan tanpa nama asli",
     blocks: [
       {
         type: "p",
@@ -119,19 +119,19 @@ export const privacySections: PublicDocSection[] = [
   },
   {
     id: "telegram-companion",
-    title: "Telegram Companion",
+    title: "Lanjut ngobrol lewat Telegram",
     blocks: [
       {
         type: "p",
-        text: "Telegram Companion adalah pilihan tambahan untuk meneruskan pesan teks dari satu chat anonim StudyDate yang sudah ada melalui @StudyDateBot. Menggunakannya tidak membuka username, ID, nama, foto, atau metadata akun Telegram kepada lawan bicara dan tidak sama dengan membagikan kontak Telegram.",
+        text: "Kamu dapat melanjutkan satu percakapan StudyDate melalui @StudyDateBot. Fitur ini tidak menampilkan username, ID, nama, foto, atau informasi akun Telegram kepada lawan bicara dan tidak sama dengan membagikan kontak Telegram.",
       },
       {
         type: "ul",
         items: [
-          "Koneksi memerlukan langkah di bot lalu konfirmasi eksplisit pada sesi StudyDate yang sudah masuk.",
-          "StudyDate memproses pengenal Telegram privat untuk routing, status koneksi, dan metadata delivery minimum. Nilai routing disimpan terlindungi dan tidak diproyeksikan ke browser.",
-          "Pesan yang dikirim atau diterima melalui Telegram juga diproses oleh Telegram sebagai penyedia pihak ketiga. StudyDate tidak mengklaim enkripsi end-to-end untuk jalur ini.",
-          "Memutuskan Telegram menghentikan relay tetapi tidak menghapus riwayat Anonymous Chat. Permintaan penghapusan akun langsung mencabut relay dan proses cleanup menghapus data routing privat.",
+          "Kamu perlu membuka bot, lalu memastikan koneksi melalui akun StudyDate yang sudah masuk.",
+          "StudyDate menyimpan pengenal Telegram secara privat hanya untuk menghubungkan dan meneruskan pesan. Informasi ini tidak ditampilkan di web.",
+          "Pesan yang dikirim atau diterima melalui Telegram juga diproses oleh Telegram. Jalur ini tidak dinyatakan memiliki enkripsi menyeluruh.",
+          "Memutuskan Telegram menghentikan penerusan pesan, tetapi tidak menghapus riwayat percakapan StudyDate. Data penghubung Telegram ikut dihapus saat akun StudyDate dihapus.",
         ],
       },
     ],
@@ -152,15 +152,15 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Setelah kalian sama-sama memilih Kenal Lebih Jauh, kalian dapat menyiapkan dan menyetujui pembukaan identitas terbatas untuk percakapan itu: nama depan yang kamu siapkan dan foto yang kamu unggah khusus untuk dibagikan. Data ini bersifat lingkup percakapan dan membutuhkan persetujuan dua arah.",
+        text: "Setelah kalian sama-sama memilih Kenal Lebih Jauh, kamu dapat menyiapkan nama depan dan foto khusus untuk percakapan tersebut. Informasi ini baru dibagikan setelah kalian berdua setuju.",
       },
       {
         type: "ul",
         items: [
-          "Tidak membuka nama legal, NIM, email akun, atau kontak.",
+          "Tidak membuka nama lengkap resmi, NIM, email akun, atau kontak.",
           "Membuka nama dan foto tidak berarti identitas sudah terverifikasi secara resmi.",
           "Jika percakapan diakhiri setelah selesai, akses nama depan dan foto yang sudah dibuka dapat tetap tersedia. Jika pemilik data menghapus akun, StudyDate berhenti menyajikan identitas tersebut melalui layanan.",
-          "Jika ada pemblokiran, proyeksi identitas lawan dihentikan pada permintaan berikutnya—tanpa menjamin penghapusan konten yang sudah dilihat.",
+          "Jika seseorang diblokir, StudyDate berhenti menampilkan nama dan fotonya pada akses berikutnya. Informasi yang sudah dilihat atau disimpan orang lain mungkin tetap ada di perangkat mereka.",
         ],
       },
     ],
@@ -176,18 +176,18 @@ export const privacySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "LinkedIn (URL profil publik) — diprioritaskan; di Edit profil LinkedIn wajib untuk tampil di People",
-          "Instagram (username) — opsional di profil dan saat membagikan kontak",
-          "Telegram (username)",
+          "LinkedIn (tautan profil publik), wajib diisi agar profil dapat tampil di Cari Teman",
+          "Instagram (nama pengguna), bersifat opsional",
+          "Telegram (nama pengguna)",
         ],
       },
       {
         type: "p",
-        text: "Di Edit profil kamu dapat menyimpan LinkedIn (wajib) dan Instagram (opsional) sebagai default privat. Nilai itu tidak tampil di Cari Teman; saat membagikan kontak, form dapat diisi otomatis dari nilai tersebut, lalu tetap membutuhkan persetujuan dua arah per saluran.",
+        text: "Di Edit Profil, kamu dapat menyimpan LinkedIn dan Instagram secara privat. Kontak tersebut tidak tampil di Cari Teman. Saat kamu memilih membagikan kontak, isian dapat terisi otomatis, tetapi tetap membutuhkan persetujuan kalian berdua untuk setiap jenis kontak.",
       },
       {
         type: "note",
-        text: "StudyDate tidak mendukung pembukaan WhatsApp, nomor telepon, atau email melalui fitur ini pada versi ini. Nilai kontak dilindungi di sisi layanan dan bersifat lingkup percakapan. Tidak ada tombol “buka semua kontak”.",
+        text: "Saat ini StudyDate tidak mendukung pembagian WhatsApp, nomor telepon, atau email melalui fitur ini. Kontak disimpan secara terlindungi dan hanya digunakan untuk percakapan yang kamu pilih. Tidak ada tombol “bagikan semua kontak”.",
       },
     ],
   },
@@ -197,7 +197,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kamu dapat memblokir atau melaporkan perilaku yang melanggar Pedoman Komunitas. Laporan dapat ditinjau oleh staf yang berwenang untuk menjaga keamanan komunitas. Kami memproses data laporan, konteks yang relevan, dan status penanganan sebatas yang diperlukan untuk triage.",
+        text: "Kamu dapat memblokir atau melaporkan perilaku yang melanggar Pedoman Komunitas. Laporan hanya dapat diperiksa oleh petugas yang berwenang. Kami menggunakan informasi yang berkaitan dengan laporan sebatas yang diperlukan untuk menanganinya.",
       },
     ],
   },
@@ -207,37 +207,37 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Foto yang kamu unggah untuk dibagikan kepada lawan bicara disimpan secara privat dan diakses hanya melalui jalur produk yang diizinkan. Bila fitur verifikasi mahasiswa diaktifkan di kemudian hari, bukti pendukung juga akan diperlakukan sebagai penyimpanan privat dengan akses terbatas untuk review—fitur tersebut saat ini tidak aktif secara global.",
+        text: "Foto yang kamu unggah untuk dibagikan disimpan secara privat dan hanya dapat dibuka melalui fitur yang diizinkan. Bukti verifikasi mahasiswa juga disimpan secara privat dan hanya dapat diperiksa oleh petugas. Verifikasi belum dibuka untuk semua pengguna.",
       },
     ],
   },
   {
     id: "early-access",
-    title: "Early Access / daftar minat",
+    title: "Akses Awal",
     blocks: [
       {
         type: "p",
-        text: "Jika kamu mendaftar Early Access dari beranda, kami memproses email, kampus (opsional), minat yang dipilih, sumber CTA, dan catatan persetujuan. Data ini dipakai untuk mengelola antrean akses awal, bukan untuk memublikasikan profilmu.",
+        text: "Jika kamu mendaftar Akses Awal dari beranda, kami menggunakan email, kampus (opsional), minat yang dipilih, bagian halaman tempat kamu mendaftar, dan catatan persetujuan. Data ini dipakai untuk mengelola pendaftaran, bukan untuk menampilkan profilmu.",
       },
     ],
   },
   {
     id: "analitik-teknis",
-    title: "Analitik dan log teknis",
+    title: "Data kunjungan dan catatan sistem",
     blocks: [
       {
         type: "p",
-        text: "StudyDate tidak memasang jaringan iklan pihak ketiga. Halaman publik memakai Vercel Web Analytics untuk metrik kunjungan agregat dan sumber rujukan tanpa mengirim NIM, identitas mahasiswa, isi percakapan, kontak, atau data verifikasi. Analitik tidak dipasang pada ruang aplikasi privat. Dialog Early Access dapat memancarkan peristiwa antarmuka lokal di peramban, dan server dapat mencatat log teknis terbatas untuk menjaga keandalan serta keamanan—bukan untuk membuat profil iklan tentangmu.",
+        text: "StudyDate tidak memasang jaringan iklan pihak ketiga. Halaman publik memakai Vercel Web Analytics untuk menghitung kunjungan secara keseluruhan dan mengetahui asal kunjungan, tanpa mengirim NIM, identitas mahasiswa, isi percakapan, kontak, atau data verifikasi. Penghitungan ini tidak dipasang di ruang akun yang privat. Sistem juga dapat menyimpan catatan teknis secukupnya untuk keamanan dan perbaikan layanan, bukan untuk membuat profil iklan tentangmu.",
       },
     ],
   },
   {
     id: "retensi",
-    title: "Retensi",
+    title: "Berapa lama data disimpan",
     blocks: [
       {
         type: "p",
-        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menyediakan fitur (profil, percakapan, consent, laporan). Setelah permintaan penghapusan efektif, data privat akun dihapus melalui proses server. Riwayat bersama tertentu dapat dipertahankan dalam bentuk anonim agar konteks pengguna lain dan integritas moderasi tidak rusak. Bukti laporan aktif disimpan sampai kasus selesai; bukti yang sudah selesai dan audit keamanan tersanitasi dapat disimpan secara terbatas hingga 180 hari bila diperlukan.",
+        text: "Kami menyimpan data selama akun aktif dan selama diperlukan untuk menjalankan fitur, seperti profil, percakapan, persetujuan, dan laporan. Setelah penghapusan akun dimulai, data privat diproses untuk dihapus. Sebagian riwayat bersama dapat tetap ada dengan identitas “Akun dihapus” agar percakapan pengguna lain tetap dapat dipahami. Bukti laporan disimpan sampai kasus selesai dan, bila diperlukan untuk keamanan, paling lama 180 hari setelah penanganan selesai.",
       },
     ],
   },
@@ -247,17 +247,17 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Di Pengaturan, akun mahasiswa dapat dinonaktifkan sementara atau diminta untuk dihapus. Permintaan penghapusan bersifat tidak dapat dibatalkan melalui antarmuka mahasiswa: profil dan akses akun langsung dinonaktifkan, lalu sistem menghapus data privat, foto yang dibagikan, nilai kontak, dan data verifikasi milik akun. Circle milik akun diarsipkan dan Event mendatang yang diorganisasi dibatalkan. Riwayat percakapan, pesan Circle, Event, dan bukti moderasi yang masih diperlukan dapat tetap tersedia dengan identitas “Akun dihapus”. Informasi yang sebelumnya sudah dilihat atau disalin orang lain di luar StudyDate tidak selalu dapat dihapus dari perangkat mereka. Akun staf tidak memakai alur self-service ini.",
+        text: "Di Pengaturan, akun mahasiswa dapat dinonaktifkan sementara atau diajukan untuk dihapus. Setelah permintaan penghapusan dikirim, profil dan akses akun langsung dinonaktifkan, lalu sistem memproses penghapusan data privat, foto yang dibagikan, kontak, dan data verifikasi. Circle milik akun diarsipkan dan acara mendatang yang dikelola akun tersebut dibatalkan. Riwayat bersama dan bukti laporan yang masih diperlukan dapat tetap tersedia dengan nama “Akun dihapus”. Informasi yang sebelumnya sudah dilihat atau disalin orang lain mungkin tetap ada di perangkat mereka. Penghapusan akun staf ditangani melalui proses terpisah.",
       },
     ],
   },
   {
     id: "keamanan",
-    title: "Praktik keamanan (tingkat tinggi)",
+    title: "Cara kami menjaga data",
     blocks: [
       {
         type: "p",
-        text: "Kami menerapkan kontrol akses berbasis sesi di server, pembatasan data yang terlihat antar pengguna, enkripsi untuk data sensitif tertentu (misalnya nilai kontak yang dibagikan dan klaim NIM opsional), serta penyimpanan privat untuk unggahan sensitif. Tidak ada sistem yang menjamin keamanan mutlak. Lindungi akses emailmu karena tautan masuk dikirim ke sana.",
+        text: "Kami membatasi siapa yang dapat membuka data, melindungi data sensitif tertentu dengan enkripsi, dan menyimpan unggahan sensitif secara privat. Tidak ada sistem yang dapat menjamin keamanan mutlak. Lindungi akun emailmu karena tautan masuk StudyDate dikirim ke sana.",
       },
     ],
   },
@@ -272,10 +272,10 @@ export const privacySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Supabase — autentikasi, basis data, dan penyimpanan file privat sesuai konfigurasi layanan.",
-          "Pengiriman email produk (SMTP atau penyedia email transaksi) — untuk mengirim tautan masuk bermerek StudyDate.",
-          "Hosting aplikasi web — untuk menyajikan situs dan API StudyDate.",
-          "Telegram — hanya bila pengguna memilih Telegram Companion; untuk menerima dan mengirim salinan pesan teks Anonymous Chat melalui @StudyDateBot.",
+          "Supabase, untuk masuk ke akun, basis data, dan penyimpanan file privat.",
+          "Layanan pengiriman email, untuk mengirim tautan masuk bermerek StudyDate.",
+          "Layanan hosting, untuk menjalankan situs dan layanan StudyDate.",
+          "Telegram, hanya jika pengguna memilih melanjutkan percakapan melalui @StudyDateBot.",
         ],
       },
       {
@@ -318,11 +318,11 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "note",
-        text: "Pusat Verifikasi Mahasiswa saat ini dinonaktifkan secara global. StudyDate tidak mengoperasikan pengajuan verifikasi aktif untuk pengguna umum pada konfigurasi ini.",
+        text: "Pusat Verifikasi Mahasiswa belum dibuka untuk semua pengguna. Pengajuan baru hanya tersedia dalam tahap uji terbatas.",
       },
       {
         type: "p",
-        text: "Dalam pengujian terkontrol, StudyDate dapat memakai layanan pencarian data akademik pihak ketiga untuk membandingkan NIM, nama legal, kampus, dan program yang dikirim pengguna. Hasil mentah dan kandidat lain tidak menjadi data profil. Bila pencarian tidak tersedia atau tidak cocok, pengguna dapat mengirim screenshot PDDIKTI sebagai bukti pendukung academic match. Screenshot tidak membuktikan kepemilikan identitas; email kampus atau kartu mahasiswa tetap diperlukan secara terpisah. Bukti disimpan privat dan dihapus bersama data verifikasi saat akun dihapus.",
+        text: "Pada tahap uji terbatas, StudyDate dapat memakai layanan data akademik untuk membandingkan NIM, nama lengkap resmi, kampus, dan program studi yang dikirim pengguna. Hasil pencarian lain tidak disimpan sebagai profil. Jika pencarian tidak tersedia atau tidak cocok, pengguna dapat mengirim tangkapan layar PDDIKTI untuk diperiksa petugas. Tangkapan layar belum membuktikan bahwa akun tersebut benar milik mahasiswa terkait; email kampus atau kartu mahasiswa tetap diperlukan secara terpisah. Bukti disimpan secara privat dan ikut dihapus bersama data verifikasi saat akun dihapus.",
       },
     ],
   },
@@ -332,7 +332,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ditujukan untuk komunitas mahasiswa. Kami tidak menargetkan anak-anak sebagai audiens produk. Batas usia minimum yang mengikat secara terpisah (di luar konteks mahasiswa) belum ditetapkan secara formal di kebijakan ini; Owner dapat memperjelas sebelum perluasan publik yang lebih luas. Jika kamu percaya akun dibuat oleh seseorang yang tidak pantas memakai layanan mahasiswa, hubungi kami melalui Bantuan.",
+        text: "StudyDate ditujukan untuk mahasiswa dan alumni, bukan anak-anak. Ketentuan usia minimum yang lebih rinci akan ditetapkan sebelum layanan dibuka lebih luas. Jika kamu menduga ada akun yang tidak memenuhi syarat, laporkan melalui halaman Bantuan.",
       },
     ],
   },
@@ -342,7 +342,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Kamu dapat meninjau dan memperbarui data profil belajar di Pengaturan, mengatur visibilitas People, mengelola blokir sendiri, menonaktifkan akun, atau mengirim permintaan penghapusan. Untuk permintaan akses tambahan atau koreksi yang belum tersedia di antarmuka, gunakan halaman Bantuan.",
+        text: "Kamu dapat melihat dan memperbarui profil di Pengaturan, memilih apakah profil tampil di Cari Teman, mengelola daftar blokir, menonaktifkan akun, atau meminta penghapusan akun. Untuk kebutuhan lain yang belum tersedia di aplikasi, gunakan halaman Bantuan.",
       },
       {
         type: "ul",

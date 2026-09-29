@@ -27,7 +27,7 @@ export function buildMagicLinkEmail(input: {
     input.kind === "staff"
       ? "Gunakan tautan ini untuk masuk ke ruang Owner/Admin StudyDate ID. Tautan hanya berlaku sekali dan akan kedaluarsa."
       : input.kind === "early-access"
-        ? "Kamu sudah mendapat akses ke Beta StudyDate. Gunakan tautan sekali pakai ini untuk masuk dengan email yang kamu daftarkan, klaim aksesmu, lalu selesaikan onboarding."
+        ? "Kamu sudah mendapat akses awal ke StudyDate. Gunakan tautan sekali pakai ini untuk masuk dengan email yang kamu daftarkan, aktifkan aksesmu, lalu lengkapi pengaturan akun."
         : "Gunakan tautan ini untuk masuk ke StudyDate ID. Tautan hanya berlaku sekali dan akan kedaluarsa.";
 
   const subject =

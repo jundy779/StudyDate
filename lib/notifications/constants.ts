@@ -97,7 +97,7 @@ export function getNotificationCopy(item: NotificationItem): NotificationCopy {
     case "MUTUAL_INTEREST_COMPLETED":
       return {
         title: "Kalian sama-sama ingin kenal lebih jauh",
-        description: "Mutual Interest sudah tercapai.",
+        description: "Kalian sama-sama ingin kenal lebih jauh.",
         Icon: Sparkles,
       };
     case "IDENTITY_REVEAL_COMPLETED":

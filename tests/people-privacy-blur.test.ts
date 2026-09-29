@@ -22,7 +22,7 @@ const room = readFileSync(
 );
 
 test("people detail locks name and socials before mutual without real PII", () => {
-  assert.match(peopleDetail, /Avatar anonim/);
+  assert.match(peopleDetail, /Maskot profil/);
   assert.match(peopleDetail, /PrivacyFieldGrid/);
   assert.match(peopleDetail, /Identitas & kontak/);
   assert.match(peopleDetail, /LinkedIn/);
@@ -41,9 +41,9 @@ test("privacy field grid uses StudyDate locked labels without fake secret blur",
 
 test("conversation unlocks fields by StudyDate reveal stages after mutual", () => {
   assert.match(room, /CounterpartPrivacyCard/);
-  assert.match(counterpartCard, /Mutual Interest/);
-  assert.match(counterpartCard, /Identity Reveal/);
-  assert.match(counterpartCard, /Contact Reveal/);
+  assert.match(counterpartCard, /sama-sama ingin kenal lebih jauh/);
+  assert.match(counterpartCard, /setuju berbagi nama dan foto/);
+  assert.match(counterpartCard, /setuju berbagi LinkedIn/);
   assert.match(counterpartCard, /state: "never"/);
   assert.doesNotMatch(counterpartCard, /Matchu/i);
 });

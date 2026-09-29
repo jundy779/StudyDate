@@ -167,7 +167,7 @@ export default async function EventDetailPage({
     "left-waitlist": "Kamu keluar dari daftar tunggu acara.",
     "message-sent": "Pesan acara terkirim.",
     "message-reported": "Laporan pesan dikirim secara privat untuk ditinjau.",
-    "circle-linked": "Tautan Study Circle diperbarui.",
+    "circle-linked": "Circle terkait berhasil diperbarui.",
   };
 
   const statusLabel =
@@ -430,7 +430,7 @@ export default async function EventDetailPage({
 
           {eventCircle ? (
             <section className="border-b border-brand-border py-8">
-              <p className="section-label">Study Circle terkait</p>
+              <p className="section-label">Circle terkait</p>
               <Link
                 href={`/app/circles/${eventCircle.circle_public_slug}`}
                 className="focus-ring mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue hover:underline"

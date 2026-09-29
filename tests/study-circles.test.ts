@@ -25,6 +25,10 @@ const detailPage = readFileSync(
   join(root, "app/app/circles/[publicSlug]/page.tsx"),
   "utf8",
 );
+const circleCopy = readFileSync(
+  join(root, "lib/circles/constants.ts"),
+  "utf8",
+);
 const navigation = readFileSync(
   join(root, "components/navigation/responsive-navigation.tsx"),
   "utf8",
@@ -174,7 +178,8 @@ test("SC-23 obvious contact sharing is rejected without claiming perfection", ()
     () => model.post(B, slug, "emailku test@example.com"),
     /contact disclosure/,
   );
-  assert.match(detailPage, /best-effort|Gunakan Perkenalan|Contact Reveal/i);
+  assert.match(circleCopy, /Mulai lewat Perkenalan/);
+  assert.match(circleCopy, /jika kalian berdua setuju/);
 });
 
 test("SC-24–SC-25 Circle and message reports remain report-scoped", () => {

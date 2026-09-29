@@ -165,9 +165,9 @@ test("RLS revoke and authenticated-only grants", () => {
 test("UI copy stays calm and privacy-first", () => {
   assert.equal(MUTUAL_INTEREST_COPY.selectCta, "Kenal Lebih Jauh");
   assert.equal(MUTUAL_INTEREST_COPY.privacyNote, "Pilihanmu tetap privat");
-  assert.equal(MUTUAL_INTEREST_COPY.mutualTitle, "Mutual interest tercapai");
-  assert.match(MUTUAL_INTEREST_COPY.mutualBody, /tetap menjaga privasi/i);
-  assert.match(MUTUAL_INTEREST_COPY.mutualBody, /tahap terpisah/i);
+  assert.equal(MUTUAL_INTEREST_COPY.mutualTitle, "Kalian sama-sama tertarik");
+  assert.match(MUTUAL_INTEREST_COPY.mutualBody, /Tetap jaga privasi/i);
+  assert.match(MUTUAL_INTEREST_COPY.mutualBody, /pilihan terpisah/i);
   assert.match(room, /MutualInterestPanel/);
   assert.match(room, /IdentityRevealPanel/);
   assert.doesNotMatch(room, /buka kontak|Contact Reveal|WhatsApp/i);

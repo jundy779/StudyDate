@@ -5,9 +5,9 @@ const STATUS_LABEL = {
 } as const;
 
 const SOURCE_LABEL = {
-  seed: "Seed",
-  manual: "Manual user",
-  staff: "Staff",
+  seed: "Data awal",
+  manual: "Usulan mahasiswa",
+  staff: "Ditambahkan tim",
 } as const;
 
 const date = new Intl.DateTimeFormat("id-ID", {
@@ -87,7 +87,7 @@ export function OnboardingCatalogDirectory({
           role="status"
           className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-brand-error"
         >
-          Input tidak valid. Periksa nama {entitySingular} (2–120 karakter).
+          Nama {entitySingular} belum sesuai. Gunakan 2–120 karakter.
         </p>
       )}
       {state === "error" && (
@@ -95,7 +95,7 @@ export function OnboardingCatalogDirectory({
           role="status"
           className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-brand-error"
         >
-          Perubahan belum tersimpan. Coba lagi atau cek nama duplikat.
+          Perubahan belum tersimpan. Coba lagi atau periksa apakah namanya sudah ada.
         </p>
       )}
       {loadError && (
@@ -112,7 +112,7 @@ export function OnboardingCatalogDirectory({
           Tambah {entitySingular}
         </h2>
         <p className="mt-2 text-sm leading-6 text-brand-muted">
-          Langsung masuk sebagai disetujui dan muncul di saran onboarding.
+          Data yang ditambahkan langsung tersedia saat mahasiswa mengatur profil.
         </p>
         <form action={action} className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input type="hidden" name="action" value="create" />
@@ -159,7 +159,7 @@ export function OnboardingCatalogDirectory({
       <ul className="mt-6 space-y-4">
         {items.length === 0 && !loadError ? (
           <li className="rounded-[22px] border border-dashed border-brand-border bg-white px-5 py-8 text-sm text-brand-muted">
-            Belum ada data untuk filter ini.
+            Belum ada data untuk pilihan ini.
           </li>
         ) : null}
         {items.map((item) => (
@@ -179,7 +179,7 @@ export function OnboardingCatalogDirectory({
                   Diusulkan {item.suggestionCount}× · terakhir{" "}
                   {date.format(new Date(item.lastSuggestedAt))}
                   {item.suggestedBySuffix
-                    ? ` · user …${item.suggestedBySuffix}`
+                    ? ` · akun …${item.suggestedBySuffix}`
                     : ""}
                 </p>
               </div>
@@ -220,7 +220,7 @@ export function OnboardingCatalogDirectory({
                     type="submit"
                     className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
                   >
-                    Setujui ke list
+                    Setujui dan tampilkan
                   </button>
                 </form>
               ) : null}

@@ -75,7 +75,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
               Temukan orang yang punya kesamaan denganmu
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-              Jelajahi profil anonim mahasiswa berdasarkan kampus, minat, dan tujuan koneksi—tanpa membuka identitas privat.
+              Jelajahi profil mahasiswa berdasarkan kampus, minat, dan tujuan koneksi tanpa menampilkan nama asli.
             </p>
           </div>
           <form action={updatePeopleVisibility} className="rounded-[20px] border border-brand-border bg-white p-5 shadow-[0_12px_32px_rgba(15,27,51,0.05)]">
@@ -83,7 +83,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
               {isDiscoverable ? <Eye className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" /> : <EyeOff className="mt-0.5 h-5 w-5 shrink-0 text-brand-muted" aria-hidden="true" />}
               <div>
                 <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di pencarian</label>
-                <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil anonim yang memilih untuk ditemukan yang akan ditampilkan.</p>
+                <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil tanpa nama asli yang memilih untuk ditemukan yang akan ditampilkan.</p>
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4">

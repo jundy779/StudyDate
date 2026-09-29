@@ -55,7 +55,7 @@ export function TelegramCompanionPanel({
           setBotUrl(null);
         })
         .catch(() =>
-          setError("Telegram Companion belum dapat diperbarui."),
+          setError("Koneksi Telegram belum dapat diperbarui."),
         );
     });
   }
@@ -70,10 +70,10 @@ export function TelegramCompanionPanel({
           id="telegram-companion-title"
           className="font-heading text-lg font-semibold text-brand-navy"
         >
-          Telegram Companion
+          Lanjut lewat Telegram
         </h3>
         <p className="mt-2 text-sm leading-6 text-brand-muted">
-          Telegram Companion belum dapat digunakan.
+          Fitur lanjut lewat Telegram belum dapat digunakan.
         </p>
       </section>
     );
@@ -88,13 +88,13 @@ export function TelegramCompanionPanel({
         id="telegram-companion-title"
         className="font-heading text-lg font-semibold text-brand-navy"
       >
-        Telegram Companion
+        Lanjut lewat Telegram
       </h3>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-        Opsional. Pesan teks dari bot masuk ke Anonymous Chat yang sama.
-        Detail akun Telegram tetap tersembunyi dari counterpart, tetapi pesan
-        yang dikirim melalui Telegram juga diproses oleh Telegram. Koneksi ini
-        terpisah dari Contact Reveal.
+        Opsional. Kamu dapat melanjutkan percakapan yang sama melalui bot.
+        Akun Telegram kalian tetap saling tersembunyi, tetapi pesan yang dikirim
+        melalui bot juga diproses oleh Telegram. Fitur ini tidak membagikan
+        kontak Telegram kamu.
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -228,7 +228,7 @@ export function TelegramCompanionPanel({
       </div>
 
       <p className="mt-3 text-xs leading-5 text-brand-muted">
-        Satu akun hanya dapat memiliki satu percakapan Telegram aktif pada v1.
+        Saat ini, satu akun hanya dapat memiliki satu percakapan Telegram aktif.
         Memutuskan Telegram tidak menghapus riwayat StudyDate.
       </p>
       {error ? (
@@ -249,7 +249,7 @@ export function TelegramCompanionPanel({
         </h4>
         <p id={switchDescriptionId} className="mt-3 text-sm leading-6 text-brand-muted">
           Telegram saat ini terhubung ke percakapan lain. Percakapan lama
-          tetap tersedia di web dan counterpart tidak menerima pemberitahuan.
+          tetap tersedia di web dan teman bicaramu tidak menerima pemberitahuan.
         </p>
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
@@ -288,11 +288,11 @@ export function TelegramCompanionPanel({
         className="max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] max-w-md rounded-[22px] border border-brand-border bg-white p-5 text-brand-navy shadow-[0_24px_60px_rgba(15,27,51,0.18)] backdrop:bg-brand-navy/45"
       >
         <h4 id={unlinkTitleId} className="font-heading text-xl font-semibold">
-          Putuskan Telegram Companion?
+          Putuskan koneksi Telegram?
         </h4>
         <p id={unlinkDescriptionId} className="mt-3 text-sm leading-6 text-brand-muted">
-          Pesan Telegram baru akan berhenti. Riwayat Anonymous Chat dan Contact
-          Reveal tidak berubah.
+          Pesan baru tidak lagi diteruskan lewat Telegram. Riwayat percakapan
+          dan kontak yang sudah dibagikan tetap tersimpan.
         </p>
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button

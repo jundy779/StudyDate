@@ -45,7 +45,7 @@ export const circleScopeLabels = new Map(
 );
 
 export const CIRCLE_CONTACT_MESSAGE =
-  "Jangan bagikan kontak di Circle. Gunakan Perkenalan dan Contact Reveal saat kalian sudah saling setuju.";
+  "Jangan bagikan kontak di circle. Mulai lewat Perkenalan, lalu bagikan kontak hanya jika kalian berdua setuju.";
 
 export const CIRCLE_GENERIC_ERROR =
   "Study Circle belum dapat diperbarui. Coba lagi sebentar.";

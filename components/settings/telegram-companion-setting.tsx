@@ -22,12 +22,12 @@ export function TelegramCompanionSetting({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="font-heading text-lg font-semibold text-brand-navy">
-            Telegram Companion
+            Lanjut lewat Telegram
           </h3>
           <p className="mt-1 text-sm leading-6 text-brand-muted">
             {state.connected
               ? "Telegram terhubung. Detail akun Telegram tidak ditampilkan."
-              : "Telegram belum terhubung. Hubungkan dari Anonymous Chat yang eligible."}
+              : "Telegram belum terhubung. Kamu dapat menghubungkannya dari percakapan yang memenuhi syarat."}
           </p>
         </div>
         {state.connected ? (
@@ -56,11 +56,11 @@ export function TelegramCompanionSetting({
         className="max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] max-w-md rounded-[22px] border border-brand-border bg-white p-5 text-brand-navy shadow-[0_24px_60px_rgba(15,27,51,0.18)] backdrop:bg-brand-navy/45"
       >
         <h4 id={titleId} className="font-heading text-xl font-semibold">
-          Putuskan Telegram Companion?
+          Putuskan koneksi Telegram?
         </h4>
         <p id={descriptionId} className="mt-3 text-sm leading-6 text-brand-muted">
-          Pengiriman Telegram berhenti. Riwayat Anonymous Chat dan Contact
-          Reveal tetap tidak berubah.
+          Pesan baru tidak lagi diteruskan lewat Telegram. Riwayat percakapan
+          dan kontak yang sudah dibagikan tetap tersimpan.
         </p>
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
@@ -80,7 +80,7 @@ export function TelegramCompanionSetting({
                 void unlinkTelegramFromSettingsAction()
                   .then(setState)
                   .catch(() =>
-                    setError("Telegram Companion belum dapat diputus."),
+                    setError("Koneksi Telegram belum dapat diputus."),
                   );
               });
             }}

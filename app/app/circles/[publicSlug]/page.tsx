@@ -251,9 +251,9 @@ export default async function CircleDetailPage({
                   Diskusi dan anggota tersedia setelah bergabung
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-brand-muted">
-                  Bergabung tidak membuat percakapan privat, Mutual Interest,
-                  Identity Reveal, atau Contact Reveal. Semua tahap koneksi tetap
-                  memakai persetujuan StudyDate yang terpisah.
+                  Bergabung tidak otomatis membuat percakapan pribadi atau
+                  membuka nama dan kontak. Setiap tahap perkenalan tetap
+                  membutuhkan persetujuan masing-masing.
                 </p>
               </div>
             </section>
@@ -268,7 +268,7 @@ export default async function CircleDetailPage({
                   Obrolan tentang topik belajar
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">
-                  Ini ruang grup anggota, bukan Anonymous Chat privat.
+                  Ini ruang obrolan grup. Percakapan pribadi tetap terpisah.
                 </p>
                 <div className="mt-6 overflow-hidden rounded-[22px] border border-brand-border bg-white">
                   <div className="max-h-[620px] space-y-0 overflow-y-auto" aria-live="polite">
@@ -351,8 +351,8 @@ export default async function CircleDetailPage({
                   </div>
                   {messagePage.hasMore ? (
                     <p className="border-t border-brand-border px-5 py-3 text-xs text-brand-muted">
-                      Menampilkan 50 pesan terbaru. Pagination riwayat lengkap
-                      akan ditambahkan setelah penggunaan v1 tervalidasi.
+                      Menampilkan 50 pesan terbaru. Pesan yang lebih lama belum
+                      dapat ditampilkan saat ini.
                     </p>
                   ) : null}
                   {circle.status === "active" ? (
@@ -373,7 +373,7 @@ export default async function CircleDetailPage({
                   id="circle-members-title"
                   className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
                 >
-                  Profil anonim yang aman
+                  Anggota tanpa nama asli
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">
                   Keanggotaan tidak membuka nama, foto privat, atau kontak.
@@ -473,8 +473,8 @@ export default async function CircleDetailPage({
                   Kelola sebagai owner
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">
-                  Owner hanya dapat mengelola Circle ini. Akses staff, Anonymous
-                  Chat, Identity Reveal, dan Contact Reveal tetap tertutup.
+                  Pengelola hanya dapat mengatur circle ini. Percakapan pribadi,
+                  nama, dan kontak anggota tetap tertutup.
                 </p>
               </div>
               {circle.status === "active" ? (

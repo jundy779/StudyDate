@@ -54,7 +54,7 @@ export async function saveStudentProfile(formData: FormData) {
       return {
         ok: false as const,
         message:
-          "Isi LinkedIn dulu sebelum menampilkan profil di People. Instagram opsional.",
+          "Isi LinkedIn dulu sebelum menampilkan profil di Cari Teman. Instagram opsional.",
       };
     }
     return {

@@ -21,10 +21,10 @@ const stateMessage: Record<string, string> = {
   eligibility_error: "Izin penyelenggara belum dapat diperbarui.",
   official_saved: "Status resmi acara berhasil diperbarui.",
   official_unchanged:
-    "Acara tidak ditemukan atau status resminya sudah sesuai. Periksa kembali slug publik.",
+    "Acara tidak ditemukan atau status resminya sudah sesuai. Periksa kembali alamat acara.",
   official_error: "Status resmi acara belum dapat diperbarui.",
-  invalid_alias: "Alias publik tidak valid.",
-  invalid_slug: "Slug publik acara tidak valid.",
+  invalid_alias: "Nama samaran mahasiswa tidak valid.",
+  invalid_slug: "Alamat acara tidak valid.",
 };
 
 const errorStates = new Set([
@@ -82,7 +82,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
               Izin penyelenggara
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-              Cari alias publik secara tepat. StudyDate Plus menambah kapasitas
+              Cari nama samaran mahasiswa secara tepat. StudyDate Plus menambah kapasitas
               produk, tetapi tidak otomatis memberi izin penyelenggara. Mahasiswa dapat
               menjadi penyelenggara karena terverifikasi atau mendapat izin Owner.
             </p>
@@ -92,7 +92,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
               className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end"
             >
               <label className="text-sm font-semibold">
-                Alias publik mahasiswa
+                Nama samaran mahasiswa
                 <input
                   name="publicAlias"
                   required
@@ -104,13 +104,13 @@ async function OwnerEventsContent({ searchParams }: Props) {
                 />
               </label>
               <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-                Cari alias
+                Cari mahasiswa
               </button>
             </form>
 
             {aliasInput && alias.success && !organizer ? (
               <p className="mt-6 text-sm text-brand-muted">
-                Tidak ada mahasiswa di luar tim internal dengan alias publik tersebut.
+                Tidak ada mahasiswa di luar tim StudyDate dengan nama samaran tersebut.
               </p>
             ) : null}
 
@@ -119,7 +119,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                 <div className="grid gap-5 border-b border-brand-border pb-6 sm:grid-cols-2">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-                      Alias publik
+                      Nama samaran
                     </p>
                     <p className="mt-2 font-heading text-xl font-semibold text-brand-navy">
                       {organizer.public_alias}
@@ -155,7 +155,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-brand-muted">Izin efektif</dt>
+                    <dt className="text-sm text-brand-muted">Hasil akhir</dt>
                     <dd className="mt-1 font-semibold text-brand-navy">
                       {organizer.effective_eligible ? "Memenuhi syarat" : "Tidak memenuhi syarat"}
                     </dd>
@@ -198,16 +198,16 @@ async function OwnerEventsContent({ searchParams }: Props) {
               Penanda acara resmi
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-              Gunakan daftar acara di atas untuk mengubah status dengan cepat. Formulir
-              ini tetap tersedia ketika kamu ingin membuka acara langsung melalui slug
-              publiknya. Sistem akan menolak slug yang tidak sesuai.
+              Gunakan daftar acara di atas untuk mengubah status dengan cepat. Jika
+              acaranya tidak terlihat, masukkan bagian terakhir dari alamat halaman
+              acara. Contohnya seperti event-1234 pada studydate.id/events/event-1234.
             </p>
             <form
               action={setCampusEventOfficial}
               className="mt-6 grid gap-4 border-l-4 border-brand-blue bg-white p-6 sm:grid-cols-[1fr_auto] sm:items-end"
             >
               <label className="text-sm font-semibold">
-                Slug publik acara
+                Kode dari alamat acara
                 <input
                   name="publicSlug"
                   required

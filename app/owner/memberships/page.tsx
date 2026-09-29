@@ -28,10 +28,18 @@ const currency = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
+const membershipStatusLabel: Record<string, string> = {
+  active: "Aktif",
+  pending: "Menunggu pembayaran",
+  expired: "Sudah berakhir",
+  revoked: "Dicabut",
+  inactive: "Tidak aktif",
+};
+
 const stateMessage: Record<string, string> = {
   saved: "Perubahan paket tersimpan.",
   error: "Perubahan paket belum dapat disimpan.",
-  invalid: "Input tidak valid.",
+  invalid: "Data paket belum sesuai. Periksa email, harga, atau durasi yang dipilih.",
   not_found: "Tidak ada akun StudyDate dengan email itu.",
   unchanged: "Tidak ada paket Plus aktif untuk dicabut.",
   offer_saved: "Penawaran StudyDate Plus tersimpan.",
@@ -104,7 +112,7 @@ async function MembershipsContent({ searchParams }: Props) {
                       </p>
                     </div>
                     <label className="text-sm font-semibold">
-                      Harga (IDR)
+                      Harga (rupiah)
                       <input
                         name="amountIdr"
                         type="number"
@@ -134,7 +142,7 @@ async function MembershipsContent({ searchParams }: Props) {
             </div>
             <p className="mt-4 text-sm leading-6 text-brand-muted">
               Harga rencana: {PLUS_PACKAGES.map((item) => `${item.durationDays} hari ${currency.format(item.amountIdr)}`).join(" · ")}.
-              Checkout juga tetap bergantung pada kill switch AutoGoPay server-side.
+              Pembayaran hanya tersedia saat layanan AutoGoPay sudah diaktifkan oleh sistem.
             </p>
           </section>
 
@@ -183,14 +191,14 @@ async function MembershipsContent({ searchParams }: Props) {
               ) : null}
               {record.status ? (
                 <p className="mt-1 text-sm text-brand-muted">
-                  Status: {record.status}
+                  Status: {membershipStatusLabel[record.status] ?? "Belum diketahui"}
                 </p>
               ) : null}
               {record.source ? (
                 <p className="mt-1 text-sm text-brand-muted">
                   Sumber:{" "}
                   {record.source === "owner_grant"
-                    ? "Grant Owner"
+                    ? "Diberikan Owner"
                     : record.source === "promo"
                       ? "Promo"
                       : record.source === "early_access_promo"

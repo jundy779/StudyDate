@@ -1,7 +1,7 @@
 import type { PublicDocSection } from "@/components/marketing/public-doc-article";
 
 export const safetyIntro =
-  "Pusat Keamanan ini merangkum cara StudyDate menjaga ruang yang lebih tenang: mulai dengan profil anonim, bagikan nama dan kontak secara bertahap, dan bertemu hanya di tempat umum bila kalian siap.";
+  "Pusat Keamanan ini menjelaskan cara memakai StudyDate dengan lebih aman: mulai tanpa membagikan nama asli, bagikan kontak saat sudah nyaman, dan bertemu hanya di tempat umum bila kalian siap.";
 
 export const safetySections: PublicDocSection[] = [
   {
@@ -10,7 +10,7 @@ export const safetySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Di StudyDate, kamu mulai dari alias dan konteks kampus—bukan identitas lengkap. Percakapan dibuka setelah perkenalan diterima. Ini memberi ruang untuk saling mengenal tanpa terburu-buru.",
+        text: "Saat mulai kenalan, orang lain hanya melihat nama samaran serta informasi kampus yang kamu pilih. Kalian baru dapat mengobrol setelah perkenalan diterima, jadi tidak perlu langsung membagikan nama asli atau kontak.",
       },
     ],
   },
@@ -49,7 +49,7 @@ export const safetySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Jangan membagikan alamat rumah, lokasi real-time, atau data keuangan di chat.",
+          "Jangan membagikan alamat rumah, lokasi saat ini, atau data keuangan lewat pesan.",
           "Hati-hati membagikan NIM, dokumen, atau tautan sensitif.",
           "Ingat: tangkapan layar dapat terjadi di luar kendali StudyDate.",
         ],
@@ -62,13 +62,13 @@ export const safetySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Fitur blokir dan laporkan tersedia pada alur yang relevan (perkenalan dan percakapan). Gunakan bila ada pelecehan, scam, spam, atau tekanan untuk membuka identitas. Laporan ditinjau oleh staf yang berwenang sesuai kapasitas moderasi.",
+        text: "Fitur Blokir dan Laporkan tersedia saat perkenalan dan percakapan. Gunakan jika ada pelecehan, penipuan, pesan berulang yang mengganggu, atau tekanan untuk membagikan identitas. Laporan diperiksa oleh petugas yang berwenang.",
       },
     ],
   },
   {
     id: "tanda-scam",
-    title: "Tanda peringatan scam",
+    title: "Tanda-tanda penipuan",
     blocks: [
       {
         type: "ul",
@@ -103,11 +103,11 @@ export const safetySections: PublicDocSection[] = [
   },
   {
     id: "bertemu-offline",
-    title: "Bertemu offline hanya jika keduanya setuju",
+    title: "Bertemu langsung hanya jika keduanya setuju",
     blocks: [
       {
         type: "p",
-        text: "Pertemuan dunia nyata bersifat opsional. Lanjutkan hanya jika keduanya nyaman, sudah berinteraksi cukup online, dan setuju pada waktu serta tempat umum.",
+        text: "Kamu tidak wajib bertemu langsung. Lanjutkan hanya jika kalian berdua nyaman, sudah cukup berinteraksi lewat StudyDate, dan setuju pada waktu serta tempat umum.",
       },
     ],
   },
@@ -124,7 +124,7 @@ export const safetySections: PublicDocSection[] = [
         items: [
           "Kafe",
           "Perpustakaan",
-          "Coworking space",
+          "Ruang kerja bersama",
           "Area kampus yang terbuka untuk umum atau area publik kampus yang ramai",
         ],
       },

@@ -15,7 +15,7 @@ export default function MessagesError({
           Pesan belum dapat dimuat
         </h1>
         <p className="mx-auto mt-3 max-w-md text-brand-muted">
-          Terjadi gangguan sementara. Coba muat ulang atau kembali ke People.
+          Terjadi gangguan sementara. Coba muat ulang atau kembali ke Cari Teman.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button
@@ -29,7 +29,7 @@ export default function MessagesError({
             href="/app/people"
             className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
           >
-            Ke People
+            Ke Cari Teman
           </Link>
         </div>
       </div>

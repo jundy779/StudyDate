@@ -5,7 +5,7 @@ export const PUBLIC_DOC_ROUTES = [
     label: "Tentang",
     title: "Tentang StudyDate ID",
     description:
-      "Alasan StudyDate dibangun, cara kerja produk, batas MVP, dan peluang kolaborasi untuk ekosistem kampus.",
+      "Alasan StudyDate dibangun, cara menggunakannya, fokus awal, dan peluang kerja sama untuk lingkungan kampus.",
   },
   {
     path: "/insight",
@@ -19,7 +19,7 @@ export const PUBLIC_DOC_ROUTES = [
     label: "Privasi",
     title: "Kebijakan Privasi",
     description:
-      "Bagaimana StudyDate ID mengumpulkan, memakai, dan melindungi data akun, profil anonim, percakapan, identitas, dan kontak.",
+      "Bagaimana StudyDate ID mengumpulkan, memakai, dan melindungi data akun, profil tanpa nama asli, percakapan, identitas, dan kontak.",
   },
   {
     path: "/terms",
@@ -47,7 +47,7 @@ export const PUBLIC_DOC_ROUTES = [
     label: "Bantuan",
     title: "Bantuan",
     description:
-      "Panduan singkat untuk mencari teman, mengirim perkenalan, chat anonim, membuka identitas dan kontak, serta login.",
+      "Panduan singkat untuk mencari teman, mengirim perkenalan, ngobrol tanpa nama asli, membagikan identitas dan kontak, serta masuk ke akun.",
   },
 ] as const;
 

@@ -37,7 +37,7 @@ test("EV2O-02 organizer trust UI uses exact public alias without private IDs", (
   assert.match(ownerPage, /StudyDate Plus[\s\S]*tidak otomatis memberi izin penyelenggara/);
   assert.match(ownerPage, /Terverifikasi/);
   assert.match(ownerPage, /Keputusan Owner/);
-  assert.match(ownerPage, /Izin efektif/);
+  assert.match(ownerPage, /Hasil akhir/);
   assert.doesNotMatch(ownerPage, /userId|user_id|UUID|email/i);
   assert.doesNotMatch(ownerActions, /userId|user_id|targetUserId/);
   assert.equal(

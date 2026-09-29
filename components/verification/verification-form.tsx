@@ -114,12 +114,12 @@ export function VerificationForm({
       return;
     }
     if (step === 0 && lookupOutcome !== "academic_match" && !manualFlow) {
-      setMessage("Periksa data akademik atau pilih pemeriksaan manual.");
+      setMessage("Periksa data akademik atau lanjutkan dengan mengunggah bukti.");
       setMessageTone("error");
       return;
     }
     if (step === 0 && manualFlow && !pddiktiEvidence) {
-      setMessage("Unggah tangkapan layar PDDIKTI untuk pemeriksaan manual.");
+      setMessage("Unggah tangkapan layar PDDIKTI agar dapat diperiksa petugas.");
       setMessageTone("error");
       return;
     }
@@ -168,7 +168,6 @@ export function VerificationForm({
     setIsBusy(true);
     setMessage("");
     setMessageTone("info");
-    setMessageTone("info");
     const body = new FormData();
     if (manualFlow) {
       Object.entries(academic).forEach(([key, value]) => body.set(key, value));
@@ -207,7 +206,7 @@ export function VerificationForm({
       setRequestId(result.requestId);
       if (method === "student_card") {
         setIsComplete(true);
-        setMessage("Bukti terkirim dan akan diperiksa secara manual.");
+        setMessage("Bukti terkirim dan akan diperiksa oleh petugas.");
       } else {
         setMessage(
           "Permintaan tersimpan. Kirim kode ke email kampus untuk membuktikan kepemilikan.",
@@ -343,7 +342,7 @@ export function VerificationForm({
           Permintaan sedang diperiksa
         </h2>
         <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
-          {message} Badge hanya diterbitkan setelah data akademik dan bukti
+          {message} Tanda verifikasi hanya diberikan setelah data akademik dan bukti
           kepemilikan selesai diperiksa oleh petugas.
         </p>
       </section>
@@ -549,19 +548,19 @@ export function VerificationForm({
                 type="button"
                 onClick={() => {
                   setManualFlow(true);
-                  setMessage("Isi data akademikmu dan unggah tangkapan layar PDDIKTI sebagai bukti pendukung.");
+                  setMessage("Isi data akademikmu dan unggah tangkapan layar PDDIKTI agar petugas dapat memeriksanya.");
                   setMessageTone("info");
                 }}
                 className="focus-ring min-h-12 rounded-xl border border-brand-border px-5 font-semibold"
               >
-                Lanjutkan pemeriksaan manual
+                Lanjutkan dengan unggah bukti
               </button>
             ) : null}
           </div>
           ) : (
             <p className="mt-7 rounded-xl border border-brand-border bg-brand-surface p-4 text-sm leading-6 text-brand-muted">
-              Pemeriksaan otomatis belum tersedia untuk pilot ini. Unggah
-              tangkapan layar PDDIKTI agar petugas memeriksa data akademikmu.
+              Pemeriksaan otomatis belum tersedia pada tahap uji ini. Unggah
+              tangkapan layar PDDIKTI agar data akademikmu dapat diperiksa petugas.
             </p>
           )}
           {capabilities.provider ? (
@@ -573,7 +572,7 @@ export function VerificationForm({
               className="mt-1 h-5 w-5 accent-brand-blue"
             />
             <span className="text-sm leading-6 text-brand-muted">
-              Saya setuju StudyDate mengirim NIM, nama legal, kampus, dan program
+              Saya setuju StudyDate mengirim NIM, nama lengkap resmi, kampus, dan program
               studi yang saya isi ke layanan data akademik eksternal hanya untuk
               pencocokan verifikasi ini.
             </span>
@@ -681,7 +680,7 @@ export function VerificationForm({
                 ? [["campus_email", "Email kampus", "Kode ke domain kampus yang telah disetujui."]]
                 : []),
               ...(capabilities.manualCard
-                ? [["student_card", "Kartu mahasiswa", "Foto diperiksa manual dan disimpan privat."]]
+                ? [["student_card", "Kartu mahasiswa", "Foto diperiksa petugas dan disimpan secara privat."]]
                 : []),
             ].map(([value, title, description]) => (
               <label key={value} className="flex cursor-pointer gap-3 rounded-xl border border-brand-border p-4">
@@ -709,19 +708,19 @@ export function VerificationForm({
           </legend>
           <div className="mt-5 rounded-xl bg-brand-surface p-5 text-sm leading-6 text-brand-muted">
             <p>
-              Proses ini menggunakan NIM, nama legal, data kampus, dan bukti
+              Proses ini menggunakan NIM, nama lengkap resmi, data kampus, dan bukti
               kepemilikan. Pencocokan otomatis dapat memakai layanan data
               akademik eksternal. Layanan tersebut tidak menerima akses ke profil publikmu.
               Bukti disimpan sementara dan dijadwalkan untuk dihapus.
             </p>
             <p className="mt-3">
-              Verifikasi bersifat opsional dan badge tidak menjamin perilaku
+              Verifikasi bersifat opsional dan tanda verifikasi tidak menjamin perilaku
               atau keamanan pengguna.
             </p>
           </div>
           <label className="mt-6 flex cursor-pointer items-start gap-3">
             <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 h-5 w-5 accent-brand-blue" />
-            <span className="text-sm leading-6">Saya memahami tujuan, data yang diproses, pemeriksaan manual, serta retensi dan penghapusan bukti.</span>
+            <span className="text-sm leading-6">Saya memahami tujuan verifikasi, data yang digunakan, pemeriksaan oleh petugas, lama penyimpanan, dan penghapusan bukti.</span>
           </label>
         </fieldset>
       ) : null}
