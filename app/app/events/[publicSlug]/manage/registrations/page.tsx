@@ -11,6 +11,7 @@ import {
   listCampusEventRegistrations,
 } from "@/lib/events/service";
 import { eventRegistrationListSchema } from "@/lib/events/validation";
+import { Download } from "lucide-react";
 import Link from "next/link";
 
 type RegistrationsPageProps = {
@@ -70,6 +71,9 @@ export default async function RegistrationsPage({
       ? (rawStatus as EventRegistrationStatus)
       : "all";
   const base = `/app/events/${event.public_slug}/manage/registrations`;
+  const exportHref = `/api/events/${event.public_slug}/registrations/export${
+    activeStatus === "all" ? "" : `?status=${activeStatus}`
+  }`;
 
   return (
     <AppShell current="events">
@@ -108,25 +112,34 @@ export default async function RegistrationsPage({
               disediakan agar data tidak diperluas di browser.
             </p>
 
-            <nav
-              aria-label="Filter status registrasi"
-              className="mt-6 flex gap-2 overflow-x-auto pb-2"
-            >
-              {(["all", ...EVENT_REGISTRATION_STATUSES] as const).map((status) => (
-                <Link
-                  key={status}
-                  href={status === "all" ? base : `${base}?status=${status}`}
-                  aria-current={activeStatus === status ? "page" : undefined}
-                  className={`focus-ring inline-flex min-h-11 shrink-0 items-center rounded-xl border px-4 text-sm font-semibold ${
-                    activeStatus === status
-                      ? "border-brand-blue bg-brand-blue text-white"
-                      : "border-brand-border bg-white text-brand-muted"
-                  }`}
-                >
-                  {status === "all" ? "Semua" : statusLabels[status]}
-                </Link>
-              ))}
-            </nav>
+            <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <nav
+                aria-label="Filter status registrasi"
+                className="flex flex-wrap gap-2"
+              >
+                {(["all", ...EVENT_REGISTRATION_STATUSES] as const).map((status) => (
+                  <Link
+                    key={status}
+                    href={status === "all" ? base : `${base}?status=${status}`}
+                    aria-current={activeStatus === status ? "page" : undefined}
+                    className={`focus-ring inline-flex min-h-11 items-center rounded-xl border px-4 text-sm font-semibold ${
+                      activeStatus === status
+                        ? "border-brand-blue bg-brand-blue text-white"
+                        : "border-brand-border bg-white text-brand-muted"
+                    }`}
+                  >
+                    {status === "all" ? "Semua" : statusLabels[status]}
+                  </Link>
+                ))}
+              </nav>
+              <a
+                href={exportHref}
+                className="focus-ring inline-flex min-h-11 w-fit shrink-0 items-center gap-2 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Unduh CSV
+              </a>
+            </div>
 
             <div className="mt-6 divide-y divide-brand-border border-y border-brand-border">
               {registrations.map((registration) => (
