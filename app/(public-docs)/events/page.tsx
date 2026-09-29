@@ -90,7 +90,10 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
               Pilih topik yang kamu minati. Tidak ada urutan berdasarkan popularitas.
             </p>
           </div>
-          <nav className="flex gap-2 overflow-x-auto pb-2" aria-label="Filter kategori acara">
+          <nav
+            className="flex flex-wrap gap-2 pb-2 lg:max-w-3xl lg:justify-end"
+            aria-label="Filter kategori acara"
+          >
             <Link
               href="/events"
               aria-current={!category ? "page" : undefined}
