@@ -2,7 +2,10 @@ import { createCampusEventAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventForm } from "@/components/events/event-form";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
-import { buildEventDuplicateDefaults } from "@/lib/events/duplication";
+import {
+  buildEventDuplicateDefaults,
+  parseEventDuplicateCadence,
+} from "@/lib/events/duplication";
 import { getCampusEventManagement } from "@/lib/events/management";
 import { getMyEventOrganizerEligibility } from "@/lib/events/service";
 import { ArrowLeft, CopyPlus, MapPin } from "lucide-react";
@@ -28,10 +31,16 @@ export default async function CreateEventPage({
   const duplicate = Array.isArray(params.duplicate)
     ? params.duplicate[0]
     : params.duplicate;
+  const cadence = parseEventDuplicateCadence(
+    Array.isArray(params.cadence) ? params.cadence[0] : params.cadence,
+  );
   const source = duplicate
     ? (await getCampusEventManagement(duplicate, "team")).event
     : null;
-  const template = source ? buildEventDuplicateDefaults(source) : undefined;
+  const template = source
+    ? buildEventDuplicateDefaults(source, new Date(), cadence)
+    : undefined;
+  const cadenceLabel = cadence === "monthly" ? "bulanan" : "mingguan";
 
   return (
     <AppShell current="events">
@@ -63,9 +72,9 @@ export default async function CreateEventPage({
               <div>
                 <p className="font-semibold">Pengaturan dasar sudah disalin.</p>
                 <p className="mt-1">
-                  Jadwal disarankan ke pertemuan mingguan berikutnya. Periksa kembali
-                  tanggalnya sebelum membuat acara. Peserta, tim, tiket, pertanyaan,
-                  percakapan, dan riwayat acara lama tidak ikut disalin.
+                  Jadwal disarankan ke pertemuan {cadenceLabel} berikutnya. Periksa
+                  kembali tanggalnya sebelum membuat acara. Peserta, tim, tiket,
+                  pertanyaan, percakapan, dan riwayat acara lama tidak ikut disalin.
                 </p>
               </div>
             </aside>
@@ -106,6 +115,7 @@ export default async function CreateEventPage({
                 action={createCampusEventAction}
                 template={template}
                 duplicateFrom={source?.public_slug}
+                duplicateCadence={source ? cadence : undefined}
                 submitLabel={source ? "Buat acara baru" : "Buat acara"}
               />
             </div>

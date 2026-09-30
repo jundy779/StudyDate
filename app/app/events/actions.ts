@@ -54,6 +54,7 @@ import {
   EVENT_QUESTION_OPTIONS_MAX,
   EVENT_REGISTRATION_ANSWER_MAX_BYTES,
 } from "@/lib/events/constants";
+import { parseEventDuplicateCadence } from "@/lib/events/duplication";
 import { blockStudentByAlias } from "@/lib/introductions/service";
 import { z } from "zod";
 import { requireOwner } from "@/lib/staff/authorization";
@@ -130,8 +131,11 @@ function toEventTimestamp(value: FormDataEntryValue | null, timezone: FormDataEn
 export async function createCampusEventAction(formData: FormData) {
   await requireEventStudent();
   const duplicate = eventSlugSchema.safeParse(formData.get("duplicateFrom"));
+  const duplicateCadence = parseEventDuplicateCadence(
+    formData.get("duplicateCadence"),
+  );
   const createPath = duplicate.success
-    ? `/app/events/create?duplicate=${encodeURIComponent(duplicate.data)}`
+    ? `/app/events/create?duplicate=${encodeURIComponent(duplicate.data)}&cadence=${duplicateCadence}`
     : "/app/events/create";
   const parsed = eventFormSchema.safeParse(formValues(formData));
   if (!parsed.success) {

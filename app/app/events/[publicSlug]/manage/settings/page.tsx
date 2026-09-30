@@ -16,7 +16,7 @@ import {
   listCampusEventRegistrationQuestions,
   listMyCircleOptionsForEvent,
 } from "@/lib/events/service";
-import { Archive, CopyPlus, ShieldAlert } from "lucide-react";
+import { Archive, CalendarPlus, CopyPlus, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 type SettingsPageProps = {
@@ -94,20 +94,29 @@ export default async function SettingsPage({
             <div className="min-w-0">
               <p className="section-label">Acara berikutnya</p>
               <h2 id="duplicate-event-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
-                Gunakan kembali pengaturan acara
+                Jadwalkan pertemuan berikutnya
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
-                Buat acara baru dengan judul, lokasi, kapasitas, dan cara pendaftaran
-                yang sama. Peserta dan riwayat tidak ikut disalin.
+                Pilih pola mingguan atau bulanan. Kamu tetap memeriksa tanggalnya
+                sebelum acara dibuat. Peserta dan riwayat tidak ikut disalin.
               </p>
             </div>
-            <Link
-              href={`/app/events/create?duplicate=${event.public_slug}`}
-              className="focus-ring mt-5 inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white sm:mt-0 sm:w-auto"
-            >
-              <CopyPlus className="h-4 w-4" aria-hidden="true" />
-              Duplikat acara
-            </Link>
+            <div className="mt-5 grid w-full shrink-0 gap-3 sm:mt-0 sm:w-auto sm:grid-cols-2">
+              <Link
+                href={`/app/events/create?duplicate=${event.public_slug}&cadence=weekly`}
+                className="focus-ring inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white"
+              >
+                <CopyPlus className="h-4 w-4" aria-hidden="true" />
+                Minggu depan
+              </Link>
+              <Link
+                href={`/app/events/create?duplicate=${event.public_slug}&cadence=monthly`}
+                className="focus-ring inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
+              >
+                <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+                Bulan depan
+              </Link>
+            </div>
           </section>
 
           <section aria-labelledby="registration-settings-title">

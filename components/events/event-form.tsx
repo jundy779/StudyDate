@@ -15,7 +15,10 @@ import {
   EVENT_VENUE_NAME_MIN,
 } from "@/lib/events/constants";
 import type { CampusEventDetail } from "@/lib/events/service";
-import type { EventFormDefaults } from "@/lib/events/duplication";
+import type {
+  EventDuplicateCadence,
+  EventFormDefaults,
+} from "@/lib/events/duplication";
 
 const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   study_together: "Belajar Bareng",
@@ -76,12 +79,14 @@ export function EventForm({
   event,
   template,
   duplicateFrom,
+  duplicateCadence,
   submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   event?: CampusEventDetail;
   template?: EventFormDefaults;
   duplicateFrom?: string;
+  duplicateCadence?: EventDuplicateCadence;
   submitLabel: string;
 }) {
   const defaults = createDefaults();
@@ -117,7 +122,14 @@ export function EventForm({
         </>
       ) : null}
       {duplicateFrom ? (
-        <input type="hidden" name="duplicateFrom" value={duplicateFrom} />
+        <>
+          <input type="hidden" name="duplicateFrom" value={duplicateFrom} />
+          <input
+            type="hidden"
+            name="duplicateCadence"
+            value={duplicateCadence ?? "weekly"}
+          />
+        </>
       ) : null}
 
       <div>

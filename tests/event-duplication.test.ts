@@ -4,6 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   buildEventDuplicateDefaults,
+  parseEventDuplicateCadence,
   type EventDuplicateSource,
 } from "../lib/events/duplication.ts";
 
@@ -73,10 +74,45 @@ test("ED-03 old events roll forward safely instead of reusing a past date", () =
 
 test("ED-04 duplicate source is permission-gated and creation stays explicit", () => {
   assert.match(createPage, /getCampusEventManagement\(duplicate, "team"\)/);
-  assert.match(createPage, /buildEventDuplicateDefaults\(source\)/);
-  assert.match(createPage, /Peserta, tim, tiket, pertanyaan/);
-  assert.match(settings, /Duplikat acara/);
-  assert.match(settings, /\/app\/events\/create\?duplicate=/);
+  assert.match(createPage, /buildEventDuplicateDefaults\(source, new Date\(\), cadence\)/);
+  assert.match(createPage, /Peserta, tim, tiket,\s+pertanyaan/);
+  assert.match(settings, /Jadwalkan pertemuan berikutnya/);
+  assert.match(settings, /cadence=weekly/);
+  assert.match(settings, /cadence=monthly/);
   assert.match(actions, /eventSlugSchema\.safeParse\(formData\.get\("duplicateFrom"\)\)/);
+  assert.match(actions, /parseEventDuplicateCadence/);
   assert.doesNotMatch(createPage, /createCampusEvent\(/);
+});
+
+test("ED-05 monthly cadence preserves local time and event duration", () => {
+  const result = buildEventDuplicateDefaults(
+    source,
+    new Date("2026-09-15T00:00:00.000Z"),
+    "monthly",
+  );
+
+  assert.equal(result.starts_at, "2026-10-20T03:00:00.000Z");
+  assert.equal(result.ends_at, "2026-10-20T05:00:00.000Z");
+});
+
+test("ED-06 monthly cadence clamps safely to the last day of a short month", () => {
+  const monthEndSource = {
+    ...source,
+    starts_at: "2026-01-31T03:00:00.000Z",
+    ends_at: "2026-01-31T05:00:00.000Z",
+  };
+  const result = buildEventDuplicateDefaults(
+    monthEndSource,
+    new Date("2026-01-01T00:00:00.000Z"),
+    "monthly",
+  );
+
+  assert.equal(result.starts_at, "2026-02-28T03:00:00.000Z");
+  assert.equal(result.ends_at, "2026-02-28T05:00:00.000Z");
+});
+
+test("ED-07 unknown cadence falls back to the safe weekly option", () => {
+  assert.equal(parseEventDuplicateCadence("monthly"), "monthly");
+  assert.equal(parseEventDuplicateCadence("daily"), "weekly");
+  assert.equal(parseEventDuplicateCadence(null), "weekly");
 });
