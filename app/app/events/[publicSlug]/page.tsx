@@ -8,6 +8,7 @@ import {
 } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventRegistrationForm } from "@/components/events/event-registration-form";
+import { EventCover } from "@/components/events/event-cover";
 import { EventTicketIssuer } from "@/components/events/event-ticket-issuer";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { EVENT_CATEGORIES, EVENT_REPORT_REASONS } from "@/lib/events/constants";
@@ -216,7 +217,15 @@ export default async function EventDetailPage({
             </p>
           ) : null}
 
-          <header className="mt-7 grid gap-8 border-b border-brand-border pb-9 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
+          <EventCover
+            category={event.category}
+            title={event.title}
+            city={event.city}
+            variant="hero"
+            className="mt-7 w-full"
+          />
+
+          <header className="mt-9 grid gap-8 border-b border-brand-border pb-9 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
             <div className="min-w-0">
               <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
                 <span>{categoryLabels[event.category]}</span>

@@ -1,5 +1,6 @@
 import { JsonLd } from "@/components/marketing/json-ld";
 import { PublicEventActions } from "@/components/events/public-event-actions";
+import { EventCover } from "@/components/events/event-cover";
 import { buildGoogleCalendarUrl } from "@/lib/events/calendar";
 import { eventSlugSchema } from "@/lib/events/validation";
 import {
@@ -116,7 +117,15 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
             Kembali ke semua acara
           </Link>
 
-          <div className="mt-7 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <EventCover
+            category={event.category}
+            title={event.title}
+            city={event.city}
+            variant="hero"
+            className="mt-7 w-full"
+          />
+
+          <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
             <div>
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-brand-blue">
                 <span>{EVENT_CATEGORY_LABELS[event.category]}</span>

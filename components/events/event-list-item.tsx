@@ -1,5 +1,6 @@
 import { EVENT_CATEGORIES } from "@/lib/events/constants";
 import type { CampusEventSummary } from "@/lib/events/service";
+import { EventCover } from "@/components/events/event-cover";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -41,7 +42,13 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
       : `/app/events/${event.public_slug}/manage`;
   const full = event.attendee_count >= event.capacity;
   return (
-    <article className="grid gap-5 border-b border-brand-border py-7 first:pt-0 last:border-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+    <article className="grid min-w-0 gap-5 border-b border-brand-border py-7 first:pt-0 last:border-0 last:pb-0 lg:grid-cols-[220px_minmax(0,1fr)_auto] lg:items-start">
+      <EventCover
+        category={event.category}
+        title={event.title}
+        city={event.city}
+        className="w-full"
+      />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-[0.11em] text-brand-blue">
           <span>{categoryLabels[event.category]}</span>
@@ -110,7 +117,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           ) : null}
         </div>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row lg:flex-col">
         <Link
           href={`/app/events/${event.public_slug}`}
           className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue transition hover:bg-brand-blue hover:text-white"
