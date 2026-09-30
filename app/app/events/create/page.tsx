@@ -2,8 +2,10 @@ import { createCampusEventAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventForm } from "@/components/events/event-form";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
+import { buildEventDuplicateDefaults } from "@/lib/events/duplication";
+import { getCampusEventManagement } from "@/lib/events/management";
 import { getMyEventOrganizerEligibility } from "@/lib/events/service";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, CopyPlus, MapPin } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -23,6 +25,13 @@ export default async function CreateEventPage({
   if (!eligibility?.eligible) notFound();
   const params = await searchParams;
   const notice = Array.isArray(params.notice) ? params.notice[0] : params.notice;
+  const duplicate = Array.isArray(params.duplicate)
+    ? params.duplicate[0]
+    : params.duplicate;
+  const source = duplicate
+    ? (await getCampusEventManagement(duplicate, "team")).event
+    : null;
+  const template = source ? buildEventDuplicateDefaults(source) : undefined;
 
   return (
     <AppShell current="events">
@@ -36,15 +45,31 @@ export default async function CreateEventPage({
             Kembali ke acara kampus
           </Link>
           <header className="mt-7 max-w-2xl">
-            <p className="section-label">Buat acara kampus</p>
+            <p className="section-label">
+              {source ? "Duplikat acara" : "Buat acara kampus"}
+            </p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-              Mulai kegiatan di tempat publik
+              {source ? "Buat acara baru dari pengaturan lama" : "Mulai kegiatan di tempat publik"}
             </h1>
             <p className="mt-5 text-lg leading-8 text-brand-muted">
               Kamu menjadi penyelenggara acara ini, bukan bagian dari tim internal StudyDate. Penyelenggara tidak
               mendapat akses ke identitas atau kontak privat peserta.
             </p>
           </header>
+
+          {source ? (
+            <aside className="mt-7 flex items-start gap-3 rounded-[18px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-950">
+              <CopyPlus className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+              <div>
+                <p className="font-semibold">Pengaturan dasar sudah disalin.</p>
+                <p className="mt-1">
+                  Jadwal disarankan ke pertemuan mingguan berikutnya. Periksa kembali
+                  tanggalnya sebelum membuat acara. Peserta, tim, tiket, pertanyaan,
+                  percakapan, dan riwayat acara lama tidak ikut disalin.
+                </p>
+              </div>
+            </aside>
+          ) : null}
 
           <aside className="mt-7 flex items-start gap-3 rounded-[18px] border border-blue-100 bg-blue-50 px-5 py-4 text-sm leading-6 text-brand-navy">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
@@ -79,7 +104,9 @@ export default async function CreateEventPage({
             <div className="mt-7">
               <EventForm
                 action={createCampusEventAction}
-                submitLabel="Buat acara"
+                template={template}
+                duplicateFrom={source?.public_slug}
+                submitLabel={source ? "Buat acara baru" : "Buat acara"}
               />
             </div>
           </section>

@@ -16,7 +16,8 @@ import {
   listCampusEventRegistrationQuestions,
   listMyCircleOptionsForEvent,
 } from "@/lib/events/service";
-import { Archive, ShieldAlert } from "lucide-react";
+import { Archive, CopyPlus, ShieldAlert } from "lucide-react";
+import Link from "next/link";
 
 type SettingsPageProps = {
   params: Promise<{ publicSlug: string }>;
@@ -85,6 +86,29 @@ export default async function SettingsPage({
               {notice}
             </p>
           ) : null}
+
+          <section
+            aria-labelledby="duplicate-event-title"
+            className="mb-10 rounded-[18px] border border-brand-border bg-white p-5 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"
+          >
+            <div className="min-w-0">
+              <p className="section-label">Acara berikutnya</p>
+              <h2 id="duplicate-event-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
+                Gunakan kembali pengaturan acara
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
+                Buat acara baru dengan judul, lokasi, kapasitas, dan cara pendaftaran
+                yang sama. Peserta dan riwayat tidak ikut disalin.
+              </p>
+            </div>
+            <Link
+              href={`/app/events/create?duplicate=${event.public_slug}`}
+              className="focus-ring mt-5 inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white sm:mt-0 sm:w-auto"
+            >
+              <CopyPlus className="h-4 w-4" aria-hidden="true" />
+              Duplikat acara
+            </Link>
+          </section>
 
           <section aria-labelledby="registration-settings-title">
             <p className="section-label">Pendaftaran</p>

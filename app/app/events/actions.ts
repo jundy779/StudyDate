@@ -129,10 +129,14 @@ function toEventTimestamp(value: FormDataEntryValue | null, timezone: FormDataEn
 
 export async function createCampusEventAction(formData: FormData) {
   await requireEventStudent();
+  const duplicate = eventSlugSchema.safeParse(formData.get("duplicateFrom"));
+  const createPath = duplicate.success
+    ? `/app/events/create?duplicate=${encodeURIComponent(duplicate.data)}`
+    : "/app/events/create";
   const parsed = eventFormSchema.safeParse(formValues(formData));
   if (!parsed.success) {
     redirect(
-      `/app/events/create?state=invalid&notice=${encodeURIComponent(
+      `${createPath}${createPath.includes("?") ? "&" : "?"}state=invalid&notice=${encodeURIComponent(
         firstIssueMessage(parsed, "Periksa kembali detail acara."),
       )}`,
     );
@@ -145,7 +149,7 @@ export async function createCampusEventAction(formData: FormData) {
     const message =
       error instanceof Error ? error.message : "Acara belum dapat dibuat.";
     redirect(
-      `/app/events/create?state=error&notice=${encodeURIComponent(message)}`,
+      `${createPath}${createPath.includes("?") ? "&" : "?"}state=error&notice=${encodeURIComponent(message)}`,
     );
   }
   revalidatePath("/app/events");

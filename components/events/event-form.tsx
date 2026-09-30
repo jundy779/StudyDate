@@ -15,6 +15,7 @@ import {
   EVENT_VENUE_NAME_MIN,
 } from "@/lib/events/constants";
 import type { CampusEventDetail } from "@/lib/events/service";
+import type { EventFormDefaults } from "@/lib/events/duplication";
 
 const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   study_together: "Belajar Bareng",
@@ -73,22 +74,27 @@ function createDefaults() {
 export function EventForm({
   action,
   event,
+  template,
+  duplicateFrom,
   submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   event?: CampusEventDetail;
+  template?: EventFormDefaults;
+  duplicateFrom?: string;
   submitLabel: string;
 }) {
   const defaults = createDefaults();
-  const timezone = event?.timezone_name ?? "Asia/Jakarta";
-  const startsAtLocal = event
-    ? localDateTimeValue(event.starts_at, timezone)
+  const initial = event ?? template;
+  const timezone = initial?.timezone_name ?? "Asia/Jakarta";
+  const startsAtLocal = initial
+    ? localDateTimeValue(initial.starts_at, timezone)
     : defaults.startsAtLocal;
-  const endsAtLocal = event
-    ? localDateTimeValue(event.ends_at, timezone)
+  const endsAtLocal = initial
+    ? localDateTimeValue(initial.ends_at, timezone)
     : defaults.endsAtLocal;
-  const registrationClosesAtLocal = event?.registration_closes_at
-    ? localDateTimeValue(event.registration_closes_at, timezone)
+  const registrationClosesAtLocal = initial?.registration_closes_at
+    ? localDateTimeValue(initial.registration_closes_at, timezone)
     : "";
 
   return (
@@ -110,6 +116,9 @@ export function EventForm({
           ) : null}
         </>
       ) : null}
+      {duplicateFrom ? (
+        <input type="hidden" name="duplicateFrom" value={duplicateFrom} />
+      ) : null}
 
       <div>
         <label htmlFor="event-title" className="text-sm font-semibold text-brand-navy">
@@ -121,7 +130,7 @@ export function EventForm({
           required
           minLength={EVENT_TITLE_MIN}
           maxLength={EVENT_TITLE_MAX}
-          defaultValue={event?.title}
+          defaultValue={initial?.title}
           aria-describedby="event-title-help"
           className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
         />
@@ -141,7 +150,7 @@ export function EventForm({
           required
           minLength={EVENT_DESCRIPTION_MIN}
           maxLength={EVENT_DESCRIPTION_MAX}
-          defaultValue={event?.description}
+          defaultValue={initial?.description}
           aria-describedby="event-description-help"
           className="focus-ring mt-2 w-full resize-y rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-7 text-brand-navy"
         />
@@ -159,7 +168,7 @@ export function EventForm({
             id="event-category"
             name="category"
             required
-            defaultValue={event?.category ?? "study_together"}
+            defaultValue={initial?.category ?? "study_together"}
             className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
           >
             {EVENT_CATEGORIES.map((category) => (
@@ -180,7 +189,7 @@ export function EventForm({
             required
             min={EVENT_CAPACITY_MIN}
             max={EVENT_CAPACITY_MAX}
-            defaultValue={event?.capacity ?? 12}
+            defaultValue={initial?.capacity ?? 12}
             className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
           />
         </div>
@@ -199,7 +208,7 @@ export function EventForm({
                   type="radio"
                   name="scope"
                   value={scope}
-                  defaultChecked={(event?.scope ?? "open") === scope}
+                  defaultChecked={(initial?.scope ?? "open") === scope}
                   className="mt-1 h-4 w-4 accent-brand-blue"
                 />
                 <span>
@@ -231,7 +240,7 @@ export function EventForm({
               Cara menerima peserta
               <select
                 name="registrationMode"
-                defaultValue="instant"
+                defaultValue={initial?.registration_mode ?? "instant"}
                 className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
               >
                 <option value="instant">Langsung diterima</option>
@@ -255,7 +264,7 @@ export function EventForm({
             <input
               type="checkbox"
               name="waitlistEnabled"
-              defaultChecked
+              defaultChecked={initial?.waitlist_enabled ?? true}
               className="mt-1 h-4 w-4 accent-brand-blue"
             />
             <span>Aktifkan daftar tunggu saat kapasitas penuh.</span>
@@ -359,7 +368,7 @@ export function EventForm({
               id="event-venue-category"
               name="venueCategory"
               required
-              defaultValue={event?.venue_category ?? "campus_public_area"}
+              defaultValue={initial?.venue_category ?? "campus_public_area"}
               className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
             >
               {EVENT_VENUE_CATEGORIES.map((category) => (
@@ -379,7 +388,7 @@ export function EventForm({
               required
               minLength={2}
               maxLength={100}
-              defaultValue={event?.city}
+              defaultValue={initial?.city}
               className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
             />
           </div>
@@ -394,7 +403,7 @@ export function EventForm({
             required
             minLength={EVENT_VENUE_NAME_MIN}
             maxLength={EVENT_VENUE_NAME_MAX}
-            defaultValue={event?.venue_name}
+            defaultValue={initial?.venue_name}
             className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
           />
         </div>
@@ -409,7 +418,7 @@ export function EventForm({
             required
             minLength={EVENT_VENUE_AREA_MIN}
             maxLength={EVENT_VENUE_AREA_MAX}
-            defaultValue={event?.venue_area}
+            defaultValue={initial?.venue_area}
             className="focus-ring mt-2 w-full resize-y rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-navy"
           />
         </div>
