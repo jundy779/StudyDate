@@ -55,10 +55,10 @@ export default async function CreateEventPage({
           </Link>
           <header className="mt-7 max-w-2xl">
             <p className="section-label">
-              {source ? "Duplikat acara" : "Buat acara kampus"}
+              {source ? "Acara berikutnya" : "Buat acara kampus"}
             </p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-              {source ? "Buat acara baru dari pengaturan lama" : "Mulai kegiatan di tempat publik"}
+              {source ? "Periksa jadwal sebelum diterbitkan" : "Mulai kegiatan di tempat publik"}
             </h1>
             <p className="mt-5 text-lg leading-8 text-brand-muted">
               Kamu menjadi penyelenggara acara ini, bukan bagian dari tim internal StudyDate. Penyelenggara tidak
@@ -70,7 +70,7 @@ export default async function CreateEventPage({
             <aside className="mt-7 flex items-start gap-3 rounded-[18px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-950">
               <CopyPlus className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
               <div>
-                <p className="font-semibold">Pengaturan dasar sudah disalin.</p>
+                <p className="font-semibold">Detail dasar sudah disiapkan.</p>
                 <p className="mt-1">
                   Jadwal disarankan ke pertemuan {cadenceLabel} berikutnya. Periksa
                   kembali tanggalnya sebelum membuat acara. Peserta, tim, tiket,

@@ -75,6 +75,8 @@ test("ED-03 old events roll forward safely instead of reusing a past date", () =
 test("ED-04 duplicate source is permission-gated and creation stays explicit", () => {
   assert.match(createPage, /getCampusEventManagement\(duplicate, "team"\)/);
   assert.match(createPage, /buildEventDuplicateDefaults\(source, new Date\(\), cadence\)/);
+  assert.match(createPage, /Periksa jadwal sebelum diterbitkan/);
+  assert.doesNotMatch(createPage, /Duplikat acara/);
   assert.match(createPage, /Peserta, tim, tiket,\s+pertanyaan/);
   assert.match(settings, /Jadwalkan pertemuan berikutnya/);
   assert.match(settings, /cadence=weekly/);
