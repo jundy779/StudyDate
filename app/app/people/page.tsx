@@ -1,4 +1,7 @@
-import { updatePeopleVisibility } from "@/app/app/people/actions";
+import {
+  updatePeopleVisibility,
+  updateStudyStatus,
+} from "@/app/app/people/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { PeopleFilterForm } from "@/components/people/people-filter-form";
@@ -7,15 +10,17 @@ import { buildSharedStudentContext } from "@/lib/people/shared-context";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   getOwnDiscoveryVisibility,
+  getOwnStudyStatus,
   listDiscoveryProfiles,
 } from "@/lib/people/service";
 import { getMyMembership } from "@/lib/membership/resolver";
 import { getMembershipLimits } from "@/lib/membership/limits";
+import { STUDY_STATUS_OPTIONS } from "@/lib/people/study-status";
 import {
   firstSearchValue,
   parsePeopleFilters,
 } from "@/lib/people/validation";
-import { Eye, EyeOff } from "lucide-react";
+import { Clock3, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -45,9 +50,11 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
   const rawSearchParams = await searchParams;
   const parsed = parsePeopleFilters(rawSearchParams);
   const isDiscoverable = await getOwnDiscoveryVisibility(user.id);
+  const ownStudyStatus = await getOwnStudyStatus();
   const membership = await getMyMembership();
   const limits = getMembershipLimits(membership.plan);
   const visibilityNotice = firstSearchValue(rawSearchParams.visibility);
+  const studyStatusNotice = firstSearchValue(rawSearchParams.studyStatus);
 
   const filters = parsed.success ? parsed.data : {};
   let result = { profiles: [] as Awaited<ReturnType<typeof listDiscoveryProfiles>>["profiles"], nextCursor: null as string | null };
@@ -79,22 +86,53 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
               Jelajahi profil mahasiswa berdasarkan kampus, minat, dan tujuan koneksi tanpa menampilkan nama asli.
             </p>
           </div>
-          <form action={updatePeopleVisibility} className="rounded-[20px] border border-brand-border bg-white p-5 shadow-[0_12px_32px_rgba(15,27,51,0.05)]">
-            <div className="flex items-start gap-3">
-              {isDiscoverable ? <Eye className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" /> : <EyeOff className="mt-0.5 h-5 w-5 shrink-0 text-brand-muted" aria-hidden="true" />}
-              <div>
-                <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di pencarian</label>
-                <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil tanpa nama asli yang memilih untuk ditemukan yang akan ditampilkan.</p>
+          <div className="space-y-4">
+            <form action={updatePeopleVisibility} className="rounded-[20px] border border-brand-border bg-white p-5 shadow-[0_12px_32px_rgba(15,27,51,0.05)]">
+              <div className="flex items-start gap-3">
+                {isDiscoverable ? <Eye className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" /> : <EyeOff className="mt-0.5 h-5 w-5 shrink-0 text-brand-muted" aria-hidden="true" />}
+                <div>
+                  <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di pencarian</label>
+                  <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil tanpa nama asli yang memilih untuk ditemukan yang akan ditampilkan.</p>
+                </div>
               </div>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4">
-              <input id="people-visibility" name="isDiscoverable" type="checkbox" defaultChecked={isDiscoverable} className="focus-ring h-5 w-5 rounded border-brand-border accent-brand-blue" />
-              <button type="submit" className="focus-ring min-h-11 rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white">Simpan</button>
-            </div>
-            {(visibilityNotice === "on" || visibilityNotice === "off") && (
-              <p role="status" className="mt-3 text-sm font-medium text-brand-success">Pengaturan visibilitas tersimpan.</p>
-            )}
-          </form>
+              <div className="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4">
+                <input id="people-visibility" name="isDiscoverable" type="checkbox" defaultChecked={isDiscoverable} className="focus-ring h-5 w-5 rounded border-brand-border accent-brand-blue" />
+                <button type="submit" className="focus-ring min-h-11 rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white">Simpan</button>
+              </div>
+              {(visibilityNotice === "on" || visibilityNotice === "off") && (
+                <p role="status" className="mt-3 text-sm font-medium text-brand-success">Pengaturan visibilitas tersimpan.</p>
+              )}
+            </form>
+
+            {ownStudyStatus.supported ? (
+              <form action={updateStudyStatus} className="rounded-[20px] border border-brand-border bg-white p-5 shadow-[0_12px_32px_rgba(15,27,51,0.05)]">
+                <div className="flex items-start gap-3">
+                  <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
+                  <div>
+                    <label htmlFor="study-status" className="font-semibold text-brand-navy">Lagi ingin cari teman apa?</label>
+                    <p className="mt-1 text-sm leading-6 text-brand-muted">Status ini tampil selama 24 jam, lalu hilang sendiri.</p>
+                  </div>
+                </div>
+                <select
+                  id="study-status"
+                  name="studyStatus"
+                  defaultValue={ownStudyStatus.study_status ?? ""}
+                  className="focus-ring mt-4 min-h-11 w-full rounded-xl border border-brand-border bg-white px-3 text-sm text-brand-navy"
+                >
+                  <option value="">Tidak pasang status</option>
+                  {STUDY_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <button type="submit" className="focus-ring mt-3 min-h-11 w-full rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white">Simpan status</button>
+                {(studyStatusNotice === "saved" || studyStatusNotice === "cleared") ? (
+                  <p role="status" className="mt-3 text-sm font-medium text-brand-success">Status belajarmu sudah diperbarui.</p>
+                ) : (studyStatusNotice === "error" || studyStatusNotice === "invalid") ? (
+                  <p role="alert" className="mt-3 text-sm font-medium text-brand-error">Status belum dapat disimpan. Coba lagi.</p>
+                ) : null}
+              </form>
+            ) : null}
+          </div>
         </section>
 
         <section className="mt-10 rounded-[22px] border border-brand-border bg-white p-5 sm:p-7" aria-labelledby="people-filter-title">

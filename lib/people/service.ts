@@ -1,6 +1,7 @@
 import "server-only";
 
 import { PEOPLE_PAGE_SIZE } from "@/lib/people/constants";
+import type { StudyStatus } from "@/lib/people/study-status";
 import type { PeopleFilters } from "@/lib/people/validation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,6 +15,14 @@ export type DiscoveryProfile = {
   interests: string[];
   connection_goals: string[];
   is_verified: boolean;
+  study_status: StudyStatus | null;
+  study_status_expires_at: string | null;
+};
+
+export type OwnStudyStatus = {
+  supported: boolean;
+  study_status: StudyStatus | null;
+  expires_at: string | null;
 };
 
 export type PeoplePage = {
@@ -90,5 +99,44 @@ export async function setOwnDiscoveryVisibility(isDiscoverable: boolean) {
 
   if (error) {
     throw new Error("Pengaturan Cari Teman belum dapat diperbarui.");
+  }
+}
+
+
+export async function getOwnStudyStatus(): Promise<OwnStudyStatus> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_my_study_status");
+
+  if (error) {
+    const message = (error.message ?? "").toLowerCase();
+    const capabilityMissing =
+      message.includes("get_my_study_status") &&
+      (message.includes("does not exist") ||
+        message.includes("schema cache") ||
+        message.includes("could not find"));
+    if (capabilityMissing) {
+      return { supported: false, study_status: null, expires_at: null };
+    }
+    throw new Error("Status belajarmu belum dapat dimuat.");
+  }
+
+  const row = ((data ?? [])[0] ?? null) as
+    | { study_status: StudyStatus | null; expires_at: string | null }
+    | null;
+  return {
+    supported: true,
+    study_status: row?.study_status ?? null,
+    expires_at: row?.expires_at ?? null,
+  };
+}
+
+export async function setOwnStudyStatus(status: StudyStatus | null) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_my_study_status", {
+    p_status: status,
+  });
+
+  if (error) {
+    throw new Error("Status belajarmu belum dapat diperbarui.");
   }
 }

@@ -168,6 +168,8 @@ export function ProfileEditForm({
     interests,
     connection_goals: connectionGoals,
     is_verified: profile.verificationStatus === "verified",
+    study_status: null,
+    study_status_expires_at: null,
   };
   const previewMascot =
     mascotImageSrc(mascot) ?? `/brand/mascot/${mascot}.png`;

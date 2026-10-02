@@ -254,6 +254,11 @@ List RPC Phase 1 juga menolak kuota People harian dan mengabaikan filter lanjuta
 `set_people_discovery_visibility` mengambil target hanya dari `auth.uid()` dan mengubah satu protected field milik
 sendiri. Direct column update atas `is_discoverable` tetap tidak diberikan kepada client.
 
+Migration `202610020003` menambahkan `set_my_study_status` dan `get_my_study_status` untuk status sosial yang
+berumur 24 jam. Nilai dibatasi pada teman belajar, teman diskusi, dan teman proyek. Projection People mengembalikan status
+hanya selama `study_status_expires_at` masih berlaku; tidak ada job penghapusan yang diperlukan untuk kebenaran tampilan.
+Client menyembunyikan kontrol bila RPC belum tersedia, sehingga deploy kode dapat mendahului rollout database dengan aman.
+
 Fondasi block/report berada pada Introduction Requests. Block berlaku dua arah untuk discovery dan introduction,
 menutup request pending yang relevan, serta menjadi gate pada chat, reveal, circle, event, dan proyeksi privat.
 

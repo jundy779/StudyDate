@@ -254,6 +254,11 @@ Jangan tampilkan full name, clear photo sebelum reveal, contact, precise locatio
 
 Detail People menyediakan CTA `Kirim perkenalan` menuju Introduction Requests v1.
 
+Migration `202610020003` menyiapkan status sementara 24 jam untuk menunjukkan bahwa pengguna sedang mencari teman
+belajar, teman diskusi, atau teman mengerjakan proyek. Status tidak menunjukkan ketersediaan berkencan, tidak membuka
+identitas, dan otomatis disembunyikan oleh projection setelah kedaluwarsa. UI mendeteksi capability RPC agar tetap aman
+sebelum rollout remote diterapkan dan diverifikasi.
+
 ## 9. Implemented — Introduction Requests v1
 
 Mahasiswa onboarded dapat mengirim satu pesan pembuka singkat ke profil anonim yang eligible, melihat Perkenalan
