@@ -23,6 +23,9 @@ test("ECUI-01 every event category receives a branded fallback cover", () => {
     "discussion",
     "networking",
     "community",
+    "seminar",
+    "meetup",
+    "hackathon",
     "other",
   ]) {
     assert.match(cover, new RegExp(`${category}:`));

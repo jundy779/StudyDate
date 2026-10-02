@@ -17,6 +17,9 @@ export const EVENT_CATEGORY_LABELS: Record<
   discussion: "Diskusi",
   networking: "Karier dan kerja bareng",
   community: "Komunitas",
+  seminar: "Seminar",
+  meetup: "Meetup",
+  hackathon: "Hackathon",
   other: "Lainnya",
 };
 

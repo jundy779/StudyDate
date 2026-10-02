@@ -4,13 +4,16 @@ import {
   BookOpenText,
   BrainCircuit,
   Code2,
+  Coffee,
   GraduationCap,
   Languages,
   MessagesSquare,
   Network,
   Palette,
   Presentation,
+  School,
   Sparkles,
+  Trophy,
   UsersRound,
 } from "lucide-react";
 
@@ -71,6 +74,21 @@ const coverStyles: Record<
     icon: UsersRound,
     background: "from-[#236534] via-[#398b4f] to-[#71b95e]",
     accent: "bg-[#e7f8d5] text-[#234b29]",
+  },
+  seminar: {
+    icon: School,
+    background: "from-[#71321f] via-[#a34d29] to-[#de8a45]",
+    accent: "bg-[#fff0d9] text-[#663019]",
+  },
+  meetup: {
+    icon: Coffee,
+    background: "from-[#7a284f] via-[#ad3d75] to-[#e6729e]",
+    accent: "bg-[#ffe1ed] text-[#68213f]",
+  },
+  hackathon: {
+    icon: Trophy,
+    background: "from-[#272b70] via-[#4147a8] to-[#746fe6]",
+    accent: "bg-[#eeeaff] text-[#2f2b76]",
   },
   other: {
     icon: Sparkles,

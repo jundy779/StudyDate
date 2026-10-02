@@ -22,6 +22,9 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   discussion: "Diskusi",
   networking: "Relasi profesional",
   community: "Komunitas",
+  seminar: "Seminar",
+  meetup: "Meetup",
+  hackathon: "Hackathon",
   other: "Lainnya",
 };
 

@@ -32,6 +32,9 @@ export const EVENT_CATEGORIES = [
   "discussion",
   "networking",
   "community",
+  "seminar",
+  "meetup",
+  "hackathon",
   "other",
 ] as const;
 

@@ -650,6 +650,8 @@ function CampusEvents() {
   const eventTypes = [
     "Seminar",
     "Workshop",
+    "Meetup",
+    "Hackathon",
     "Komunitas kampus",
     "Kumpul belajar",
     "Kompetisi",

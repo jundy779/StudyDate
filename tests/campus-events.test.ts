@@ -23,7 +23,14 @@ const detailFixSql = readFileSync(
   ),
   "utf8",
 );
-const sql = `${baseSql}\n${detailFixSql}`;
+const categoryMigrationSql = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202610020001_add_seminar_meetup_hackathon_event_categories.sql",
+  ),
+  "utf8",
+);
+const sql = `${baseSql}\n${detailFixSql}\n${categoryMigrationSql}`;
 const service = readFileSync(join(root, "lib/events/service.ts"), "utf8");
 const packageJson = readFileSync(join(root, "package.json"), "utf8");
 const NOW = Date.UTC(2026, 7, 9, 0, 0);
@@ -126,6 +133,13 @@ test("CE-06 judul/deskripsi strict plain text", () => {
   );
 });
 test("CE-07 kategori dibatasi allowlist", () => {
+  for (const category of ["seminar", "meetup", "hackathon"]) {
+    assert.equal(
+      eventFormSchema.safeParse({ ...validForm, category }).success,
+      true,
+    );
+    assert.match(categoryMigrationSql, new RegExp(`'${category}'`));
+  }
   assert.equal(
     eventFormSchema.safeParse({ ...validForm, category: "party" }).success,
     false,
