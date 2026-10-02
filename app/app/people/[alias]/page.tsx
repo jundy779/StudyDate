@@ -4,15 +4,18 @@ import {
   type PrivacyField,
 } from "@/components/people/privacy-field-grid";
 import { SendIntroductionDialog } from "@/components/introductions/send-introduction-dialog";
+import { SharedContextSummary } from "@/components/people/shared-context-summary";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { RATE_LIMIT_MESSAGE } from "@/lib/introductions/constants";
 import { getIntroductionSendEligibility } from "@/lib/introductions/service";
+import { buildIntroductionSuggestions } from "@/lib/introductions/suggestions";
 import {
   connectionGoalLabels,
   getMascotForAlias,
   interestLabels,
 } from "@/lib/people/constants";
 import { getDiscoveryProfile } from "@/lib/people/service";
+import { buildSharedStudentContext } from "@/lib/people/shared-context";
 import {
   fromPeopleAliasPathSegment,
   peopleAliasSchema,
@@ -78,6 +81,15 @@ export default async function PeopleDetailPage({
     profile.public_alias,
   );
   const disabledReason = eligibilityCopy(eligibility.state_code);
+  const sharedContext = buildSharedStudentContext(ownProfile, profile);
+  const introductionSuggestions = buildIntroductionSuggestions({
+    sharedInterestLabels: sharedContext.sharedInterestKeys.map(
+      (interest) => interestLabels.get(interest) ?? interest,
+    ),
+    sharedGoalLabels: sharedContext.sharedGoalKeys.map(
+      (goal) => connectionGoalLabels.get(goal) ?? goal,
+    ),
+  });
   const notice =
     typeof query.notice === "string" && query.notice.trim()
       ? query.notice.trim().slice(0, 300)
@@ -214,6 +226,8 @@ export default async function PeopleDetailPage({
                   ) : null}
                 </dl>
 
+                <SharedContextSummary context={sharedContext} />
+
                 <section className="mt-6 sm:mt-7" aria-labelledby="privacy-title">
                   <div className="flex items-start gap-2">
                     <LockIcon
@@ -244,7 +258,7 @@ export default async function PeopleDetailPage({
                     id="goals-title"
                     className="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted"
                   >
-                    Ingin terhubung untuk
+                    Mau kenalan untuk
                   </h2>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {profile.connection_goals.map((goal) => (
@@ -289,10 +303,10 @@ export default async function PeopleDetailPage({
                   aria-hidden="true"
                 />
                 <div>
-                  <h2 className="font-semibold">Kirim perkenalan privat</h2>
+                  <h2 className="font-semibold">Kirim pesan perkenalan</h2>
                   <p className="mt-1 text-sm leading-6 text-white/65">
-                    Nama lengkap dan kontak tetap tertutup sampai tahap reveal
-                    yang relevan.
+                    Nama lengkap dan kontak tetap tertutup sampai kalian
+                    sama-sama setuju untuk membagikannya.
                   </p>
                 </div>
               </div>
@@ -301,6 +315,7 @@ export default async function PeopleDetailPage({
                   alias={profile.public_alias}
                   disabledReason={disabledReason}
                   canSend={eligibility.state_code === "ok"}
+                  suggestions={introductionSuggestions}
                 />
               </div>
             </footer>

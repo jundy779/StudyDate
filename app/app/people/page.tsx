@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { PeopleFilterForm } from "@/components/people/people-filter-form";
 import { PeopleProfileCard } from "@/components/people/people-profile-card";
+import { buildSharedStudentContext } from "@/lib/people/shared-context";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   getOwnDiscoveryVisibility,
@@ -129,7 +130,13 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
           ) : result.profiles.length ? (
             <>
               <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {result.profiles.map((profile) => <PeopleProfileCard key={profile.public_alias} profile={profile} />)}
+                {result.profiles.map((profile) => (
+                  <PeopleProfileCard
+                    key={profile.public_alias}
+                    profile={profile}
+                    sharedContext={buildSharedStudentContext(ownProfile, profile)}
+                  />
+                ))}
               </div>
               {result.nextCursor && (
                 <div className="mt-8 flex justify-center">

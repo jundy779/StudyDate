@@ -9,6 +9,8 @@ export type PrivateProfile = {
   campus: string;
   study_program: string;
   semester: number | null;
+  interests: string[];
+  connection_goals: string[];
   verification_status: "unverified" | "pending" | "verified" | "rejected";
   onboarding_completed_at: string | null;
   deactivated_at: string | null;
@@ -29,7 +31,7 @@ export async function getPrivateProfile(
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "public_alias, first_name, campus, study_program, semester, verification_status, onboarding_completed_at, deactivated_at",
+      "public_alias, first_name, campus, study_program, semester, interests, connection_goals, verification_status, onboarding_completed_at, deactivated_at",
     )
     .eq("user_id", userId)
     .maybeSingle<PrivateProfile>();

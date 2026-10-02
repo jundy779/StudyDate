@@ -4,6 +4,8 @@ import {
   interestLabels,
 } from "@/lib/people/constants";
 import type { DiscoveryProfile } from "@/lib/people/service";
+import type { SharedStudentContext } from "@/lib/people/shared-context";
+import { SharedContextSummary } from "@/components/people/shared-context-summary";
 import { toPeopleAliasPathSegment } from "@/lib/people/validation";
 import { BadgeCheck, MapPin } from "lucide-react";
 import Image from "next/image";
@@ -13,11 +15,13 @@ export function PeopleProfileCard({
   profile,
   mascotSrc,
   hideCta = false,
+  sharedContext,
 }: {
   profile: DiscoveryProfile;
   /** Override hashed alias mascot (e.g. profile self-preview). */
   mascotSrc?: string;
   hideCta?: boolean;
+  sharedContext?: SharedStudentContext;
 }) {
   const firstGoals = profile.connection_goals.slice(0, 2);
   const firstInterests = profile.interests.slice(0, 3);
@@ -54,6 +58,9 @@ export function PeopleProfileCard({
             <span key={goal} className="rounded-full bg-brand-surface px-3 py-1.5 text-xs font-semibold text-brand-navy">{connectionGoalLabels.get(goal) ?? goal}</span>
           ))}
         </div>
+        {sharedContext ? (
+          <SharedContextSummary context={sharedContext} compact />
+        ) : null}
         <p className="mt-5 line-clamp-3 text-sm leading-6 text-brand-muted">
           {profile.short_intro ?? `Tertarik pada ${firstInterests.map((interest) => interestLabels.get(interest) ?? interest).join(", ")}.`}
         </p>

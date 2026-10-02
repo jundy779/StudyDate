@@ -6,6 +6,7 @@ import {
   INTRODUCTION_MESSAGE_MAX,
   INTRODUCTION_MESSAGE_MIN,
 } from "@/lib/introductions/constants";
+import type { IntroductionSuggestion } from "@/lib/introductions/suggestions";
 import { LoaderCircle, X } from "lucide-react";
 import {
   useEffect,
@@ -20,12 +21,14 @@ type SendIntroductionDialogProps = {
   alias: string;
   disabledReason?: string | null;
   canSend: boolean;
+  suggestions?: IntroductionSuggestion[];
 };
 
 export function SendIntroductionDialog({
   alias,
   disabledReason,
   canSend,
+  suggestions = [],
 }: SendIntroductionDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -149,6 +152,32 @@ export function SendIntroductionDialog({
 
           <div className="space-y-4 px-5 py-5">
             <input type="hidden" name="recipientAlias" value={alias} />
+            {suggestions.length ? (
+              <fieldset>
+                <legend className="text-sm font-semibold text-brand-navy">
+                  Belum tahu mau mulai dari mana?
+                </legend>
+                <p className="mt-1 text-sm leading-6 text-brand-muted">
+                  Pilih contoh pesan, lalu ubah supaya lebih sesuai dengan gaya kamu.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.label}
+                      type="button"
+                      className="focus-ring min-h-10 rounded-full border border-brand-border bg-white px-3 text-sm font-semibold text-brand-blue hover:border-brand-blue hover:bg-blue-50"
+                      onClick={() => {
+                        setMessage(suggestion.message);
+                        setClientError(null);
+                      }}
+                      disabled={pending}
+                    >
+                      {suggestion.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            ) : null}
             <div>
               <label
                 htmlFor={textareaId}
@@ -173,7 +202,7 @@ export function SendIntroductionDialog({
                 disabled={pending}
               />
               <div className="mt-2 flex items-center justify-between gap-3 text-xs text-brand-muted">
-                <span id={hintId}>Tanpa HTML atau tautan. Teks biasa saja.</span>
+                <span id={hintId}>Jangan tulis nomor, akun media sosial, atau tautan.</span>
                 <span id={counterId} aria-live="polite">
                   {message.trim().length} dari {INTRODUCTION_MESSAGE_MAX} karakter
                 </span>
