@@ -46,6 +46,7 @@ import { MeetingPlanPanel } from "@/components/messages/meeting-plan-panel";
 import { ChatMessageBubble } from "@/components/messages/chat-message-bubble";
 import { ChatComposerTools } from "@/components/messages/chat-composer-tools";
 import { getMascotForAlias } from "@/lib/people/constants";
+import { CHAT_STARTERS } from "@/lib/messages/starters";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
 import type { MeetingPlanState } from "@/lib/meeting-plans/constants";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
@@ -459,44 +460,75 @@ export function ConversationRoom({
   }
 
   function onComposerSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!canSend || pending) {
-      event.preventDefault();
-      return;
-    }
+    event.preventDefault();
+    if (!canSend || pending) return;
 
     const submitter = (event.nativeEvent as SubmitEvent).submitter as
       | HTMLButtonElement
       | null;
-    const isStickerSubmit = submitter?.name === "stickerId";
-    const keyInput = event.currentTarget.elements.namedItem(
-      "idempotencyKey",
-    ) as HTMLInputElement | null;
-    if (keyInput) {
-      keyInput.value = makeIdempotencyKey();
-    }
-    if (isStickerSubmit) {
-      setClientError(null);
-      return;
-    }
-
+    const stickerId =
+      submitter?.name === "stickerId" ? submitter.value : null;
+    const idempotencyKey = makeIdempotencyKey();
     const trimmed = body
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
       .replace(/[ \t]+/g, " ")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
-    if (!trimmed) {
-      event.preventDefault();
+
+    if (!stickerId && !trimmed) {
       setClientError("Tulis pesan singkat terlebih dahulu.");
       return;
     }
-    if (trimmed.length > CHAT_MESSAGE_MAX) {
-      event.preventDefault();
+    if (!stickerId && trimmed.length > CHAT_MESSAGE_MAX) {
       setClientError(`Maksimal ${CHAT_MESSAGE_MAX} karakter.`);
       return;
     }
 
     setClientError(null);
+    startTransition(async () => {
+      try {
+        const response = await fetch(
+          `/api/messages/${conversation.public_id}/send`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              stickerId
+                ? { type: "sticker", stickerId, idempotencyKey }
+                : { type: "text", body: trimmed, idempotencyKey },
+            ),
+          },
+        );
+        const payload = (await response.json().catch(() => null)) as
+          | {
+              error?: string;
+              message?: ChatMessage;
+              conversationStatus?: ConversationDetail["status"];
+            }
+          | null;
+        if (!response.ok || !payload?.message) {
+          throw new Error(
+            payload?.error ?? "Pesan belum dapat dikirim. Coba lagi.",
+          );
+        }
+
+        shouldScrollAfterUpdate.current = true;
+        setMessages((current) =>
+          mergeChatMessages(current, [payload.message as ChatMessage]),
+        );
+        if (payload.conversationStatus) {
+          setStatus(payload.conversationStatus);
+        }
+        if (!stickerId) setBody("");
+      } catch (error) {
+        setClientError(
+          error instanceof Error
+            ? error.message
+            : "Pesan belum dapat dikirim. Coba lagi.",
+        );
+      }
+    });
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -614,10 +646,31 @@ export function ConversationRoom({
           ) : null}
         </div>
         {status === "awaiting_chat" && chronological.length === 0 ? (
-          <p className="rounded-[18px] border border-dashed border-brand-border bg-white px-4 py-5 text-sm leading-6 text-brand-muted">
-            Perkenalan sudah diterima. Mulai percakapan dengan santai dan tetap
-            jaga privasi.
-          </p>
+          <div className="rounded-[18px] border border-dashed border-brand-border bg-white px-4 py-5">
+            <p className="text-sm leading-6 text-brand-muted">
+              Perkenalan sudah diterima. Mulai percakapan dengan santai dan tetap
+              jaga privasi.
+            </p>
+            <p className="mt-4 text-sm font-semibold text-brand-navy">
+              Belum tahu mau bahas apa?
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {CHAT_STARTERS.map((starter) => (
+                <button
+                  key={starter.label}
+                  type="button"
+                  className="focus-ring min-h-10 rounded-full border border-brand-border bg-brand-surface px-3 text-sm font-semibold text-brand-blue hover:border-brand-blue"
+                  onClick={() => {
+                    setBody(starter.message);
+                    setClientError(null);
+                    requestAnimationFrame(() => composerRef.current?.focus());
+                  }}
+                >
+                  {starter.label}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : null}
 
         {chronological.map((message, index) => {

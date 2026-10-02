@@ -18,6 +18,7 @@ import {
   nextChatPollDelay,
   nextPollDelay,
 } from "../lib/messages/client-state.ts";
+import { CHAT_STARTERS } from "../lib/messages/starters.ts";
 import {
   CHAT_EMOJI_SHORTLIST,
   CHAT_STICKERS,
@@ -75,6 +76,10 @@ const navigation = readFileSync(
 );
 const pollRoute = readFileSync(
   new URL("../app/api/messages/[publicId]/route.ts", import.meta.url),
+  "utf8",
+);
+const sendRoute = readFileSync(
+  new URL("../app/api/messages/[publicId]/send/route.ts", import.meta.url),
   "utf8",
 );
 
@@ -227,6 +232,35 @@ test("student navigation includes Pesan and staff shell does not", () => {
     navigation,
     /getStaffItems[\s\S]*\/app\/messages/,
   );
+});
+
+test("chat sends without a page reload and keeps server authorization", () => {
+  assert.match(sendRoute, /getAuthenticatedUser/);
+  assert.match(sendRoute, /onboarding_completed_at/);
+  assert.match(sendRoute, /sendChatMessageSchema/);
+  assert.match(sendRoute, /sendChatStickerSchema/);
+  assert.match(sendRoute, /sendAnonymousMessage/);
+  assert.match(sendRoute, /sendAnonymousSticker/);
+  assert.match(room, /event\.preventDefault\(\)/);
+  assert.match(room, /method: "POST"/);
+  assert.match(room, /\/api\/messages\/\$\{conversation\.public_id\}\/send/);
+  assert.match(room, /mergeChatMessages\(current, \[payload\.message/);
+});
+
+test("empty conversations offer student-focused conversation starters", () => {
+  assert.equal(CHAT_STARTERS.length, 4);
+  for (const starter of CHAT_STARTERS) {
+    assert.ok(starter.message.length > 20);
+    assert.doesNotMatch(starter.message, /https?:|@|\b\d{8,}\b/i);
+  }
+  assert.match(room, /Belum tahu mau bahas apa/);
+  assert.match(room, /CHAT_STARTERS\.map/);
+  assert.match(room, /setBody\(starter\.message\)/);
+});
+
+test("message polling preserves sticker metadata", () => {
+  assert.match(pollRoute, /message_type: message\.message_type/);
+  assert.match(pollRoute, /sticker_id: message\.sticker_id/);
 });
 
 test("delivery uses authenticated poll route without Realtime table grants", () => {

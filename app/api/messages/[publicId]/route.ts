@@ -130,6 +130,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       messages: messages.map((message) => ({
         message_id: message.message_id,
         body: message.body,
+        message_type: message.message_type,
+        sticker_id: message.sticker_id,
         is_mine: message.is_mine,
         created_at: message.created_at,
         read_at: message.read_at,
