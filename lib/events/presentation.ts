@@ -15,7 +15,7 @@ export const EVENT_CATEGORY_LABELS: Record<
   exam_prep: "Persiapan ujian",
   workshop: "Workshop",
   discussion: "Diskusi",
-  networking: "Karier & jejaring",
+  networking: "Karier dan kerja bareng",
   community: "Komunitas",
   other: "Lainnya",
 };
