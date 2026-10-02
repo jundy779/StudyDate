@@ -2,7 +2,15 @@ import { AppShell } from "@/components/app/app-shell";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { VERIFICATION_STATUS_LABELS } from "@/lib/verification/constants";
 import { getLatestVerificationStatus } from "@/lib/verification/status";
-import { CalendarDays, CheckCircle2, Network, ShieldCheck, Users } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Handshake,
+  MessageSquare,
+  Network,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -28,6 +36,20 @@ const productAreas = [
     icon: CalendarDays,
     href: "/app/events",
     action: "Cari acara",
+  },
+  {
+    title: "Perkenalan",
+    description: "Lihat ajakan kenalan yang masuk dan yang sudah kamu kirim.",
+    icon: Handshake,
+    href: "/app/introductions",
+    action: "Lihat perkenalan",
+  },
+  {
+    title: "Pesan",
+    description: "Ngobrol tanpa membuka nama asli sampai kalian sama-sama siap.",
+    icon: MessageSquare,
+    href: "/app/messages",
+    action: "Buka pesan",
   },
 ] as const;
 
@@ -76,8 +98,8 @@ async function PrivateAppHome() {
                   Pengaturan awal selesai
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-brand-muted">
-                  Profilmu tersimpan secara privat dan belum dapat ditemukan
-                  pengguna lain.
+                  Profilmu tersimpan secara privat. Kamu bebas memilih kapan
+                  profil tanpa nama aslimu bisa ditemukan.
                 </p>
               </div>
             </div>
@@ -115,15 +137,15 @@ async function PrivateAppHome() {
                 id="product-areas"
                 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.025em]"
               >
-                Tiga ruang koneksi kampus
+                Semua ruang sosialmu
               </h2>
             </div>
             <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">
-              Teman, Circle & Acara tersedia
+              Belajar, kenalan & tumbuh
             </span>
           </div>
 
-          <div className="mt-7 grid gap-4 md:grid-cols-3">
+          <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {productAreas.map(({ title, description, icon: Icon, href, action }) => (
               <article
                 key={title}

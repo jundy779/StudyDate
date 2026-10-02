@@ -15,6 +15,10 @@ const detailPage = readFileSync(
   new URL("../app/app/people/[alias]/page.tsx", import.meta.url),
   "utf8",
 );
+const dashboard = readFileSync(
+  new URL("../app/app/page.tsx", import.meta.url),
+  "utf8",
+);
 const introductionDialog = readFileSync(
   new URL(
     "../components/introductions/send-introduction-dialog.tsx",
@@ -61,6 +65,20 @@ test("message starters stay short, editable, and focused on student activities",
 
   assert.match(introductionDialog, /Pilih contoh pesan/);
   assert.match(introductionDialog, /setMessage\(suggestion\.message\)/);
+});
+
+test("student dashboard brings the main social spaces together", () => {
+  for (const href of [
+    "/app/people",
+    "/app/circles",
+    "/app/events",
+    "/app/introductions",
+    "/app/messages",
+  ]) {
+    assert.match(dashboard, new RegExp(`href: "${href}"`));
+  }
+  assert.match(dashboard, /Semua ruang sosialmu/);
+  assert.match(dashboard, /tanpa membuka nama asli/);
 });
 
 test("People pages explain similarities without dating-style scoring", () => {
