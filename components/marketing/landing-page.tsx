@@ -354,7 +354,7 @@ function MascotCompanion() {
     {
       pose: "/brand/mascot/study.png" as const,
       label: "Kenalan",
-      title: "Kirim alasan untuk terhubung",
+      title: "Kirim alasan untuk kenalan",
       copy: "Percakapan baru terbuka setelah perkenalan diterima.",
       imageClass:
         "h-[15.5rem] w-[15.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[16.5rem] sm:w-[16.5rem]",
@@ -653,7 +653,7 @@ function CampusEvents() {
     "Komunitas kampus",
     "Kumpul belajar",
     "Kompetisi",
-    "Acara karier & jejaring",
+    "Acara karier dan kerja bareng",
   ];
 
   return (
@@ -704,7 +704,7 @@ function OnlineFirst() {
             Ngobrol dulu secara online. Bertemu nanti kalau sama-sama nyaman.
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-brand-muted">
-            Koneksi bisa tumbuh menjadi teman belajar, rekan proyek, teman ngobrol,
+            Kenalan bisa berkembang menjadi teman belajar, rekan proyek, teman ngobrol,
             atau hubungan personal. Tidak perlu ditentukan dari awal.
           </p>
         </div>
@@ -735,11 +735,11 @@ function EarlyAccessCTA() {
                 Akses awal
               </p>
               <h2 className="mt-5 font-heading text-3xl font-semibold leading-tight sm:text-4xl">
-                Mulai temukan koneksi dari lingkungan kampusmu.
+                Mulai kenalan dari lingkungan kampusmu.
               </h2>
               <p className="mt-5 leading-7 text-white/70">
-                Daftar akses awal untuk mencoba StudyDate ID dan bantu kami membangun
-                jaringan mahasiswa dan alumni Indonesia.
+                Daftar akses awal untuk mencoba StudyDate ID dan bantu kami memperluas
+                komunitas mahasiswa dan alumni Indonesia.
               </p>
               <EarlyAccessTrigger
                 source="final-cta"
