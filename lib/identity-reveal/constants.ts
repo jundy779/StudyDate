@@ -30,10 +30,10 @@ export const IDENTITY_REVEAL_COPY = {
   prepareCta: "Siapkan identitas yang ingin dibagikan",
   firstNameLabel: "Nama depan yang ingin kamu tampilkan",
   firstNameHint:
-    "Gunakan nama depan yang nyaman kamu bagikan. Nama ini tidak diperiksa sebagai nama resmi.",
+    "Gunakan nama depan yang nyaman kamu bagikan. Nama ini tidak harus sama dengan nama resmi.",
   photoLabel: "Foto profil",
   photoHint:
-    "Unggah foto wajah yang jelas (JPEG, PNG, atau WebP, maks. 5 MB). Bukan verifikasi biometrik.",
+    "Unggah foto wajah yang jelas (JPEG, PNG, atau WebP, maks. 5 MB). Foto ini tidak dipakai untuk mengenali wajah secara otomatis.",
   saveProfileCta: "Simpan nama dan foto",
   consentCta: "Setuju bagikan nama dan foto",
   withdrawCta: "Batalkan persetujuan",
@@ -43,7 +43,7 @@ export const IDENTITY_REVEAL_COPY = {
   completedBody:
     "Kalian sekarang dapat melihat nama depan dan foto profil satu sama lain. Informasi kontak tetap tertutup.",
   completedBlockedBody:
-    "Identitas lawan bicara tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
+    "Nama dan foto teman ngobrolmu tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
   closedNote: "Berbagi nama dan foto tidak tersedia untuk percakapan ini.",
   notReadyNote:
     "Kamu dapat berbagi nama dan foto setelah kalian sama-sama ingin kenal lebih jauh dan percakapan masih aktif.",
@@ -51,7 +51,7 @@ export const IDENTITY_REVEAL_COPY = {
   photoError: "Foto belum dapat diproses. Periksa format dan ukuran, lalu coba lagi.",
   loading: "Memuat nama dan foto…",
   mineLabel: "Nama dan fotomu",
-  counterpartLabel: "Nama dan foto teman bicaramu",
+  counterpartLabel: "Nama dan foto teman ngobrolmu",
   counterpartUnavailable: "Tidak tersedia",
 } as const;
 

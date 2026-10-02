@@ -28,7 +28,7 @@ const navigation = [
 
 const peopleFlow = [
   ["01", "Lihat profil tanpa nama asli", "Kenali minat, kampus, dan alasan mereka ingin berteman."],
-  ["02", "Kirim perkenalan", "Tulis alasan singkat kenapa kamu ingin terhubung."],
+  ["02", "Kirim perkenalan", "Tulis alasan singkat kenapa kamu ingin kenalan."],
   ["03", "Tunggu persetujuan", "Kalian baru bisa ngobrol setelah perkenalanmu diterima."],
   ["04", "Ngobrol tanpa buru-buru", "Nama asli, foto, dan kontak tetap disembunyikan."],
   ["05", "Sama-sama ingin lanjut", "Kalian berdua memilih apakah ingin saling mengenal lebih jauh."],
@@ -192,7 +192,7 @@ function ConnectionPreview() {
   const connectionGoals = [
     "Belajar bersama",
     "Obrolan kampus",
-    "Jejaring",
+    "Teman proyek",
   ];
 
   return (
@@ -253,7 +253,7 @@ function ConnectionPreview() {
 
         <div className="mt-5">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-            Ingin terhubung lewat
+            Mau kenalan untuk
           </p>
           <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-brand-navy">
             {connectionGoals.map((item) => (
@@ -304,12 +304,12 @@ function Hero() {
             Ketemu lewat hal yang sama. Kenalan tanpa perlu terburu-buru.
           </p>
           <h1 className="text-balance font-heading max-w-none text-[1.9rem] font-semibold leading-[1.03] tracking-[-0.035em] text-brand-navy sm:text-[3.35rem] sm:leading-[1.08] sm:tracking-[-0.04em] lg:text-[3.65rem] xl:text-[3.9rem]">
-            Temukan koneksi baru{" "}
-            <span className="text-brand-blue">lewat hal yang sama.</span>
+            Temukan teman baru{" "}
+            <span className="text-brand-blue">lewat hal yang kamu suka.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-[1.6] text-brand-muted sm:mt-7 sm:leading-8">
             Cari teman belajar, gabung circle, dan temukan acara kampus. Mulai dari
-            lingkungan mahasiswa dan alumni, tanpa harus langsung membuka nama atau kontak.
+            sesama mahasiswa dan alumni, tanpa harus langsung membuka nama atau kontak.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row">
             <EarlyAccessTrigger
@@ -490,7 +490,7 @@ function IntroductionFlow() {
             </h2>
           </div>
           <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            Tulis alasan singkat kenapa kamu ingin terhubung. Jika penerima setuju,
+            Tulis alasan singkat kenapa kamu ingin kenalan. Jika penerima setuju,
             barulah kalian bisa mulai ngobrol tanpa langsung membuka identitas.
           </p>
         </div>

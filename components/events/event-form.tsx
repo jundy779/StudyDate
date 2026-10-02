@@ -29,7 +29,7 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   exam_prep: "Persiapan Ujian",
   workshop: "Workshop",
   discussion: "Diskusi",
-  networking: "Relasi profesional",
+  networking: "Teman proyek dan karier",
   community: "Komunitas",
   other: "Lainnya",
 };
@@ -147,7 +147,7 @@ export function EventForm({
           className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
         />
         <p id="event-title-help" className="mt-2 text-xs leading-5 text-brand-muted">
-          {EVENT_TITLE_MIN}–{EVENT_TITLE_MAX} karakter, teks biasa tanpa HTML.
+          {EVENT_TITLE_MIN}–{EVENT_TITLE_MAX} karakter. Gunakan judul yang singkat dan jelas.
         </p>
       </div>
 
@@ -208,7 +208,7 @@ export function EventForm({
       </div>
 
       <fieldset disabled={Boolean(event)}>
-        <legend className="text-sm font-semibold text-brand-navy">Cakupan</legend>
+        <legend className="text-sm font-semibold text-brand-navy">Siapa yang bisa ikut</legend>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {EVENT_SCOPES.map((scope) => (
             <label
@@ -225,12 +225,12 @@ export function EventForm({
                 />
                 <span>
                   <span className="block text-sm font-semibold text-brand-navy">
-                    {scope === "open" ? "Terbuka untuk StudyDate" : "Kampus yang sama"}
+                    {scope === "open" ? "Mahasiswa dan alumni dari kampus mana pun" : "Kampus yang sama"}
                   </span>
                   <span className="mt-1 block text-xs leading-5 text-brand-muted">
                     {scope === "open"
-                      ? "Mahasiswa yang memenuhi syarat dari kampus lain dapat menemukan acara."
-                      : "Kampus mengikuti profil penyelenggara dan diperiksa oleh sistem."}
+                      ? "Mahasiswa dan alumni dari kampus lain bisa menemukan acara ini."
+                      : "Hanya pengguna dari kampus yang sama dengan penyelenggara."}
                   </span>
                 </span>
               </span>
@@ -392,7 +392,7 @@ export function EventForm({
           </div>
           <div>
             <label htmlFor="event-city" className="text-sm font-semibold text-brand-navy">
-              Kota / wilayah publik
+              Kota atau wilayah
             </label>
             <input
               id="event-city"
@@ -421,7 +421,7 @@ export function EventForm({
         </div>
         <div className="mt-5">
           <label htmlFor="event-venue-area" className="text-sm font-semibold text-brand-navy">
-            Alamat / area publik
+            Alamat atau area pertemuan
           </label>
           <textarea
             id="event-venue-area"

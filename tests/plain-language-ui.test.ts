@@ -58,3 +58,28 @@ test("admin and owner surfaces hide internal identifiers and source labels", () 
   assert.match(staffCopy, /Nama samaran mahasiswa/);
   assert.match(staffCopy, /Setujui dan tampilkan/);
 });
+
+test("student, event, and staff copy stays easy to understand", () => {
+  const landing = read("components/marketing/landing-page.tsx");
+  const productCopy = [
+    read("components/events/event-form.tsx"),
+    read("app/owner/page.tsx"),
+    read("app/admin/page.tsx"),
+    read("lib/identity-reveal/constants.ts"),
+    read("lib/contact-reveal/constants.ts"),
+    read("app/app/verification/page.tsx"),
+  ].join("\n");
+
+  assert.doesNotMatch(
+    landing,
+    /Temukan koneksi baru|Ingin terhubung lewat|Jejaring/,
+  );
+  assert.match(landing, /Temukan teman baru/);
+  assert.doesNotMatch(
+    productCopy,
+    /Relasi profesional|teks biasa tanpa HTML|>Cakupan<|keterlihatan profil|alamat publiknya|verifikasi biometrik|lawan bicara|pengujian terkontrol/i,
+  );
+  assert.match(productCopy, /Siapa yang bisa ikut/);
+  assert.match(productCopy, /Foto ini tidak dipakai untuk mengenali wajah secara otomatis/);
+  assert.match(productCopy, /apakah profil mereka bisa ditemukan/);
+});

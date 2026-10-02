@@ -59,8 +59,8 @@ async function VerificationContent({
             Verifikasi status mahasiswa
           </h1>
           <p className="mt-5 text-lg leading-8 text-brand-muted">
-            Verifikasi menggabungkan pencocokan data akademik dan bukti
-            kepemilikan akun. Proses ini opsional.
+            Kami mencocokkan data akademik dan memastikan akun ini benar-benar
+            milikmu. Verifikasi ini opsional.
           </p>
         </div>
         {request ? (
@@ -71,8 +71,8 @@ async function VerificationContent({
                 {VERIFICATION_STATUS_LABELS[request.status]}
               </p>
               <p className="mt-1 text-sm leading-6 text-brand-muted">
-                Tanda verifikasi hanya diberikan setelah data akademik cocok dan bukti
-                kepemilikan disetujui.
+                Tanda verifikasi diberikan setelah data akademik cocok dan bukti
+                kepemilikan akun disetujui.
               </p>
             </div>
           </section>
@@ -87,9 +87,8 @@ async function VerificationContent({
               Verifikasi mahasiswa belum tersedia
             </h2>
             <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
-              Pusat verifikasi mahasiswa sedang dipersiapkan untuk pengujian
-              terkontrol. Data akademik dan bukti kepemilikan belum dapat
-              dikirim saat ini.
+              Verifikasi mahasiswa sedang disiapkan dan belum dibuka untuk semua
+              pengguna. Kamu belum bisa mengirim data akademik atau bukti akun saat ini.
             </p>
           </section>
         ) : active ? (

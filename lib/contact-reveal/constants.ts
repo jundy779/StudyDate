@@ -55,16 +55,16 @@ export const CONTACT_REVEAL_COPY = {
   completedBody:
     "Kalian sekarang dapat melihat kontak yang sama-sama disetujui. Kontak lain tetap tertutup sampai kalian berdua setuju.",
   completedBlockedBody:
-    "Kontak lawan bicara tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
-  closedNote: "Pembagian kontak tidak tersedia untuk percakapan ini.",
+    "Kontak teman ngobrolmu tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
+  closedNote: "Berbagi kontak tidak tersedia untuk percakapan ini.",
   notReadyNote:
     "Kamu dapat berbagi kontak setelah kalian selesai berbagi nama dan foto dan percakapan masih aktif.",
-  genericError: "Pembagian kontak belum dapat diproses. Coba lagi sebentar.",
+  genericError: "Kontak belum dapat dibagikan. Coba lagi sebentar.",
   validationError:
     "Kontak belum dapat disimpan. Periksa formatnya, lalu coba lagi.",
-  loading: "Memuat pembagian kontak…",
+  loading: "Memuat kontak…",
   mineLabel: "Kontakmu",
-  counterpartLabel: "Kontak lawan bicara",
+  counterpartLabel: "Kontak teman ngobrolmu",
   counterpartUnavailable: "Tidak tersedia",
   channelLabels: {
     telegram: "Telegram",

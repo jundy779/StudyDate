@@ -13,7 +13,7 @@ async function AdminContent() {
     {
       href: "/admin/events",
       title: "Acara Kampus",
-      description: "Pantau acara yang dibuat mahasiswa dan status tampil publiknya.",
+      description: "Pantau acara yang dibuat mahasiswa dan apakah acara sudah tampil untuk pengguna.",
       icon: CalendarDays,
     },
     access.canUsersRead || access.canUsersSupport
@@ -28,7 +28,7 @@ async function AdminContent() {
       ? {
           href: "/staff/early-access",
           title: "Akses Awal",
-          description: "Periksa daftar pendaftar dan status aktivasi.",
+          description: "Periksa pendaftar dan tindak lanjutnya.",
           icon: ScrollText,
         }
       : null,
