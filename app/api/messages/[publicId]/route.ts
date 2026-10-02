@@ -136,6 +136,12 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         created_at: message.created_at,
         read_at: message.read_at,
         moderation_status: message.moderation_status,
+        reply_message_id: message.reply_message_id,
+        reply_body: message.reply_body,
+        reply_message_type: message.reply_message_type,
+        reply_sticker_id: message.reply_sticker_id,
+        reply_is_mine: message.reply_is_mine,
+        reactions: message.reactions,
       })),
     });
   } catch {

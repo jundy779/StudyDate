@@ -284,7 +284,7 @@ Rules:
 
 Chat terbuka setelah introduction diterima. Shell `awaiting_chat` berubah menjadi `active` saat pesan pertama berhasil disimpan.
 
-Actions: kirim teks dan emoji Unicode, kirim official StudyDate sticker bila migration terkait sudah diterapkan, tandai pesan dibaca, end, block, report, dan mutual interest. Migration `202610020002` menyiapkan chat Realtime privat serta indikator mengetik tanpa mengirim isi pesan atau draft melalui channel. Client tetap memakai authenticated polling sebagai fallback. Rollout migration remote belum diverifikasi, jadi fitur ini belum boleh disebut aktif di production.
+Actions: kirim teks dan emoji Unicode, kirim official StudyDate sticker bila migration terkait sudah diterapkan, balas pesan tertentu, beri satu reaksi emoji per pengguna, tandai pesan dibaca, end, block, report, dan mutual interest. Balasan dan reaksi disiapkan melalui migration `202610020004`; kontrol UI baru muncul setelah capability database tersedia. Migration `202610020002` menyiapkan chat Realtime privat serta indikator mengetik tanpa mengirim isi pesan atau draft melalui channel. Client tetap memakai authenticated polling sebagai fallback. Rollout migration remote belum diverifikasi, jadi fitur ini belum boleh disebut aktif di production.
 
 Jangan bocorkan Telegram metadata, email, sender ID, UUID peserta, atau kontak sebelum reveal.
 

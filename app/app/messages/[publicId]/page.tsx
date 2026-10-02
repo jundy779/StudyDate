@@ -4,6 +4,7 @@ import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   countUnreadConversations,
   getConversationByPublicId,
+  getMessageInteractionCapability,
   listConversationMessages,
 } from "@/lib/messages/service";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
@@ -51,6 +52,7 @@ async function ConversationContent({
   const [
     conversation,
     messages,
+    messageInteractionsEnabled,
     unreadConversations,
     mutualInterest,
     identityReveal,
@@ -61,6 +63,7 @@ async function ConversationContent({
   ] = await Promise.all([
     getConversationByPublicId(parsed.data),
     listConversationMessages(parsed.data, { limit: 50 }),
+    getMessageInteractionCapability(),
     countUnreadConversations(),
     getMutualInterestState(parsed.data),
     getIdentityRevealState(parsed.data),
@@ -128,6 +131,7 @@ async function ConversationContent({
         <ConversationRoom
           conversation={conversation}
           initialMessages={messages}
+          messageInteractionsEnabled={messageInteractionsEnabled}
           initialMutualInterest={mutualInterest}
           initialIdentityReveal={identityReveal}
           initialIdentityRevealPreview={identityRevealPreview}

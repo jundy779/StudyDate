@@ -11,10 +11,10 @@ export type ClientChatMessage = {
 
 export const CHAT_NEAR_BOTTOM_PX = 100;
 
-export function mergeChatMessages(
-  current: ClientChatMessage[],
-  incoming: ClientChatMessage[],
-) {
+export function mergeChatMessages<T extends ClientChatMessage>(
+  current: T[],
+  incoming: T[],
+): T[] {
   const unique = new Map(current.map((message) => [message.message_id, message]));
   for (const message of incoming) {
     unique.set(message.message_id, message);

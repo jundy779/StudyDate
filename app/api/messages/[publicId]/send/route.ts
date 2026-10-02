@@ -1,5 +1,6 @@
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
+  listConversationMessages,
   sendAnonymousMessage,
   sendAnonymousSticker,
   type ChatMessage,
@@ -26,6 +27,12 @@ function safeMessage(message: ChatMessage) {
     created_at: message.created_at,
     read_at: message.read_at,
     moderation_status: message.moderation_status,
+    reply_message_id: message.reply_message_id ?? null,
+    reply_body: message.reply_body ?? null,
+    reply_message_type: message.reply_message_type ?? null,
+    reply_sticker_id: message.reply_sticker_id ?? null,
+    reply_is_mine: message.reply_is_mine ?? false,
+    reactions: message.reactions ?? [],
   };
 }
 
@@ -61,6 +68,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const parsed = sendChatMessageSchema.safeParse({
         publicId: publicId.data,
         body: payload.body,
+        replyToMessageId: payload.replyToMessageId,
         idempotencyKey: payload.idempotencyKey,
       });
       if (!parsed.success) {
@@ -74,9 +82,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
         parsed.data.publicId,
         parsed.data.body,
         parsed.data.idempotencyKey,
+        parsed.data.replyToMessageId,
       );
+      const currentMessages = await listConversationMessages(
+        parsed.data.publicId,
+        { limit: 50 },
+      );
+      const enriched =
+        currentMessages.find(
+          (current) => current.message_id === message.message_id,
+        ) ?? message;
       return NextResponse.json({
-        message: safeMessage(message),
+        message: safeMessage(enriched),
         conversationStatus: message.conversation_status,
       });
     }
@@ -85,6 +102,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const parsed = sendChatStickerSchema.safeParse({
         publicId: publicId.data,
         stickerId: payload.stickerId,
+        replyToMessageId: payload.replyToMessageId,
         idempotencyKey: payload.idempotencyKey,
       });
       if (!parsed.success) {
@@ -99,22 +117,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
         parsed.data.publicId,
         parsed.data.stickerId,
         parsed.data.idempotencyKey,
+        parsed.data.replyToMessageId,
       );
       if (!sticker || !messageId) {
         throw new Error("Stiker belum dapat dikirim.");
       }
 
+      const currentMessages = await listConversationMessages(
+        parsed.data.publicId,
+        { limit: 50 },
+      );
+      const enriched = currentMessages.find(
+        (current) => current.message_id === messageId,
+      );
       return NextResponse.json({
-        message: {
-          message_id: messageId,
-          body: sticker.fallbackText,
-          message_type: "sticker",
-          sticker_id: sticker.id,
-          is_mine: true,
-          created_at: new Date().toISOString(),
-          read_at: null,
-          moderation_status: "visible",
-        } satisfies ChatMessage,
+        message: enriched
+          ? safeMessage(enriched)
+          : {
+              message_id: messageId,
+              body: sticker.fallbackText,
+              message_type: "sticker",
+              sticker_id: sticker.id,
+              is_mine: true,
+              created_at: new Date().toISOString(),
+              read_at: null,
+              moderation_status: "visible",
+              reply_message_id: null,
+              reply_body: null,
+              reply_message_type: null,
+              reply_sticker_id: null,
+              reply_is_mine: false,
+              reactions: [],
+            } satisfies ChatMessage,
       });
     }
 

@@ -47,11 +47,13 @@ import { MeetingPlanPanel } from "@/components/messages/meeting-plan-panel";
 import { ChatMessageBubble } from "@/components/messages/chat-message-bubble";
 import { ChatComposerTools } from "@/components/messages/chat-composer-tools";
 import { getMascotForAlias } from "@/lib/people/constants";
+import type { ChatReactionValue } from "@/lib/messages/reactions";
 import { CHAT_STARTERS } from "@/lib/messages/starters";
+import { getChatStickerById } from "@/lib/messages/stickers";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
 import type { MeetingPlanState } from "@/lib/meeting-plans/constants";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { BadgeCheck, LoaderCircle } from "lucide-react";
+import { BadgeCheck, LoaderCircle, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -69,6 +71,7 @@ import {
 type ConversationRoomProps = {
   conversation: ConversationDetail;
   initialMessages: ChatMessage[];
+  messageInteractionsEnabled: boolean;
   initialMutualInterest: MutualInterestState;
   initialIdentityReveal: IdentityRevealState;
   initialIdentityRevealPreview: IdentityRevealProfilePreview | null;
@@ -105,6 +108,7 @@ function makeIdempotencyKey() {
 export function ConversationRoom({
   conversation,
   initialMessages,
+  messageInteractionsEnabled,
   initialMutualInterest,
   initialIdentityReveal,
   initialIdentityRevealPreview,
@@ -137,6 +141,8 @@ export function ConversationRoom({
     initialContactCompleted,
   );
   const [body, setBody] = useState("");
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [reactionPending, setReactionPending] = useState<string | null>(null);
   const [counterpartTyping, setCounterpartTyping] = useState(false);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [clientError, setClientError] = useState<string | null>(notice ?? null);
@@ -552,6 +558,53 @@ export function ConversationRoom({
     });
   }
 
+  function selectReply(message: ChatMessage) {
+    if (!messageInteractionsEnabled || message.moderation_status !== "visible") {
+      return;
+    }
+    setReplyingTo(message);
+    setClientError(null);
+    requestAnimationFrame(() => composerRef.current?.focus());
+  }
+
+  async function reactToMessage(
+    messageId: string,
+    reaction: ChatReactionValue,
+  ) {
+    if (!messageInteractionsEnabled || reactionPending) return;
+    setReactionPending(messageId);
+    setClientError(null);
+    try {
+      const response = await fetch(
+        `/api/messages/${conversation.public_id}/reactions`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messageId, reaction }),
+        },
+      );
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: ChatMessage; error?: string }
+        | null;
+      if (!response.ok || !payload?.message) {
+        throw new Error(
+          payload?.error ?? "Reaksi belum dapat disimpan. Coba lagi.",
+        );
+      }
+      setMessages((current) =>
+        mergeChatMessages(current, [payload.message as ChatMessage]),
+      );
+    } catch (error) {
+      setClientError(
+        error instanceof Error
+          ? error.message
+          : "Reaksi belum dapat disimpan. Coba lagi.",
+      );
+    } finally {
+      setReactionPending(null);
+    }
+  }
+
   function onComposerSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSend || pending) return;
@@ -562,6 +615,10 @@ export function ConversationRoom({
     const stickerId =
       submitter?.name === "stickerId" ? submitter.value : null;
     const idempotencyKey = makeIdempotencyKey();
+    const replyToMessageId =
+      messageInteractionsEnabled && replyingTo
+        ? replyingTo.message_id
+        : undefined;
     const trimmed = body
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
@@ -588,8 +645,18 @@ export function ConversationRoom({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(
               stickerId
-                ? { type: "sticker", stickerId, idempotencyKey }
-                : { type: "text", body: trimmed, idempotencyKey },
+                ? {
+                    type: "sticker",
+                    stickerId,
+                    idempotencyKey,
+                    replyToMessageId,
+                  }
+                : {
+                    type: "text",
+                    body: trimmed,
+                    idempotencyKey,
+                    replyToMessageId,
+                  },
             ),
           },
         );
@@ -614,6 +681,7 @@ export function ConversationRoom({
           setStatus(payload.conversationStatus);
         }
         if (!stickerId) updateComposerBody("");
+        setReplyingTo(null);
       } catch (error) {
         setClientError(
           error instanceof Error
@@ -626,6 +694,11 @@ export function ConversationRoom({
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.nativeEvent.isComposing) return;
+    if (event.key === "Escape" && replyingTo) {
+      event.preventDefault();
+      setReplyingTo(null);
+      return;
+    }
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       event.currentTarget.form?.requestSubmit();
@@ -782,6 +855,12 @@ export function ConversationRoom({
               <ChatMessageBubble
                 message={message}
                 counterpartAlias={conversation.counterpart_alias}
+                interactionsEnabled={messageInteractionsEnabled && !closed}
+                reactionPending={reactionPending === message.message_id}
+                onReply={selectReply}
+                onReact={(messageId, reaction) => {
+                  void reactToMessage(messageId, reaction);
+                }}
               />
             </div>
           );
@@ -927,6 +1006,28 @@ export function ConversationRoom({
                 onInsertEmoji={insertEmoji}
               />
             </div>
+            {messageInteractionsEnabled && replyingTo ? (
+              <div className="flex items-start justify-between gap-3 rounded-xl border border-brand-border bg-brand-surface px-3 py-2">
+                <div className="min-w-0 border-l-2 border-brand-blue pl-3">
+                  <p className="text-xs font-semibold text-brand-blue">
+                    Membalas {replyingTo.is_mine ? "pesanmu" : conversation.counterpart_alias}
+                  </p>
+                  <p className="mt-0.5 line-clamp-2 break-words text-xs leading-5 text-brand-muted">
+                    {replyingTo.message_type === "sticker"
+                      ? getChatStickerById(replyingTo.sticker_id)?.alt ?? "Stiker"
+                      : replyingTo.body}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  aria-label="Batalkan balasan"
+                  className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-brand-muted hover:bg-white hover:text-brand-navy"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            ) : null}
             <textarea
               ref={composerRef}
               id="chat-body"

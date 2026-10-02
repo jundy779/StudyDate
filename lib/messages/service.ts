@@ -8,6 +8,10 @@ import {
   type ConversationStatus,
   type ReportReasonCode,
 } from "@/lib/messages/constants";
+import type {
+  ChatReactionSummary,
+  ChatReactionValue,
+} from "@/lib/messages/reactions";
 import { createClient } from "@/lib/supabase/server";
 
 export type ConversationListItem = {
@@ -48,7 +52,47 @@ export type ChatMessage = {
   created_at: string;
   read_at: string | null;
   moderation_status: "visible" | "removed";
+  reply_message_id: string | null;
+  reply_body: string | null;
+  reply_message_type: "text" | "sticker" | null;
+  reply_sticker_id: string | null;
+  reply_is_mine: boolean;
+  reactions: ChatReactionSummary[];
 };
+
+function isMissingRpc(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return (
+    error.code === "PGRST202" ||
+    error.code === "42883" ||
+    message.includes("schema cache") ||
+    message.includes("could not find the function") ||
+    message.includes("does not exist")
+  );
+}
+
+function withoutMessageInteractions(
+  message: Omit<
+    ChatMessage,
+    | "reply_message_id"
+    | "reply_body"
+    | "reply_message_type"
+    | "reply_sticker_id"
+    | "reply_is_mine"
+    | "reactions"
+  >,
+): ChatMessage {
+  return {
+    ...message,
+    reply_message_id: null,
+    reply_body: null,
+    reply_message_type: null,
+    reply_sticker_id: null,
+    reply_is_mine: false,
+    reactions: [],
+  };
+}
 
 function mapChatError(message: string | undefined): string {
   const text = (message ?? "").toLowerCase();
@@ -121,18 +165,39 @@ export async function listConversationMessages(
     p_before_id: options?.beforeId ?? null,
     p_limit: options?.limit ?? 40,
   };
-  const { data, error } = await supabase.rpc(
-    "list_conversation_messages_v2",
+  const modern = await supabase.rpc(
+    "list_conversation_messages_v3",
     params,
   );
 
-  if (!error) {
-    return (data ?? []) as ChatMessage[];
+  if (!modern.error) {
+    return (modern.data ?? []) as ChatMessage[];
+  }
+  if (!isMissingRpc(modern.error)) {
+    throw new Error(GENERIC_CHAT_ERROR);
   }
 
-  // Safe rolling-deploy fallback: old servers can keep text chat working until
-  // the sticker migration is applied. Do not mask normal authorization errors.
-  if (error.code !== "PGRST202" && error.code !== "42883") {
+  // Rolling-deploy fallback: keep sticker/text chat available before the
+  // reply-and-reaction migration is applied.
+  const stickerCapable = await supabase.rpc(
+    "list_conversation_messages_v2",
+    params,
+  );
+  if (!stickerCapable.error) {
+    const messages = (stickerCapable.data ?? []) as Array<
+      Omit<
+        ChatMessage,
+        | "reply_message_id"
+        | "reply_body"
+        | "reply_message_type"
+        | "reply_sticker_id"
+        | "reply_is_mine"
+        | "reactions"
+      >
+    >;
+    return messages.map(withoutMessageInteractions);
+  }
+  if (!isMissingRpc(stickerCapable.error)) {
     throw new Error(GENERIC_CHAT_ERROR);
   }
 
@@ -142,52 +207,102 @@ export async function listConversationMessages(
   }
 
   const legacyMessages = (legacy.data ?? []) as Array<
-    Omit<ChatMessage, "message_type" | "sticker_id">
+    Omit<
+      ChatMessage,
+      | "message_type"
+      | "sticker_id"
+      | "reply_message_id"
+      | "reply_body"
+      | "reply_message_type"
+      | "reply_sticker_id"
+      | "reply_is_mine"
+      | "reactions"
+    >
   >;
 
-  return legacyMessages.map((message) => ({
-    ...message,
-    message_type: "text" as const,
-    sticker_id: null,
-  }));
+  return legacyMessages.map((message) =>
+    withoutMessageInteractions({
+      ...message,
+      message_type: "text" as const,
+      sticker_id: null,
+    }),
+  );
 }
 
 export async function sendAnonymousMessage(
   publicId: string,
   body: string,
   idempotencyKey?: string,
+  replyToMessageId?: string,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("send_anonymous_message", {
+  const modern = await supabase.rpc("send_anonymous_message_v2", {
+    p_public_id: publicId,
+    p_body: body,
+    p_reply_to_message_id: replyToMessageId ?? null,
+    p_idempotency_key: idempotencyKey ?? null,
+  });
+
+  if (!modern.error) {
+    return (modern.data ?? [])[0] as ChatMessage & {
+      conversation_status: string;
+    };
+  }
+  if (!isMissingRpc(modern.error) || replyToMessageId) {
+    throw new Error(
+      replyToMessageId && isMissingRpc(modern.error)
+        ? "Fitur balas pesan belum siap. Muat ulang setelah pembaruan selesai."
+        : mapChatError(modern.error.message),
+    );
+  }
+
+  const legacy = await supabase.rpc("send_anonymous_message", {
     p_public_id: publicId,
     p_body: body,
     p_idempotency_key: idempotencyKey ?? null,
   });
-
-  if (error) {
-    throw new Error(mapChatError(error.message));
+  if (legacy.error) {
+    throw new Error(mapChatError(legacy.error.message));
   }
-
-  return (data ?? [])[0] as ChatMessage & { conversation_status: string };
+  return (legacy.data ?? [])[0] as ChatMessage & {
+    conversation_status: string;
+  };
 }
 
 export async function sendAnonymousSticker(
   publicId: string,
   stickerId: string,
   idempotencyKey?: string,
+  replyToMessageId?: string,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("send_anonymous_sticker", {
+  const modern = await supabase.rpc("send_anonymous_sticker_v2", {
+    p_public_id: publicId,
+    p_sticker_id: stickerId,
+    p_reply_to_message_id: replyToMessageId ?? null,
+    p_idempotency_key: idempotencyKey ?? null,
+  });
+
+  if (!modern.error) {
+    return modern.data as string | null;
+  }
+  if (!isMissingRpc(modern.error) || replyToMessageId) {
+    throw new Error(
+      replyToMessageId && isMissingRpc(modern.error)
+        ? "Fitur balas pesan belum siap. Muat ulang setelah pembaruan selesai."
+        : mapChatError(modern.error.message),
+    );
+  }
+
+  const legacy = await supabase.rpc("send_anonymous_sticker", {
     p_public_id: publicId,
     p_sticker_id: stickerId,
     p_idempotency_key: idempotencyKey ?? null,
   });
-
-  if (error) {
-    throw new Error(mapChatError(error.message));
+  if (legacy.error) {
+    throw new Error(mapChatError(legacy.error.message));
   }
-
-  return data as string | null;
+  return legacy.data as string | null;
 }
 
 export async function markConversationMessagesRead(publicId: string) {
@@ -243,4 +358,35 @@ export async function getConversationPublicIdForIntroduction(requestId: string) 
   }
 
   return data;
+}
+
+
+export async function getMessageInteractionCapability() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "anonymous_chat_interactions_available",
+  );
+  if (error && isMissingRpc(error)) return false;
+  if (error) return false;
+  return data === true;
+}
+
+export async function toggleAnonymousMessageReaction(input: {
+  publicId: string;
+  messageId: string;
+  reaction: ChatReactionValue | null;
+}) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "toggle_anonymous_message_reaction",
+    {
+      p_public_id: input.publicId,
+      p_message_id: input.messageId,
+      p_reaction: input.reaction,
+    },
+  );
+  if (error) {
+    throw new Error(mapChatError(error.message));
+  }
+  return (data ?? null) as ChatReactionValue | null;
 }

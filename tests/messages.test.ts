@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   chatMessageSchema,
   conversationPublicIdSchema,
+  messageReactionSchema,
   normalizeChatMessage,
   sendChatStickerSchema,
 } from "../lib/messages/validation.ts";
@@ -18,6 +19,7 @@ import {
   nextChatPollDelay,
   nextPollDelay,
 } from "../lib/messages/client-state.ts";
+import { CHAT_REACTIONS } from "../lib/messages/reactions.ts";
 import { CHAT_STARTERS } from "../lib/messages/starters.ts";
 import {
   CHAT_EMOJI_SHORTLIST,
@@ -42,6 +44,13 @@ const stickerMigration = readFileSync(
 const realtimeMigration = readFileSync(
   new URL(
     "../supabase/migrations/202610020002_anonymous_chat_realtime_v1.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const interactionMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202610020004_anonymous_chat_replies_reactions_v1.sql",
     import.meta.url,
   ),
   "utf8",
@@ -87,6 +96,13 @@ const pollRoute = readFileSync(
 );
 const sendRoute = readFileSync(
   new URL("../app/api/messages/[publicId]/send/route.ts", import.meta.url),
+  "utf8",
+);
+const reactionRoute = readFileSync(
+  new URL(
+    "../app/api/messages/[publicId]/reactions/route.ts",
+    import.meta.url,
+  ),
   "utf8",
 );
 
@@ -492,4 +508,78 @@ test("typing status is private, throttled, and expires automatically", () => {
   assert.match(room, /\(\) => setCounterpartTyping\(false\),\s*2_500/);
   assert.match(room, /sedang mengetik…/);
   assert.doesNotMatch(room, /payload: \{[^}]*userId/);
+});
+
+
+test("reply targets stay inside the same authorized conversation", () => {
+  assert.match(
+    interactionMigration,
+    /candidate\.id = p_reply_to_message_id[\s\S]*candidate\.conversation_id = shell\.id/,
+  );
+  assert.match(
+    interactionMigration,
+    /candidate\.moderation_status = 'visible'/,
+  );
+  assert.match(interactionMigration, /anonymous_messages_reply_not_self/);
+  assert.match(interactionMigration, /send_anonymous_message_v2/);
+  assert.match(interactionMigration, /send_anonymous_sticker_v2/);
+  assert.match(interactionMigration, /idempotency conflict/);
+});
+
+test("message reactions expose aggregates without participant identities", () => {
+  assert.equal(CHAT_REACTIONS.length, 5);
+  assert.equal(
+    messageReactionSchema.safeParse({
+      publicId: "a".repeat(32),
+      messageId: "00000000-0000-4000-8000-000000000000",
+      reaction: "love",
+    }).success,
+    true,
+  );
+  assert.equal(
+    messageReactionSchema.safeParse({
+      publicId: "a".repeat(32),
+      messageId: "00000000-0000-4000-8000-000000000000",
+      reaction: "dating",
+    }).success,
+    false,
+  );
+  assert.match(
+    interactionMigration,
+    /primary key \(message_id, user_id\)/,
+  );
+  assert.match(interactionMigration, /count\(\*\)::integer as reaction_count/);
+  assert.match(interactionMigration, /reacted_by_me/);
+  assert.doesNotMatch(
+    interactionMigration,
+    /grant (select|insert|update|delete) on table public\.anonymous_message_reactions/i,
+  );
+  assert.match(
+    interactionMigration,
+    /alter table public\.anonymous_message_reactions enable row level security/i,
+  );
+});
+
+test("reply and reaction UI stays capability-gated during database rollout", () => {
+  assert.match(room, /messageInteractionsEnabled && !closed/);
+  assert.match(room, /replyToMessageId/);
+  assert.match(room, /Membalas/);
+  assert.match(room, /Batalkan balasan/);
+  assert.match(messageBubble, /Balas/);
+  assert.match(messageBubble, /Reaksi/);
+  assert.match(messageBubble, /aria-pressed=\{summary\.reacted_by_me\}/);
+  assert.match(sendRoute, /listConversationMessages/);
+  assert.match(reactionRoute, /getAuthenticatedUser/);
+  assert.match(reactionRoute, /onboarding_completed_at/);
+  assert.match(reactionRoute, /messageReactionSchema/);
+});
+
+test("message interaction RPCs fall back without disabling existing chat", () => {
+  assert.match(service, /list_conversation_messages_v3/);
+  assert.match(service, /list_conversation_messages_v2/);
+  assert.match(service, /list_conversation_messages"/);
+  assert.match(service, /isMissingRpc/);
+  assert.match(service, /Fitur balas pesan belum siap/);
+  assert.match(interactionMigration, /'message_changed'/);
+  assert.match(interactionMigration, /'change', 'reactions'/);
 });

@@ -6,6 +6,7 @@ import {
   REPORT_REASON_CODES,
 } from "./constants.ts";
 import { openingMessageHasContact } from "../introductions/validation.ts";
+import { CHAT_REACTION_VALUES } from "./reactions.ts";
 import { CHAT_STICKER_IDS } from "./stickers.ts";
 
 export function normalizeChatMessage(value: string) {
@@ -39,6 +40,7 @@ export const chatMessageSchema = z
 export const sendChatMessageSchema = z.object({
   publicId: conversationPublicIdSchema,
   body: chatMessageSchema,
+  replyToMessageId: z.string().uuid().optional(),
   idempotencyKey: z
     .string()
     .regex(/^[A-Za-z0-9_-]{8,64}$/)
@@ -48,10 +50,17 @@ export const sendChatMessageSchema = z.object({
 export const sendChatStickerSchema = z.object({
   publicId: conversationPublicIdSchema,
   stickerId: z.enum(CHAT_STICKER_IDS),
+  replyToMessageId: z.string().uuid().optional(),
   idempotencyKey: z
     .string()
     .regex(/^[A-Za-z0-9_-]{8,64}$/)
     .optional(),
+});
+
+export const messageReactionSchema = z.object({
+  publicId: conversationPublicIdSchema,
+  messageId: z.string().uuid(),
+  reaction: z.enum(CHAT_REACTION_VALUES).nullable(),
 });
 
 export const reportConversationSchema = z.object({
@@ -73,4 +82,5 @@ export const reportConversationSchema = z.object({
 
 export type SendChatMessageInput = z.infer<typeof sendChatMessageSchema>;
 export type SendChatStickerInput = z.infer<typeof sendChatStickerSchema>;
+export type MessageReactionInput = z.infer<typeof messageReactionSchema>;
 export type ReportConversationInput = z.infer<typeof reportConversationSchema>;

@@ -292,7 +292,9 @@ accepted introduction
  -> conversation_shells (public_id opaque)
  -> /app/messages list + /app/messages/[publicId]
  -> send_anonymous_message / send_anonymous_sticker
- -> list_conversation_messages_v2 (legacy text projection tetap tersedia saat rolling deploy)
+ -> versioned reply send RPCs + bounded reaction toggle
+ -> list_conversation_messages_v3 (reply preview + reaction aggregates)
+ -> v2/v1 projection fallback selama rolling deploy
  -> private Realtime Broadcast signal -> authenticated safe refetch
  -> adaptive authenticated polling tetap menjadi fallback
  -> end | block | report
@@ -308,6 +310,12 @@ Realtime Broadcast yang hanya mengirim sinyal tanpa isi pesan; client lalu menga
 authenticated. Indikator mengetik memakai event sementara tanpa user ID, alias, atau isi draft. Adaptive polling tetap
 aktif sebagai fallback saat channel belum tersambung atau migration remote belum diterapkan. Status rollout remote harus
 diverifikasi sebelum Realtime disebut aktif di production.
+
+Migration `202610020004` menambahkan balasan yang hanya boleh menunjuk pesan visible dalam conversation yang sama.
+Reaksi dibatasi pada lima nilai, satu pilihan per peserta per pesan, dan client hanya menerima jumlah per reaksi serta
+`reacted_by_me`, bukan UUID pemberi reaksi. Tabel reaksi memakai RLS tanpa direct table grant; seluruh mutasi melalui
+RPC yang memeriksa participant, status conversation, block, dan target pesan. RPC v3 serta send v2 bersifat versioned
+agar chat lama, stiker, Telegram Companion, dan polling tetap berjalan sebelum rollout database selesai.
 
 ## 12c. Mutual Interest v1 architecture
 
