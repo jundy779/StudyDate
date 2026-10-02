@@ -228,17 +228,3 @@ begin
   ) values (new_id, actor, 'created');
   return new_slug;
 end; $$;
-
-create or replace function public.rsvp_campus_event(p_public_slug text)
-returns boolean
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare result_status text;
-begin
-  select registration.status into result_status
-  from public.register_for_campus_event(p_public_slug, '{}'::jsonb) registration;
-  return result_status is not null;
-end;
-$$;
