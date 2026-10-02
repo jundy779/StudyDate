@@ -22,6 +22,7 @@ import {
   nextChatPollDelay,
   nextPollDelay,
 } from "@/lib/messages/client-state";
+import { createClient as createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
 import type { MutualInterestState } from "@/lib/mutual-interest/constants";
 import type {
@@ -49,6 +50,7 @@ import { getMascotForAlias } from "@/lib/people/constants";
 import { CHAT_STARTERS } from "@/lib/messages/starters";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
 import type { MeetingPlanState } from "@/lib/meeting-plans/constants";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -135,6 +137,8 @@ export function ConversationRoom({
     initialContactCompleted,
   );
   const [body, setBody] = useState("");
+  const [counterpartTyping, setCounterpartTyping] = useState(false);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [clientError, setClientError] = useState<string | null>(notice ?? null);
   const [pending, startTransition] = useTransition();
   const [pollNote, setPollNote] = useState<string | null>(null);
@@ -148,6 +152,11 @@ export function ConversationRoom({
   const listRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef(messages);
+  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
+  const counterpartTypingTimerRef = useRef<number | undefined>(undefined);
+  const typingStopTimerRef = useRef<number | undefined>(undefined);
+  const typingActiveRef = useRef(false);
+  const lastTypingSignalAtRef = useRef(0);
   const markedRead = useRef(false);
   const initialScrollDone = useRef(false);
   const shouldScrollAfterUpdate = useRef(false);
@@ -205,6 +214,8 @@ export function ConversationRoom({
     let revealGeneration = 0;
     let messageController: AbortController | null = null;
     let revealController: AbortController | null = null;
+    let realtimeClient: ReturnType<typeof createBrowserSupabaseClient> | null = null;
+    let realtimeChannel: RealtimeChannel | null = null;
 
     function scheduleMessages(delay: number) {
       window.clearTimeout(messageTimer);
@@ -360,6 +371,48 @@ export function ConversationRoom({
       resumePolling();
     }
 
+    realtimeClient = createBrowserSupabaseClient();
+    realtimeChannel = realtimeClient
+      .channel(`conversation:${conversation.public_id}`, {
+        config: {
+          private: true,
+          broadcast: { self: false, ack: false },
+        },
+      })
+      .on("broadcast", { event: "message_changed" }, () => {
+        messageIdleCycles = 0;
+        void pollMessages();
+      })
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        const active = payload?.active === true;
+        window.clearTimeout(counterpartTypingTimerRef.current);
+        setCounterpartTyping(active);
+        if (active) {
+          counterpartTypingTimerRef.current = window.setTimeout(
+            () => setCounterpartTyping(false),
+            2_500,
+          );
+        }
+      });
+    realtimeChannelRef.current = realtimeChannel;
+    void realtimeClient.realtime
+      .setAuth()
+      .then(() => {
+        if (cancelled || !realtimeChannel) return;
+        realtimeChannel.subscribe((subscriptionStatus) => {
+          if (cancelled) return;
+          const connected = subscriptionStatus === "SUBSCRIBED";
+          setRealtimeConnected(connected);
+          if (!connected) {
+            typingActiveRef.current = false;
+            setCounterpartTyping(false);
+          }
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setRealtimeConnected(false);
+      });
+
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
@@ -374,6 +427,14 @@ export function ConversationRoom({
       revealController?.abort();
       window.clearTimeout(messageTimer);
       window.clearTimeout(revealTimer);
+      window.clearTimeout(counterpartTypingTimerRef.current);
+      window.clearTimeout(typingStopTimerRef.current);
+      if (realtimeChannelRef.current === realtimeChannel) {
+        realtimeChannelRef.current = null;
+      }
+      if (realtimeClient && realtimeChannel) {
+        void realtimeClient.removeChannel(realtimeChannel);
+      }
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
@@ -435,10 +496,42 @@ export function ConversationRoom({
     endDialogRef.current?.close();
   }
 
+  function publishTyping(active: boolean) {
+    const channel = realtimeChannelRef.current;
+    if (!realtimeConnected || !channel) return;
+    typingActiveRef.current = active;
+    if (active) lastTypingSignalAtRef.current = Date.now();
+    void channel
+      .send({
+        type: "broadcast",
+        event: "typing",
+        payload: { active },
+      })
+      .catch(() => undefined);
+  }
+
+  function updateComposerBody(next: string) {
+    setBody(next);
+    window.clearTimeout(typingStopTimerRef.current);
+    if (!next.trim()) {
+      if (typingActiveRef.current) publishTyping(false);
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastTypingSignalAtRef.current >= 1_200) {
+      publishTyping(true);
+    }
+    typingStopTimerRef.current = window.setTimeout(
+      () => publishTyping(false),
+      1_800,
+    );
+  }
+
   function insertEmoji(emoji: string) {
     const textarea = composerRef.current;
     if (!textarea) {
-      setBody((current) => (current + emoji).slice(0, CHAT_MESSAGE_MAX));
+      updateComposerBody((body + emoji).slice(0, CHAT_MESSAGE_MAX));
       return;
     }
 
@@ -450,7 +543,7 @@ export function ConversationRoom({
       return;
     }
 
-    setBody(next);
+    updateComposerBody(next);
     setClientError(null);
     requestAnimationFrame(() => {
       textarea.focus();
@@ -520,7 +613,7 @@ export function ConversationRoom({
         if (payload.conversationStatus) {
           setStatus(payload.conversationStatus);
         }
-        if (!stickerId) setBody("");
+        if (!stickerId) updateComposerBody("");
       } catch (error) {
         setClientError(
           error instanceof Error
@@ -661,7 +754,7 @@ export function ConversationRoom({
                   type="button"
                   className="focus-ring min-h-10 rounded-full border border-brand-border bg-brand-surface px-3 text-sm font-semibold text-brand-blue hover:border-brand-blue"
                   onClick={() => {
-                    setBody(starter.message);
+                    updateComposerBody(starter.message);
                     setClientError(null);
                     requestAnimationFrame(() => composerRef.current?.focus());
                   }}
@@ -816,6 +909,15 @@ export function ConversationRoom({
           >
             <input type="hidden" name="publicId" value={conversation.public_id} />
             <input type="hidden" name="idempotencyKey" defaultValue="" />
+            <div className="min-h-5" aria-live="polite" aria-atomic="true">
+              {counterpartTyping ? (
+                <p className="text-xs font-medium text-brand-blue">
+                  {conversation.counterpart_alias} sedang mengetik…
+                </p>
+              ) : realtimeConnected ? (
+                <span className="sr-only">Chat tersambung langsung.</span>
+              ) : null}
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label htmlFor="chat-body" className="text-sm font-semibold text-brand-navy">
                 Tulis pesan
@@ -831,7 +933,7 @@ export function ConversationRoom({
               name="body"
               rows={3}
               value={body}
-              onChange={(event) => setBody(event.target.value)}
+              onChange={(event) => updateComposerBody(event.target.value)}
               onKeyDown={onKeyDown}
               maxLength={CHAT_MESSAGE_MAX}
               disabled={pending}

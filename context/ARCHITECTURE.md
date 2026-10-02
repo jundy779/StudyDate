@@ -288,7 +288,8 @@ accepted introduction
  -> /app/messages list + /app/messages/[publicId]
  -> send_anonymous_message / send_anonymous_sticker
  -> list_conversation_messages_v2 (legacy text projection tetap tersedia saat rolling deploy)
- -> authenticated poll /api/messages/[publicId] (~4s)
+ -> private Realtime Broadcast signal -> authenticated safe refetch
+ -> adaptive authenticated polling tetap menjadi fallback
  -> end | block | report
 ```
 
@@ -297,8 +298,11 @@ Pesan disimpan di `anonymous_messages` dengan `message_type = text | sticker`, b
 `sticker_id`, idempotency key, dan `read_at` recipient-only. Emoji tetap Unicode di body teks dan tidak memerlukan media
 storage. Sticker v1 hanya memakai aset mascot resmi yang sudah dibundel; tidak ada URL/storage path yang dikirim user.
 Body fallback mempertahankan kompatibilitas Telegram Companion v1 dan client lama. Tidak ada grant SELECT tabel ke
-`authenticated` agar UUID pengirim tidak bocor lewat PostgREST; delivery v1 menggunakan polling RPC. Realtime dapat
-dipertimbangkan kemudian dengan projection aman.
+`authenticated` agar UUID pengirim tidak bocor lewat PostgREST. Migration `202610020002` menambahkan private
+Realtime Broadcast yang hanya mengirim sinyal tanpa isi pesan; client lalu mengambil ulang projection aman lewat route
+authenticated. Indikator mengetik memakai event sementara tanpa user ID, alias, atau isi draft. Adaptive polling tetap
+aktif sebagai fallback saat channel belum tersambung atau migration remote belum diterapkan. Status rollout remote harus
+diverifikasi sebelum Realtime disebut aktif di production.
 
 ## 12c. Mutual Interest v1 architecture
 

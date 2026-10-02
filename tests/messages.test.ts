@@ -39,6 +39,13 @@ const stickerMigration = readFileSync(
   ),
   "utf8",
 );
+const realtimeMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202610020002_anonymous_chat_realtime_v1.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const introMigration = readFileSync(
   new URL(
     "../supabase/migrations/202608060001_create_introduction_requests_v1.sql",
@@ -434,4 +441,55 @@ test("end dialog and chat layout close accessibility audit contracts", () => {
   const privacySection = room.indexOf('aria-label="Privasi dan pembukaan bertahap"');
   const stickyFooter = room.indexOf('<footer className="sticky bottom-0');
   assert.ok(privacySection >= 0 && privacySection < stickyFooter);
+});
+
+
+test("private Realtime topics keep chat authorization and payloads narrow", () => {
+  assert.match(
+    realtimeMigration,
+    /p_topic ~ '\^conversation:\[0-9a-f\]\{32\}\$'/,
+  );
+  assert.match(
+    realtimeMigration,
+    /shell\.participant_sender_id[\s\S]*shell\.participant_recipient_id/,
+  );
+  assert.match(realtimeMigration, /on realtime\.messages[\s\S]*for select[\s\S]*to authenticated/);
+  assert.match(realtimeMigration, /on realtime\.messages[\s\S]*for insert[\s\S]*to authenticated/);
+  assert.match(realtimeMigration, /extension = 'broadcast'/);
+  assert.match(realtimeMigration, /\(select realtime\.topic\(\)\)/);
+  assert.doesNotMatch(
+    realtimeMigration,
+    /alter table realtime\.messages enable row level security/i,
+  );
+  assert.doesNotMatch(
+    realtimeMigration,
+    /grant select on table public\.anonymous_messages to authenticated/i,
+  );
+  assert.doesNotMatch(
+    realtimeMigration,
+    /jsonb_build_object\([\s\S]*?'body'/i,
+  );
+});
+
+test("Realtime accelerates safe refetch while polling stays available", () => {
+  assert.match(realtimeMigration, /after insert on public\.anonymous_messages/);
+  assert.match(realtimeMigration, /'message_changed'/);
+  assert.match(realtimeMigration, /when others then[\s\S]*null;/);
+  assert.match(room, /config:\s*\{[\s\S]*private: true/);
+  assert.match(room, /broadcast: \{ self: false, ack: false \}/);
+  assert.match(room, /\.setAuth\(\)/);
+  assert.match(room, /event: "message_changed"/);
+  assert.match(room, /void pollMessages\(\)/);
+  assert.match(room, /scheduleMessages\(6_000\)/);
+  assert.match(room, /removeChannel\(realtimeChannel\)/);
+});
+
+test("typing status is private, throttled, and expires automatically", () => {
+  assert.match(room, /event: "typing"/);
+  assert.match(room, /payload: \{ active \}/);
+  assert.match(room, /now - lastTypingSignalAtRef\.current >= 1_200/);
+  assert.match(room, /\(\) => publishTyping\(false\),\s*1_800/);
+  assert.match(room, /\(\) => setCounterpartTyping\(false\),\s*2_500/);
+  assert.match(room, /sedang mengetik…/);
+  assert.doesNotMatch(room, /payload: \{[^}]*userId/);
 });
