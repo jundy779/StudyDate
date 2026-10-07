@@ -7,6 +7,7 @@ import {
 } from "@/lib/messages/reactions";
 import type { ChatMessage } from "@/lib/messages/service";
 import { ChatSharedItemCard } from "@/components/messages/chat-shared-item-card";
+import { splitChatSearchText } from "@/lib/messages/search";
 import { getChatStickerById } from "@/lib/messages/stickers";
 import { Reply, SmilePlus } from "lucide-react";
 import Image from "next/image";
@@ -17,6 +18,9 @@ type ChatMessageBubbleProps = {
   counterpartAlias: string;
   interactionsEnabled: boolean;
   reactionPending?: boolean;
+  searchQuery?: string;
+  searchMatch?: boolean;
+  activeSearchMatch?: boolean;
   onReply: (message: ChatMessage) => void;
   onReact: (messageId: string, reaction: ChatReactionValue) => void;
 };
@@ -28,11 +32,39 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
+function HighlightedChatText({
+  text,
+  query,
+}: {
+  text: string;
+  query: string;
+}) {
+  return (
+    <>
+      {splitChatSearchText(text, query).map((part, index) =>
+        part.matched ? (
+          <mark
+            key={`${index}-${part.text}`}
+            className="rounded-sm bg-amber-200 px-0.5 text-brand-navy"
+          >
+            {part.text}
+          </mark>
+        ) : (
+          <span key={`${index}-${part.text}`}>{part.text}</span>
+        ),
+      )}
+    </>
+  );
+}
+
 export function ChatMessageBubble({
   message,
   counterpartAlias,
   interactionsEnabled,
   reactionPending = false,
+  searchQuery = "",
+  searchMatch = false,
+  activeSearchMatch = false,
   onReply,
   onReact,
 }: ChatMessageBubbleProps) {
@@ -75,6 +107,7 @@ export function ChatMessageBubble({
       }`}
     >
       <div
+        aria-current={activeSearchMatch ? "true" : undefined}
         className={`max-w-[min(100%,28rem)] rounded-2xl text-sm leading-6 ${
           rendersSticker
             ? "px-2 py-2"
@@ -83,6 +116,12 @@ export function ChatMessageBubble({
               : message.is_mine
                 ? "bg-brand-blue px-4 py-3 text-white"
                 : "border border-brand-border bg-white px-4 py-3 text-brand-navy"
+        } ${
+          activeSearchMatch
+            ? "ring-2 ring-amber-400 ring-offset-2"
+            : searchMatch
+              ? "ring-2 ring-brand-blue/25 ring-offset-1"
+              : ""
         }`}
       >
         <p className="sr-only">
@@ -112,8 +151,14 @@ export function ChatMessageBubble({
               }`}
             >
               {replySticker?.alt ??
-                message.reply_body ??
-                "Pesan tidak tersedia."}
+                (message.reply_body ? (
+                  <HighlightedChatText
+                    text={message.reply_body}
+                    query={searchQuery}
+                  />
+                ) : (
+                  "Pesan tidak tersedia."
+                ))}
             </p>
           </div>
         ) : null}
@@ -135,7 +180,9 @@ export function ChatMessageBubble({
             />
           </div>
         ) : (
-          <p className="whitespace-pre-wrap break-words">{message.body}</p>
+          <p className="whitespace-pre-wrap break-words">
+            <HighlightedChatText text={message.body} query={searchQuery} />
+          </p>
         )}
 
         <p
