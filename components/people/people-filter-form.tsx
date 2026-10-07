@@ -17,6 +17,7 @@ export function PeopleFilterForm({
 }: PeopleFilterFormProps) {
   return (
     <form action="/app/people" method="get" className="mt-6" aria-label="Pilihan pencarian teman">
+      <input type="hidden" name="order" value={filters.order ?? "shared"} />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="text-sm font-semibold text-brand-navy">
           Kampus
