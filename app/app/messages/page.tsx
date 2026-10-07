@@ -6,15 +6,57 @@ import {
   countUnreadConversations,
   listMyConversations,
 } from "@/lib/messages/service";
+import {
+  CONVERSATION_VIEWS,
+  filterConversations,
+  parseConversationView,
+  type ConversationView,
+} from "@/lib/messages/filters";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 type MessagesPageProps = {
-  searchParams: Promise<{ state?: string }>;
+  searchParams: Promise<{
+    state?: string | string[];
+    view?: string | string[];
+  }>;
 };
 
 const stateMessages: Record<string, string> = {
   error: "Pesan belum dapat dimuat. Coba lagi sebentar.",
+};
+
+const emptyStates: Record<
+  ConversationView,
+  {
+    title: string;
+    description: string;
+    action?: { href: string; label: string };
+  }
+> = {
+  all: {
+    title: "Belum ada percakapan",
+    description:
+      "Percakapan anonim akan muncul setelah sebuah perkenalan diterima.",
+    action: { href: "/app/people", label: "Cari teman" },
+  },
+  unread: {
+    title: "Semua pesan sudah dibaca",
+    description:
+      "Belum ada pesan baru. Percakapan lain tetap bisa dibuka dari pilihan Semua.",
+  },
+  active: {
+    title: "Belum ada percakapan aktif",
+    description:
+      "Mulai dari Cari Teman, lalu kirim perkenalan ke orang yang ingin kamu kenal.",
+    action: { href: "/app/people", label: "Cari teman" },
+  },
+  ended: {
+    title: "Belum ada percakapan selesai",
+    description:
+      "Percakapan yang sudah diakhiri atau tidak tersedia akan muncul di sini.",
+  },
 };
 
 async function MessagesContent({ searchParams }: MessagesPageProps) {
@@ -29,7 +71,14 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
     countUnreadConversations(),
   ]);
 
-  const stateMessage = params.state ? stateMessages[params.state] : null;
+  const state = Array.isArray(params.state) ? params.state[0] : params.state;
+  const selectedView = parseConversationView(params.view);
+  const visibleConversations = filterConversations(
+    conversations,
+    selectedView,
+  );
+  const stateMessage = state ? stateMessages[state] : null;
+  const emptyState = emptyStates[selectedView];
 
   return (
     <AppShell current="messages" unreadMessages={unreadConversations}>
@@ -54,16 +103,45 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
             </p>
           ) : null}
 
-          <section className="mt-8 space-y-4" aria-label="Daftar percakapan">
-            {conversations.length === 0 ? (
+          <div className="mt-8 max-w-full overflow-x-auto pb-1">
+            <nav
+              aria-label="Filter daftar pesan"
+              className="inline-flex min-w-max items-center gap-1 rounded-xl border border-brand-border bg-white p-1"
+            >
+              {CONVERSATION_VIEWS.map((view) => {
+                const active = selectedView === view.value;
+                const href =
+                  view.value === "all"
+                    ? "/app/messages"
+                    : `/app/messages?view=${view.value}`;
+                return (
+                  <Link
+                    key={view.value}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={`focus-ring inline-flex min-h-10 items-center justify-center rounded-lg px-3.5 text-sm font-semibold ${
+                      active
+                        ? "bg-brand-navy text-white"
+                        : "text-brand-muted hover:text-brand-navy"
+                    }`}
+                  >
+                    {view.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          <section className="mt-5 space-y-4" aria-label="Daftar percakapan">
+            {visibleConversations.length === 0 ? (
               <MascotEmptyState
                 pose="chat"
-                title="Belum ada percakapan"
-                description="Percakapan anonim akan muncul setelah sebuah perkenalan diterima."
-                action={{ href: "/app/people", label: "Cari teman" }}
+                title={emptyState.title}
+                description={emptyState.description}
+                action={emptyState.action}
               />
             ) : (
-              conversations.map((item) => (
+              visibleConversations.map((item) => (
                 <ConversationListItem key={item.public_id} item={item} />
               ))
             )}
