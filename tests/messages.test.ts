@@ -14,6 +14,10 @@ import {
   CHAT_RATE_LIMITS,
 } from "../lib/messages/constants.ts";
 import {
+  filterConversations,
+  parseConversationView,
+} from "../lib/messages/filters.ts";
+import {
   getCharacterThresholdAnnouncement,
   isNearChatBottom,
   mergeChatMessages,
@@ -697,4 +701,50 @@ test("sharing migration preserves durable snapshots and chat rate limits", () =>
   assert.match(sharingMigration, /duplicate message/);
   assert.match(sharingMigration, /reply_target\.conversation_id = shell\.id/);
   assert.match(sharingMigration, /'message_sent'/);
+});
+
+
+test("message filters use existing unread counts and conversation status", () => {
+  const conversations = [
+    { id: "waiting", status: "awaiting_chat" as const, unread_count: 0 },
+    { id: "active", status: "active" as const, unread_count: 3 },
+    { id: "ended", status: "ended" as const, unread_count: 0 },
+    { id: "blocked", status: "blocked" as const, unread_count: 0 },
+  ];
+
+  assert.deepEqual(
+    filterConversations(conversations, "unread").map((item) => item.id),
+    ["active"],
+  );
+  assert.deepEqual(
+    filterConversations(conversations, "active").map((item) => item.id),
+    ["waiting", "active"],
+  );
+  assert.deepEqual(
+    filterConversations(conversations, "ended").map((item) => item.id),
+    ["ended", "blocked"],
+  );
+  assert.equal(filterConversations(conversations, "all").length, 4);
+});
+
+test("message view input is allowlisted and safely falls back", () => {
+  assert.equal(parseConversationView("unread"), "unread");
+  assert.equal(parseConversationView(["active", "ended"]), "active");
+  assert.equal(parseConversationView("dating"), "all");
+});
+
+test("message filter navigation is accessible and mobile-contained", () => {
+  for (const label of [
+    "Semua",
+    "Belum dibaca",
+    "Masih aktif",
+    "Sudah selesai",
+  ]) {
+    assert.match(messagesPage, new RegExp(label));
+  }
+  assert.match(messagesPage, /aria-label="Filter daftar pesan"/);
+  assert.match(messagesPage, /aria-current=\{active \? "page" : undefined\}/);
+  assert.match(messagesPage, /max-w-full overflow-x-auto/);
+  assert.match(messagesPage, /visibleConversations/);
+  assert.doesNotMatch(messagesPage, /overflow-x-visible/);
 });
