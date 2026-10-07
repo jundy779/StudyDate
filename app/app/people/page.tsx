@@ -7,6 +7,7 @@ import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { PeopleFilterForm } from "@/components/people/people-filter-form";
 import { PeopleProfileCard } from "@/components/people/people-profile-card";
 import { buildSharedStudentContext } from "@/lib/people/shared-context";
+import { sortDiscoveryProfilesBySharedContext } from "@/lib/people/recommendations";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   getOwnDiscoveryVisibility,
@@ -41,6 +42,25 @@ function paginationHref(
   return `/app/people?${params.toString()}`;
 }
 
+function peopleOrderHref(
+  filters: Record<string, string | number | undefined>,
+  order: "shared" | "default",
+) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (
+      key !== "after" &&
+      key !== "order" &&
+      value !== undefined &&
+      value !== ""
+    ) {
+      params.set(key, String(value));
+    }
+  });
+  params.set("order", order);
+  return `/app/people?${params.toString()}`;
+}
+
 async function PeopleContent({ searchParams }: PeoplePageProps) {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
@@ -71,6 +91,12 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
       }
     }
   }
+
+  const selectedOrder = filters.order ?? "shared";
+  const visibleProfiles =
+    selectedOrder === "shared"
+      ? sortDiscoveryProfilesBySharedContext(ownProfile, result.profiles)
+      : result.profiles;
 
   return (
     <AppShell current="people">
@@ -150,12 +176,46 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
         </section>
 
         <section className="mt-10" aria-labelledby="people-results-title">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="section-label">Profil yang dapat ditemukan</p>
               <h2 id="people-results-title" className="mt-2 font-heading text-2xl font-semibold tracking-[-0.02em] text-brand-navy">Orang yang bisa kamu kenal</h2>
             </div>
+            <nav
+              aria-label="Urutan hasil Cari Teman"
+              className="flex w-full items-center gap-1 rounded-xl border border-brand-border bg-white p-1 sm:w-auto"
+            >
+              <Link
+                href={peopleOrderHref(filters, "shared")}
+                aria-current={selectedOrder === "shared" ? "page" : undefined}
+                className={`focus-ring inline-flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-sm font-semibold sm:flex-none ${
+                  selectedOrder === "shared"
+                    ? "bg-brand-navy text-white"
+                    : "text-brand-muted hover:text-brand-navy"
+                }`}
+              >
+                Paling nyambung
+              </Link>
+              <Link
+                href={peopleOrderHref(filters, "default")}
+                aria-current={selectedOrder === "default" ? "page" : undefined}
+                className={`focus-ring inline-flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-sm font-semibold sm:flex-none ${
+                  selectedOrder === "default"
+                    ? "bg-brand-navy text-white"
+                    : "text-brand-muted hover:text-brand-navy"
+                }`}
+              >
+                Urutan profil
+              </Link>
+            </nav>
           </div>
+          {selectedOrder === "shared" && visibleProfiles.length > 0 ? (
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-brand-muted">
+              Kami mendahulukan profil yang sedang mencari teman dan punya tujuan
+              atau minat yang sama. Tidak ada nilai kecocokan dan kamu tetap
+              bebas memilih siapa yang ingin dikenal.
+            </p>
+          ) : null}
 
           {quotaReached ? (
             <p role="status" className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
@@ -165,10 +225,10 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
               </Link>
               .
             </p>
-          ) : result.profiles.length ? (
+          ) : visibleProfiles.length ? (
             <>
               <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {result.profiles.map((profile) => (
+                {visibleProfiles.map((profile) => (
                   <PeopleProfileCard
                     key={profile.public_alias}
                     profile={profile}
