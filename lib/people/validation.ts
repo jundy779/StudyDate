@@ -19,6 +19,7 @@ export const peopleFiltersSchema = z.object({
   city: optionalText,
   goal: z.enum(allowedGoals).optional(),
   interest: z.enum(allowedInterests).optional(),
+  order: z.enum(["shared", "default"]).optional(),
   after: z.preprocess(
     (value) => (typeof value === "string" && value ? value : undefined),
     z.string().regex(/^Partner #[0-9]{6}$/).optional(),
@@ -64,6 +65,7 @@ export function parsePeopleFilters(
     city: firstSearchValue(searchParams.city),
     goal: firstSearchValue(searchParams.goal),
     interest: firstSearchValue(searchParams.interest),
+    order: firstSearchValue(searchParams.order),
     after: firstSearchValue(searchParams.after),
   });
 }
