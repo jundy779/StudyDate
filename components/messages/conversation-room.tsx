@@ -22,6 +22,10 @@ import {
   nextChatPollDelay,
   nextPollDelay,
 } from "@/lib/messages/client-state";
+import {
+  findChatMessageIds,
+  normalizeChatSearchQuery,
+} from "@/lib/messages/search";
 import { createClient as createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
 import type { ChatShareableItem, ChatShareKind } from "@/lib/messages/shares";
@@ -54,7 +58,14 @@ import { getChatStickerById } from "@/lib/messages/stickers";
 import type { TelegramSafeState } from "@/lib/telegram/constants";
 import type { MeetingPlanState } from "@/lib/meeting-plans/constants";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { BadgeCheck, LoaderCircle, X } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronDown,
+  ChevronUp,
+  LoaderCircle,
+  Search,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -160,7 +171,12 @@ export function ConversationRoom({
   const [historyPending, setHistoryPending] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [newMessagesAvailable, setNewMessagesAvailable] = useState(false);
+  const [chatSearchOpen, setChatSearchOpen] = useState(false);
+  const [chatSearchInput, setChatSearchInput] = useState("");
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const chatSearchInputRef = useRef<HTMLInputElement>(null);
+  const messageNodeRefs = useRef(new Map<string, HTMLDivElement>());
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const messagesRef = useRef(messages);
   const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
@@ -175,6 +191,7 @@ export function ConversationRoom({
   const errorId = useId();
   const counterId = useId();
   const counterStatusId = useId();
+  const chatSearchInputId = useId();
   const endTitleId = useId();
   const endDescriptionId = useId();
   const endDialogRef = useRef<HTMLDialogElement>(null);
@@ -182,10 +199,40 @@ export function ConversationRoom({
   const endCancelRef = useRef<HTMLButtonElement>(null);
 
   const chronological = useMemo(() => messages, [messages]);
+  const chatSearchQuery = useMemo(
+    () => normalizeChatSearchQuery(chatSearchInput),
+    [chatSearchInput],
+  );
+  const searchMessageIds = useMemo(
+    () => findChatMessageIds(chronological, chatSearchQuery),
+    [chronological, chatSearchQuery],
+  );
+  const searchMessageIdSet = useMemo(
+    () => new Set(searchMessageIds),
+    [searchMessageIds],
+  );
+  const currentSearchIndex = Math.min(
+    activeSearchIndex,
+    Math.max(searchMessageIds.length - 1, 0),
+  );
+  const activeSearchMessageId =
+    searchMessageIds[currentSearchIndex] ?? null;
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    setActiveSearchIndex(0);
+  }, [chatSearchQuery]);
+
+  useEffect(() => {
+    if (!activeSearchMessageId) return;
+    messageNodeRefs.current.get(activeSearchMessageId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [activeSearchMessageId]);
 
   useLayoutEffect(() => {
     const node = listRef.current;
@@ -721,6 +768,28 @@ export function ConversationRoom({
     });
   }
 
+  function openChatSearch() {
+    setChatSearchOpen(true);
+    requestAnimationFrame(() => chatSearchInputRef.current?.focus());
+  }
+
+  function closeChatSearch() {
+    setChatSearchOpen(false);
+    setChatSearchInput("");
+    setActiveSearchIndex(0);
+  }
+
+  function moveChatSearchResult(direction: -1 | 1) {
+    if (searchMessageIds.length === 0) return;
+    setActiveSearchIndex((current) => {
+      const safeCurrent = Math.min(current, searchMessageIds.length - 1);
+      return (
+        (safeCurrent + direction + searchMessageIds.length) %
+        searchMessageIds.length
+      );
+    });
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.nativeEvent.isComposing) return;
     if (event.key === "Escape" && replyingTo) {
@@ -739,12 +808,24 @@ export function ConversationRoom({
   return (
     <div className="flex min-h-[calc(100svh-5rem)] flex-col lg:min-h-svh">
       <header className="border-b border-brand-border bg-white px-4 py-4 sm:px-6">
-        <Link
-          href="/app/messages"
-          className="focus-ring inline-flex min-h-10 items-center text-sm font-semibold text-brand-blue"
-        >
-          ← Kembali ke Pesan
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Link
+            href="/app/messages"
+            className="focus-ring inline-flex min-h-10 items-center text-sm font-semibold text-brand-blue"
+          >
+            ← Kembali ke Pesan
+          </Link>
+          <button
+            type="button"
+            onClick={openChatSearch}
+            aria-expanded={chatSearchOpen}
+            aria-controls="chat-search-panel"
+            className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-brand-muted hover:bg-brand-surface hover:text-brand-blue"
+          >
+            <Search className="h-4 w-4" aria-hidden="true" />
+            Cari chat
+          </button>
+        </div>
         <div className="mt-4 flex items-start gap-4">
           <div className="flex h-16 w-16 shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_30%_20%,#ffffff_0%,#edf4ff_55%,#dfeaff_100%)]">
             <Image
@@ -777,6 +858,89 @@ export function ConversationRoom({
             </p>
           </div>
         </div>
+        {chatSearchOpen ? (
+          <div
+            id="chat-search-panel"
+            className="mt-4 rounded-xl border border-brand-border bg-brand-surface p-3"
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <label htmlFor={chatSearchInputId} className="sr-only">
+                Cari isi chat
+              </label>
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-muted"
+                  aria-hidden="true"
+                />
+                <input
+                  ref={chatSearchInputRef}
+                  id={chatSearchInputId}
+                  type="search"
+                  value={chatSearchInput}
+                  maxLength={80}
+                  autoComplete="off"
+                  placeholder="Cari isi chat"
+                  onChange={(event) => setChatSearchInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      event.preventDefault();
+                      closeChatSearch();
+                    } else if (event.key === "Enter") {
+                      event.preventDefault();
+                      moveChatSearchResult(event.shiftKey ? -1 : 1);
+                    }
+                  }}
+                  className="focus-ring min-h-11 w-full rounded-lg border border-brand-border bg-white py-2.5 pl-10 pr-3 text-sm text-brand-navy placeholder:text-brand-muted"
+                />
+              </div>
+              <div className="flex items-center justify-between gap-1 sm:justify-start">
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="min-w-20 px-2 text-center text-xs font-semibold text-brand-muted"
+                >
+                  {!chatSearchQuery
+                    ? "Ketik kata"
+                    : searchMessageIds.length === 0
+                      ? "Tidak ada"
+                      : `${currentSearchIndex + 1} dari ${searchMessageIds.length}`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => moveChatSearchResult(-1)}
+                  disabled={searchMessageIds.length === 0}
+                  aria-label="Hasil sebelumnya"
+                  className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-muted hover:bg-white hover:text-brand-blue disabled:opacity-40"
+                >
+                  <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveChatSearchResult(1)}
+                  disabled={searchMessageIds.length === 0}
+                  aria-label="Hasil berikutnya"
+                  className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-muted hover:bg-white hover:text-brand-blue disabled:opacity-40"
+                >
+                  <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={closeChatSearch}
+                  aria-label="Tutup pencarian"
+                  className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-muted hover:bg-white hover:text-brand-navy"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            {chatSearchQuery && hasMoreHistory ? (
+              <p className="mt-2 text-xs leading-5 text-brand-muted">
+                Pencarian hanya mencakup pesan yang sudah dimuat. Muat pesan
+                sebelumnya untuk mencari lebih jauh.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         {pollNote ? (
           <p
             role="status"
@@ -818,6 +982,7 @@ export function ConversationRoom({
       </header>
 
       <div
+        id="conversation-message-list"
         ref={listRef}
         className="flex-1 space-y-3 overflow-y-auto bg-brand-surface px-4 py-5 sm:px-6"
         role="log"
@@ -887,8 +1052,22 @@ export function ConversationRoom({
             !previous ||
             formatDay(previous.created_at) !== formatDay(message.created_at);
 
+          const searchMatch = searchMessageIdSet.has(message.message_id);
+          const activeSearchMatch =
+            activeSearchMessageId === message.message_id;
+
           return (
-            <div key={message.message_id}>
+            <div
+              key={message.message_id}
+              ref={(node) => {
+                if (node) {
+                  messageNodeRefs.current.set(message.message_id, node);
+                } else {
+                  messageNodeRefs.current.delete(message.message_id);
+                }
+              }}
+              className="scroll-mt-28"
+            >
               {showDay ? (
                 <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
                   {formatDay(message.created_at)}
@@ -899,6 +1078,9 @@ export function ConversationRoom({
                 counterpartAlias={conversation.counterpart_alias}
                 interactionsEnabled={messageInteractionsEnabled && !closed}
                 reactionPending={reactionPending === message.message_id}
+                searchQuery={chatSearchQuery}
+                searchMatch={searchMatch}
+                activeSearchMatch={activeSearchMatch}
                 onReply={selectReply}
                 onReact={(messageId, reaction) => {
                   void reactToMessage(messageId, reaction);
