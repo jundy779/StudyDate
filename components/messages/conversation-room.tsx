@@ -223,10 +223,6 @@ export function ConversationRoom({
   }, [messages]);
 
   useEffect(() => {
-    setActiveSearchIndex(0);
-  }, [chatSearchQuery]);
-
-  useEffect(() => {
     if (!activeSearchMessageId) return;
     messageNodeRefs.current.get(activeSearchMessageId)?.scrollIntoView({
       behavior: "smooth",
@@ -880,7 +876,10 @@ export function ConversationRoom({
                   maxLength={80}
                   autoComplete="off"
                   placeholder="Cari isi chat"
-                  onChange={(event) => setChatSearchInput(event.target.value)}
+                  onChange={(event) => {
+                    setChatSearchInput(event.target.value);
+                    setActiveSearchIndex(0);
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === "Escape") {
                       event.preventDefault();
