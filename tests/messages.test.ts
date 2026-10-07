@@ -15,7 +15,9 @@ import {
 } from "../lib/messages/constants.ts";
 import {
   filterConversations,
+  normalizeConversationQuery,
   parseConversationView,
+  searchConversations,
 } from "../lib/messages/filters.ts";
 import {
   getCharacterThresholdAnnouncement,
@@ -747,4 +749,82 @@ test("message filter navigation is accessible and mobile-contained", () => {
   assert.match(messagesPage, /max-w-full overflow-x-auto/);
   assert.match(messagesPage, /visibleConversations/);
   assert.doesNotMatch(messagesPage, /overflow-x-visible/);
+});
+
+test("conversation search matches alias, campus, and study program", () => {
+  const conversations = [
+    {
+      id: "ui",
+      counterpart_alias: "Si Rajin",
+      campus: "Universitas Indonesia",
+      study_program: "Sistem Informasi",
+    },
+    {
+      id: "itb",
+      counterpart_alias: "Teman Ngoding",
+      campus: "Institut Teknologi Bandung",
+      study_program: "Teknik Informatika",
+    },
+    {
+      id: "tel-u",
+      counterpart_alias: "Pejuang Skripsi",
+      campus: "Telkom University",
+      study_program: "Desain Komunikasi Visual",
+    },
+  ];
+
+  assert.deepEqual(
+    searchConversations(conversations, "rajin").map((item) => item.id),
+    ["ui"],
+  );
+  assert.deepEqual(
+    searchConversations(conversations, "teknologi bandung").map(
+      (item) => item.id,
+    ),
+    ["itb"],
+  );
+  assert.deepEqual(
+    searchConversations(conversations, "komunikasi visual").map(
+      (item) => item.id,
+    ),
+    ["tel-u"],
+  );
+  assert.equal(searchConversations(conversations, "").length, 3);
+});
+
+test("conversation search input is normalized, bounded, and accent insensitive", () => {
+  assert.equal(
+    normalizeConversationQuery(["  Sistem   Informasi ", "ignored"]),
+    "Sistem Informasi",
+  );
+  assert.equal(normalizeConversationQuery(null), "");
+  assert.equal(normalizeConversationQuery("a".repeat(100)).length, 80);
+  assert.equal(
+    searchConversations(
+      [
+        {
+          counterpart_alias: "Café Learner",
+          campus: "Université Indonesia",
+          study_program: "Sistem Informasi",
+        },
+      ],
+      "CAFE UNIVERSITE",
+    ).length,
+    1,
+  );
+});
+
+test("message search is accessible, privacy-scoped, and mobile-safe", () => {
+  assert.match(messagesPage, /role="search"/);
+  assert.match(messagesPage, /name="q"/);
+  assert.match(messagesPage, /type="search"/);
+  assert.match(messagesPage, /maxLength=\{80\}/);
+  assert.match(
+    messagesPage,
+    /Cari nama samaran, kampus, atau program studi/,
+  );
+  assert.match(messagesPage, /searchConversations/);
+  assert.match(messagesPage, /min-w-0 flex-1/);
+  assert.match(messagesPage, /name="view" value=\{selectedView\}/);
+  assert.doesNotMatch(messagesPage, /Cari isi pesan|preview_body/);
 });
