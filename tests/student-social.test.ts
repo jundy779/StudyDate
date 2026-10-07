@@ -6,6 +6,8 @@ import {
   buildSharedStudentContext,
   hasSharedStudentContext,
 } from "../lib/people/shared-context.ts";
+import { sortDiscoveryProfilesBySharedContext } from "../lib/people/recommendations.ts";
+import type { DiscoveryProfile } from "../lib/people/service.ts";
 
 const profileCard = readFileSync(
   new URL("../components/people/people-profile-card.tsx", import.meta.url),
@@ -17,6 +19,14 @@ const detailPage = readFileSync(
 );
 const dashboard = readFileSync(
   new URL("../app/app/page.tsx", import.meta.url),
+  "utf8",
+);
+const peoplePage = readFileSync(
+  new URL("../app/app/people/page.tsx", import.meta.url),
+  "utf8",
+);
+const peopleFilter = readFileSync(
+  new URL("../components/people/people-filter-form.tsx", import.meta.url),
   "utf8",
 );
 const introductionDialog = readFileSync(
@@ -87,5 +97,62 @@ test("People pages explain similarities without dating-style scoring", () => {
   assert.doesNotMatch(
     [profileCard, detailPage].join("\n"),
     /persen cocok|compatibility score|match score|skor kecocokan/i,
+  );
+});
+
+
+function discoveryProfile(
+  alias: string,
+  values: Partial<DiscoveryProfile> = {},
+): DiscoveryProfile {
+  return {
+    public_alias: alias,
+    campus: "Kampus Lain",
+    study_program: "Informatika",
+    semester: null,
+    city_region: null,
+    short_intro: null,
+    interests: [],
+    connection_goals: [],
+    is_verified: false,
+    study_status: null,
+    study_status_expires_at: null,
+    ...values,
+  };
+}
+
+test("Paling nyambung prioritizes active and shared student context", () => {
+  const ownProfile = {
+    campus: "STT Terpadu Nurul Fikri",
+    study_program: "Sistem Informasi",
+    interests: ["technology", "business"],
+    connection_goals: ["study", "collaboration"],
+  };
+  const ordered = sortDiscoveryProfilesBySharedContext(ownProfile, [
+    discoveryProfile("Partner #000003", { interests: ["technology"] }),
+    discoveryProfile("Partner #000002", {
+      connection_goals: ["study"],
+      study_status: "study_friend",
+    }),
+    discoveryProfile("Partner #000001", {
+      connection_goals: ["study"],
+    }),
+  ]);
+
+  assert.deepEqual(
+    ordered.map((profile) => profile.public_alias),
+    ["Partner #000002", "Partner #000001", "Partner #000003"],
+  );
+});
+
+test("Paling nyambung is transparent, optional, and never shows a score", () => {
+  assert.match(peoplePage, /Paling nyambung/);
+  assert.match(peoplePage, /Urutan profil/);
+  assert.match(peoplePage, /Tidak ada nilai kecocokan/);
+  assert.match(peoplePage, /sortDiscoveryProfilesBySharedContext/);
+  assert.match(peopleFilter, /name="order"/);
+  assert.doesNotMatch(
+    peoplePage,
+    /[0-9]+% cocok|compatibility score|match score|skor kecocokan/i,
   );
 });
