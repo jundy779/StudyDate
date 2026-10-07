@@ -6,6 +6,7 @@ import {
   conversationPublicIdSchema,
   messageReactionSchema,
   normalizeChatMessage,
+  sendChatShareSchema,
   sendChatStickerSchema,
 } from "../lib/messages/validation.ts";
 import {
@@ -20,6 +21,10 @@ import {
   nextPollDelay,
 } from "../lib/messages/client-state.ts";
 import { CHAT_REACTIONS } from "../lib/messages/reactions.ts";
+import {
+  CHAT_SHARE_KIND_LABELS,
+  getChatShareHref,
+} from "../lib/messages/shares.ts";
 import { CHAT_STARTERS } from "../lib/messages/starters.ts";
 import {
   CHAT_EMOJI_SHORTLIST,
@@ -44,6 +49,13 @@ const stickerMigration = readFileSync(
 const realtimeMigration = readFileSync(
   new URL(
     "../supabase/migrations/202610020002_anonymous_chat_realtime_v1.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const sharingMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202610070001_anonymous_chat_circle_event_sharing_v1.sql",
     import.meta.url,
   ),
   "utf8",
@@ -78,6 +90,10 @@ const messageBubble = readFileSync(
   new URL("../components/messages/chat-message-bubble.tsx", import.meta.url),
   "utf8",
 );
+const sharedItemCard = readFileSync(
+  new URL("../components/messages/chat-shared-item-card.tsx", import.meta.url),
+  "utf8",
+);
 const composerTools = readFileSync(
   new URL("../components/messages/chat-composer-tools.tsx", import.meta.url),
   "utf8",
@@ -87,7 +103,10 @@ const service = readFileSync(
   "utf8",
 );
 const navigation = readFileSync(
-  new URL("../components/navigation/responsive-navigation.tsx", import.meta.url),
+  new URL(
+    "../components/navigation/responsive-navigation.tsx",
+    import.meta.url,
+  ),
   "utf8",
 );
 const pollRoute = readFileSync(
@@ -99,10 +118,7 @@ const sendRoute = readFileSync(
   "utf8",
 );
 const reactionRoute = readFileSync(
-  new URL(
-    "../app/api/messages/[publicId]/reactions/route.ts",
-    import.meta.url,
-  ),
+  new URL("../app/api/messages/[publicId]/reactions/route.ts", import.meta.url),
   "utf8",
 );
 
@@ -128,10 +144,7 @@ test("accepted introduction maps to one shell with opaque public id", () => {
   assert.match(migration, /conversation_shells_public_id_format/);
   assert.match(migration, /public_id ~ '\^\[0-9a-f\]\{32\}\$'/);
   assert.match(migration, /extensions\.gen_random_bytes\(16\)/);
-  assert.doesNotMatch(
-    migration,
-    /encode\(gen_random_bytes\(16\), 'hex'\)/,
-  );
+  assert.doesNotMatch(migration, /encode\(gen_random_bytes\(16\), 'hex'\)/);
   assert.match(conversationPage, /conversationPublicIdSchema/);
   assert.doesNotMatch(conversationPage, /participant_sender_id|user_id/);
 });
@@ -154,15 +167,27 @@ test("sender identity comes from auth.uid only", () => {
 });
 
 test("active staff cannot participate via eligibility guards", () => {
-  assert.match(migration, /is_eligible_introduction_student\(current_user_id\)/);
+  assert.match(
+    migration,
+    /is_eligible_introduction_student\(current_user_id\)/,
+  );
   assert.match(migration, /is_eligible_introduction_student\(counterpart_id\)/);
   assert.match(introMigration, /not public\.is_active_staff_user/);
 });
 
 test("users cannot create arbitrary conversation shells from chat RPCs", () => {
-  assert.doesNotMatch(migration, /create or replace function public\.create_conversation/);
-  assert.match(migration, /revoke all on table public\.anonymous_messages from public, anon, authenticated/);
-  assert.match(migration, /revoke all on table public\.conversation_events from public, anon, authenticated/);
+  assert.doesNotMatch(
+    migration,
+    /create or replace function public\.create_conversation/,
+  );
+  assert.match(
+    migration,
+    /revoke all on table public\.anonymous_messages from public, anon, authenticated/,
+  );
+  assert.match(
+    migration,
+    /revoke all on table public\.conversation_events from public, anon, authenticated/,
+  );
 });
 
 test("ended and blocked conversations reject messages", () => {
@@ -184,10 +209,7 @@ test("message length and contact filters are database-enforced", () => {
     chatMessageSchema.safeParse("email saya nama@kampus.ac.id").success,
     false,
   );
-  assert.equal(
-    normalizeChatMessage("  a\n\n\nb  ").includes("a\n\nb"),
-    true,
-  );
+  assert.equal(normalizeChatMessage("  a\n\n\nb  ").includes("a\n\nb"), true);
 });
 
 test("rate limits and idempotency are durable", () => {
@@ -221,9 +243,15 @@ test("projections never expose participant UUIDs or private identity", () => {
       ),
     );
     assert.ok(block, `missing returns table for ${fn}`);
-    assert.doesNotMatch(block[1], /participant_sender_id|first_name|\bnim\b|email/i);
+    assert.doesNotMatch(
+      block[1],
+      /participant_sender_id|first_name|\bnim\b|email/i,
+    );
   }
-  assert.doesNotMatch(service, /participant_sender_id|legal_name|nim_ciphertext/);
+  assert.doesNotMatch(
+    service,
+    /participant_sender_id|legal_name|nim_ciphertext/,
+  );
   assert.equal(conversationPublicIdSchema.safeParse("abc").success, false);
   assert.equal(
     conversationPublicIdSchema.safeParse("0".repeat(32)).success,
@@ -233,7 +261,10 @@ test("projections never expose participant UUIDs or private identity", () => {
 
 test("reporting is participant-only with constrained reasons", () => {
   assert.match(migration, /report_conversation/);
-  assert.match(migration, /only participants|participant_sender_id, shell\.participant_recipient_id/);
+  assert.match(
+    migration,
+    /only participants|participant_sender_id, shell\.participant_recipient_id/,
+  );
   assert.match(migration, /harassment', 'spam', 'contact_pressure'/);
   assert.match(migration, /report rate limited/);
 });
@@ -251,10 +282,7 @@ test("messages UI uses product terminology and escaped text rendering", () => {
 test("student navigation includes Pesan and staff shell does not", () => {
   assert.match(navigation, /label: "Pesan"/);
   assert.match(navigation, /href: "\/app\/messages"/);
-  assert.doesNotMatch(
-    navigation,
-    /getStaffItems[\s\S]*\/app\/messages/,
-  );
+  assert.doesNotMatch(navigation, /getStaffItems[\s\S]*\/app\/messages/);
 });
 
 test("chat sends without a page reload and keeps server authorization", () => {
@@ -302,7 +330,10 @@ test("delivery uses authenticated poll route without Realtime table grants", () 
   assert.match(room, /mode=messages/);
   assert.match(room, /mode=reveal/);
   assert.match(migration, /No table SELECT grants|polling/i);
-  assert.doesNotMatch(migration, /grant select on table public\.anonymous_messages to authenticated/i);
+  assert.doesNotMatch(
+    migration,
+    /grant select on table public\.anonymous_messages to authenticated/i,
+  );
 });
 
 test("client cannot forge moderation state", () => {
@@ -352,7 +383,10 @@ test("sticker migration preserves privacy, rate limits, and rolling-deploy compa
   assert.match(stickerMigration, /sent_last_day >= 300/);
   assert.match(stickerMigration, /list_conversation_messages_v2/);
   assert.doesNotMatch(stickerMigration, /https?:\/\//i);
-  assert.match(service, /error\.code !== "PGRST202" && error\.code !== "42883"/);
+  assert.match(
+    service,
+    /error\.code !== "PGRST202" && error\.code !== "42883"/,
+  );
   assert.match(service, /list_conversation_messages_v2/);
   assert.match(service, /list_conversation_messages"/);
 });
@@ -361,15 +395,14 @@ test("chat renders official stickers without user-controlled image URLs", () => 
   assert.match(messageBubble, /message\.message_type === "sticker"/);
   assert.match(messageBubble, /getChatStickerById\(message\.sticker_id\)/);
   assert.match(composerTools, /formAction=\{submitChatSticker\}/);
-  assert.doesNotMatch(`${messageBubble}\n${composerTools}`, /stickerUrl|sticker_url|dangerouslySetInnerHTML/);
+  assert.doesNotMatch(
+    `${messageBubble}\n${composerTools}`,
+    /stickerUrl|sticker_url|dangerouslySetInnerHTML/,
+  );
 });
 
 test("history merge deduplicates and preserves deterministic chronological order", () => {
-  const message = (
-    id: string,
-    createdAt: string,
-    body = id,
-  ) => ({
+  const message = (id: string, createdAt: string, body = id) => ({
     message_id: id,
     body,
     message_type: "text" as const,
@@ -437,9 +470,18 @@ test("near-bottom policy preserves readers who are scrolled upward", () => {
 });
 
 test("message character announcements only occur at useful thresholds", () => {
-  assert.equal(getCharacterThresholdAnnouncement(900, 1000), "100 karakter tersisa.");
-  assert.equal(getCharacterThresholdAnnouncement(980, 1000), "20 karakter tersisa.");
-  assert.equal(getCharacterThresholdAnnouncement(1000, 1000), "Batas karakter tercapai.");
+  assert.equal(
+    getCharacterThresholdAnnouncement(900, 1000),
+    "100 karakter tersisa.",
+  );
+  assert.equal(
+    getCharacterThresholdAnnouncement(980, 1000),
+    "20 karakter tersisa.",
+  );
+  assert.equal(
+    getCharacterThresholdAnnouncement(1000, 1000),
+    "Batas karakter tercapai.",
+  );
   assert.equal(getCharacterThresholdAnnouncement(500, 1000), "");
   assert.doesNotMatch(room, /id=\{counterId\} aria-live/);
 });
@@ -450,15 +492,13 @@ test("end dialog and chat layout close accessibility audit contracts", () => {
   assert.match(room, /endCancelRef\.current\?\.focus/);
   assert.match(room, /onClose=\{\(\) => endTriggerRef\.current\?\.focus/);
   assert.match(room, /aria-label="Privasi dan pembukaan bertahap"/);
-  assert.match(
-    room,
-    /<footer className="sticky bottom-0 z-20[^"]*">/,
+  assert.match(room, /<footer className="sticky bottom-0 z-20[^"]*">/);
+  const privacySection = room.indexOf(
+    'aria-label="Privasi dan pembukaan bertahap"',
   );
-  const privacySection = room.indexOf('aria-label="Privasi dan pembukaan bertahap"');
   const stickyFooter = room.indexOf('<footer className="sticky bottom-0');
   assert.ok(privacySection >= 0 && privacySection < stickyFooter);
 });
-
 
 test("private Realtime topics keep chat authorization and payloads narrow", () => {
   assert.match(
@@ -469,8 +509,14 @@ test("private Realtime topics keep chat authorization and payloads narrow", () =
     realtimeMigration,
     /shell\.participant_sender_id[\s\S]*shell\.participant_recipient_id/,
   );
-  assert.match(realtimeMigration, /on realtime\.messages[\s\S]*for select[\s\S]*to authenticated/);
-  assert.match(realtimeMigration, /on realtime\.messages[\s\S]*for insert[\s\S]*to authenticated/);
+  assert.match(
+    realtimeMigration,
+    /on realtime\.messages[\s\S]*for select[\s\S]*to authenticated/,
+  );
+  assert.match(
+    realtimeMigration,
+    /on realtime\.messages[\s\S]*for insert[\s\S]*to authenticated/,
+  );
   assert.match(realtimeMigration, /extension = 'broadcast'/);
   assert.match(realtimeMigration, /\(select realtime\.topic\(\)\)/);
   assert.doesNotMatch(
@@ -481,10 +527,7 @@ test("private Realtime topics keep chat authorization and payloads narrow", () =
     realtimeMigration,
     /grant select on table public\.anonymous_messages to authenticated/i,
   );
-  assert.doesNotMatch(
-    realtimeMigration,
-    /jsonb_build_object\([\s\S]*?'body'/i,
-  );
+  assert.doesNotMatch(realtimeMigration, /jsonb_build_object\([\s\S]*?'body'/i);
 });
 
 test("Realtime accelerates safe refetch while polling stays available", () => {
@@ -509,7 +552,6 @@ test("typing status is private, throttled, and expires automatically", () => {
   assert.match(room, /sedang mengetik…/);
   assert.doesNotMatch(room, /payload: \{[^}]*userId/);
 });
-
 
 test("reply targets stay inside the same authorized conversation", () => {
   assert.match(
@@ -544,10 +586,7 @@ test("message reactions expose aggregates without participant identities", () =>
     }).success,
     false,
   );
-  assert.match(
-    interactionMigration,
-    /primary key \(message_id, user_id\)/,
-  );
+  assert.match(interactionMigration, /primary key \(message_id, user_id\)/);
   assert.match(interactionMigration, /count\(\*\)::integer as reaction_count/);
   assert.match(interactionMigration, /reacted_by_me/);
   assert.doesNotMatch(
@@ -582,4 +621,80 @@ test("message interaction RPCs fall back without disabling existing chat", () =>
   assert.match(service, /Fitur balas pesan belum siap/);
   assert.match(interactionMigration, /'message_changed'/);
   assert.match(interactionMigration, /'change', 'reactions'/);
+});
+
+test("Circle and Event invitations use bounded internal StudyDate routes", () => {
+  assert.equal(
+    sendChatShareSchema.safeParse({
+      publicId: "a".repeat(32),
+      shareKind: "circle",
+      sharePublicSlug: `circle-${"b".repeat(24)}`,
+    }).success,
+    true,
+  );
+  assert.equal(
+    sendChatShareSchema.safeParse({
+      publicId: "a".repeat(32),
+      shareKind: "event",
+      sharePublicSlug: `circle-${"b".repeat(24)}`,
+    }).success,
+    false,
+  );
+  assert.equal(
+    getChatShareHref("event", `event-${"c".repeat(24)}`),
+    `/app/events/event-${"c".repeat(24)}`,
+  );
+  assert.equal(getChatShareHref("event", "https://evil.example"), null);
+  assert.equal(CHAT_SHARE_KIND_LABELS.circle, "Circle belajar");
+});
+
+test("chat sharing stays participant-only and never accepts external URLs", () => {
+  assert.match(sharingMigration, /list_chat_shareables/);
+  assert.match(sharingMigration, /send_anonymous_share_v1/);
+  assert.match(sharingMigration, /conversation_counterpart_id/);
+  assert.match(
+    sharingMigration,
+    /actor in \([\s\S]*participant_sender_id[\s\S]*participant_recipient_id/,
+  );
+  assert.match(sharingMigration, /share_public_slug ~ '\^circle-/);
+  assert.match(sharingMigration, /share_public_slug ~ '\^event-/);
+  assert.doesNotMatch(sharingMigration, /share_url|external_url|https?:\/\//i);
+  assert.doesNotMatch(
+    sharingMigration,
+    /grant (select|insert|update|delete) on table public\.anonymous_messages/i,
+  );
+});
+
+test("sharing does not auto-join the recipient", () => {
+  assert.doesNotMatch(
+    sharingMigration,
+    /insert into public\.(study_circle_memberships|campus_event_rsvps)/i,
+  );
+  assert.match(sharingMigration, /already_member\.user_id = counterpart/);
+  assert.match(sharingMigration, /already_registered\.user_id = counterpart/);
+  assert.match(
+    composerTools,
+    /Temanmu tetap memilih sendiri mau ikut atau tidak/,
+  );
+});
+
+test("shared cards are mobile-safe, escaped, and capability-gated", () => {
+  assert.match(room, /chatSharingEnabled/);
+  assert.match(room, /shareToken/);
+  assert.match(composerTools, /w-\[min\(22rem,calc\(100vw-2rem\)\)\]/);
+  assert.match(sharedItemCard, /w-\[min\(19rem,calc\(100vw-4\.5rem\)\)\]/);
+  assert.match(sharedItemCard, /getChatShareHref/);
+  assert.doesNotMatch(sharedItemCard, /dangerouslySetInnerHTML/);
+  assert.match(service, /list_conversation_messages_v4/);
+  assert.match(service, /list_conversation_messages_v3/);
+});
+
+test("sharing migration preserves durable snapshots and chat rate limits", () => {
+  assert.match(sharingMigration, /share_title text/);
+  assert.match(sharingMigration, /share_description text/);
+  assert.match(sharingMigration, /sent_last_minute >= 20/);
+  assert.match(sharingMigration, /sent_last_day >= 300/);
+  assert.match(sharingMigration, /duplicate message/);
+  assert.match(sharingMigration, /reply_target\.conversation_id = shell\.id/);
+  assert.match(sharingMigration, /'message_sent'/);
 });

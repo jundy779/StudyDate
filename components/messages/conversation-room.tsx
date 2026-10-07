@@ -24,6 +24,7 @@ import {
 } from "@/lib/messages/client-state";
 import { createClient as createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ChatMessage, ConversationDetail } from "@/lib/messages/service";
+import type { ChatShareableItem, ChatShareKind } from "@/lib/messages/shares";
 import type { MutualInterestState } from "@/lib/mutual-interest/constants";
 import type {
   IdentityRevealCompleted,
@@ -72,6 +73,8 @@ type ConversationRoomProps = {
   conversation: ConversationDetail;
   initialMessages: ChatMessage[];
   messageInteractionsEnabled: boolean;
+  chatSharingEnabled: boolean;
+  initialShareables: ChatShareableItem[];
   initialMutualInterest: MutualInterestState;
   initialIdentityReveal: IdentityRevealState;
   initialIdentityRevealPreview: IdentityRevealProfilePreview | null;
@@ -109,6 +112,8 @@ export function ConversationRoom({
   conversation,
   initialMessages,
   messageInteractionsEnabled,
+  chatSharingEnabled,
+  initialShareables,
   initialMutualInterest,
   initialIdentityReveal,
   initialIdentityRevealPreview,
@@ -220,7 +225,8 @@ export function ConversationRoom({
     let revealGeneration = 0;
     let messageController: AbortController | null = null;
     let revealController: AbortController | null = null;
-    let realtimeClient: ReturnType<typeof createBrowserSupabaseClient> | null = null;
+    let realtimeClient: ReturnType<typeof createBrowserSupabaseClient> | null =
+      null;
     let realtimeChannel: RealtimeChannel | null = null;
 
     function scheduleMessages(delay: number) {
@@ -263,7 +269,11 @@ export function ConversationRoom({
         setCanSend(payload.conversation.can_send);
         const node = listRef.current;
         const nearBottom = node
-          ? isNearChatBottom(node.scrollHeight, node.scrollTop, node.clientHeight)
+          ? isNearChatBottom(
+              node.scrollHeight,
+              node.scrollTop,
+              node.clientHeight,
+            )
           : true;
         const known = new Set(
           messagesRef.current.map((message) => message.message_id),
@@ -272,18 +282,16 @@ export function ConversationRoom({
           (message) => !known.has(message.message_id),
         );
         const hasNew = newMessages.length > 0;
-        messageIdleCycles = hasNew
-          ? 0
-          : Math.min(messageIdleCycles + 1, 4);
+        messageIdleCycles = hasNew ? 0 : Math.min(messageIdleCycles + 1, 4);
         if (hasNew) {
           shouldScrollAfterUpdate.current = nearBottom;
           setNewMessagesAvailable(!nearBottom);
         }
-        setMessages((current) =>
-          mergeChatMessages(current, payload.messages),
-        );
+        setMessages((current) => mergeChatMessages(current, payload.messages));
 
-        if (newMessages.some((message) => !message.is_mine && !message.read_at)) {
+        if (
+          newMessages.some((message) => !message.is_mine && !message.read_at)
+        ) {
           const formData = new FormData();
           formData.set("publicId", conversation.public_id);
           void markMessagesReadAction(formData);
@@ -295,9 +303,7 @@ export function ConversationRoom({
           setPollNote("Menyambungkan ulang…");
         }
       } finally {
-        scheduleMessages(
-          nextChatPollDelay(messageFailures, messageIdleCycles),
-        );
+        scheduleMessages(nextChatPollDelay(messageFailures, messageIdleCycles));
       }
     }
 
@@ -559,7 +565,10 @@ export function ConversationRoom({
   }
 
   function selectReply(message: ChatMessage) {
-    if (!messageInteractionsEnabled || message.moderation_status !== "visible") {
+    if (
+      !messageInteractionsEnabled ||
+      message.moderation_status !== "visible"
+    ) {
       return;
     }
     setReplyingTo(message);
@@ -583,9 +592,10 @@ export function ConversationRoom({
           body: JSON.stringify({ messageId, reaction }),
         },
       );
-      const payload = (await response.json().catch(() => null)) as
-        | { message?: ChatMessage; error?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        message?: ChatMessage;
+        error?: string;
+      } | null;
       if (!response.ok || !payload?.message) {
         throw new Error(
           payload?.error ?? "Reaksi belum dapat disimpan. Coba lagi.",
@@ -609,11 +619,20 @@ export function ConversationRoom({
     event.preventDefault();
     if (!canSend || pending) return;
 
-    const submitter = (event.nativeEvent as SubmitEvent).submitter as
-      | HTMLButtonElement
-      | null;
-    const stickerId =
-      submitter?.name === "stickerId" ? submitter.value : null;
+    const submitter = (event.nativeEvent as SubmitEvent)
+      .submitter as HTMLButtonElement | null;
+    const stickerId = submitter?.name === "stickerId" ? submitter.value : null;
+    const shareToken =
+      submitter?.name === "shareToken" ? submitter.value : null;
+    const shareMatch = shareToken?.match(
+      /^(circle|event):((?:circle|event)-[0-9a-f]{24})$/,
+    );
+    const share = shareMatch
+      ? {
+          kind: shareMatch[1] as ChatShareKind,
+          publicSlug: shareMatch[2],
+        }
+      : null;
     const idempotencyKey = makeIdempotencyKey();
     const replyToMessageId =
       messageInteractionsEnabled && replyingTo
@@ -626,11 +645,15 @@ export function ConversationRoom({
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    if (!stickerId && !trimmed) {
+    if (shareToken && !share) {
+      setClientError("Circle atau acara tidak ditemukan.");
+      return;
+    }
+    if (!stickerId && !share && !trimmed) {
       setClientError("Tulis pesan singkat terlebih dahulu.");
       return;
     }
-    if (!stickerId && trimmed.length > CHAT_MESSAGE_MAX) {
+    if (!stickerId && !share && trimmed.length > CHAT_MESSAGE_MAX) {
       setClientError(`Maksimal ${CHAT_MESSAGE_MAX} karakter.`);
       return;
     }
@@ -651,22 +674,28 @@ export function ConversationRoom({
                     idempotencyKey,
                     replyToMessageId,
                   }
-                : {
-                    type: "text",
-                    body: trimmed,
-                    idempotencyKey,
-                    replyToMessageId,
-                  },
+                : share
+                  ? {
+                      type: "share",
+                      shareKind: share.kind,
+                      sharePublicSlug: share.publicSlug,
+                      idempotencyKey,
+                      replyToMessageId,
+                    }
+                  : {
+                      type: "text",
+                      body: trimmed,
+                      idempotencyKey,
+                      replyToMessageId,
+                    },
             ),
           },
         );
-        const payload = (await response.json().catch(() => null)) as
-          | {
-              error?: string;
-              message?: ChatMessage;
-              conversationStatus?: ConversationDetail["status"];
-            }
-          | null;
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+          message?: ChatMessage;
+          conversationStatus?: ConversationDetail["status"];
+        } | null;
         if (!response.ok || !payload?.message) {
           throw new Error(
             payload?.error ?? "Pesan belum dapat dikirim. Coba lagi.",
@@ -680,7 +709,7 @@ export function ConversationRoom({
         if (payload.conversationStatus) {
           setStatus(payload.conversationStatus);
         }
-        if (!stickerId) updateComposerBody("");
+        if (!stickerId && !share) updateComposerBody("");
         setReplyingTo(null);
       } catch (error) {
         setClientError(
@@ -749,7 +778,11 @@ export function ConversationRoom({
           </div>
         </div>
         {pollNote ? (
-          <p role="status" aria-live="polite" className="mt-3 text-xs text-brand-muted">
+          <p
+            role="status"
+            aria-live="polite"
+            className="mt-3 text-xs text-brand-muted"
+          >
             {pollNote}
           </p>
         ) : null}
@@ -759,17 +792,26 @@ export function ConversationRoom({
           </p>
         ) : null}
         {state === "ended" || status === "ended" ? (
-          <p role="status" className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy">
+          <p
+            role="status"
+            className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy"
+          >
             {CONVERSATION_CLOSED_MESSAGE}
           </p>
         ) : null}
         {state === "blocked" || status === "blocked" ? (
-          <p role="status" className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy">
+          <p
+            role="status"
+            className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy"
+          >
             Percakapan tidak tersedia saat ini.
           </p>
         ) : null}
         {state === "reported" ? (
-          <p role="status" className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy">
+          <p
+            role="status"
+            className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy"
+          >
             Laporan diterima. Terima kasih sudah membantu menjaga ruang aman.
           </p>
         ) : null}
@@ -814,8 +856,8 @@ export function ConversationRoom({
         {status === "awaiting_chat" && chronological.length === 0 ? (
           <div className="rounded-[18px] border border-dashed border-brand-border bg-white px-4 py-5">
             <p className="text-sm leading-6 text-brand-muted">
-              Perkenalan sudah diterima. Mulai percakapan dengan santai dan tetap
-              jaga privasi.
+              Perkenalan sudah diterima. Mulai percakapan dengan santai dan
+              tetap jaga privasi.
             </p>
             <p className="mt-4 text-sm font-semibold text-brand-navy">
               Belum tahu mau bahas apa?
@@ -887,90 +929,92 @@ export function ConversationRoom({
         aria-label="Privasi dan pembukaan bertahap"
         className="space-y-4 border-t border-brand-border bg-white px-4 py-5 sm:px-6"
       >
-          <CounterpartPrivacyCard
-            mutual={mutualInterest.mutual}
-            identityCompleted={identityRevealCompleted}
-            contactReveal={contactReveal}
-            contactCompleted={contactCompleted}
-          />
-          <TelegramCompanionPanel
-            publicId={conversation.public_id}
-            initialState={initialTelegramCompanion}
-          />
-          <MutualInterestPanel
-            publicId={conversation.public_id}
-            conversationStatus={status}
-            state={mutualInterest}
-            onStateChange={setMutualInterest}
-          />
-          <IdentityRevealPanel
-            publicId={conversation.public_id}
-            conversationStatus={status}
-            mutualCompleted={mutualInterest.mutual}
-            state={normalizeIdentityRevealState(identityReveal)}
-            initialPreview={initialIdentityRevealPreview}
-            completedData={identityRevealCompleted}
-            onStateChange={(next) => {
-              setIdentityReveal(normalizeIdentityRevealState(next));
-              if (next.completed) {
-                void fetch(`/api/messages/${conversation.public_id}`, {
-                  cache: "no-store",
+        <CounterpartPrivacyCard
+          mutual={mutualInterest.mutual}
+          identityCompleted={identityRevealCompleted}
+          contactReveal={contactReveal}
+          contactCompleted={contactCompleted}
+        />
+        <TelegramCompanionPanel
+          publicId={conversation.public_id}
+          initialState={initialTelegramCompanion}
+        />
+        <MutualInterestPanel
+          publicId={conversation.public_id}
+          conversationStatus={status}
+          state={mutualInterest}
+          onStateChange={setMutualInterest}
+        />
+        <IdentityRevealPanel
+          publicId={conversation.public_id}
+          conversationStatus={status}
+          mutualCompleted={mutualInterest.mutual}
+          state={normalizeIdentityRevealState(identityReveal)}
+          initialPreview={initialIdentityRevealPreview}
+          completedData={identityRevealCompleted}
+          onStateChange={(next) => {
+            setIdentityReveal(normalizeIdentityRevealState(next));
+            if (next.completed) {
+              void fetch(`/api/messages/${conversation.public_id}`, {
+                cache: "no-store",
+              })
+                .then((response) => (response.ok ? response.json() : null))
+                .then((payload) => {
+                  if (
+                    payload?.identityRevealCompleted?.completed &&
+                    payload.identityRevealCompleted.mineFirstName
+                  ) {
+                    setIdentityRevealCompleted(
+                      payload.identityRevealCompleted as IdentityRevealCompleted,
+                    );
+                  }
+                  if (payload?.contactReveal) {
+                    setContactReveal(
+                      payload.contactReveal as ContactRevealState,
+                    );
+                  }
                 })
-                  .then((response) => (response.ok ? response.json() : null))
-                  .then((payload) => {
-                    if (
-                      payload?.identityRevealCompleted?.completed &&
-                      payload.identityRevealCompleted.mineFirstName
-                    ) {
-                      setIdentityRevealCompleted(
-                        payload.identityRevealCompleted as IdentityRevealCompleted,
-                      );
+                .catch(() => undefined);
+            }
+          }}
+        />
+        <ContactRevealPanel
+          publicId={conversation.public_id}
+          conversationStatus={status}
+          identityRevealCompleted={Boolean(identityReveal.completed)}
+          state={contactReveal}
+          initialPreviews={initialContactPreviews}
+          completedByChannel={contactCompleted}
+          profileDefaults={profileContactDefaults}
+          onStateChange={(next) => {
+            setContactReveal(next);
+            if (next.channels.some((channel) => channel.completed)) {
+              void fetch(`/api/messages/${conversation.public_id}`, {
+                cache: "no-store",
+              })
+                .then((response) => (response.ok ? response.json() : null))
+                .then((payload) => {
+                  if (payload?.contactRevealCompleted) {
+                    const nextCompleted: Partial<
+                      Record<
+                        ContactRevealChannel,
+                        ContactRevealCompletedChannel | null
+                      >
+                    > = {};
+                    for (const item of payload.contactRevealCompleted as ContactRevealCompletedChannel[]) {
+                      nextCompleted[item.channel] = item;
                     }
-                    if (payload?.contactReveal) {
-                      setContactReveal(payload.contactReveal as ContactRevealState);
-                    }
-                  })
-                  .catch(() => undefined);
-              }
-            }}
-          />
-          <ContactRevealPanel
-            publicId={conversation.public_id}
-            conversationStatus={status}
-            identityRevealCompleted={Boolean(identityReveal.completed)}
-            state={contactReveal}
-            initialPreviews={initialContactPreviews}
-            completedByChannel={contactCompleted}
-            profileDefaults={profileContactDefaults}
-            onStateChange={(next) => {
-              setContactReveal(next);
-              if (next.channels.some((channel) => channel.completed)) {
-                void fetch(`/api/messages/${conversation.public_id}`, {
-                  cache: "no-store",
+                    setContactCompleted(nextCompleted);
+                  }
                 })
-                  .then((response) => (response.ok ? response.json() : null))
-                  .then((payload) => {
-                    if (payload?.contactRevealCompleted) {
-                      const nextCompleted: Partial<
-                        Record<
-                          ContactRevealChannel,
-                          ContactRevealCompletedChannel | null
-                        >
-                      > = {};
-                      for (const item of payload.contactRevealCompleted as ContactRevealCompletedChannel[]) {
-                        nextCompleted[item.channel] = item;
-                      }
-                      setContactCompleted(nextCompleted);
-                    }
-                  })
-                  .catch(() => undefined);
-              }
-            }}
-          />
-          <MeetingPlanPanel
-            publicId={conversation.public_id}
-            initialState={initialMeetingPlan}
-          />
+                .catch(() => undefined);
+            }
+          }}
+        />
+        <MeetingPlanPanel
+          publicId={conversation.public_id}
+          initialState={initialMeetingPlan}
+        />
       </section>
 
       <footer className="sticky bottom-0 z-20 border-t border-brand-border bg-white px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
@@ -986,7 +1030,11 @@ export function ConversationRoom({
             onSubmit={onComposerSubmit}
             className="space-y-3"
           >
-            <input type="hidden" name="publicId" value={conversation.public_id} />
+            <input
+              type="hidden"
+              name="publicId"
+              value={conversation.public_id}
+            />
             <input type="hidden" name="idempotencyKey" defaultValue="" />
             <div className="min-h-5" aria-live="polite" aria-atomic="true">
               {counterpartTyping ? (
@@ -998,11 +1046,16 @@ export function ConversationRoom({
               ) : null}
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <label htmlFor="chat-body" className="text-sm font-semibold text-brand-navy">
+              <label
+                htmlFor="chat-body"
+                className="text-sm font-semibold text-brand-navy"
+              >
                 Tulis pesan
               </label>
               <ChatComposerTools
                 disabled={pending}
+                sharingEnabled={chatSharingEnabled}
+                shareables={initialShareables}
                 onInsertEmoji={insertEmoji}
               />
             </div>
@@ -1010,12 +1063,18 @@ export function ConversationRoom({
               <div className="flex items-start justify-between gap-3 rounded-xl border border-brand-border bg-brand-surface px-3 py-2">
                 <div className="min-w-0 border-l-2 border-brand-blue pl-3">
                   <p className="text-xs font-semibold text-brand-blue">
-                    Membalas {replyingTo.is_mine ? "pesanmu" : conversation.counterpart_alias}
+                    Membalas{" "}
+                    {replyingTo.is_mine
+                      ? "pesanmu"
+                      : conversation.counterpart_alias}
                   </p>
                   <p className="mt-0.5 line-clamp-2 break-words text-xs leading-5 text-brand-muted">
                     {replyingTo.message_type === "sticker"
-                      ? getChatStickerById(replyingTo.sticker_id)?.alt ?? "Stiker"
-                      : replyingTo.body}
+                      ? (getChatStickerById(replyingTo.sticker_id)?.alt ??
+                        "Stiker")
+                      : replyingTo.share_title
+                        ? `${replyingTo.share_kind === "event" ? "Acara" : "Circle"}: ${replyingTo.share_title}`
+                        : replyingTo.body}
                   </p>
                 </div>
                 <button
@@ -1039,7 +1098,11 @@ export function ConversationRoom({
               maxLength={CHAT_MESSAGE_MAX}
               disabled={pending}
               aria-invalid={clientError ? true : undefined}
-              aria-describedby={[counterId, counterStatusId, clientError ? errorId : null]
+              aria-describedby={[
+                counterId,
+                counterStatusId,
+                clientError ? errorId : null,
+              ]
                 .filter(Boolean)
                 .join(" ")}
               className="focus-ring w-full resize-y rounded-xl border border-brand-border bg-brand-surface px-3 py-3 text-sm leading-6 text-brand-navy"
@@ -1049,11 +1112,7 @@ export function ConversationRoom({
               <span id={counterId} className="text-xs text-brand-muted">
                 {body.trim().length} dari {CHAT_MESSAGE_MAX} karakter
               </span>
-              <span
-                id={counterStatusId}
-                className="sr-only"
-                aria-live="polite"
-              >
+              <span id={counterStatusId} className="sr-only" aria-live="polite">
                 {getCharacterThresholdAnnouncement(
                   body.trim().length,
                   CHAT_MESSAGE_MAX,
@@ -1066,7 +1125,10 @@ export function ConversationRoom({
               >
                 {pending ? (
                   <>
-                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <LoaderCircle
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                     Mengirim…
                   </>
                 ) : (
@@ -1079,7 +1141,9 @@ export function ConversationRoom({
                 {clientError}
               </p>
             ) : (
-              <p className="text-xs leading-5 text-brand-muted">{CHAT_CONTACT_MESSAGE}</p>
+              <p className="text-xs leading-5 text-brand-muted">
+                {CHAT_CONTACT_MESSAGE}
+              </p>
             )}
           </form>
         )}
@@ -1099,7 +1163,11 @@ export function ConversationRoom({
                 Akhiri percakapan
               </button>
               <form action={blockFromConversation}>
-                <input type="hidden" name="publicId" value={conversation.public_id} />
+                <input
+                  type="hidden"
+                  name="publicId"
+                  value={conversation.public_id}
+                />
                 <input
                   type="hidden"
                   name="alias"
@@ -1120,9 +1188,16 @@ export function ConversationRoom({
               Laporkan
             </summary>
             <form action={reportFromConversation} className="mt-4 space-y-3">
-              <input type="hidden" name="publicId" value={conversation.public_id} />
+              <input
+                type="hidden"
+                name="publicId"
+                value={conversation.public_id}
+              />
               <div>
-                <label htmlFor="chat-report-reason" className="text-sm font-medium">
+                <label
+                  htmlFor="chat-report-reason"
+                  className="text-sm font-medium"
+                >
                   Alasan
                 </label>
                 <select
@@ -1139,7 +1214,10 @@ export function ConversationRoom({
                 </select>
               </div>
               <div>
-                <label htmlFor="chat-report-details" className="text-sm font-medium">
+                <label
+                  htmlFor="chat-report-details"
+                  className="text-sm font-medium"
+                >
                   Keterangan singkat (opsional)
                 </label>
                 <textarea
@@ -1176,7 +1254,10 @@ export function ConversationRoom({
           <h2 id={endTitleId} className="font-heading text-xl font-semibold">
             Akhiri percakapan?
           </h2>
-          <p id={endDescriptionId} className="text-sm leading-6 text-brand-muted">
+          <p
+            id={endDescriptionId}
+            className="text-sm leading-6 text-brand-muted"
+          >
             Setelah diakhiri, pesan baru tidak dapat dikirim. Riwayat tetap
             tersedia untuk kalian berdua.
           </p>

@@ -6,6 +6,7 @@ import {
   type ChatReactionValue,
 } from "@/lib/messages/reactions";
 import type { ChatMessage } from "@/lib/messages/service";
+import { ChatSharedItemCard } from "@/components/messages/chat-shared-item-card";
 import { getChatStickerById } from "@/lib/messages/stickers";
 import { Reply, SmilePlus } from "lucide-react";
 import Image from "next/image";
@@ -37,14 +38,33 @@ export function ChatMessageBubble({
 }: ChatMessageBubbleProps) {
   const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
   const sticker =
-    message.moderation_status === "visible" && message.message_type === "sticker"
+    message.moderation_status === "visible" &&
+    message.message_type === "sticker"
       ? getChatStickerById(message.sticker_id)
       : null;
   const replySticker =
     message.reply_message_type === "sticker"
       ? getChatStickerById(message.reply_sticker_id)
       : null;
+  const sharedItem =
+    message.moderation_status === "visible" &&
+    message.share_kind &&
+    message.share_public_slug &&
+    message.share_title &&
+    message.share_description &&
+    message.share_meta
+      ? {
+          share_kind: message.share_kind,
+          share_public_slug: message.share_public_slug,
+          share_title: message.share_title,
+          share_description: message.share_description,
+          share_meta: message.share_meta,
+          share_starts_at: message.share_starts_at,
+          share_timezone_name: message.share_timezone_name,
+        }
+      : null;
   const rendersSticker = Boolean(sticker);
+  const rendersShare = Boolean(sharedItem);
   const canInteract =
     interactionsEnabled && message.moderation_status === "visible";
 
@@ -58,13 +78,17 @@ export function ChatMessageBubble({
         className={`max-w-[min(100%,28rem)] rounded-2xl text-sm leading-6 ${
           rendersSticker
             ? "px-2 py-2"
-            : message.is_mine
-              ? "bg-brand-blue px-4 py-3 text-white"
-              : "border border-brand-border bg-white px-4 py-3 text-brand-navy"
+            : rendersShare
+              ? "border border-brand-border bg-white p-1.5 text-brand-navy shadow-sm"
+              : message.is_mine
+                ? "bg-brand-blue px-4 py-3 text-white"
+                : "border border-brand-border bg-white px-4 py-3 text-brand-navy"
         }`}
       >
         <p className="sr-only">
-          {message.is_mine ? "Pesan dari kamu" : `Pesan dari ${counterpartAlias}`}
+          {message.is_mine
+            ? "Pesan dari kamu"
+            : `Pesan dari ${counterpartAlias}`}
         </p>
 
         {message.reply_message_id ? (
@@ -87,13 +111,19 @@ export function ChatMessageBubble({
                 message.is_mine ? "text-white/90" : "text-brand-muted"
               }`}
             >
-              {replySticker?.alt ?? message.reply_body ?? "Pesan tidak tersedia."}
+              {replySticker?.alt ??
+                message.reply_body ??
+                "Pesan tidak tersedia."}
             </p>
           </div>
         ) : null}
 
         {message.moderation_status === "removed" ? (
-          <p className="whitespace-pre-wrap break-words">Pesan tidak tersedia.</p>
+          <p className="whitespace-pre-wrap break-words">
+            Pesan tidak tersedia.
+          </p>
+        ) : sharedItem ? (
+          <ChatSharedItemCard item={sharedItem} />
         ) : sticker ? (
           <div className="flex min-w-28 flex-col items-center">
             <Image
@@ -110,7 +140,7 @@ export function ChatMessageBubble({
 
         <p
           className={`mt-2 text-[11px] ${
-            rendersSticker
+            rendersSticker || rendersShare
               ? "text-center text-brand-muted"
               : message.is_mine
                 ? "text-white/75"

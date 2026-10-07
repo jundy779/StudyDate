@@ -5,6 +5,8 @@ import {
   countUnreadConversations,
   getConversationByPublicId,
   getMessageInteractionCapability,
+  getChatSharingCapability,
+  listChatShareables,
   listConversationMessages,
 } from "@/lib/messages/service";
 import { conversationPublicIdSchema } from "@/lib/messages/validation";
@@ -53,6 +55,8 @@ async function ConversationContent({
     conversation,
     messages,
     messageInteractionsEnabled,
+    chatSharingEnabled,
+    initialShareables,
     unreadConversations,
     mutualInterest,
     identityReveal,
@@ -64,6 +68,8 @@ async function ConversationContent({
     getConversationByPublicId(parsed.data),
     listConversationMessages(parsed.data, { limit: 50 }),
     getMessageInteractionCapability(),
+    getChatSharingCapability(),
+    listChatShareables(parsed.data),
     countUnreadConversations(),
     getMutualInterestState(parsed.data),
     getIdentityRevealState(parsed.data),
@@ -132,6 +138,8 @@ async function ConversationContent({
           conversation={conversation}
           initialMessages={messages}
           messageInteractionsEnabled={messageInteractionsEnabled}
+          chatSharingEnabled={chatSharingEnabled}
+          initialShareables={initialShareables}
           initialMutualInterest={mutualInterest}
           initialIdentityReveal={identityReveal}
           initialIdentityRevealPreview={identityRevealPreview}

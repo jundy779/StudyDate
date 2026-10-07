@@ -520,7 +520,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 
 revoke all on function private.broadcast_anonymous_message_reaction_change()
   from public, anon, authenticated;

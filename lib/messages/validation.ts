@@ -7,6 +7,7 @@ import {
 } from "./constants.ts";
 import { openingMessageHasContact } from "../introductions/validation.ts";
 import { CHAT_REACTION_VALUES } from "./reactions.ts";
+import { CHAT_SHARE_KINDS } from "./shares.ts";
 import { CHAT_STICKER_IDS } from "./stickers.ts";
 
 export function normalizeChatMessage(value: string) {
@@ -28,7 +29,9 @@ export const chatMessageSchema = z
   .pipe(
     z
       .string()
-      .min(CHAT_MESSAGE_MIN, { message: "Tulis pesan singkat terlebih dahulu." })
+      .min(CHAT_MESSAGE_MIN, {
+        message: "Tulis pesan singkat terlebih dahulu.",
+      })
       .max(CHAT_MESSAGE_MAX, {
         message: `Maksimal ${CHAT_MESSAGE_MAX} karakter.`,
       })
@@ -57,6 +60,31 @@ export const sendChatStickerSchema = z.object({
     .optional(),
 });
 
+export const sendChatShareSchema = z
+  .object({
+    publicId: conversationPublicIdSchema,
+    shareKind: z.enum(CHAT_SHARE_KINDS),
+    sharePublicSlug: z.string(),
+    replyToMessageId: z.string().uuid().optional(),
+    idempotencyKey: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{8,64}$/)
+      .optional(),
+  })
+  .superRefine((value, context) => {
+    const valid =
+      value.shareKind === "circle"
+        ? /^circle-[0-9a-f]{24}$/.test(value.sharePublicSlug)
+        : /^event-[0-9a-f]{24}$/.test(value.sharePublicSlug);
+    if (!valid) {
+      context.addIssue({
+        code: "custom",
+        path: ["sharePublicSlug"],
+        message: "Circle atau acara tidak ditemukan.",
+      });
+    }
+  });
+
 export const messageReactionSchema = z.object({
   publicId: conversationPublicIdSchema,
   messageId: z.string().uuid(),
@@ -66,21 +94,25 @@ export const messageReactionSchema = z.object({
 export const reportConversationSchema = z.object({
   publicId: conversationPublicIdSchema,
   reasonCode: z.enum(REPORT_REASON_CODES),
-  details: z.preprocess((value) => {
-    if (typeof value !== "string") return undefined;
-    const normalized = normalizeChatMessage(value);
-    return normalized.length > 0 ? normalized : undefined;
-  }, z
-    .string()
-    .max(300)
-    .refine((value) => !openingMessageHasContact(value), {
-      message: CHAT_CONTACT_MESSAGE,
-    })
-    .optional()),
+  details: z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return undefined;
+      const normalized = normalizeChatMessage(value);
+      return normalized.length > 0 ? normalized : undefined;
+    },
+    z
+      .string()
+      .max(300)
+      .refine((value) => !openingMessageHasContact(value), {
+        message: CHAT_CONTACT_MESSAGE,
+      })
+      .optional(),
+  ),
   messageId: z.string().uuid().optional(),
 });
 
 export type SendChatMessageInput = z.infer<typeof sendChatMessageSchema>;
 export type SendChatStickerInput = z.infer<typeof sendChatStickerSchema>;
+export type SendChatShareInput = z.infer<typeof sendChatShareSchema>;
 export type MessageReactionInput = z.infer<typeof messageReactionSchema>;
 export type ReportConversationInput = z.infer<typeof reportConversationSchema>;

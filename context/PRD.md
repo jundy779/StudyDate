@@ -11,15 +11,19 @@ Tidak ada kewajiban atau jaminan arah romantis.
 ## 2. Positioning
 
 Headline:
+
 > Temukan teman belajar dan koneksi baru dari lingkungan kampus.
 
 Penjelasan singkat untuk publik:
+
 > Cari mahasiswa dengan minat yang sama, gabung circle belajar, dan temukan acara kampus. Nama asli dan kontak tidak langsung ditampilkan.
 
 Brand statement:
+
 > Mulai dari kesamaan di kampus. Kenalan tanpa perlu terburu-buru.
 
 Tagline:
+
 > TEMUKAN • KENALAN • TERHUBUNG
 
 ## 3. Pilar produk
@@ -27,6 +31,7 @@ Tagline:
 ### People
 
 Alur utama:
+
 1. Lihat profil anonim.
 2. Kirim perkenalan.
 3. Penerima membalas.
@@ -41,6 +46,7 @@ Alur utama:
 ### Groups
 
 Circle kecil untuk belajar, berdiskusi, networking, dan aktivitas kampus:
+
 - Study Circle;
 - circle terbuka;
 - circle satu kampus.
@@ -163,6 +169,7 @@ UI tidak boleh menampilkan data palsu untuk fitur tersebut.
 ### Student Verification Center
 
 Badge mahasiswa hanya diberikan bila tiga syarat terpenuhi:
+
 1. data akademik cocok melalui pemeriksaan manual PDDikti;
 2. kepemilikan akun dibuktikan melalui email kampus yang domainnya disetujui atau review kartu mahasiswa;
 3. reviewer aktif memberi persetujuan akhir sebelum badge diterbitkan.
@@ -201,6 +208,7 @@ Tidak meminta nama lengkap, nomor telepon, alamat, lokasi presisi, social media,
 ### Step 2 — Minat dan tujuan
 
 Connection goals:
+
 - study;
 - friendship;
 - networking;
@@ -209,6 +217,7 @@ Connection goals:
 - meaningful_connection.
 
 Starter interests:
+
 - technology;
 - design;
 - business;
@@ -267,6 +276,7 @@ Masuk/Terkirim di `/app/introductions`, lalu menerima, menolak, atau membatalkan
 Status: `pending`, `accepted`, `declined`, `cancelled`, `expired`.
 
 Rules:
+
 - satu introduction pending per pasangan;
 - message 12–300 karakter, plain text, filter kontak best-effort;
 - cooldown 7 hari setelah decline/cancel untuk pasangan sender→recipient yang sama;
@@ -291,12 +301,14 @@ Jangan bocorkan Telegram metadata, email, sender ID, UUID peserta, atau kontak s
 ## 11. Implemented — Identity Reveal v1
 
 Identity Reveal v1 (migration `202608060005`, applied remotely) membuka hanya:
+
 - first name yang disiapkan user secara eksplisit untuk reveal pada percakapan eligible;
 - clear profile photo yang diunggah khusus untuk reveal pada percakapan itu.
 
 Profil reveal bersifat conversation-scoped (bukan identitas global reusable). Persiapan
 memerlukan Mutual Interest selesai, shell aktif, peserta authenticated non-staff, dan
 tidak saling memblokir. Setelah selesai:
+
 - `ended` mempertahankan akses nama depan + foto kedua pihak menurut kebijakan retensi;
 - `blocked` menghentikan proyeksi identitas/media lawan pada request berikutnya tanpa
   mengklaim bahwa screenshot sebelumnya terhapus.
@@ -590,9 +602,14 @@ participation, event attendance, user-controlled reveal, low abuse, dan retentio
 
 Jangan menampilkan angka target publik yang belum disetujui.
 
-
 - Authorized Staff Operations v1: satu Early Access moderation queue, Owner full access, Staff read/review capability terpisah, safe user account ops, staff assign by email + capability grants (Owner-managed).
 
-
 ### Early Access review outcomes
+
 Owner or explicitly authorized Early Access staff may Approve, Minta Perbaikan, or Reject. Minta Perbaikan must carry at least one structured reason and sends a private one-time correction link. Reject also requires a reason and sends a notification email. Internal reviewer notes are never sent to applicants. Corrected applications return to the moderation queue and require a fresh approval before onboarding.
+
+## Social mahasiswa: ajak lewat chat (2026-10-07)
+
+Chat privat mendukung kartu ajakan untuk Circle belajar dan Acara Kampus. Pengirim hanya dapat membagikan Circle yang sedang diikuti atau acara yang sedang diikuti/dikelola. Penerima tetap memilih sendiri untuk membuka detail dan bergabung atau mendaftar. Mengirim ajakan tidak membuka identitas, tidak membagikan kontak, dan tidak otomatis menambahkan penerima sebagai anggota atau peserta.
+
+Bahasa antarmuka memakai istilah sederhana: **Ajak**, **Lihat Circle**, dan **Lihat acara**. Kartu menampilkan informasi secukupnya untuk mengambil keputusan, sedangkan pendaftaran tetap dilakukan pada halaman resmi Circle atau acara.

@@ -12,6 +12,7 @@ import type {
   ChatReactionSummary,
   ChatReactionValue,
 } from "@/lib/messages/reactions";
+import type { ChatShareableItem, ChatShareKind } from "@/lib/messages/shares";
 import { createClient } from "@/lib/supabase/server";
 
 export type ConversationListItem = {
@@ -43,18 +44,31 @@ export type ConversationDetail = {
   can_send: boolean;
 };
 
+export type ChatMessageType =
+  | "text"
+  | "sticker"
+  | "circle_invite"
+  | "event_invite";
+
 export type ChatMessage = {
   message_id: string;
   body: string;
-  message_type: "text" | "sticker";
+  message_type: ChatMessageType;
   sticker_id: string | null;
+  share_kind: ChatShareKind | null;
+  share_public_slug: string | null;
+  share_title: string | null;
+  share_description: string | null;
+  share_meta: string | null;
+  share_starts_at: string | null;
+  share_timezone_name: string | null;
   is_mine: boolean;
   created_at: string;
   read_at: string | null;
   moderation_status: "visible" | "removed";
   reply_message_id: string | null;
   reply_body: string | null;
-  reply_message_type: "text" | "sticker" | null;
+  reply_message_type: ChatMessageType | null;
   reply_sticker_id: string | null;
   reply_is_mine: boolean;
   reactions: ChatReactionSummary[];
@@ -72,9 +86,34 @@ function isMissingRpc(error: { code?: string; message?: string } | null) {
   );
 }
 
+type ChatShareField =
+  | "share_kind"
+  | "share_public_slug"
+  | "share_title"
+  | "share_description"
+  | "share_meta"
+  | "share_starts_at"
+  | "share_timezone_name";
+
+function withoutMessageShares(
+  message: Omit<ChatMessage, ChatShareField>,
+): ChatMessage {
+  return {
+    ...message,
+    share_kind: null,
+    share_public_slug: null,
+    share_title: null,
+    share_description: null,
+    share_meta: null,
+    share_starts_at: null,
+    share_timezone_name: null,
+  };
+}
+
 function withoutMessageInteractions(
   message: Omit<
     ChatMessage,
+    | ChatShareField
     | "reply_message_id"
     | "reply_body"
     | "reply_message_type"
@@ -83,7 +122,7 @@ function withoutMessageInteractions(
     | "reactions"
   >,
 ): ChatMessage {
-  return {
+  return withoutMessageShares({
     ...message,
     reply_message_id: null,
     reply_body: null,
@@ -91,7 +130,7 @@ function withoutMessageInteractions(
     reply_sticker_id: null,
     reply_is_mine: false,
     reactions: [],
-  };
+  });
 }
 
 function mapChatError(message: string | undefined): string {
@@ -107,6 +146,10 @@ function mapChatError(message: string | undefined): string {
 
   if (text.includes("conversation closed")) {
     return CONVERSATION_CLOSED_MESSAGE;
+  }
+
+  if (text.includes("share unavailable")) {
+    return "Circle atau acara sudah tidak tersedia untuk percakapan ini.";
   }
 
   if (text.includes("invalid message length")) {
@@ -165,20 +208,29 @@ export async function listConversationMessages(
     p_before_id: options?.beforeId ?? null,
     p_limit: options?.limit ?? 40,
   };
-  const modern = await supabase.rpc(
-    "list_conversation_messages_v3",
-    params,
-  );
+  const latest = await supabase.rpc("list_conversation_messages_v4", params);
+
+  if (!latest.error) {
+    return (latest.data ?? []) as ChatMessage[];
+  }
+  if (!isMissingRpc(latest.error)) {
+    throw new Error(GENERIC_CHAT_ERROR);
+  }
+
+  const modern = await supabase.rpc("list_conversation_messages_v3", params);
 
   if (!modern.error) {
-    return (modern.data ?? []) as ChatMessage[];
+    const messages = (modern.data ?? []) as Array<
+      Omit<ChatMessage, ChatShareField>
+    >;
+    return messages.map(withoutMessageShares);
   }
   if (!isMissingRpc(modern.error)) {
     throw new Error(GENERIC_CHAT_ERROR);
   }
 
   // Rolling-deploy fallback: keep sticker/text chat available before the
-  // reply-and-reaction migration is applied.
+  // reply, reaction, and social-sharing migrations are applied.
   const stickerCapable = await supabase.rpc(
     "list_conversation_messages_v2",
     params,
@@ -346,7 +398,9 @@ export async function reportConversation(input: {
   }
 }
 
-export async function getConversationPublicIdForIntroduction(requestId: string) {
+export async function getConversationPublicIdForIntroduction(
+  requestId: string,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(
     "get_conversation_public_id_for_introduction",
@@ -359,7 +413,6 @@ export async function getConversationPublicIdForIntroduction(requestId: string) 
 
   return data;
 }
-
 
 export async function getMessageInteractionCapability() {
   const supabase = await createClient();
@@ -389,4 +442,48 @@ export async function toggleAnonymousMessageReaction(input: {
     throw new Error(mapChatError(error.message));
   }
   return (data ?? null) as ChatReactionValue | null;
+}
+
+export async function getChatSharingCapability() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "anonymous_chat_sharing_available",
+  );
+  if (error) return false;
+  return data === true;
+}
+
+export async function listChatShareables(publicId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_chat_shareables", {
+    p_public_id: publicId,
+  });
+  if (error && isMissingRpc(error)) return [];
+  if (error) return [];
+  return (data ?? []) as ChatShareableItem[];
+}
+
+export async function sendAnonymousShare(input: {
+  publicId: string;
+  shareKind: ChatShareKind;
+  sharePublicSlug: string;
+  idempotencyKey?: string;
+  replyToMessageId?: string;
+}) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("send_anonymous_share_v1", {
+    p_public_id: input.publicId,
+    p_share_kind: input.shareKind,
+    p_share_public_slug: input.sharePublicSlug,
+    p_reply_to_message_id: input.replyToMessageId ?? null,
+    p_idempotency_key: input.idempotencyKey ?? null,
+  });
+  if (error) {
+    throw new Error(
+      isMissingRpc(error)
+        ? "Fitur ajak teman belum siap. Muat ulang setelah pembaruan selesai."
+        : mapChatError(error.message),
+    );
+  }
+  return data as string | null;
 }

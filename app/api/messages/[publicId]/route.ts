@@ -44,24 +44,30 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     }
 
     const mode = _request.nextUrl.searchParams.get("mode");
-    const [messages, mutualInterest, identityReveal, contactReveal, meetingPlan] =
-      await Promise.all([
-        mode === "reveal"
-          ? Promise.resolve([])
-          : listConversationMessages(parsed.data, { limit: 50 }),
-        mode === "messages" ? null : getMutualInterestState(parsed.data),
-        mode === "messages" ? null : getIdentityRevealState(parsed.data),
-        mode === "messages" ? null : getContactRevealState(parsed.data),
-        mode === "messages" ? null : getMyMeetingPlanState(parsed.data),
-      ]);
+    const [
+      messages,
+      mutualInterest,
+      identityReveal,
+      contactReveal,
+      meetingPlan,
+    ] = await Promise.all([
+      mode === "reveal"
+        ? Promise.resolve([])
+        : listConversationMessages(parsed.data, { limit: 50 }),
+      mode === "messages" ? null : getMutualInterestState(parsed.data),
+      mode === "messages" ? null : getIdentityRevealState(parsed.data),
+      mode === "messages" ? null : getContactRevealState(parsed.data),
+      mode === "messages" ? null : getMyMeetingPlanState(parsed.data),
+    ]);
 
     const identityRevealCompleted = identityReveal?.completed
       ? await getCompletedIdentityReveal(parsed.data)
       : null;
 
-    const contactRevealCompleted = identityReveal?.completed && contactReveal
-      ? await getAllCompletedContactReveals(parsed.data, contactReveal)
-      : [];
+    const contactRevealCompleted =
+      identityReveal?.completed && contactReveal
+        ? await getAllCompletedContactReveals(parsed.data, contactReveal)
+        : [];
 
     return NextResponse.json({
       conversation: {
@@ -132,6 +138,13 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         body: message.body,
         message_type: message.message_type,
         sticker_id: message.sticker_id,
+        share_kind: message.share_kind,
+        share_public_slug: message.share_public_slug,
+        share_title: message.share_title,
+        share_description: message.share_description,
+        share_meta: message.share_meta,
+        share_starts_at: message.share_starts_at,
+        share_timezone_name: message.share_timezone_name,
         is_mine: message.is_mine,
         created_at: message.created_at,
         read_at: message.read_at,
@@ -163,9 +176,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (!publicId.success) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
-  const body = (await request.json().catch(() => null)) as
-    | { beforeCreatedAt?: unknown; beforeId?: unknown }
-    | null;
+  const body = (await request.json().catch(() => null)) as {
+    beforeCreatedAt?: unknown;
+    beforeId?: unknown;
+  } | null;
   if (
     typeof body?.beforeCreatedAt !== "string" ||
     Number.isNaN(Date.parse(body.beforeCreatedAt)) ||

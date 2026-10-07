@@ -2,6 +2,7 @@ import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   listConversationMessages,
   sendAnonymousMessage,
+  sendAnonymousShare,
   sendAnonymousSticker,
   type ChatMessage,
 } from "@/lib/messages/service";
@@ -9,6 +10,7 @@ import { getChatStickerById } from "@/lib/messages/stickers";
 import {
   conversationPublicIdSchema,
   sendChatMessageSchema,
+  sendChatShareSchema,
   sendChatStickerSchema,
 } from "@/lib/messages/validation";
 import { NextResponse, type NextRequest } from "next/server";
@@ -23,6 +25,13 @@ function safeMessage(message: ChatMessage) {
     body: message.body,
     message_type: message.message_type ?? "text",
     sticker_id: message.sticker_id ?? null,
+    share_kind: message.share_kind ?? null,
+    share_public_slug: message.share_public_slug ?? null,
+    share_title: message.share_title ?? null,
+    share_description: message.share_description ?? null,
+    share_meta: message.share_meta ?? null,
+    share_starts_at: message.share_starts_at ?? null,
+    share_timezone_name: message.share_timezone_name ?? null,
     is_mine: true,
     created_at: message.created_at,
     read_at: message.read_at,
@@ -39,7 +48,10 @@ function safeMessage(message: ChatMessage) {
 export async function POST(request: NextRequest, context: RouteContext) {
   const user = await getAuthenticatedUser();
   if (!user) {
-    return NextResponse.json({ error: "Silakan masuk kembali." }, { status: 401 });
+    return NextResponse.json(
+      { error: "Silakan masuk kembali." },
+      { status: 401 },
+    );
   }
 
   const profile = await getPrivateProfile(user.id);
@@ -59,9 +71,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const payload = (await request.json().catch(() => null)) as
-    | Record<string, unknown>
-    | null;
+  const payload = (await request.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
 
   try {
     if (payload?.type === "text") {
@@ -98,6 +111,45 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
     }
 
+    if (payload?.type === "share") {
+      const parsed = sendChatShareSchema.safeParse({
+        publicId: publicId.data,
+        shareKind: payload.shareKind,
+        sharePublicSlug: payload.sharePublicSlug,
+        replyToMessageId: payload.replyToMessageId,
+        idempotencyKey: payload.idempotencyKey,
+      });
+      if (!parsed.success) {
+        return NextResponse.json(
+          {
+            error:
+              parsed.error.issues[0]?.message ??
+              "Circle atau acara tidak ditemukan.",
+          },
+          { status: 400 },
+        );
+      }
+
+      const messageId = await sendAnonymousShare(parsed.data);
+      if (!messageId) {
+        throw new Error("Ajakan belum dapat dikirim.");
+      }
+      const currentMessages = await listConversationMessages(
+        parsed.data.publicId,
+        { limit: 50 },
+      );
+      const enriched = currentMessages.find(
+        (current) => current.message_id === messageId,
+      );
+      if (!enriched) {
+        throw new Error("Ajakan terkirim, tetapi kartu belum dapat dimuat.");
+      }
+      return NextResponse.json({
+        message: safeMessage(enriched),
+        conversationStatus: "active",
+      });
+    }
+
     if (payload?.type === "sticker") {
       const parsed = sendChatStickerSchema.safeParse({
         publicId: publicId.data,
@@ -107,7 +159,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       if (!parsed.success) {
         return NextResponse.json(
-          { error: parsed.error.issues[0]?.message ?? "Stiker tidak tersedia." },
+          {
+            error: parsed.error.issues[0]?.message ?? "Stiker tidak tersedia.",
+          },
           { status: 400 },
         );
       }
@@ -133,11 +187,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({
         message: enriched
           ? safeMessage(enriched)
-          : {
+          : ({
               message_id: messageId,
               body: sticker.fallbackText,
               message_type: "sticker",
               sticker_id: sticker.id,
+              share_kind: null,
+              share_public_slug: null,
+              share_title: null,
+              share_description: null,
+              share_meta: null,
+              share_starts_at: null,
+              share_timezone_name: null,
               is_mine: true,
               created_at: new Date().toISOString(),
               read_at: null,
@@ -148,7 +209,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               reply_sticker_id: null,
               reply_is_mine: false,
               reactions: [],
-            } satisfies ChatMessage,
+            } satisfies ChatMessage),
       });
     }
 

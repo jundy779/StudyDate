@@ -43,11 +43,13 @@ Supabase bertanggung jawab untuk session, RLS, constraints, uniqueness, grants, 
 ## 4. Environment variables
 
 Browser-visible:
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `NEXT_PUBLIC_SITE_URL`
 
 Server-only:
+
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `STUDYDATE_EMAIL_FROM` plus either `STUDYDATE_RESEND_API_KEY` or SMTP
   (`STUDYDATE_SMTP_*`) for StudyDate-branded magic-link delivery (never Supabase Auth mailer)
@@ -99,6 +101,7 @@ Middleware/proxy menyegarkan session dan melakukan redirect dasar. Protected Ser
 auth kembali dan mengecek onboarding state.
 
 Expected:
+
 - unauthenticated `/app` -> `/login`;
 - unauthenticated `/onboarding` -> `/login`;
 - onboarded `/login` -> `/app`;
@@ -194,6 +197,7 @@ Service role hanya untuk operasi server yang jelas, bukan pengganti RLS seluruh 
 ```
 
 Trust boundaries:
+
 - browser tidak pernah memilih hasil review atau target user;
 - NIM dan nama legal dienkripsi sebelum masuk database;
 - fingerprint NIM memakai HMAC key terpisah;
@@ -360,6 +364,7 @@ Completed name projection exposes consented first names; photos stream through t
 authenticated media proxy.
 
 Post-completion access:
+
 - `ended`: both participants retain completed first-name and photo access (conversation retention).
 - `blocked` (or block row): counterpart name/photo are withheld on subsequent requests;
   own name/photo may remain; internal snapshot/audit retained; UI must not claim prior
@@ -396,6 +401,7 @@ exposes only safe `ContactRevealChannelState` (no counterpart prepare/consent, n
 Channels (telegram | instagram | linkedin) complete independently.
 
 Post-completion access:
+
 - `ended`: both participants retain completed contacts for that channel.
 - `blocked` (or block row): counterpart contact ciphertext withheld; own contact may remain;
   UI must not claim prior views were erased.
@@ -609,8 +615,7 @@ bypass setelah privacy lock, menjaga membership/RSVP aktif sebagai tombstone,
 menolak Auth deletion sebelum database cleanup, memberi claim by-request-id
 untuk operasi terkontrol, dan membatasi retention metadata deletion. Ketiga
 migration telah sinkron dengan project `ctbqudtvrfezuoqcecyj`; audit live A/B/D,
-worker exact-request, cleanup, dan browser lima viewport lulus pada 10 Agustus
-2026.
+worker exact-request, cleanup, dan browser lima viewport lulus pada 10 Agustus 2026.
 Mahasiswa tetap hanya dapat request self dan membaca status sendiri.
 
 ## 12j. Membership, AutoGoPay, dan Safety Meeting
@@ -763,6 +768,7 @@ Gunakan request ID, sanitized result category, status code, duration, dan non-id
 ## 18. Production gates
 
 Sebelum production:
+
 - dedicated Supabase project verified;
 - migrations applied in order;
 - live magic-link dan PKCE test;
@@ -775,7 +781,15 @@ Sebelum production:
 - baseline security headers (`next.config.ts`); monitoring tanpa PII tetap P2;
 - Vercel root = `studydate-web` (lihat `docs/operations/vercel-deploy.md`).
 
-
 ### Staff authorized operations
 
 Capability tipis di atas role Owner/Admin + `verification_reviewer`. Guard: `requireStaffCapability`. Waitlist ≠ akun. User ops projection aman (tanpa NIM/evidence/chat/reveal). Staff invite: resolve email → Auth user yang sudah ada; fallback jika belum ada akun (tanpa fabricate magic link).
+
+## Anonymous chat social sharing v1 (2026-10-07)
+
+- Message types are bounded to `text`, `sticker`, `circle_invite`, and `event_invite`.
+- Share messages store an opaque internal slug and server-authored snapshots. Clients construct only allowlisted `/app/circles/:slug` or `/app/events/:slug` routes.
+- `list_chat_shareables` filters by sender participation, recipient visibility, block state, campus scope, capacity, and existing recipient membership.
+- `send_anonymous_share_v1` repeats every authorization check at mutation time, applies existing chat rate limits, and never creates Circle membership or Event registration.
+- `list_conversation_messages_v4` is additive. The application rolls back through v3, v2, and v1 RPC projections while the database migration is pending.
+- The composer is capability-gated through `anonymous_chat_sharing_available`, so production chat remains usable before rollout.
