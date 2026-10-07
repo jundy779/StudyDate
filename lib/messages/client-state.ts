@@ -1,7 +1,7 @@
 export type ClientChatMessage = {
   message_id: string;
   body: string;
-  message_type: "text" | "sticker";
+  message_type: "text" | "sticker" | "circle_invite" | "event_invite";
   sticker_id: string | null;
   is_mine: boolean;
   created_at: string;

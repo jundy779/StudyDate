@@ -58,7 +58,10 @@ export function ChatSharedItemCard({ item }: ChatSharedItemCardProps) {
         </p>
         <p className="break-words text-xs font-medium text-brand-muted">
           {eventDate ? `${eventDate} · ` : ""}
-          {getChatShareMetaLabel(item)}
+          {getChatShareMetaLabel({
+            share_kind: item.share_kind,
+            meta: item.share_meta,
+          })}
         </p>
         {href ? (
           <Link
