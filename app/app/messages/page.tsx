@@ -3,21 +3,25 @@ import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { ConversationListItem } from "@/components/messages/conversation-list-item";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
+  CONVERSATION_VIEWS,
+  filterConversations,
+  normalizeConversationQuery,
+  parseConversationView,
+  searchConversations,
+  type ConversationView,
+} from "@/lib/messages/filters";
+import {
   countUnreadConversations,
   listMyConversations,
 } from "@/lib/messages/service";
-import {
-  CONVERSATION_VIEWS,
-  filterConversations,
-  parseConversationView,
-  type ConversationView,
-} from "@/lib/messages/filters";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 type MessagesPageProps = {
   searchParams: Promise<{
+    q?: string | string[];
     state?: string | string[];
     view?: string | string[];
   }>;
@@ -59,6 +63,14 @@ const emptyStates: Record<
   },
 };
 
+function messagesHref(view: ConversationView, query: string) {
+  const params = new URLSearchParams();
+  if (view !== "all") params.set("view", view);
+  if (query) params.set("q", query);
+  const suffix = params.toString();
+  return suffix ? `/app/messages?${suffix}` : "/app/messages";
+}
+
 async function MessagesContent({ searchParams }: MessagesPageProps) {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
@@ -73,12 +85,27 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
 
   const state = Array.isArray(params.state) ? params.state[0] : params.state;
   const selectedView = parseConversationView(params.view);
-  const visibleConversations = filterConversations(
+  const searchQuery = normalizeConversationQuery(params.q);
+  const filteredConversations = filterConversations(
     conversations,
     selectedView,
   );
+  const visibleConversations = searchConversations(
+    filteredConversations,
+    searchQuery,
+  );
   const stateMessage = state ? stateMessages[state] : null;
-  const emptyState = emptyStates[selectedView];
+  const emptyState = searchQuery
+    ? {
+        title: "Belum ketemu",
+        description:
+          "Coba cari dengan nama samaran, kampus, atau program studi yang berbeda.",
+        action: {
+          href: messagesHref(selectedView, ""),
+          label: "Hapus pencarian",
+        },
+      }
+    : emptyStates[selectedView];
 
   return (
     <AppShell current="messages" unreadMessages={unreadConversations}>
@@ -103,21 +130,61 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
             </p>
           ) : null}
 
-          <div className="mt-8 max-w-full overflow-x-auto pb-1">
+          <form
+            action="/app/messages"
+            method="get"
+            role="search"
+            className="mt-8 flex max-w-3xl flex-col gap-2 sm:flex-row"
+          >
+            {selectedView !== "all" ? (
+              <input type="hidden" name="view" value={selectedView} />
+            ) : null}
+            <label htmlFor="conversation-search" className="sr-only">
+              Cari percakapan
+            </label>
+            <div className="relative min-w-0 flex-1">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-muted"
+              />
+              <input
+                id="conversation-search"
+                name="q"
+                type="search"
+                maxLength={80}
+                defaultValue={searchQuery}
+                autoComplete="off"
+                placeholder="Cari nama samaran, kampus, atau program studi"
+                className="focus-ring min-h-12 w-full rounded-xl border border-brand-border bg-white py-3 pl-12 pr-4 text-sm text-brand-navy placeholder:text-brand-muted"
+              />
+            </div>
+            <button
+              type="submit"
+              className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white hover:bg-brand-blue"
+            >
+              Cari
+            </button>
+            {searchQuery ? (
+              <Link
+                href={messagesHref(selectedView, "")}
+                className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl px-4 text-sm font-semibold text-brand-muted hover:text-brand-navy"
+              >
+                Hapus
+              </Link>
+            ) : null}
+          </form>
+
+          <div className="mt-5 max-w-full overflow-x-auto pb-1">
             <nav
               aria-label="Filter daftar pesan"
               className="inline-flex min-w-max items-center gap-1 rounded-xl border border-brand-border bg-white p-1"
             >
               {CONVERSATION_VIEWS.map((view) => {
                 const active = selectedView === view.value;
-                const href =
-                  view.value === "all"
-                    ? "/app/messages"
-                    : `/app/messages?view=${view.value}`;
                 return (
                   <Link
                     key={view.value}
-                    href={href}
+                    href={messagesHref(view.value, searchQuery)}
                     aria-current={active ? "page" : undefined}
                     className={`focus-ring inline-flex min-h-10 items-center justify-center rounded-lg px-3.5 text-sm font-semibold ${
                       active
@@ -131,6 +198,17 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
               })}
             </nav>
           </div>
+
+          {searchQuery ? (
+            <p
+              role="status"
+              className="mt-4 text-sm font-medium text-brand-muted"
+            >
+              {visibleConversations.length === 0
+                ? "Belum ada percakapan yang cocok."
+                : `${visibleConversations.length} percakapan ditemukan.`}
+            </p>
+          ) : null}
 
           <section className="mt-5 space-y-4" aria-label="Daftar percakapan">
             {visibleConversations.length === 0 ? (
