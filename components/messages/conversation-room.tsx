@@ -16,6 +16,11 @@ import {
   REPORT_REASON_LABELS,
 } from "@/lib/messages/constants";
 import {
+  clearChatDraft,
+  readChatDraft,
+  writeChatDraft,
+} from "@/lib/messages/drafts";
+import {
   getCharacterThresholdAnnouncement,
   isNearChatBottom,
   mergeChatMessages,
@@ -157,6 +162,7 @@ export function ConversationRoom({
     initialContactCompleted,
   );
   const [body, setBody] = useState("");
+  const [draftReady, setDraftReady] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [reactionPending, setReactionPending] = useState<string | null>(null);
   const [counterpartTyping, setCounterpartTyping] = useState(false);
@@ -221,6 +227,11 @@ export function ConversationRoom({
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    setBody(readChatDraft(window.localStorage, conversation.public_id));
+    setDraftReady(true);
+  }, [conversation.public_id]);
 
   useEffect(() => {
     if (!activeSearchMessageId) return;
@@ -567,6 +578,9 @@ export function ConversationRoom({
 
   function updateComposerBody(next: string) {
     setBody(next);
+    if (draftReady) {
+      writeChatDraft(window.localStorage, conversation.public_id, next);
+    }
     window.clearTimeout(typingStopTimerRef.current);
     if (!next.trim()) {
       if (typingActiveRef.current) publishTyping(false);
@@ -752,7 +766,10 @@ export function ConversationRoom({
         if (payload.conversationStatus) {
           setStatus(payload.conversationStatus);
         }
-        if (!stickerId && !share) updateComposerBody("");
+        if (!stickerId && !share) {
+          updateComposerBody("");
+          clearChatDraft(window.localStorage, conversation.public_id);
+        }
         setReplyingTo(null);
       } catch (error) {
         setClientError(
@@ -1290,9 +1307,16 @@ export function ConversationRoom({
               placeholder="Bagikan pesan singkat tanpa membagikan kontak."
             />
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span id={counterId} className="text-xs text-brand-muted">
-                {body.trim().length} dari {CHAT_MESSAGE_MAX} karakter
-              </span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span id={counterId} className="text-xs text-brand-muted">
+                  {body.trim().length} dari {CHAT_MESSAGE_MAX} karakter
+                </span>
+                {draftReady && body.trim() ? (
+                  <span className="text-xs text-brand-blue">
+                    Draf tersimpan otomatis di perangkat ini.
+                  </span>
+                ) : null}
+              </div>
               <span id={counterStatusId} className="sr-only" aria-live="polite">
                 {getCharacterThresholdAnnouncement(
                   body.trim().length,
