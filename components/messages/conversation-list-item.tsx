@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ConversationDraftPreview } from "@/components/messages/conversation-draft-preview";
 import { CONVERSATION_STATUS_LABELS } from "@/lib/messages/constants";
 import type { ConversationListItem as ConversationItem } from "@/lib/messages/service";
 import { getMascotForAlias } from "@/lib/people/constants";
@@ -64,7 +65,15 @@ export function ConversationListItem({ item }: { item: ConversationItem }) {
             </p>
           ) : null}
           <p className="mt-3 line-clamp-2 whitespace-pre-wrap break-words text-sm leading-6 text-brand-navy">
-            {preview}
+            {!isDeleted &&
+            (item.status === "awaiting_chat" || item.status === "active") ? (
+              <ConversationDraftPreview
+                publicId={item.public_id}
+                fallback={preview}
+              />
+            ) : (
+              preview
+            )}
           </p>
           <p className="mt-2 text-xs text-brand-muted">
             {formatActivity(item.last_activity_at)}
