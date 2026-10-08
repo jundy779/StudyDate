@@ -70,6 +70,10 @@ Implemented:
 - Anonymous Chat v1 at `/app/messages` (deployed through migration `202608060003`); local migration
   `202608250001` adds Unicode emoji composer support and allowlisted official StudyDate mascot stickers with a
   legacy-safe text fallback. The sticker migration must be applied before enabling sticker sends.
+- The current repository's Anonymous Chat experience also includes replies and reactions, Circle/Event share cards,
+  conversation filters and search, search across loaded messages, local expiring drafts, copy message, and one compact
+  action menu. Local draft/search behavior is device-scoped and needs no database migration; repository availability
+  does not by itself confirm a production rollout.
 - Mutual Interest v1 inside active conversations (migration `202608060004`)
 - Identity Reveal v1 (migration `202608060005`)
 - Contact Reveal v1 for Telegram / Instagram / LinkedIn after Identity Reveal
