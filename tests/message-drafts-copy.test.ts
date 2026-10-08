@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   clearChatDraft,
   getChatDraftStorageKey,
+  peekChatDraft,
   readChatDraft,
   writeChatDraft,
 } from "../lib/messages/drafts.ts";
@@ -68,6 +69,14 @@ test("blank and expired chat drafts are removed", () => {
   assert.equal(readChatDraft(storage, "conversation-a", 22), "");
 });
 
+test("draft snapshot reads stay pure for rendering", () => {
+  const storage = makeStorage();
+  const key = getChatDraftStorageKey("conversation-a");
+  storage.setItem(key, "{broken");
+  assert.equal(peekChatDraft(storage, "conversation-a"), "");
+  assert.equal(storage.getItem(key), "{broken");
+});
+
 test("malformed or blocked browser storage never breaks chat", () => {
   const storage = makeStorage();
   storage.setItem(getChatDraftStorageKey("conversation-a"), "{broken");
@@ -103,6 +112,7 @@ test("conversation list shows drafts only for sendable conversations", () => {
   assert.match(listItem, /item\.status === "active"/);
   assert.match(draftPreview, /Draf:/);
   assert.match(draftPreview, /visibilitychange/);
+  assert.match(draftPreview, /peekChatDraft/);
 });
 
 test("copy message action reports success and failure accessibly", () => {
