@@ -613,3 +613,11 @@ Owner or explicitly authorized Early Access staff may Approve, Minta Perbaikan, 
 Chat privat mendukung kartu ajakan untuk Circle belajar dan Acara Kampus. Pengirim hanya dapat membagikan Circle yang sedang diikuti atau acara yang sedang diikuti/dikelola. Penerima tetap memilih sendiri untuk membuka detail dan bergabung atau mendaftar. Mengirim ajakan tidak membuka identitas, tidak membagikan kontak, dan tidak otomatis menambahkan penerima sebagai anggota atau peserta.
 
 Bahasa antarmuka memakai istilah sederhana: **Ajak**, **Lihat Circle**, dan **Lihat acara**. Kartu menampilkan informasi secukupnya untuk mengambil keputusan, sedangkan pendaftaran tetap dilakukan pada halaman resmi Circle atau acara.
+
+## Pengalaman Anonymous Chat tambahan (2026-10-08)
+
+Daftar Pesan mendukung filter status dan pencarian berdasarkan nama samaran, kampus, atau program studi dari percakapan yang sudah dimuat. Ruang chat mendukung pencarian isi pesan yang sudah dimuat, perpindahan ke hasil sebelumnya atau berikutnya, sorotan hasil, draf lokal per percakapan, salin pesan, dan satu menu tindakan ringkas untuk **Balas**, **Salin pesan**, dan **Reaksi**.
+
+Draf disimpan di perangkat pengguna maksimal tujuh hari, dihapus setelah pesan terkirim, dan tidak tersinkron ke perangkat lain. Pencarian lokal tidak mengirim kata kunci kepada lawan bicara dan tidak memasukkan pesan yang sudah dihapus dari tampilan.
+
+Pencarian seluruh riwayat, sematkan/arsipkan/bisukan percakapan, edit/hapus pesan, lampiran, pesan suara, dan push notification belum termasuk kemampuan ini. Fitur tersebut memerlukan aturan server, penyimpanan, moderasi, dan pengujian privasi sebelum dapat dinyatakan siap.
