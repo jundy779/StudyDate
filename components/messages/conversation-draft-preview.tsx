@@ -2,7 +2,7 @@
 
 import {
   getChatDraftStorageKey,
-  readChatDraft,
+  peekChatDraft,
 } from "@/lib/messages/drafts";
 import { useCallback, useSyncExternalStore } from "react";
 
@@ -16,7 +16,7 @@ export function ConversationDraftPreview({
   fallback,
 }: ConversationDraftPreviewProps) {
   const getSnapshot = useCallback(
-    () => readChatDraft(window.localStorage, publicId),
+    () => peekChatDraft(window.localStorage, publicId),
     [publicId],
   );
   const subscribe = useCallback(
