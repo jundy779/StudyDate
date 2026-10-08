@@ -4,7 +4,7 @@ import {
   getChatDraftStorageKey,
   readChatDraft,
 } from "@/lib/messages/drafts";
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 type ConversationDraftPreviewProps = {
   publicId: string;
@@ -15,29 +15,31 @@ export function ConversationDraftPreview({
   publicId,
   fallback,
 }: ConversationDraftPreviewProps) {
-  const [draft, setDraft] = useState("");
+  const getSnapshot = useCallback(
+    () => readChatDraft(window.localStorage, publicId),
+    [publicId],
+  );
+  const subscribe = useCallback(
+    (notify: () => void) => {
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key === getChatDraftStorageKey(publicId)) notify();
+      };
+      const handleVisibility = () => {
+        if (!document.hidden) notify();
+      };
 
-  useEffect(() => {
-    const refresh = () => {
-      setDraft(readChatDraft(window.localStorage, publicId));
-    };
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === getChatDraftStorageKey(publicId)) refresh();
-    };
-    const handleVisibility = () => {
-      if (!document.hidden) refresh();
-    };
-
-    refresh();
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("pageshow", refresh);
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("pageshow", refresh);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [publicId]);
+      window.addEventListener("storage", handleStorage);
+      window.addEventListener("pageshow", notify);
+      document.addEventListener("visibilitychange", handleVisibility);
+      return () => {
+        window.removeEventListener("storage", handleStorage);
+        window.removeEventListener("pageshow", notify);
+        document.removeEventListener("visibilitychange", handleVisibility);
+      };
+    },
+    [publicId],
+  );
+  const draft = useSyncExternalStore(subscribe, getSnapshot, () => "");
 
   return draft ? (
     <>
