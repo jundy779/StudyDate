@@ -9,9 +9,9 @@ import type { ChatMessage } from "@/lib/messages/service";
 import { ChatSharedItemCard } from "@/components/messages/chat-shared-item-card";
 import { splitChatSearchText } from "@/lib/messages/search";
 import { getChatStickerById } from "@/lib/messages/stickers";
-import { Reply, SmilePlus } from "lucide-react";
+import { Check, Copy, Reply, SmilePlus } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ChatMessageBubbleProps = {
   message: ChatMessage;
@@ -69,6 +69,10 @@ export function ChatMessageBubble({
   onReact,
 }: ChatMessageBubbleProps) {
   const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+  const copyResetTimerRef = useRef<number | undefined>(undefined);
   const sticker =
     message.moderation_status === "visible" &&
     message.message_type === "sticker"
@@ -99,6 +103,35 @@ export function ChatMessageBubble({
   const rendersShare = Boolean(sharedItem);
   const canInteract =
     interactionsEnabled && message.moderation_status === "visible";
+  const canCopy =
+    message.moderation_status === "visible" &&
+    message.message_type === "text" &&
+    Boolean(message.body.trim());
+
+  useEffect(() => {
+    return () => window.clearTimeout(copyResetTimerRef.current);
+  }, []);
+
+  async function copyMessageBody() {
+    if (!canCopy) return;
+    setReactionPickerOpen(false);
+    window.clearTimeout(copyResetTimerRef.current);
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("clipboard unavailable");
+      }
+      await navigator.clipboard.writeText(message.body);
+      setCopyState("copied");
+    } catch {
+      setCopyState("error");
+    }
+
+    copyResetTimerRef.current = window.setTimeout(
+      () => setCopyState("idle"),
+      1_800,
+    );
+  }
 
   return (
     <div
@@ -233,58 +266,100 @@ export function ChatMessageBubble({
         </div>
       ) : null}
 
-      {canInteract ? (
-        <div
-          className={`mt-1 flex max-w-full flex-wrap items-center gap-1 ${
-            message.is_mine ? "justify-end" : "justify-start"
-          }`}
-        >
-          <button
-            type="button"
-            onClick={() => onReply(message)}
-            className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-brand-muted hover:bg-white hover:text-brand-blue"
+      {canInteract || canCopy ? (
+        <>
+          <div
+            className={`mt-1 flex max-w-full flex-wrap items-center gap-1 ${
+              message.is_mine ? "justify-end" : "justify-start"
+            }`}
           >
-            <Reply className="h-3.5 w-3.5" aria-hidden="true" />
-            Balas
-          </button>
-          <div className="relative">
-            <button
-              type="button"
-              disabled={reactionPending}
-              onClick={() => setReactionPickerOpen((open) => !open)}
-              aria-expanded={reactionPickerOpen}
-              className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-brand-muted hover:bg-white hover:text-brand-blue disabled:opacity-60"
-            >
-              <SmilePlus className="h-3.5 w-3.5" aria-hidden="true" />
-              Reaksi
-            </button>
-            {reactionPickerOpen ? (
-              <div
-                className={`absolute bottom-9 z-30 flex gap-1 rounded-xl border border-brand-border bg-white p-1.5 shadow-lg ${
-                  message.is_mine ? "right-0" : "left-0"
-                }`}
-                role="group"
-                aria-label="Pilih reaksi"
+            {canInteract ? (
+              <button
+                type="button"
+                onClick={() => onReply(message)}
+                className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-brand-muted hover:bg-white hover:text-brand-blue"
               >
-                {CHAT_REACTIONS.map((reaction) => (
-                  <button
-                    key={reaction.value}
-                    type="button"
-                    disabled={reactionPending}
-                    onClick={() => {
-                      setReactionPickerOpen(false);
-                      onReact(message.message_id, reaction.value);
-                    }}
-                    aria-label={reaction.label}
-                    className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg hover:bg-brand-surface disabled:opacity-60"
+                <Reply className="h-3.5 w-3.5" aria-hidden="true" />
+                Balas
+              </button>
+            ) : null}
+            {canCopy ? (
+              <button
+                type="button"
+                onClick={() => void copyMessageBody()}
+                aria-label={
+                  copyState === "copied"
+                    ? "Pesan disalin"
+                    : copyState === "error"
+                      ? "Gagal menyalin pesan, coba lagi"
+                      : "Salin pesan"
+                }
+                className={`focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold hover:bg-white ${
+                  copyState === "error"
+                    ? "text-red-700"
+                    : "text-brand-muted hover:text-brand-blue"
+                }`}
+              >
+                {copyState === "copied" ? (
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+                {copyState === "copied"
+                  ? "Disalin"
+                  : copyState === "error"
+                    ? "Coba lagi"
+                    : "Salin"}
+              </button>
+            ) : null}
+            {canInteract ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  disabled={reactionPending}
+                  onClick={() => setReactionPickerOpen((open) => !open)}
+                  aria-expanded={reactionPickerOpen}
+                  className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-brand-muted hover:bg-white hover:text-brand-blue disabled:opacity-60"
+                >
+                  <SmilePlus className="h-3.5 w-3.5" aria-hidden="true" />
+                  Reaksi
+                </button>
+                {reactionPickerOpen ? (
+                  <div
+                    className={`absolute bottom-9 z-30 flex gap-1 rounded-xl border border-brand-border bg-white p-1.5 shadow-lg ${
+                      message.is_mine ? "right-0" : "left-0"
+                    }`}
+                    role="group"
+                    aria-label="Pilih reaksi"
                   >
-                    <span aria-hidden="true">{reaction.emoji}</span>
-                  </button>
-                ))}
+                    {CHAT_REACTIONS.map((reaction) => (
+                      <button
+                        key={reaction.value}
+                        type="button"
+                        disabled={reactionPending}
+                        onClick={() => {
+                          setReactionPickerOpen(false);
+                          onReact(message.message_id, reaction.value);
+                        }}
+                        aria-label={reaction.label}
+                        className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg hover:bg-brand-surface disabled:opacity-60"
+                      >
+                        <span aria-hidden="true">{reaction.emoji}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
-        </div>
+          <p className="sr-only" aria-live="polite">
+            {copyState === "copied"
+              ? "Pesan berhasil disalin."
+              : copyState === "error"
+                ? "Pesan belum bisa disalin. Coba lagi."
+                : ""}
+          </p>
+        </>
       ) : null}
     </div>
   );
