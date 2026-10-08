@@ -22,6 +22,22 @@ function normalizeDraft(value: unknown) {
     : "";
 }
 
+function parseStoredDraft(raw: string | null, now: number) {
+  if (!raw) return "";
+  const parsed = JSON.parse(raw) as Partial<StoredDraft>;
+  const text = normalizeDraft(parsed.text);
+  const updatedAt =
+    typeof parsed.updatedAt === "number" ? parsed.updatedAt : Number.NaN;
+  if (
+    !text.trim() ||
+    !Number.isFinite(updatedAt) ||
+    now - updatedAt > CHAT_DRAFT_MAX_AGE_MS
+  ) {
+    return "";
+  }
+  return text;
+}
+
 function safelyRemoveDraft(storage: DraftStorage, key: string) {
   try {
     storage.removeItem(key);
@@ -30,32 +46,31 @@ function safelyRemoveDraft(storage: DraftStorage, key: string) {
   }
 }
 
+export function peekChatDraft(
+  storage: DraftStorage,
+  publicId: string,
+  now = Date.now(),
+) {
+  try {
+    return parseStoredDraft(
+      storage.getItem(getChatDraftStorageKey(publicId)),
+      now,
+    );
+  } catch {
+    return "";
+  }
+}
+
 export function readChatDraft(
   storage: DraftStorage,
   publicId: string,
   now = Date.now(),
 ) {
-  const key = getChatDraftStorageKey(publicId);
-  try {
-    const raw = storage.getItem(key);
-    if (!raw) return "";
-    const parsed = JSON.parse(raw) as Partial<StoredDraft>;
-    const text = normalizeDraft(parsed.text);
-    const updatedAt =
-      typeof parsed.updatedAt === "number" ? parsed.updatedAt : Number.NaN;
-    if (
-      !text.trim() ||
-      !Number.isFinite(updatedAt) ||
-      now - updatedAt > CHAT_DRAFT_MAX_AGE_MS
-    ) {
-      safelyRemoveDraft(storage, key);
-      return "";
-    }
-    return text;
-  } catch {
-    safelyRemoveDraft(storage, key);
-    return "";
+  const text = peekChatDraft(storage, publicId, now);
+  if (!text) {
+    safelyRemoveDraft(storage, getChatDraftStorageKey(publicId));
   }
+  return text;
 }
 
 export function writeChatDraft(
