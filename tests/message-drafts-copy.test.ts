@@ -123,3 +123,14 @@ test("copy message action reports success and failure accessibly", () => {
   assert.match(bubble, /canInteract \|\| canCopy/);
   assert.doesNotMatch(bubble, /document\.execCommand|dangerouslySetInnerHTML/);
 });
+
+test("message actions use one accessible mobile-safe menu", () => {
+  assert.match(bubble, /DropdownMenuTrigger/);
+  assert.match(bubble, /DropdownMenuContent/);
+  assert.match(bubble, /DropdownMenuSubTrigger/);
+  assert.match(bubble, /Buka tindakan pesan/);
+  assert.match(bubble, /Salin pesan/);
+  assert.match(bubble, /Balas/);
+  assert.match(bubble, /Reaksi/);
+  assert.doesNotMatch(bubble, /reactionPickerOpen/);
+});
