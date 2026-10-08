@@ -28,6 +28,9 @@ const draftPreview = readFileSync(
   ),
   "utf8",
 );
+const mvp = readFileSync(new URL("../context/MVP.md", import.meta.url), "utf8");
+const prd = readFileSync(new URL("../context/PRD.md", import.meta.url), "utf8");
+const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
 function makeStorage() {
   const values = new Map<string, string>();
@@ -133,4 +136,13 @@ test("message actions use one accessible mobile-safe menu", () => {
   assert.match(bubble, /Balas/);
   assert.match(bubble, /Reaksi/);
   assert.doesNotMatch(bubble, /reactionPickerOpen/);
+});
+
+test("product docs distinguish local chat UX from production rollout", () => {
+  assert.match(mvp, /Status pengalaman chat/);
+  assert.match(mvp, /Draf disimpan maksimal tujuh hari/);
+  assert.match(prd, /Pengalaman Anonymous Chat tambahan/);
+  assert.match(prd, /belum termasuk kemampuan ini/);
+  assert.match(readme, /repository availability/);
+  assert.match(readme, /does not by itself confirm a production rollout/);
 });
