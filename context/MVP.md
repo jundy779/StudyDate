@@ -186,6 +186,12 @@ Gunakan:
 
 Hindari istilah teknis seperti `mutual interest`, `progressive reveal`, `projection`, `entitlement`, atau `conversation shell` pada antarmuka pengguna.
 
+### Status pengalaman chat
+
+Repository saat ini menyediakan pesan teks, emoji, stiker resmi, balasan, reaksi, status terkirim/dibaca, indikator sedang mengetik, pencarian percakapan, pencarian isi chat yang sudah dimuat, kartu ajakan Circle atau Acara, draf lokal, salin pesan, dan menu tindakan yang ringkas.
+
+Draf disimpan maksimal tujuh hari pada perangkat yang dipakai dan tidak tersinkron ke perangkat lain. Pencarian isi chat hanya mencari pesan yang sudah dimuat. Tersedianya kode di repository tidak otomatis berarti fitur sudah diterapkan dan lolos pengujian di production.
+
 ## 11. Ukuran keberhasilan awal
 
 Ukuran utama:
