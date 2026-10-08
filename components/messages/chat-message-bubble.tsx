@@ -7,9 +7,24 @@ import {
 } from "@/lib/messages/reactions";
 import type { ChatMessage } from "@/lib/messages/service";
 import { ChatSharedItemCard } from "@/components/messages/chat-shared-item-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { splitChatSearchText } from "@/lib/messages/search";
 import { getChatStickerById } from "@/lib/messages/stickers";
-import { Check, Copy, Reply, SmilePlus } from "lucide-react";
+import {
+  Check,
+  Copy,
+  MoreHorizontal,
+  Reply,
+  SmilePlus,
+} from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -68,7 +83,6 @@ export function ChatMessageBubble({
   onReply,
   onReact,
 }: ChatMessageBubbleProps) {
-  const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
     "idle",
   );
@@ -114,7 +128,6 @@ export function ChatMessageBubble({
 
   async function copyMessageBody() {
     if (!canCopy) return;
-    setReactionPickerOpen(false);
     window.clearTimeout(copyResetTimerRef.current);
 
     try {
@@ -269,88 +282,93 @@ export function ChatMessageBubble({
       {canInteract || canCopy ? (
         <>
           <div
-            className={`mt-1 flex max-w-full flex-wrap items-center gap-1 ${
+            className={`mt-1 flex max-w-full ${
               message.is_mine ? "justify-end" : "justify-start"
             }`}
           >
-            {canInteract ? (
-              <button
-                type="button"
-                onClick={() => onReply(message)}
-                className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-brand-muted hover:bg-white hover:text-brand-blue"
-              >
-                <Reply className="h-3.5 w-3.5" aria-hidden="true" />
-                Balas
-              </button>
-            ) : null}
-            {canCopy ? (
-              <button
-                type="button"
-                onClick={() => void copyMessageBody()}
-                aria-label={
-                  copyState === "copied"
-                    ? "Pesan disalin"
-                    : copyState === "error"
-                      ? "Gagal menyalin pesan, coba lagi"
-                      : "Salin pesan"
-                }
-                className={`focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold hover:bg-white ${
-                  copyState === "error"
-                    ? "text-red-700"
-                    : "text-brand-muted hover:text-brand-blue"
-                }`}
-              >
-                {copyState === "copied" ? (
-                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                )}
-                {copyState === "copied"
-                  ? "Disalin"
-                  : copyState === "error"
-                    ? "Coba lagi"
-                    : "Salin"}
-              </button>
-            ) : null}
-            {canInteract ? (
-              <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  disabled={reactionPending}
-                  onClick={() => setReactionPickerOpen((open) => !open)}
-                  aria-expanded={reactionPickerOpen}
-                  className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-brand-muted hover:bg-white hover:text-brand-blue disabled:opacity-60"
+                  aria-label={
+                    copyState === "copied"
+                      ? "Pesan disalin, buka tindakan pesan"
+                      : copyState === "error"
+                        ? "Penyalinan gagal, buka tindakan pesan"
+                        : "Buka tindakan pesan"
+                  }
+                  className={`focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold hover:bg-white ${
+                    copyState === "error"
+                      ? "text-red-700"
+                      : "text-brand-muted hover:text-brand-blue"
+                  }`}
                 >
-                  <SmilePlus className="h-3.5 w-3.5" aria-hidden="true" />
-                  Reaksi
+                  {copyState === "copied" ? (
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <MoreHorizontal
+                      className="h-3.5 w-3.5"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {copyState === "copied"
+                    ? "Disalin"
+                    : copyState === "error"
+                      ? "Coba lagi"
+                      : "Tindakan"}
                 </button>
-                {reactionPickerOpen ? (
-                  <div
-                    className={`absolute bottom-9 z-30 flex gap-1 rounded-xl border border-brand-border bg-white p-1.5 shadow-lg ${
-                      message.is_mine ? "right-0" : "left-0"
-                    }`}
-                    role="group"
-                    aria-label="Pilih reaksi"
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                align={message.is_mine ? "end" : "start"}
+                className="w-44 rounded-xl border-brand-border bg-white p-1.5 text-brand-navy"
+              >
+                {canInteract ? (
+                  <DropdownMenuItem
+                    onSelect={() => onReply(message)}
+                    className="min-h-10 cursor-pointer rounded-lg px-3 text-sm focus:bg-brand-surface"
                   >
-                    {CHAT_REACTIONS.map((reaction) => (
-                      <button
-                        key={reaction.value}
-                        type="button"
-                        disabled={reactionPending}
-                        onClick={() => {
-                          setReactionPickerOpen(false);
-                          onReact(message.message_id, reaction.value);
-                        }}
-                        aria-label={reaction.label}
-                        className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg hover:bg-brand-surface disabled:opacity-60"
-                      >
-                        <span aria-hidden="true">{reaction.emoji}</span>
-                      </button>
-                    ))}
-                  </div>
+                    <Reply aria-hidden="true" />
+                    Balas
+                  </DropdownMenuItem>
                 ) : null}
-              </div>
-            ) : null}
+                {canCopy ? (
+                  <DropdownMenuItem
+                    onSelect={() => void copyMessageBody()}
+                    className="min-h-10 cursor-pointer rounded-lg px-3 text-sm focus:bg-brand-surface"
+                  >
+                    <Copy aria-hidden="true" />
+                    Salin pesan
+                  </DropdownMenuItem>
+                ) : null}
+                {canInteract ? (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger
+                      disabled={reactionPending}
+                      className="min-h-10 cursor-pointer rounded-lg px-3 text-sm focus:bg-brand-surface data-[state=open]:bg-brand-surface"
+                    >
+                      <SmilePlus aria-hidden="true" />
+                      Reaksi
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="w-40 rounded-xl border-brand-border bg-white p-1.5 text-brand-navy">
+                      {CHAT_REACTIONS.map((reaction) => (
+                        <DropdownMenuItem
+                          key={reaction.value}
+                          disabled={reactionPending}
+                          onSelect={() =>
+                            onReact(message.message_id, reaction.value)
+                          }
+                          className="min-h-10 cursor-pointer rounded-lg px-3 text-sm focus:bg-brand-surface"
+                        >
+                          <span aria-hidden="true">{reaction.emoji}</span>
+                          {reaction.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <p className="sr-only" aria-live="polite">
             {copyState === "copied"
