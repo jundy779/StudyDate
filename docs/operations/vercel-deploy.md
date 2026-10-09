@@ -90,8 +90,10 @@ Jangan andalkan Supabase Auth mailer untuk magic link produk.
 | Magic link student | 8 / 15 menit per IP + 3 / jam per email |
 | Magic link staff | 5 / 15 menit per IP + 3 / jam per email |
 | Intro / chat | Rate limit RPC existing |
-| Security headers | nosniff, frame deny, referrer, permissions-policy |
+| Security headers | CSP, nosniff, frame deny, referrer, permissions-policy |
 | `X-Powered-By` | dimatikan |
+
+CSP production mengizinkan resource dari origin StudyDate, endpoint Supabase HTTPS/WebSocket, dan endpoint resmi Vercel Analytics. Policy tetap mempertahankan halaman statis/PPR dengan konfigurasi tanpa nonce. Jangan menambahkan COEP, COOP, atau CORP hanya untuk mengejar nilai scanner tanpa menguji Auth, Analytics, QR camera, dan media pengguna.
 
 **Cohort demo:** tetap undang terbatas. Jangan blast marketing massal sebelum minggu-1 ops review.
 
