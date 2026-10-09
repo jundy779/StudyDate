@@ -5,6 +5,7 @@ import {
 } from "@/lib/events/presentation";
 import type { PublicCampusEvent } from "@/lib/events/public-service";
 import { EventCover } from "@/components/events/event-cover";
+import { SavedEventButton } from "@/components/events/saved-event-button";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -69,13 +70,16 @@ export function PublicEventCard({ event }: { event: PublicCampusEvent }) {
         </div>
       </div>
 
-      <Link
-        href={`/events/${event.public_slug}`}
-        className="focus-ring inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue transition-colors hover:bg-brand-blue hover:text-white sm:w-auto"
-      >
-        Lihat detail
-        <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
+      <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-1">
+        <SavedEventButton eventSlug={event.public_slug} />
+        <Link
+          href={`/events/${event.public_slug}`}
+          className="focus-ring inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue transition-colors hover:bg-brand-blue hover:text-white sm:w-auto"
+        >
+          Lihat detail
+          <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </div>
     </article>
   );
 }

@@ -170,6 +170,7 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
               </Link>
               <PublicEventActions
                 calendarDownloadHref={`/events/${event.public_slug}/calendar.ics`}
+                eventSlug={event.public_slug}
                 googleCalendarHref={buildGoogleCalendarUrl(calendarEvent)}
                 shareUrl={publicUrl}
                 title={event.title}

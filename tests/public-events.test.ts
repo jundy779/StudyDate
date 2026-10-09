@@ -17,6 +17,10 @@ const calendarRoute = read(
   "app/(public-docs)/events/[publicSlug]/calendar.ics/route.ts",
 );
 const publicActions = read("components/events/public-event-actions.tsx");
+const publicCard = read("components/events/public-event-card.tsx");
+const publicEventList = read("components/events/public-event-list.tsx");
+const savedEventButton = read("components/events/saved-event-button.tsx");
+const savedEvents = read("lib/events/saved-events.ts");
 
 test("PUBE-01 public discovery exposes only official open scheduled events", () => {
   assert.match(publicService, /\.eq\("status", "scheduled"\)/);
@@ -62,4 +66,19 @@ test("PUBE-05 public detail supports calendar export and safe sharing", () => {
   assert.match(publicActions, /navigator\.share/);
   assert.match(publicActions, /navigator\.clipboard/);
   assert.match(publicActions, /aria-live="polite"/);
+});
+
+
+test("PUBE-06 visitors can save events locally and revisit the saved list", () => {
+  assert.match(publicList, /saved=1/);
+  assert.match(publicList, /Tersimpan/);
+  assert.match(publicEventList, /useSyncExternalStore/);
+  assert.match(publicEventList, /Belum ada acara yang kamu simpan/);
+  assert.match(publicCard, /SavedEventButton/);
+  assert.match(publicActions, /SavedEventButton/);
+  assert.match(savedEventButton, /aria-pressed/);
+  assert.match(savedEventButton, /studydate:saved-events-changed/);
+  assert.match(savedEvents, /studydate:saved-events:v1/);
+  assert.match(savedEvents, /MAX_SAVED_EVENTS = 100/);
+  assert.doesNotMatch(savedEvents, /supabase|fetch\(/i);
 });

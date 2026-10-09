@@ -1,4 +1,4 @@
-import { PublicEventCard } from "@/components/events/public-event-card";
+import { PublicEventList } from "@/components/events/public-event-list";
 import { EVENT_CATEGORIES, type EventCategory } from "@/lib/events/constants";
 import { EVENT_CATEGORY_LABELS } from "@/lib/events/presentation";
 import { listPublicCampusEvents } from "@/lib/events/public-service";
@@ -22,14 +22,16 @@ export const metadata: Metadata = {
 };
 
 type EventsPageProps = {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; saved?: string }>;
 };
 
 async function PublicEventsContent({ searchParams }: EventsPageProps) {
   const query = await searchParams;
-  const category = EVENT_CATEGORIES.includes(query.category as EventCategory)
-    ? (query.category as EventCategory)
-    : undefined;
+  const savedOnly = query.saved === "1";
+  const category =
+    !savedOnly && EVENT_CATEGORIES.includes(query.category as EventCategory)
+      ? (query.category as EventCategory)
+      : undefined;
   const events = await listPublicCampusEvents(category).catch(() => []);
 
   return (
@@ -47,7 +49,7 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
           </div>
           <div className="border-l-2 border-brand-blue pl-6">
             <p className="font-heading text-xl font-semibold leading-8">
-              Masuk hanya saat kamu ingin mendaftar, menyimpan tiket, atau membuat acara.
+              Masuk hanya saat kamu ingin mendaftar, melihat tiket, atau membuat acara.
             </p>
             <Link
               href="/login"
@@ -96,14 +98,25 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
           >
             <Link
               href="/events"
-              aria-current={!category ? "page" : undefined}
+              aria-current={!category && !savedOnly ? "page" : undefined}
               className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
-                !category
+                !category && !savedOnly
                   ? "border-brand-blue bg-brand-blue text-white"
                   : "border-brand-border bg-white text-brand-navy"
               }`}
             >
               Semua
+            </Link>
+            <Link
+              href="/events?saved=1"
+              aria-current={savedOnly ? "page" : undefined}
+              className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
+                savedOnly
+                  ? "border-brand-blue bg-brand-blue text-white"
+                  : "border-brand-border bg-white text-brand-navy"
+              }`}
+            >
+              Tersimpan
             </Link>
             {EVENT_CATEGORIES.map((item) => (
               <Link
@@ -122,29 +135,11 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
           </nav>
         </div>
 
-        {events.length ? (
-          <div className="mt-9">
-            {events.map((event) => (
-              <PublicEventCard key={event.public_slug} event={event} />
-            ))}
-          </div>
-        ) : (
-          <div className="py-16 text-center">
-            <CalendarDays className="mx-auto h-10 w-10 text-brand-blue" aria-hidden="true" />
-            <h2 className="mt-5 font-heading text-2xl font-semibold text-brand-navy">
-              Belum ada acara resmi pada pilihan ini
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl leading-7 text-brand-muted">
-              Kami hanya menampilkan acara yang benar-benar tersedia. Coba kategori
-              lain atau kembali lagi setelah ada kegiatan baru.
-            </p>
-            {category ? (
-              <Link href="/events" className="focus-ring mt-6 inline-flex font-semibold text-brand-blue">
-                Lihat semua acara
-              </Link>
-            ) : null}
-          </div>
-        )}
+        <PublicEventList
+          events={events}
+          savedOnly={savedOnly}
+          categorySelected={Boolean(category)}
+        />
       </section>
     </article>
   );

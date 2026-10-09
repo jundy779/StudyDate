@@ -1,10 +1,12 @@
 "use client";
 
+import { SavedEventButton } from "@/components/events/saved-event-button";
 import { CalendarPlus, ExternalLink, Share2 } from "lucide-react";
 import { useState } from "react";
 
 type PublicEventActionsProps = {
   calendarDownloadHref: string;
+  eventSlug: string;
   googleCalendarHref: string;
   shareUrl: string;
   title: string;
@@ -12,6 +14,7 @@ type PublicEventActionsProps = {
 
 export function PublicEventActions({
   calendarDownloadHref,
+  eventSlug,
   googleCalendarHref,
   shareUrl,
   title,
@@ -47,6 +50,7 @@ export function PublicEventActions({
     <div className="mt-5 border-t border-brand-border pt-5">
       <p className="text-sm font-semibold text-brand-navy">Simpan atau bagikan</p>
       <div className="mt-3 grid gap-2">
+        <SavedEventButton eventSlug={eventSlug} variant="full" />
         <a
           href={calendarDownloadHref}
           download
