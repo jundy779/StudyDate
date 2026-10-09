@@ -54,6 +54,13 @@ test("next.config sets baseline security headers and disables powered-by", () =>
   assert.match(cfg, /X-Frame-Options/);
   assert.match(cfg, /Referrer-Policy/);
   assert.match(cfg, /Permissions-Policy/);
+  assert.match(cfg, /Content-Security-Policy/);
+  assert.match(cfg, /default-src 'self'/);
+  assert.match(cfg, /frame-ancestors 'none'/);
+  assert.match(cfg, /object-src 'none'/);
+  assert.match(cfg, /https:\/\/\*\.supabase\.co/);
+  assert.match(cfg, /wss:\/\/\*\.supabase\.co/);
+  assert.doesNotMatch(cfg, /Access-Control-Allow-Origin/);
   assert.match(cfg, /camera=\(self\)/);
   assert.match(cfg, /microphone=\(\)/);
   assert.match(cfg, /X-DNS-Prefetch-Control/);
