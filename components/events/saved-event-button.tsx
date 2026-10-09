@@ -1,7 +1,6 @@
 "use client";
 
-import { SavedEventButton as SavedEventButtonIcon } from "lucide-react";
-import { Bookmark } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import {
   SAVED_EVENTS_CHANGED_EVENT,
   isEventSaved,
@@ -47,7 +46,7 @@ export function SavedEventButton({
   );
   const saved = state === "saved";
   const unavailable = state === "unavailable";
-  const Icon = saved ? SavedEventButtonIcon : Bookmark;
+  const Icon = saved ? BookmarkCheck : Bookmark;
 
   function handleToggle() {
     if (unavailable) return;
