@@ -10,11 +10,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import {
   acceptIntroduction,
   cancelIntroduction,
   declineIntroduction,
+  getConversationPublicId,
   listReceivedIntroductions,
   listSentIntroductions,
 } from "@/features/social/api";
@@ -25,6 +27,7 @@ import { colors, radius } from "@/theme";
 type Direction = "received" | "sent";
 
 export default function IntroductionsScreen() {
+  const router = useRouter();
   const [direction, setDirection] = useState<Direction>("received");
   const [items, setItems] = useState<IntroductionListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +64,18 @@ export default function IntroductionsScreen() {
       await load(true);
     } catch (actionError) {
       Alert.alert("Belum berhasil", actionError instanceof Error ? actionError.message : "Coba lagi sebentar.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function openConversation(item: IntroductionListItem) {
+    setBusyId(item.request_id);
+    try {
+      const publicId = await getConversationPublicId(item.request_id);
+      router.push({ pathname: "/(app)/messages/[publicId]", params: { publicId } });
+    } catch (openError) {
+      Alert.alert("Percakapan belum dapat dibuka", openError instanceof Error ? openError.message : "Coba lagi sebentar.");
     } finally {
       setBusyId(null);
     }
@@ -116,6 +131,11 @@ export default function IntroductionsScreen() {
                   ) : (
                     <ActionButton disabled={isBusy} label={isBusy ? "Memproses..." : "Batalkan perkenalan"} onPress={() => void runAction(item, "cancel")} secondary />
                   )}
+                </View>
+              ) : null}
+              {item.status === "accepted" ? (
+                <View style={styles.actions}>
+                  <ActionButton disabled={isBusy} label={isBusy ? "Membuka..." : "Buka percakapan"} onPress={() => void openConversation(item)} />
                 </View>
               ) : null}
             </View>

@@ -203,3 +203,15 @@ export function declineIntroduction(requestId: string) {
 export function cancelIntroduction(requestId: string) {
   return updateIntroduction("cancel_introduction_request", requestId);
 }
+
+export async function getConversationPublicId(requestId: string) {
+  const client = requireClient();
+  const { data, error } = await client.rpc(
+    "get_conversation_public_id_for_introduction",
+    { p_request_id: requestId },
+  );
+  if (error || typeof data !== "string") {
+    throw new Error("Percakapan belum dapat dibuka. Coba lagi sebentar.");
+  }
+  return data;
+}

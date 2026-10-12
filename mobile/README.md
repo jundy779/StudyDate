@@ -22,12 +22,18 @@ Fondasi mobile tahap pertama sudah mencakup:
 - pengecekan kelayakan sebelum mengirim perkenalan;
 - penyaring nomor, email, username, dan tautan pada pesan pertama;
 - daftar perkenalan masuk dan terkirim;
-- terima, tolak, dan batalkan perkenalan.
+- terima, tolak, batalkan, lalu buka percakapan;
+- daftar percakapan anonim dan jumlah pesan belum dibaca;
+- pencarian percakapan berdasarkan nama samaran, kampus, atau program studi;
+- filter semua, belum dibaca, aktif, dan selesai;
+- ruang chat teks dengan pemuatan riwayat dan pembaruan berkala;
+- status pesan dibaca serta perlindungan dari pesan ganda;
+- akhiri percakapan, blokir akun, dan kirim laporan privat.
 
-Circle, Event, chat, push notification, kamera, dan billing belum dianggap selesai
-hanya karena tab atau mockup tersedia. Cari Teman dan Perkenalan sudah memakai
-RPC asli, tetapi tetap harus lulus pengujian dua akun pada project production yang
-benar sebelum disebut aktif penuh.
+Circle, Event, stiker chat, reaksi, berbagi acara, push notification, kamera, dan
+billing belum dianggap selesai hanya karena tab atau mockup tersedia. Cari Teman,
+Perkenalan, dan chat teks sudah memakai RPC asli, tetapi tetap harus lulus
+pengujian dua akun pada project production yang benar sebelum disebut aktif penuh.
 
 ## Setup
 
@@ -89,6 +95,9 @@ Lalu uji pada development build Android dan iOS:
 3. Pastikan callback membuka aplikasi dan sesi pulih setelah aplikasi ditutup.
 4. Pastikan email yang belum terdaftar tidak membuat akun baru.
 5. Keluar dan pastikan layar yang membutuhkan sesi tidak dapat dibuka kembali.
+6. Terima satu perkenalan dari akun kedua dan buka percakapannya.
+7. Kirim pesan dari kedua akun, lalu pastikan status belum dibaca berubah.
+8. Uji akhiri percakapan, laporan, dan blokir memakai akun khusus pengujian.
 
 Pengujian login nyata membutuhkan konfigurasi redirect dan project Supabase
 StudyDate yang benar. Pemeriksaan lokal tidak menggantikan pengujian tersebut.
