@@ -1,24 +1,59 @@
 # StudyDate Mobile
 
-Satu codebase Expo/React Native untuk dua target native:
+Satu aplikasi Expo + React Native + TypeScript untuk Android dan iOS. Dashboard
+Admin dan Owner tetap berada di web.
 
-- `android/` menghasilkan AAB/APK untuk Google Play Console.
-- `ios/` menghasilkan IPA untuk TestFlight dan App Store Connect.
+## Status
 
-UI dan runtime mobile dibagi di `src/`; jangan membuat dua frontend terpisah
-untuk Android dan iOS.
+Fondasi mobile tahap pertama sudah mencakup:
+
+- routing terpisah untuk layar tamu dan layar yang membutuhkan sesi;
+- masuk melalui magic link untuk akun yang sudah terdaftar;
+- callback PKCE melalui `studydate://auth/callback`;
+- pemulihan sesi saat aplikasi dibuka kembali;
+- penyimpanan sesi terenkripsi dengan SecureStore;
+- refresh token mengikuti status aktif aplikasi;
+- pesan offline yang mudah dipahami;
+- halaman Beranda dan Akun dasar;
+- keluar akun;
+- kondisi loading, konfigurasi belum lengkap, dan link kedaluwarsa.
+
+People, Circle, Event, chat, push notification, kamera, dan billing belum dianggap
+selesai hanya karena tab atau mockup tersedia. Masing-masing harus memakai data
+asli dan lulus pengujian dua akun.
 
 ## Setup
 
 ```bash
 npm install
 copy .env.example .env.local
-npm run prebuild
+npm run typecheck
+npm run doctor
 ```
 
-Isi hanya variabel public Supabase di `.env.local`. Service-role key, SMTP,
-payment secret, ticket secret, dan credential server lain tidak boleh masuk
-aplikasi mobile.
+Isi variabel berikut di `.env.local`:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+EXPO_PUBLIC_SITE_URL=https://studydate.id
+```
+
+Hanya publishable key yang boleh masuk aplikasi. Jangan pernah memasukkan
+`service_role`, SMTP password, secret pembayaran, secret tiket, atau credential
+server lainnya.
+
+## Pengaturan Auth Supabase
+
+Tambahkan URL berikut ke allowlist redirect Auth:
+
+```text
+studydate://auth/callback
+```
+
+Magic link mobile memakai `shouldCreateUser: false`. Pengguna baru tetap harus
+melewati Akses Awal di website dan aplikasi mobile tidak dapat digunakan untuk
+melewati persetujuan tersebut.
 
 ## Development
 
@@ -28,9 +63,27 @@ npm run android
 npm run ios
 ```
 
-Android dapat dijalankan dari Windows dengan Android Studio. iOS lokal
-memerlukan macOS/Xcode; dari Windows gunakan EAS Build setelah akun Apple dan
-signing tersedia.
+Android dapat dijalankan dari Windows dengan Android Studio. Build iOS lokal
+memerlukan macOS dan Xcode. Dari Windows, build iOS dapat dilakukan melalui EAS
+setelah akun Apple dan signing tersedia.
+
+## Verifikasi sebelum beta
+
+```bash
+npm run typecheck
+npm run doctor
+```
+
+Lalu uji pada development build Android dan iOS:
+
+1. Kirim magic link ke akun Early Access yang sudah disetujui.
+2. Buka link dari perangkat yang sama.
+3. Pastikan callback membuka aplikasi dan sesi pulih setelah aplikasi ditutup.
+4. Pastikan email yang belum terdaftar tidak membuat akun baru.
+5. Keluar dan pastikan layar yang membutuhkan sesi tidak dapat dibuka kembali.
+
+Pengujian login nyata membutuhkan konfigurasi redirect dan project Supabase
+StudyDate yang benar. Pemeriksaan lokal tidak menggantikan pengujian tersebut.
 
 ## Store build
 
@@ -41,16 +94,6 @@ npm run build:android
 npm run build:ios
 ```
 
-Artefak production:
-
-- Android: signed `.aab`.
-- iOS: signed `.ipa`.
-
-Submission tetap membutuhkan listing, privacy declarations, screenshot, review
-account, signing, serta Play/App Store billing untuk akses Plus digital.
-
-## Batas foundation
-
-Kerangka ini belum mengaktifkan auth, production data, push, kamera, billing,
-atau deep-link callback server. Tambahkan hanya saat flow terkait dibuat dan
-diuji lintas platform.
+Submission tetap memerlukan listing store, deklarasi privasi, screenshot, akun
+review, signing, moderasi konten pengguna, dan billing store untuk fitur digital
+berbayar.

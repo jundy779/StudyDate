@@ -1,0 +1,25 @@
+import { Redirect, Tabs } from "expo-router";
+
+import { useAuth } from "@/providers/auth-provider";
+import { colors } from "@/theme";
+
+export default function AppLayout() {
+  const { session, isLoading } = useAuth();
+
+  if (!isLoading && !session) return <Redirect href="/(auth)/login" />;
+
+  return (
+    <Tabs
+      screenOptions={{
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: colors.white },
+        headerTintColor: colors.navy,
+        tabBarActiveTintColor: colors.blue,
+        tabBarInactiveTintColor: colors.muted,
+      }}
+    >
+      <Tabs.Screen name="index" options={{ title: "Beranda", tabBarLabel: "Beranda" }} />
+      <Tabs.Screen name="account" options={{ title: "Akun", tabBarLabel: "Akun" }} />
+    </Tabs>
+  );
+}
