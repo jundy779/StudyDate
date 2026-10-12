@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/providers/auth-provider";
 import { colors, radius } from "@/theme";
 
-const nextFeatures = ["Cari teman belajar", "Circle belajar", "Acara kampus", "Percakapan aman"];
+const nextFeatures = ["Cari Teman dan perkenalan siap diuji", "Circle belajar", "Acara kampus", "Percakapan aman"];
 
 export default function HomeScreen() {
   const { session } = useAuth();
@@ -14,7 +14,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.eyebrow}>HALO, KAMU SUDAH MASUK</Text>
         <Text accessibilityRole="header" style={styles.title}>Ruang mahasiswa yang mulai dari tujuan yang sama.</Text>
-        <Text style={styles.body}>Akunmu sudah tersambung. Fitur sosial akan dibuka bertahap setelah alur privasi dua akun lulus pengujian.</Text>
+        <Text style={styles.body}>Akunmu sudah tersambung. Cari Teman dan perkenalan sudah tersedia untuk pengujian, sementara fitur lain dibuka bertahap setelah alur privasinya lulus.</Text>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Tahap berikutnya</Text>

@@ -2,6 +2,7 @@ import { Redirect } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -93,7 +94,7 @@ export default function LoginScreen() {
             <Text style={styles.note}>Akun baru tetap mengikuti persetujuan Akses Awal. Aplikasi tidak membuat akun secara otomatis.</Text>
           </View>
 
-          <Pressable accessibilityRole="link" onPress={() => setMessage("Pendaftaran Akses Awal tersedia di studydate.id.")}>
+          <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://studydate.id/early-access")}>
             <Text style={styles.link}>Belum punya akses? Daftar melalui website</Text>
           </Pressable>
         </ScrollView>

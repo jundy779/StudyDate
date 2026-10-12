@@ -19,6 +19,8 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Beranda", tabBarLabel: "Beranda" }} />
+      <Tabs.Screen name="people" options={{ title: "Cari Teman", tabBarLabel: "Cari Teman" }} />
+      <Tabs.Screen name="introductions" options={{ title: "Perkenalan", tabBarLabel: "Perkenalan" }} />
       <Tabs.Screen name="account" options={{ title: "Akun", tabBarLabel: "Akun" }} />
     </Tabs>
   );

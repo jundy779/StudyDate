@@ -17,10 +17,17 @@ Fondasi mobile tahap pertama sudah mencakup:
 - halaman Beranda dan Akun dasar;
 - keluar akun;
 - kondisi loading, konfigurasi belum lengkap, dan link kedaluwarsa.
+- daftar Cari Teman dari RPC privacy-safe;
+- pagination dan tarik untuk memuat ulang profil;
+- pengecekan kelayakan sebelum mengirim perkenalan;
+- penyaring nomor, email, username, dan tautan pada pesan pertama;
+- daftar perkenalan masuk dan terkirim;
+- terima, tolak, dan batalkan perkenalan.
 
-People, Circle, Event, chat, push notification, kamera, dan billing belum dianggap
-selesai hanya karena tab atau mockup tersedia. Masing-masing harus memakai data
-asli dan lulus pengujian dua akun.
+Circle, Event, chat, push notification, kamera, dan billing belum dianggap selesai
+hanya karena tab atau mockup tersedia. Cari Teman dan Perkenalan sudah memakai
+RPC asli, tetapi tetap harus lulus pengujian dua akun pada project production yang
+benar sebelum disebut aktif penuh.
 
 ## Setup
 
@@ -28,6 +35,7 @@ asli dan lulus pengujian dua akun.
 npm install
 copy .env.example .env.local
 npm run typecheck
+npm test
 npm run doctor
 ```
 
