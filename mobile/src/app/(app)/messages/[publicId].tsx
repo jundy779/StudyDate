@@ -18,14 +18,25 @@ import { ReportConversationModal } from "@/components/report-conversation-modal"
 import {
   blockConversationCounterpart,
   endConversation,
+  getChatInteractionsAvailable,
   getConversation,
   listMessages,
   markMessagesRead,
   reportConversation,
   sendMessage,
+  sendSticker,
+  toggleMessageReaction,
 } from "@/features/chat/api";
+import {
+  chatReactions,
+  chatStickers,
+  getChatReaction,
+  getChatSticker,
+} from "@/features/chat/options";
 import type {
   ChatMessage,
+  ChatReactionValue,
+  ChatStickerId,
   ConversationDetail,
   ReportReasonCode,
 } from "@/features/chat/types";
@@ -63,6 +74,11 @@ export default function ConversationScreen() {
   const [hasMore, setHasMore] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isRunningAction, setIsRunningAction] = useState(false);
+  const [interactionsAvailable, setInteractionsAvailable] = useState(false);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  const [actionMessage, setActionMessage] = useState<ChatMessage | null>(null);
+  const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
+  const [reactionBusyId, setReactionBusyId] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,6 +113,10 @@ export default function ConversationScreen() {
   }, [refresh]);
 
   useEffect(() => {
+    void getChatInteractionsAvailable().then(setInteractionsAvailable).catch(() => setInteractionsAvailable(false));
+  }, [publicId]);
+
+  useEffect(() => {
     const timer = setInterval(() => void refresh(true), 6000);
     return () => clearInterval(timer);
   }, [refresh]);
@@ -125,8 +145,10 @@ export default function ConversationScreen() {
     setIsSending(true);
     setError(null);
     try {
-      const sent = await sendMessage(publicId, parsed.value);
+      const sent = await sendMessage(publicId, parsed.value, replyTo?.message_id);
       setBody("");
+      setReplyTo(null);
+      setActionMessage(null);
       shouldScrollToEnd.current = true;
       if (sent) setMessages((current) => mergeMessages(current, [sent]));
       setConversation((current) => current ? { ...current, status: "active", can_send: true } : current);
@@ -135,6 +157,43 @@ export default function ConversationScreen() {
       setError(sendError instanceof Error ? sendError.message : "Pesan belum terkirim.");
     } finally {
       setIsSending(false);
+    }
+  }
+
+  async function submitSticker(stickerId: ChatStickerId) {
+    if (!publicId || isSending || !conversation?.can_send) return;
+    setIsSending(true);
+    setError(null);
+    try {
+      await sendSticker(publicId, stickerId, replyTo?.message_id);
+      setReplyTo(null);
+      setActionMessage(null);
+      setStickerPickerOpen(false);
+      shouldScrollToEnd.current = true;
+      await refresh(true);
+    } catch (sendError) {
+      setError(sendError instanceof Error ? sendError.message : "Stiker belum terkirim.");
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  async function reactToMessage(message: ChatMessage, reaction: ChatReactionValue) {
+    if (!publicId || reactionBusyId) return;
+    const selected = message.reactions.find((item) => item.reacted_by_me)?.reaction;
+    setReactionBusyId(message.message_id);
+    try {
+      await toggleMessageReaction({
+        publicId,
+        messageId: message.message_id,
+        reaction: selected === reaction ? null : reaction,
+      });
+      setActionMessage(null);
+      await refresh(true);
+    } catch (reactionError) {
+      Alert.alert("Reaksi belum tersimpan", reactionError instanceof Error ? reactionError.message : "Coba lagi sebentar.");
+    } finally {
+      setReactionBusyId(null);
     }
   }
 
@@ -263,7 +322,21 @@ export default function ConversationScreen() {
               listRef.current?.scrollToEnd({ animated: false });
             }
           }}
-          renderItem={({ item }) => <MessageBubble message={item} />}
+          renderItem={({ item }) => (
+            <MessageBubble
+              interactionsAvailable={interactionsAvailable}
+              isBusy={reactionBusyId === item.message_id}
+              isSelected={actionMessage?.message_id === item.message_id}
+              message={item}
+              onReact={(reaction) => void reactToMessage(item, reaction)}
+              onReply={() => {
+                setReplyTo(item);
+                setActionMessage(null);
+                setStickerPickerOpen(false);
+              }}
+              onSelect={() => setActionMessage((current) => current?.message_id === item.message_id ? null : item)}
+            />
+          )}
         />
 
         {closed ? (
@@ -271,7 +344,40 @@ export default function ConversationScreen() {
         ) : (
           <View style={styles.composerWrap}>
             {error ? <Text accessibilityLiveRegion="polite" style={styles.composerError}>{error}</Text> : null}
+            {replyTo ? (
+              <View style={styles.replyComposer}>
+                <View style={styles.replyComposerText}>
+                  <Text style={styles.replyComposerLabel}>Membalas {replyTo.is_mine ? "pesanmu" : conversation.counterpart_alias}</Text>
+                  <Text numberOfLines={1} style={styles.replyComposerBody}>{replyTo.body || "Stiker StudyDate"}</Text>
+                </View>
+                <Pressable accessibilityLabel="Batalkan balasan" onPress={() => setReplyTo(null)} style={styles.closeReply}><Text style={styles.closeReplyText}>×</Text></Pressable>
+              </View>
+            ) : null}
+            {stickerPickerOpen ? (
+              <View style={styles.stickerPicker}>
+                {chatStickers.map((sticker) => (
+                  <Pressable
+                    accessibilityLabel={`Kirim stiker ${sticker.label}`}
+                    disabled={isSending}
+                    key={sticker.id}
+                    onPress={() => void submitSticker(sticker.id)}
+                    style={styles.stickerOption}
+                  >
+                    <Text style={styles.stickerEmoji}>{sticker.emoji}</Text>
+                    <Text numberOfLines={1} style={styles.stickerLabel}>{sticker.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
             <View style={styles.composer}>
+              <Pressable
+                accessibilityLabel="Buka pilihan stiker"
+                disabled={isSending}
+                onPress={() => setStickerPickerOpen((open) => !open)}
+                style={[styles.stickerButton, stickerPickerOpen && styles.stickerButtonActive]}
+              >
+                <Text style={styles.stickerButtonText}>✨</Text>
+              </Pressable>
               <TextInput
                 editable={!isSending}
                 maxLength={CHAT_MESSAGE_MAX}
@@ -300,26 +406,74 @@ export default function ConversationScreen() {
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({
+  message,
+  interactionsAvailable,
+  isSelected,
+  isBusy,
+  onSelect,
+  onReply,
+  onReact,
+}: {
+  message: ChatMessage;
+  interactionsAvailable: boolean;
+  isSelected: boolean;
+  isBusy: boolean;
+  onSelect: () => void;
+  onReply: () => void;
+  onReact: (reaction: ChatReactionValue) => void;
+}) {
   const removed = message.moderation_status === "removed";
+  const sticker = getChatSticker(message.sticker_id);
   const content = removed
     ? "Pesan ini tidak tersedia."
     : message.message_type === "sticker"
-      ? message.body || "Stiker StudyDate"
+      ? (sticker?.fallbackText ?? message.body) || "Stiker StudyDate"
       : message.message_type === "circle_invite" || message.message_type === "event_invite"
         ? message.share_title ?? message.body
         : message.body;
   return (
     <View style={[styles.bubbleRow, message.is_mine && styles.bubbleRowMine]}>
-      <View style={[styles.bubble, message.is_mine ? styles.bubbleMine : styles.bubbleOther, removed && styles.bubbleRemoved]}>
+      <Pressable
+        accessibilityHint={removed ? undefined : "Ketuk untuk melihat pilihan balas dan reaksi"}
+        disabled={removed}
+        onPress={onSelect}
+        style={[styles.bubble, message.is_mine ? styles.bubbleMine : styles.bubbleOther, removed && styles.bubbleRemoved, isSelected && styles.bubbleSelected]}
+      >
         {message.reply_body ? <Text numberOfLines={2} style={[styles.reply, message.is_mine && styles.replyMine]}>{message.reply_is_mine ? "Kamu: " : "Balasan: "}{message.reply_body}</Text> : null}
+        {sticker && !removed ? <Text style={styles.stickerInMessage}>{sticker.emoji}</Text> : null}
         <Text style={[styles.messageText, message.is_mine && styles.messageTextMine, removed && styles.removedText]}>{content}</Text>
         {message.share_description && !removed ? <Text style={[styles.shareDescription, message.is_mine && styles.shareDescriptionMine]}>{message.share_description}</Text> : null}
         <View style={styles.messageMeta}>
           <Text style={[styles.messageTime, message.is_mine && styles.messageTimeMine]}>{messageTime(message.created_at)}</Text>
           {message.is_mine && message.read_at ? <Text style={styles.read}>Dibaca</Text> : null}
         </View>
-      </View>
+        {message.reactions.length ? (
+          <View style={styles.reactionSummary}>
+            {message.reactions.map((summary) => {
+              const reaction = getChatReaction(summary.reaction);
+              if (!reaction || summary.count <= 0) return null;
+              return <Text key={summary.reaction} style={[styles.reactionChip, summary.reacted_by_me && styles.reactionChipMine]}>{reaction.emoji} {summary.count}</Text>;
+            })}
+          </View>
+        ) : null}
+      </Pressable>
+      {isSelected && !removed ? (
+        <View style={[styles.messageActions, message.is_mine && styles.messageActionsMine]}>
+          {interactionsAvailable ? <Pressable onPress={onReply} style={styles.replyAction}><Text style={styles.replyActionText}>Balas</Text></Pressable> : null}
+          {interactionsAvailable ? chatReactions.map((reaction) => (
+            <Pressable
+              accessibilityLabel={reaction.label}
+              disabled={isBusy}
+              key={reaction.value}
+              onPress={() => onReact(reaction.value)}
+              style={styles.reactionAction}
+            >
+              <Text style={styles.reactionActionText}>{reaction.emoji}</Text>
+            </Pressable>
+          )) : <Text style={styles.interactionUnavailable}>Balas dan reaksi belum tersedia.</Text>}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -354,10 +508,12 @@ const styles = StyleSheet.create({
   bubbleOther: { backgroundColor: colors.white, borderColor: colors.border, borderTopLeftRadius: 5, borderWidth: 1 },
   bubbleMine: { backgroundColor: colors.blue, borderTopRightRadius: 5 },
   bubbleRemoved: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
+  bubbleSelected: { borderColor: colors.navy, borderWidth: 2 },
   reply: { borderLeftColor: colors.blue, borderLeftWidth: 3, color: colors.muted, fontSize: 11, lineHeight: 16, marginBottom: 7, paddingLeft: 8 },
   replyMine: { borderLeftColor: "rgba(255,255,255,0.7)", color: "rgba(255,255,255,0.78)" },
   messageText: { color: colors.navy, fontSize: 14, lineHeight: 20 },
   messageTextMine: { color: colors.white },
+  stickerInMessage: { fontSize: 38, marginBottom: 5, textAlign: "center" },
   removedText: { color: colors.muted, fontStyle: "italic" },
   shareDescription: { color: colors.muted, fontSize: 11, lineHeight: 16, marginTop: 5 },
   shareDescriptionMine: { color: "rgba(255,255,255,0.78)" },
@@ -365,10 +521,33 @@ const styles = StyleSheet.create({
   messageTime: { color: colors.muted, fontSize: 9 },
   messageTimeMine: { color: "rgba(255,255,255,0.72)" },
   read: { color: "rgba(255,255,255,0.9)", fontSize: 9, fontWeight: "700" },
+  reactionSummary: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 7 },
+  reactionChip: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, color: colors.navy, fontSize: 10, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
+  reactionChipMine: { backgroundColor: colors.blueSoft, borderColor: colors.blue },
+  messageActions: { alignItems: "center", backgroundColor: colors.white, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: "row", gap: 3, marginTop: 5, padding: 4 },
+  messageActionsMine: { alignSelf: "flex-end" },
+  replyAction: { borderRightColor: colors.border, borderRightWidth: 1, paddingHorizontal: 9, paddingVertical: 6 },
+  replyActionText: { color: colors.navy, fontSize: 10, fontWeight: "800" },
+  reactionAction: { alignItems: "center", borderRadius: radius.pill, height: 31, justifyContent: "center", width: 31 },
+  reactionActionText: { fontSize: 17 },
+  interactionUnavailable: { color: colors.muted, fontSize: 10, paddingHorizontal: 8, paddingVertical: 6 },
   closedNote: { backgroundColor: colors.white, borderTopColor: colors.border, borderTopWidth: 1, color: colors.muted, fontSize: 12, lineHeight: 18, padding: 15, textAlign: "center" },
   composerWrap: { backgroundColor: colors.white, borderTopColor: colors.border, borderTopWidth: 1, padding: 10, paddingBottom: 7 },
   composerError: { color: colors.danger, fontSize: 11, marginBottom: 7, paddingHorizontal: 3 },
+  replyComposer: { alignItems: "center", backgroundColor: colors.blueSoft, borderLeftColor: colors.blue, borderLeftWidth: 3, borderRadius: radius.medium, flexDirection: "row", marginBottom: 8, paddingHorizontal: 11, paddingVertical: 8 },
+  replyComposerText: { flex: 1, minWidth: 0 },
+  replyComposerLabel: { color: colors.blue, fontSize: 10, fontWeight: "800" },
+  replyComposerBody: { color: colors.navy, fontSize: 11, marginTop: 3 },
+  closeReply: { alignItems: "center", height: 30, justifyContent: "center", width: 30 },
+  closeReplyText: { color: colors.navy, fontSize: 24, lineHeight: 26 },
+  stickerPicker: { flexDirection: "row", gap: 7, marginBottom: 9 },
+  stickerOption: { alignItems: "center", backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.medium, borderWidth: 1, flex: 1, minWidth: 0, paddingHorizontal: 4, paddingVertical: 8 },
+  stickerEmoji: { fontSize: 23 },
+  stickerLabel: { color: colors.muted, fontSize: 8, fontWeight: "700", marginTop: 3, textAlign: "center" },
   composer: { alignItems: "flex-end", flexDirection: "row", gap: 8 },
+  stickerButton: { alignItems: "center", backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 46, justifyContent: "center", width: 46 },
+  stickerButtonActive: { backgroundColor: colors.blueSoft, borderColor: colors.blue },
+  stickerButtonText: { fontSize: 19 },
   input: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 20, borderWidth: 1, color: colors.navy, flex: 1, fontSize: 14, maxHeight: 120, minHeight: 46, paddingHorizontal: 14, paddingVertical: 11 },
   sendButton: { alignItems: "center", backgroundColor: colors.blue, borderRadius: 18, height: 46, justifyContent: "center", paddingHorizontal: 15 },
   sendText: { color: colors.white, fontSize: 12, fontWeight: "800" },

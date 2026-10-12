@@ -6,6 +6,12 @@ import {
   normalizeConversationQuery,
   searchConversations,
 } from "../src/features/chat/filters.ts";
+import {
+  chatReactions,
+  chatStickers,
+  getChatReaction,
+  getChatSticker,
+} from "../src/features/chat/options.ts";
 import type { ConversationListItem } from "../src/features/chat/types.ts";
 import {
   chatMessageHasContact,
@@ -70,4 +76,11 @@ test("filters unread, active, and ended conversations", () => {
   assert.equal(filterConversations(conversations, "unread").length, 1);
   assert.equal(filterConversations(conversations, "active").length, 1);
   assert.equal(filterConversations(conversations, "ended").length, 1);
+});
+
+test("keeps official sticker and reaction values unique", () => {
+  assert.equal(new Set(chatStickers.map((item) => item.id)).size, 4);
+  assert.equal(new Set(chatReactions.map((item) => item.value)).size, 5);
+  assert.equal(getChatSticker("studydate_study")?.label, "Semangat belajar");
+  assert.equal(getChatReaction("celebrate")?.emoji, "🎉");
 });

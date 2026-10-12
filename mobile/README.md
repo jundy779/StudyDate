@@ -27,12 +27,15 @@ Fondasi mobile tahap pertama sudah mencakup:
 - pencarian percakapan berdasarkan nama samaran, kampus, atau program studi;
 - filter semua, belum dibaca, aktif, dan selesai;
 - ruang chat teks dengan pemuatan riwayat dan pembaruan berkala;
+- balas pesan tanpa kehilangan konteks percakapan;
+- lima reaksi emoji dengan jumlah reaksi dan penanda reaksimu;
+- empat stiker resmi StudyDate dengan tampilan ringan untuk mobile;
 - status pesan dibaca serta perlindungan dari pesan ganda;
 - akhiri percakapan, blokir akun, dan kirim laporan privat.
 
-Circle, Event, stiker chat, reaksi, berbagi acara, push notification, kamera, dan
-billing belum dianggap selesai hanya karena tab atau mockup tersedia. Cari Teman,
-Perkenalan, dan chat teks sudah memakai RPC asli, tetapi tetap harus lulus
+Circle, Event, berbagi acara di chat, push notification, kamera, dan billing belum
+dianggap selesai hanya karena tab atau mockup tersedia. Cari Teman, Perkenalan,
+chat teks, balasan, reaksi, dan stiker sudah memakai RPC asli, tetapi tetap harus lulus
 pengujian dua akun pada project production yang benar sebelum disebut aktif penuh.
 
 ## Setup

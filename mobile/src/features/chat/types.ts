@@ -39,6 +39,25 @@ export type ChatMessageType =
   | "circle_invite"
   | "event_invite";
 
+export type ChatReactionValue =
+  | "like"
+  | "love"
+  | "laugh"
+  | "support"
+  | "celebrate";
+
+export type ChatReactionSummary = {
+  reaction: ChatReactionValue;
+  count: number;
+  reacted_by_me: boolean;
+};
+
+export type ChatStickerId =
+  | "studydate_hello"
+  | "studydate_study"
+  | "studydate_chat"
+  | "studydate_ready";
+
 export type ChatMessage = {
   message_id: string;
   body: string;
@@ -55,6 +74,7 @@ export type ChatMessage = {
   reply_message_id: string | null;
   reply_body: string | null;
   reply_is_mine: boolean;
+  reactions: ChatReactionSummary[];
 };
 
 export type ConversationView = "all" | "unread" | "active" | "ended";

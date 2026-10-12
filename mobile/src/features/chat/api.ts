@@ -2,6 +2,9 @@ import { supabase } from "@/lib/supabase";
 import type {
   ChatMessage,
   ChatMessageType,
+  ChatReactionSummary,
+  ChatReactionValue,
+  ChatStickerId,
   ConversationDetail,
   ConversationListItem,
   ConversationStatus,
@@ -13,6 +16,7 @@ const aliasPattern = /^Partner #[0-9]{6}$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const conversationStatuses = new Set<ConversationStatus>(["awaiting_chat", "active", "ended", "blocked"]);
 const messageTypes = new Set<ChatMessageType>(["text", "sticker", "circle_invite", "event_invite"]);
+const reactionValues = new Set<ChatReactionValue>(["like", "love", "laugh", "support", "celebrate"]);
 
 function requireClient() {
   if (!supabase) throw new Error("Koneksi aplikasi belum disiapkan.");
@@ -29,6 +33,21 @@ function optionalText(value: unknown) {
 
 function number(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function toReactions(value: unknown): ChatReactionSummary[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const row = item as Record<string, unknown>;
+    const reaction = text(row.reaction) as ChatReactionValue;
+    if (!reactionValues.has(reaction)) return [];
+    return [{
+      reaction,
+      count: Math.max(0, number(row.count)),
+      reacted_by_me: row.reacted_by_me === true,
+    }];
+  });
 }
 
 function isMissingRpc(error: { code?: string; message?: string } | null) {
@@ -115,6 +134,7 @@ function toChatMessage(value: unknown): ChatMessage | null {
     reply_message_id: optionalText(row.reply_message_id),
     reply_body: optionalText(row.reply_body),
     reply_is_mine: row.reply_is_mine === true,
+    reactions: toReactions(row.reactions),
   };
 }
 
@@ -159,17 +179,23 @@ function idempotencyKey() {
   return `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`.slice(0, 32);
 }
 
-export async function sendMessage(publicId: string, body: string) {
+export async function sendMessage(publicId: string, body: string, replyToMessageId?: string) {
   const client = requireClient();
   const key = idempotencyKey();
   const modern = await client.rpc("send_anonymous_message_v2", {
     p_public_id: publicId,
     p_body: body,
-    p_reply_to_message_id: null,
+    p_reply_to_message_id: replyToMessageId ?? null,
     p_idempotency_key: key,
   });
   if (!modern.error) return toChatMessage(Array.isArray(modern.data) ? modern.data[0] : null);
-  if (!isMissingRpc(modern.error)) throw new Error(mapChatError(modern.error.message));
+  if (!isMissingRpc(modern.error) || replyToMessageId) {
+    throw new Error(
+      replyToMessageId && isMissingRpc(modern.error)
+        ? "Fitur balas pesan belum siap pada server."
+        : mapChatError(modern.error.message),
+    );
+  }
   const legacy = await client.rpc("send_anonymous_message", {
     p_public_id: publicId,
     p_body: body,
@@ -177,6 +203,55 @@ export async function sendMessage(publicId: string, body: string) {
   });
   if (legacy.error) throw new Error(mapChatError(legacy.error.message));
   return toChatMessage(Array.isArray(legacy.data) ? legacy.data[0] : null);
+}
+
+export async function sendSticker(
+  publicId: string,
+  stickerId: ChatStickerId,
+  replyToMessageId?: string,
+) {
+  const client = requireClient();
+  const key = idempotencyKey();
+  const modern = await client.rpc("send_anonymous_sticker_v2", {
+    p_public_id: publicId,
+    p_sticker_id: stickerId,
+    p_reply_to_message_id: replyToMessageId ?? null,
+    p_idempotency_key: key,
+  });
+  if (!modern.error) return typeof modern.data === "string" ? modern.data : null;
+  if (!isMissingRpc(modern.error) || replyToMessageId) {
+    throw new Error(
+      replyToMessageId && isMissingRpc(modern.error)
+        ? "Balasan dengan stiker belum siap pada server."
+        : mapChatError(modern.error.message),
+    );
+  }
+  const legacy = await client.rpc("send_anonymous_sticker", {
+    p_public_id: publicId,
+    p_sticker_id: stickerId,
+    p_idempotency_key: key,
+  });
+  if (legacy.error) throw new Error(mapChatError(legacy.error.message));
+  return typeof legacy.data === "string" ? legacy.data : null;
+}
+
+export async function getChatInteractionsAvailable() {
+  const { data, error } = await requireClient().rpc("anonymous_chat_interactions_available");
+  if (error) return false;
+  return data === true;
+}
+
+export async function toggleMessageReaction(input: {
+  publicId: string;
+  messageId: string;
+  reaction: ChatReactionValue | null;
+}) {
+  const { error } = await requireClient().rpc("toggle_anonymous_message_reaction", {
+    p_public_id: input.publicId,
+    p_message_id: input.messageId,
+    p_reaction: input.reaction,
+  });
+  if (error) throw new Error(mapChatError(error.message));
 }
 
 export async function markMessagesRead(publicId: string) {
