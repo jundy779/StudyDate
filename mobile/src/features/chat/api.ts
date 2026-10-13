@@ -4,6 +4,8 @@ import type {
   ChatMessageType,
   ChatReactionSummary,
   ChatReactionValue,
+  ChatShareKind,
+  ChatShareableItem,
   ChatStickerId,
   ConversationDetail,
   ConversationListItem,
@@ -48,6 +50,26 @@ function toReactions(value: unknown): ChatReactionSummary[] {
       reacted_by_me: row.reacted_by_me === true,
     }];
   });
+}
+
+function toShareable(value: unknown): ChatShareableItem | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const kind = row.share_kind === "circle" || row.share_kind === "event" ? row.share_kind : null;
+  const slug = text(row.public_slug);
+  const validSlug = kind === "circle"
+    ? /^circle-[0-9a-f]{24}$/.test(slug)
+    : kind === "event" && /^event-[0-9a-f]{24}$/.test(slug);
+  if (!kind || !validSlug) return null;
+  return {
+    share_kind: kind,
+    public_slug: slug,
+    title: text(row.title),
+    description: text(row.description),
+    meta: text(row.meta),
+    starts_at: optionalText(row.starts_at),
+    timezone_name: optionalText(row.timezone_name),
+  };
 }
 
 function isMissingRpc(error: { code?: string; message?: string } | null) {
@@ -252,6 +274,41 @@ export async function toggleMessageReaction(input: {
     p_reaction: input.reaction,
   });
   if (error) throw new Error(mapChatError(error.message));
+}
+
+export async function getChatSharingAvailable() {
+  const { data, error } = await requireClient().rpc("anonymous_chat_sharing_available");
+  if (error) return false;
+  return data === true;
+}
+
+export async function listChatShareables(publicId: string) {
+  const { data, error } = await requireClient().rpc("list_chat_shareables", {
+    p_public_id: publicId,
+  });
+  if (error) return [];
+  return (Array.isArray(data) ? data : [])
+    .map(toShareable)
+    .filter((item): item is ChatShareableItem => item !== null);
+}
+
+export async function sendShare(input: {
+  publicId: string;
+  shareKind: ChatShareKind;
+  publicSlug: string;
+  replyToMessageId?: string;
+}) {
+  const { data, error } = await requireClient().rpc("send_anonymous_share_v1", {
+    p_public_id: input.publicId,
+    p_share_kind: input.shareKind,
+    p_share_public_slug: input.publicSlug,
+    p_reply_to_message_id: input.replyToMessageId ?? null,
+    p_idempotency_key: idempotencyKey(),
+  });
+  if (error) {
+    throw new Error(isMissingRpc(error) ? "Fitur berbagi belum siap pada server." : mapChatError(error.message));
+  }
+  return typeof data === "string" ? data : null;
 }
 
 export async function markMessagesRead(publicId: string) {

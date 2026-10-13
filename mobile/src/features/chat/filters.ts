@@ -1,4 +1,5 @@
 import type {
+  ChatMessage,
   ConversationListItem,
   ConversationView,
 } from "@/features/chat/types";
@@ -45,6 +46,18 @@ export function searchConversations(
   return conversations.filter((item) => {
     const searchable = normalizeSearchText(
       `${item.counterpart_alias} ${item.campus} ${item.study_program}`,
+    );
+    return terms.every((term) => searchable.includes(term));
+  });
+}
+
+export function searchLoadedMessages(messages: ChatMessage[], query: string) {
+  const normalized = normalizeSearchText(normalizeConversationQuery(query));
+  if (!normalized) return messages;
+  const terms = normalized.split(" ");
+  return messages.filter((message) => {
+    const searchable = normalizeSearchText(
+      `${message.body} ${message.reply_body ?? ""} ${message.share_title ?? ""} ${message.share_description ?? ""}`,
     );
     return terms.every((term) => searchable.includes(term));
   });

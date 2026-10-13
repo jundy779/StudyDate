@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   filterConversations,
   normalizeConversationQuery,
+  searchLoadedMessages,
   searchConversations,
 } from "../src/features/chat/filters.ts";
 import {
@@ -83,4 +84,36 @@ test("keeps official sticker and reaction values unique", () => {
   assert.equal(new Set(chatReactions.map((item) => item.value)).size, 5);
   assert.equal(getChatSticker("studydate_study")?.label, "Semangat belajar");
   assert.equal(getChatReaction("celebrate")?.emoji, "🎉");
+});
+
+test("searches loaded messages including replies and shared cards", () => {
+  const base = {
+    message_id: "11111111-1111-4111-8111-111111111111",
+    body: "Yuk belajar basis data",
+    message_type: "text" as const,
+    sticker_id: null,
+    share_kind: null,
+    share_public_slug: null,
+    share_title: null,
+    share_description: null,
+    is_mine: true,
+    created_at: "2026-10-13T01:00:00.000Z",
+    read_at: null,
+    moderation_status: "visible" as const,
+    reply_message_id: null,
+    reply_body: null,
+    reply_is_mine: false,
+    reactions: [],
+  };
+  const shared = {
+    ...base,
+    message_id: "22222222-2222-4222-8222-222222222222",
+    body: "",
+    message_type: "event_invite" as const,
+    share_kind: "event" as const,
+    share_title: "Workshop AI Kampus",
+    share_description: "Belajar membuat agent bersama",
+  };
+  assert.equal(searchLoadedMessages([base, shared], "basis data").length, 1);
+  assert.equal(searchLoadedMessages([base, shared], "workshop kampus").length, 1);
 });

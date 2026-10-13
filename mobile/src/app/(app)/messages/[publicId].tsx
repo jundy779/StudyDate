@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,18 +15,23 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ReportConversationModal } from "@/components/report-conversation-modal";
+import { ChatSharePicker } from "@/components/chat-share-picker";
 import {
   blockConversationCounterpart,
   endConversation,
   getChatInteractionsAvailable,
+  getChatSharingAvailable,
   getConversation,
   listMessages,
+  listChatShareables,
   markMessagesRead,
   reportConversation,
   sendMessage,
+  sendShare,
   sendSticker,
   toggleMessageReaction,
 } from "@/features/chat/api";
+import { searchLoadedMessages } from "@/features/chat/filters";
 import {
   chatReactions,
   chatStickers,
@@ -36,6 +41,7 @@ import {
 import type {
   ChatMessage,
   ChatReactionValue,
+  ChatShareableItem,
   ChatStickerId,
   ConversationDetail,
   ReportReasonCode,
@@ -75,6 +81,12 @@ export default function ConversationScreen() {
   const [isSending, setIsSending] = useState(false);
   const [isRunningAction, setIsRunningAction] = useState(false);
   const [interactionsAvailable, setInteractionsAvailable] = useState(false);
+  const [sharingAvailable, setSharingAvailable] = useState(false);
+  const [shareables, setShareables] = useState<ChatShareableItem[]>([]);
+  const [sharePickerOpen, setSharePickerOpen] = useState(false);
+  const [isLoadingShareables, setIsLoadingShareables] = useState(false);
+  const [messageSearchOpen, setMessageSearchOpen] = useState(false);
+  const [messageSearch, setMessageSearch] = useState("");
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [actionMessage, setActionMessage] = useState<ChatMessage | null>(null);
   const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
@@ -114,7 +126,13 @@ export default function ConversationScreen() {
 
   useEffect(() => {
     void getChatInteractionsAvailable().then(setInteractionsAvailable).catch(() => setInteractionsAvailable(false));
+    void getChatSharingAvailable().then(setSharingAvailable).catch(() => setSharingAvailable(false));
   }, [publicId]);
+
+  const visibleMessages = useMemo(
+    () => searchLoadedMessages(messages, messageSearchOpen ? messageSearch : ""),
+    [messageSearch, messageSearchOpen, messages],
+  );
 
   useEffect(() => {
     const timer = setInterval(() => void refresh(true), 6000);
@@ -194,6 +212,42 @@ export default function ConversationScreen() {
       Alert.alert("Reaksi belum tersimpan", reactionError instanceof Error ? reactionError.message : "Coba lagi sebentar.");
     } finally {
       setReactionBusyId(null);
+    }
+  }
+
+  async function openSharePicker() {
+    if (!publicId || !sharingAvailable) return;
+    setSharePickerOpen(true);
+    if (shareables.length > 0) return;
+    setIsLoadingShareables(true);
+    try {
+      setShareables(await listChatShareables(publicId));
+    } catch {
+      setShareables([]);
+    } finally {
+      setIsLoadingShareables(false);
+    }
+  }
+
+  async function submitShare(item: ChatShareableItem) {
+    if (!publicId || isSending) return;
+    setIsSending(true);
+    setError(null);
+    try {
+      await sendShare({
+        publicId,
+        shareKind: item.share_kind,
+        publicSlug: item.public_slug,
+        replyToMessageId: replyTo?.message_id,
+      });
+      setReplyTo(null);
+      setSharePickerOpen(false);
+      shouldScrollToEnd.current = true;
+      await refresh(true);
+    } catch (shareError) {
+      setError(shareError instanceof Error ? shareError.message : "Ajakan belum terkirim.");
+    } finally {
+      setIsSending(false);
     }
   }
 
@@ -296,21 +350,38 @@ export default function ConversationScreen() {
             <Text numberOfLines={1} style={styles.meta}>{conversation.campus} · {conversation.study_program}{conversation.semester ? ` · Semester ${conversation.semester}` : ""}</Text>
           </View>
           <View style={styles.safetyActions}>
+            <Pressable onPress={() => {
+              setMessageSearchOpen((open) => !open);
+              if (messageSearchOpen) setMessageSearch("");
+            }} style={styles.smallAction}><Text style={styles.smallActionText}>Cari pesan</Text></Pressable>
             {!closed ? <Pressable disabled={isRunningAction} onPress={confirmEnd} style={styles.smallAction}><Text style={styles.smallActionText}>Akhiri</Text></Pressable> : null}
             <Pressable disabled={isRunningAction} onPress={() => setReportOpen(true)} style={styles.smallAction}><Text style={styles.smallActionText}>Laporkan</Text></Pressable>
             <Pressable disabled={isRunningAction || conversation.status === "blocked"} onPress={confirmBlock} style={styles.smallDanger}><Text style={styles.smallDangerText}>Blokir</Text></Pressable>
           </View>
         </View>
         <Text style={styles.privacyNote}>Kalian masih memakai nama samaran. Jangan terburu-buru membagikan data pribadi.</Text>
+        {messageSearchOpen ? (
+          <View style={styles.messageSearchBar}>
+            <TextInput
+              autoFocus
+              onChangeText={setMessageSearch}
+              placeholder="Cari isi pesan yang sudah dimuat"
+              placeholderTextColor={colors.muted}
+              style={styles.messageSearchInput}
+              value={messageSearch}
+            />
+            <Text style={styles.searchCount}>{visibleMessages.length} hasil</Text>
+          </View>
+        ) : null}
 
         <FlatList
           ref={listRef}
           contentContainerStyle={styles.messages}
-          data={messages}
+          data={visibleMessages}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           keyExtractor={(item) => item.message_id}
-          ListEmptyComponent={<View style={styles.empty}><Text style={styles.emptyTitle}>Mulai dengan sapaan sederhana</Text><Text style={styles.loadingText}>Bahas kelas, tugas, minat, atau acara kampus yang kalian suka.</Text></View>}
+          ListEmptyComponent={<View style={styles.empty}><Text style={styles.emptyTitle}>{messageSearch ? "Pesan belum ketemu" : "Mulai dengan sapaan sederhana"}</Text><Text style={styles.loadingText}>{messageSearch ? "Coba kata lain atau muat pesan sebelumnya." : "Bahas kelas, tugas, minat, atau acara kampus yang kalian suka."}</Text></View>}
           ListHeaderComponent={hasMore ? (
             <Pressable disabled={isLoadingMore} onPress={() => void loadOlder()} style={styles.olderButton}>
               <Text style={styles.olderText}>{isLoadingMore ? "Memuat..." : "Muat pesan sebelumnya"}</Text>
@@ -370,6 +441,16 @@ export default function ConversationScreen() {
               </View>
             ) : null}
             <View style={styles.composer}>
+              {sharingAvailable ? (
+                <Pressable
+                  accessibilityLabel="Bagikan Circle atau Event"
+                  disabled={isSending}
+                  onPress={() => void openSharePicker()}
+                  style={styles.attachButton}
+                >
+                  <Text style={styles.attachButtonText}>＋</Text>
+                </Pressable>
+              ) : null}
               <Pressable
                 accessibilityLabel="Buka pilihan stiker"
                 disabled={isSending}
@@ -401,6 +482,14 @@ export default function ConversationScreen() {
         onClose={() => !isRunningAction && setReportOpen(false)}
         onSubmit={submitReport}
         visible={reportOpen}
+      />
+      <ChatSharePicker
+        isLoading={isLoadingShareables}
+        isSending={isSending}
+        items={shareables}
+        onClose={() => !isSending && setSharePickerOpen(false)}
+        onSelect={(item) => void submitShare(item)}
+        visible={sharePickerOpen}
       />
     </SafeAreaView>
   );
@@ -498,6 +587,9 @@ const styles = StyleSheet.create({
   smallDanger: { backgroundColor: "#FFF0EE", borderRadius: radius.pill, paddingHorizontal: 11, paddingVertical: 7 },
   smallDangerText: { color: colors.danger, fontSize: 10, fontWeight: "800" },
   privacyNote: { backgroundColor: colors.blueSoft, color: colors.blue, fontSize: 11, lineHeight: 17, paddingHorizontal: 15, paddingVertical: 9, textAlign: "center" },
+  messageSearchBar: { alignItems: "center", backgroundColor: colors.white, borderBottomColor: colors.border, borderBottomWidth: 1, flexDirection: "row", gap: 9, padding: 10 },
+  messageSearchInput: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.medium, borderWidth: 1, color: colors.navy, flex: 1, fontSize: 12, minHeight: 42, paddingHorizontal: 12 },
+  searchCount: { color: colors.muted, fontSize: 10, minWidth: 45, textAlign: "right" },
   messages: { flexGrow: 1, padding: 14, paddingBottom: 20 },
   olderButton: { alignSelf: "center", borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, marginBottom: 18, paddingHorizontal: 13, paddingVertical: 8 },
   olderText: { color: colors.muted, fontSize: 11, fontWeight: "700" },
@@ -545,6 +637,8 @@ const styles = StyleSheet.create({
   stickerEmoji: { fontSize: 23 },
   stickerLabel: { color: colors.muted, fontSize: 8, fontWeight: "700", marginTop: 3, textAlign: "center" },
   composer: { alignItems: "flex-end", flexDirection: "row", gap: 8 },
+  attachButton: { alignItems: "center", backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 46, justifyContent: "center", width: 46 },
+  attachButtonText: { color: colors.navy, fontSize: 24, fontWeight: "500", lineHeight: 26 },
   stickerButton: { alignItems: "center", backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 46, justifyContent: "center", width: 46 },
   stickerButtonActive: { backgroundColor: colors.blueSoft, borderColor: colors.blue },
   stickerButtonText: { fontSize: 19 },

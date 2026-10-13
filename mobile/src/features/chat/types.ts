@@ -58,12 +58,24 @@ export type ChatStickerId =
   | "studydate_chat"
   | "studydate_ready";
 
+export type ChatShareKind = "circle" | "event";
+
+export type ChatShareableItem = {
+  share_kind: ChatShareKind;
+  public_slug: string;
+  title: string;
+  description: string;
+  meta: string;
+  starts_at: string | null;
+  timezone_name: string | null;
+};
+
 export type ChatMessage = {
   message_id: string;
   body: string;
   message_type: ChatMessageType;
   sticker_id: string | null;
-  share_kind: "circle" | "event" | null;
+  share_kind: ChatShareKind | null;
   share_public_slug: string | null;
   share_title: string | null;
   share_description: string | null;
