@@ -1,0 +1,138 @@
+export type CircleTopic = "coding" | "data_science" | "design" | "mathematics" | "languages" | "thesis" | "exam_prep" | "general" | "other";
+export type CommunityScope = "open" | "campus";
+
+export type CircleSummary = {
+  public_slug: string;
+  name: string;
+  description: string;
+  topic: CircleTopic;
+  scope: CommunityScope;
+  campus_scope: string | null;
+  member_limit: number;
+  member_count: number;
+  membership_state: "active" | "left" | "removed" | null;
+  is_owner: boolean;
+  created_at: string;
+};
+
+export type CircleDetail = CircleSummary & {
+  status: "active" | "archived";
+  can_join: boolean;
+  can_leave: boolean;
+  archived_at: string | null;
+};
+
+export type CircleFormInput = {
+  name: string;
+  description: string;
+  topic: CircleTopic;
+  scope: CommunityScope;
+  memberLimit: number;
+};
+
+export type CircleMember = {
+  public_alias: string;
+  campus: string;
+  study_program: string;
+  semester: number | null;
+  interests: string[];
+  connection_goals: string[];
+  is_verified: boolean;
+  circle_role: "owner" | "member";
+  joined_at: string;
+};
+
+export type CircleMessage = {
+  message_public_id: string;
+  author_alias: string;
+  author_is_verified: boolean;
+  body: string;
+  created_at: string;
+  is_mine: boolean;
+};
+
+export type EventCategory = "study_together" | "coding_tech" | "design" | "languages" | "thesis" | "exam_prep" | "workshop" | "discussion" | "networking" | "community" | "seminar" | "meetup" | "hackathon" | "other";
+export type EventRegistrationStatus = "pending" | "going" | "waitlisted" | "declined" | "cancelled";
+export type EventTimezone = "Asia/Jakarta" | "Asia/Makassar" | "Asia/Jayapura";
+export type EventVenueCategory = "campus_public_area" | "cafe" | "library" | "coworking_space" | "community_space" | "other_public_place";
+export type EventRegistrationMode = "instant" | "approval";
+
+export type EventFormInput = {
+  title: string;
+  description: string;
+  category: EventCategory;
+  scope: CommunityScope;
+  startsAtLocal: string;
+  endsAtLocal: string;
+  timezoneName: EventTimezone;
+  venueCategory: EventVenueCategory;
+  venueName: string;
+  venueArea: string;
+  city: string;
+  capacity: number;
+  registrationMode: EventRegistrationMode;
+  waitlistEnabled: boolean;
+  safetyConfirmed: boolean;
+};
+
+export type EventSummary = {
+  public_slug: string;
+  title: string;
+  description: string;
+  category: EventCategory;
+  scope: CommunityScope;
+  campus_scope: string | null;
+  starts_at: string;
+  ends_at: string;
+  timezone_name: string;
+  venue_category: string;
+  venue_name: string;
+  venue_area: string;
+  city: string;
+  capacity: number;
+  attendee_count: number;
+  rsvp_status: EventRegistrationStatus | null;
+  is_organizer: boolean;
+};
+
+export type EventDetail = EventSummary & {
+  organizer_alias: string;
+  organizer_is_verified: boolean;
+  status: "scheduled" | "cancelled" | "archived";
+  is_past: boolean;
+  can_rsvp: boolean;
+  can_cancel_rsvp: boolean;
+  is_official: boolean;
+  registration_mode: "instant" | "approval";
+  waitlist_enabled: boolean;
+  registration_closes_at: string | null;
+  can_edit: boolean;
+  schedule_venue_locked: boolean;
+  can_cancel_event: boolean;
+  can_archive: boolean;
+};
+
+export type EventRegistration = {
+  registration_public_id: string;
+  public_alias: string;
+  campus: string;
+  study_program: string;
+  semester: number | null;
+  interests: string[];
+  registration_status: EventRegistrationStatus;
+  checked_in_at: string | null;
+  checkin_method: string | null;
+  registration_answers: Record<string, EventAnswer>;
+  rsvped_at: string;
+};
+
+export type EventQuestion = {
+  question_public_id: string;
+  question_type: "short_text" | "single_select" | "multi_select" | "checkbox";
+  prompt: string;
+  options: string[];
+  is_required: boolean;
+  sort_order: number;
+};
+
+export type EventAnswer = string | string[] | boolean;
