@@ -34,12 +34,13 @@ Fondasi mobile tahap pertama sudah mencakup:
 - pencarian isi pesan, balasan, dan kartu ajakan yang sudah dimuat;
 - Jelajah Circle dan Acara dengan pencarian lokal;
 - detail Circle, gabung, serta keluar Circle;
-- detail Acara, pendaftaran tanpa pertanyaan, status pendaftaran, dan pembatalan;
+- daftar anggota dan obrolan Circle untuk anggota aktif;
+- detail Acara, formulir pertanyaan dinamis, status pendaftaran, dan pembatalan;
 - status pesan dibaca serta perlindungan dari pesan ganda;
 - akhiri percakapan, blokir akun, dan kirim laporan privat.
 
-Pembuatan dan pengelolaan Circle/Event, formulir pertanyaan acara di mobile, push
-notification, kamera, dan billing belum dianggap selesai hanya karena tab atau mockup
+Pembuatan dan pengelolaan Circle/Event, push notification, kamera, dan billing belum
+dianggap selesai hanya karena tab atau mockup
 tersedia. Cari Teman, Perkenalan, chat teks,
 balasan, reaksi, stiker, dan berbagi ajakan sudah memakai RPC asli, tetapi tetap harus lulus
 pengujian dua akun pada project production yang benar sebelum disebut aktif penuh.

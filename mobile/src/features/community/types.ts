@@ -22,6 +22,27 @@ export type CircleDetail = CircleSummary & {
   archived_at: string | null;
 };
 
+export type CircleMember = {
+  public_alias: string;
+  campus: string;
+  study_program: string;
+  semester: number | null;
+  interests: string[];
+  connection_goals: string[];
+  is_verified: boolean;
+  circle_role: "owner" | "member";
+  joined_at: string;
+};
+
+export type CircleMessage = {
+  message_public_id: string;
+  author_alias: string;
+  author_is_verified: boolean;
+  body: string;
+  created_at: string;
+  is_mine: boolean;
+};
+
 export type EventCategory = "study_together" | "coding_tech" | "design" | "languages" | "thesis" | "exam_prep" | "workshop" | "discussion" | "networking" | "community" | "seminar" | "meetup" | "hackathon" | "other";
 export type EventRegistrationStatus = "pending" | "going" | "waitlisted" | "declined" | "cancelled";
 
@@ -66,3 +87,5 @@ export type EventQuestion = {
   is_required: boolean;
   sort_order: number;
 };
+
+export type EventAnswer = string | string[] | boolean;

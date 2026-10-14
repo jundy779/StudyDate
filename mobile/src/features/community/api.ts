@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { CircleDetail, CircleSummary, EventDetail, EventQuestion, EventSummary } from "@/features/community/types";
+import type { CircleDetail, CircleMember, CircleMessage, CircleSummary, EventAnswer, EventDetail, EventQuestion, EventSummary } from "@/features/community/types";
 
 const circleSlugPattern = /^circle-[0-9a-f]{24}$/;
 const eventSlugPattern = /^event-[0-9a-f]{24}$/;
@@ -41,6 +41,30 @@ export async function changeCircleMembership(publicSlug: string, action: "join" 
   if (error) throw new Error(message(error, action === "join" ? "Belum dapat bergabung." : "Belum dapat keluar dari Circle."));
 }
 
+export async function listCircleMembers(publicSlug: string) {
+  const { data, error } = await client().rpc("list_study_circle_members", { p_public_slug: publicSlug });
+  if (error) throw new Error(message(error, "Anggota Circle belum dapat dimuat."));
+  return (Array.isArray(data) ? data : []) as CircleMember[];
+}
+
+export async function listCircleMessages(publicSlug: string) {
+  const { data, error } = await client().rpc("list_study_circle_messages", {
+    p_public_slug: publicSlug, p_before_created_at: null, p_before_public_id: null, p_limit: 50,
+  });
+  if (error) throw new Error(message(error, "Obrolan Circle belum dapat dimuat."));
+  return ((Array.isArray(data) ? data : []) as CircleMessage[]).reverse();
+}
+
+export async function sendCircleMessage(publicSlug: string, body: string) {
+  const normalized = body.trim().replace(/\r\n/g, "\n");
+  if (!normalized || normalized.length > 800) throw new Error("Pesan harus berisi 1 sampai 800 karakter.");
+  const idempotencyKey = `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`.slice(0, 32);
+  const { error } = await client().rpc("send_study_circle_message", {
+    p_public_slug: publicSlug, p_body: normalized, p_idempotency_key: idempotencyKey,
+  });
+  if (error) throw new Error(message(error, "Pesan belum dapat dikirim."));
+}
+
 export async function listEvents(search = "") {
   const { data, error } = await client().rpc("list_campus_events", {
     p_search: search.trim() || null, p_category: null, p_scope: null,
@@ -68,8 +92,8 @@ export async function listEventQuestions(publicSlug: string) {
   return (Array.isArray(data) ? data : []) as EventQuestion[];
 }
 
-export async function registerEvent(publicSlug: string) {
-  const { data, error } = await client().rpc("register_for_campus_event", { p_public_slug: publicSlug, p_answers: {} });
+export async function registerEvent(publicSlug: string, answers: Record<string, EventAnswer> = {}) {
+  const { data, error } = await client().rpc("register_for_campus_event", { p_public_slug: publicSlug, p_answers: answers });
   if (error) throw new Error(message(error, "Pendaftaran belum berhasil."));
   return Array.isArray(data) ? data[0] : null;
 }
