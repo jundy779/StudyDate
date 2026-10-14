@@ -53,6 +53,27 @@ export type CircleMessage = {
 
 export type EventCategory = "study_together" | "coding_tech" | "design" | "languages" | "thesis" | "exam_prep" | "workshop" | "discussion" | "networking" | "community" | "seminar" | "meetup" | "hackathon" | "other";
 export type EventRegistrationStatus = "pending" | "going" | "waitlisted" | "declined" | "cancelled";
+export type EventTimezone = "Asia/Jakarta" | "Asia/Makassar" | "Asia/Jayapura";
+export type EventVenueCategory = "campus_public_area" | "cafe" | "library" | "coworking_space" | "community_space" | "other_public_place";
+export type EventRegistrationMode = "instant" | "approval";
+
+export type EventFormInput = {
+  title: string;
+  description: string;
+  category: EventCategory;
+  scope: CommunityScope;
+  startsAtLocal: string;
+  endsAtLocal: string;
+  timezoneName: EventTimezone;
+  venueCategory: EventVenueCategory;
+  venueName: string;
+  venueArea: string;
+  city: string;
+  capacity: number;
+  registrationMode: EventRegistrationMode;
+  waitlistEnabled: boolean;
+  safetyConfirmed: boolean;
+};
 
 export type EventSummary = {
   public_slug: string;
@@ -85,6 +106,24 @@ export type EventDetail = EventSummary & {
   registration_mode: "instant" | "approval";
   waitlist_enabled: boolean;
   registration_closes_at: string | null;
+  can_edit: boolean;
+  schedule_venue_locked: boolean;
+  can_cancel_event: boolean;
+  can_archive: boolean;
+};
+
+export type EventRegistration = {
+  registration_public_id: string;
+  public_alias: string;
+  campus: string;
+  study_program: string;
+  semester: number | null;
+  interests: string[];
+  registration_status: EventRegistrationStatus;
+  checked_in_at: string | null;
+  checkin_method: string | null;
+  registration_answers: Record<string, EventAnswer>;
+  rsvped_at: string;
 };
 
 export type EventQuestion = {

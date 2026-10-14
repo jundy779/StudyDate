@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { CircleDetail, CircleFormInput, CircleMember, CircleMessage, CircleSummary, EventAnswer, EventDetail, EventQuestion, EventSummary } from "@/features/community/types";
+import type { CircleDetail, CircleFormInput, CircleMember, CircleMessage, CircleSummary, EventAnswer, EventDetail, EventFormInput, EventQuestion, EventRegistration, EventRegistrationStatus, EventSummary } from "@/features/community/types";
 
 const circleSlugPattern = /^circle-[0-9a-f]{24}$/;
 const eventSlugPattern = /^event-[0-9a-f]{24}$/;
@@ -123,4 +123,51 @@ export async function registerEvent(publicSlug: string, answers: Record<string, 
 export async function cancelEventRegistration(publicSlug: string) {
   const { error } = await client().rpc("cancel_campus_event_rsvp", { p_public_slug: publicSlug });
   if (error) throw new Error(message(error, "Pendaftaran belum dapat dibatalkan."));
+}
+
+function eventParams(input: EventFormInput) {
+  return {
+    p_title: input.title.trim(), p_description: input.description.trim(), p_category: input.category,
+    p_starts_at_local: input.startsAtLocal, p_ends_at_local: input.endsAtLocal, p_timezone_name: input.timezoneName,
+    p_venue_category: input.venueCategory, p_venue_name: input.venueName.trim(), p_venue_area: input.venueArea.trim(), p_city: input.city.trim(),
+    p_capacity: input.capacity, p_registration_mode: input.registrationMode, p_waitlist_enabled: input.waitlistEnabled,
+    p_registration_closes_at: null, p_confirm_public_venue: true, p_confirm_no_fees: true,
+    p_confirm_no_contact_sharing: true, p_confirm_safety_rules: true,
+  };
+}
+
+export async function saveEvent(input: EventFormInput, publicSlug?: string) {
+  if (publicSlug) {
+    const { error } = await client().rpc("update_campus_event", { p_public_slug: publicSlug, ...eventParams(input) });
+    if (error) throw new Error(message(error, "Acara belum dapat diperbarui."));
+    return publicSlug;
+  }
+  const { data, error } = await client().rpc("create_campus_event", { ...eventParams(input), p_scope: input.scope });
+  if (error || typeof data !== "string") throw new Error(message(error, "Acara belum dapat dibuat."));
+  return data;
+}
+
+export async function cancelManagedEvent(publicSlug: string) {
+  const { error } = await client().rpc("cancel_campus_event", { p_public_slug: publicSlug });
+  if (error) throw new Error(message(error, "Acara belum dapat dibatalkan."));
+}
+
+export async function archiveManagedEvent(publicSlug: string) {
+  const { error } = await client().rpc("archive_campus_event", { p_public_slug: publicSlug });
+  if (error) throw new Error(message(error, "Acara belum dapat diarsipkan."));
+}
+
+export async function listEventRegistrations(publicSlug: string, status: EventRegistrationStatus | null = null) {
+  const { data, error } = await client().rpc("list_campus_event_registrations", {
+    p_public_slug: publicSlug, p_status: status, p_before_rsvped_at: null, p_before_public_id: null, p_limit: 100,
+  });
+  if (error) throw new Error(message(error, "Daftar peserta belum dapat dimuat."));
+  return (Array.isArray(data) ? data : []) as EventRegistration[];
+}
+
+export async function manageEventRegistration(publicSlug: string, registrationPublicId: string, action: "approve" | "decline") {
+  const { error } = await client().rpc("manage_campus_event_registration", {
+    p_public_slug: publicSlug, p_registration_public_id: registrationPublicId, p_action: action,
+  });
+  if (error) throw new Error(message(error, action === "approve" ? "Peserta belum dapat disetujui." : "Permintaan belum dapat ditolak."));
 }

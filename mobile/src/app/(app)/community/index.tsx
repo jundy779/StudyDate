@@ -48,7 +48,7 @@ export default function CommunityScreen() {
           <Text style={styles.body}>Temukan Circle belajar dan acara mahasiswa. Kenalan boleh, fokus utamanya tetap kegiatan yang bermanfaat.</Text>
           <View style={styles.switcher}>{(["circle", "event"] as ViewMode[]).map((value) => <Pressable key={value} onPress={() => setMode(value)} style={[styles.switch, mode === value && styles.switchActive]}><Text style={[styles.switchText, mode === value && styles.switchTextActive]}>{value === "circle" ? "Circle" : "Acara"}</Text></Pressable>)}</View>
           <TextInput onChangeText={setQuery} placeholder={mode === "circle" ? "Cari topik atau nama Circle" : "Cari acara atau kota"} placeholderTextColor={colors.muted} style={styles.search} value={query} />
-          {mode === "circle" ? <Pressable onPress={() => router.push("/(app)/community/circle/new")} style={styles.create}><Text style={styles.createText}>＋ Buat Circle baru</Text></Pressable> : null}
+          <Pressable onPress={() => router.push(mode === "circle" ? "/(app)/community/circle/new" : "/(app)/community/event/new")} style={styles.create}><Text style={styles.createText}>＋ {mode === "circle" ? "Buat Circle baru" : "Buat acara baru"}</Text></Pressable>
           {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>}
         ListEmptyComponent={<View style={styles.empty}>{loading ? <ActivityIndicator color={colors.blue} /> : <><Text style={styles.emptyTitle}>Belum ada yang cocok</Text><Text style={styles.emptyText}>Coba kata pencarian lain atau tarik layar untuk memuat ulang.</Text></>}</View>}
