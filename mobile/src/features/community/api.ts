@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { CircleDetail, CircleMember, CircleMessage, CircleSummary, EventAnswer, EventDetail, EventQuestion, EventSummary } from "@/features/community/types";
+import type { CircleDetail, CircleFormInput, CircleMember, CircleMessage, CircleSummary, EventAnswer, EventDetail, EventQuestion, EventSummary } from "@/features/community/types";
 
 const circleSlugPattern = /^circle-[0-9a-f]{24}$/;
 const eventSlugPattern = /^event-[0-9a-f]{24}$/;
@@ -39,6 +39,28 @@ export async function changeCircleMembership(publicSlug: string, action: "join" 
   const rpc = action === "join" ? "join_study_circle" : "leave_study_circle";
   const { error } = await client().rpc(rpc, { p_public_slug: publicSlug });
   if (error) throw new Error(message(error, action === "join" ? "Belum dapat bergabung." : "Belum dapat keluar dari Circle."));
+}
+
+export async function saveCircle(input: CircleFormInput, publicSlug?: string) {
+  const params = { p_name: input.name.trim(), p_description: input.description.trim(), p_topic: input.topic, p_member_limit: input.memberLimit };
+  if (publicSlug) {
+    const { error } = await client().rpc("update_study_circle", { p_public_slug: publicSlug, ...params });
+    if (error) throw new Error(message(error, "Circle belum dapat diperbarui."));
+    return publicSlug;
+  }
+  const { data, error } = await client().rpc("create_study_circle", { ...params, p_scope: input.scope });
+  if (error || typeof data !== "string") throw new Error(message(error, "Circle belum dapat dibuat."));
+  return data;
+}
+
+export async function archiveCircle(publicSlug: string) {
+  const { error } = await client().rpc("archive_study_circle", { p_public_slug: publicSlug });
+  if (error) throw new Error(message(error, "Circle belum dapat ditutup."));
+}
+
+export async function removeCircleMember(publicSlug: string, memberAlias: string) {
+  const { error } = await client().rpc("remove_study_circle_member", { p_public_slug: publicSlug, p_member_alias: memberAlias });
+  if (error) throw new Error(message(error, "Anggota belum dapat dikeluarkan."));
 }
 
 export async function listCircleMembers(publicSlug: string) {

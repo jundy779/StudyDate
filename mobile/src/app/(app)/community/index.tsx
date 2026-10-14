@@ -48,6 +48,7 @@ export default function CommunityScreen() {
           <Text style={styles.body}>Temukan Circle belajar dan acara mahasiswa. Kenalan boleh, fokus utamanya tetap kegiatan yang bermanfaat.</Text>
           <View style={styles.switcher}>{(["circle", "event"] as ViewMode[]).map((value) => <Pressable key={value} onPress={() => setMode(value)} style={[styles.switch, mode === value && styles.switchActive]}><Text style={[styles.switchText, mode === value && styles.switchTextActive]}>{value === "circle" ? "Circle" : "Acara"}</Text></Pressable>)}</View>
           <TextInput onChangeText={setQuery} placeholder={mode === "circle" ? "Cari topik atau nama Circle" : "Cari acara atau kota"} placeholderTextColor={colors.muted} style={styles.search} value={query} />
+          {mode === "circle" ? <Pressable onPress={() => router.push("/(app)/community/circle/new")} style={styles.create}><Text style={styles.createText}>＋ Buat Circle baru</Text></Pressable> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>}
         ListEmptyComponent={<View style={styles.empty}>{loading ? <ActivityIndicator color={colors.blue} /> : <><Text style={styles.emptyTitle}>Belum ada yang cocok</Text><Text style={styles.emptyText}>Coba kata pencarian lain atau tarik layar untuk memuat ulang.</Text></>}</View>}
@@ -63,5 +64,6 @@ const styles = StyleSheet.create({
   body: { color: colors.muted, fontSize: 14, lineHeight: 22, marginTop: 9 }, switcher: { backgroundColor: colors.blueSoft, borderRadius: radius.pill, flexDirection: "row", marginTop: 18, padding: 4 },
   switch: { alignItems: "center", borderRadius: radius.pill, flex: 1, paddingVertical: 10 }, switchActive: { backgroundColor: colors.blue }, switchText: { color: colors.blue, fontSize: 13, fontWeight: "800" }, switchTextActive: { color: colors.white },
   search: { backgroundColor: colors.white, borderColor: colors.border, borderRadius: radius.medium, borderWidth: 1, color: colors.navy, fontSize: 14, marginTop: 12, paddingHorizontal: 14, paddingVertical: 13 },
+  create: { alignItems: "center", borderColor: colors.blue, borderRadius: radius.medium, borderWidth: 1, marginTop: 10, padding: 12 }, createText: { color: colors.blue, fontSize: 12, fontWeight: "800" },
   error: { color: colors.danger, fontSize: 12, lineHeight: 18, marginTop: 10 }, empty: { alignItems: "center", gap: 10, padding: 44 }, emptyTitle: { color: colors.navy, fontSize: 17, fontWeight: "800" }, emptyText: { color: colors.muted, fontSize: 13, lineHeight: 20, textAlign: "center" },
 });

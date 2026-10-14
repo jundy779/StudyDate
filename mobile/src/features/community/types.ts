@@ -22,6 +22,14 @@ export type CircleDetail = CircleSummary & {
   archived_at: string | null;
 };
 
+export type CircleFormInput = {
+  name: string;
+  description: string;
+  topic: CircleTopic;
+  scope: CommunityScope;
+  memberLimit: number;
+};
+
 export type CircleMember = {
   public_alias: string;
   campus: string;
