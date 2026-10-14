@@ -405,6 +405,10 @@ export default function ConversationScreen() {
                 setActionMessage(null);
                 setStickerPickerOpen(false);
               }}
+              onOpenShare={() => {
+                if (!item.share_kind || !item.share_public_slug) return;
+                router.push(`/(app)/community/${item.share_kind}/${item.share_public_slug}`);
+              }}
               onSelect={() => setActionMessage((current) => current?.message_id === item.message_id ? null : item)}
             />
           )}
@@ -503,6 +507,7 @@ function MessageBubble({
   onSelect,
   onReply,
   onReact,
+  onOpenShare,
 }: {
   message: ChatMessage;
   interactionsAvailable: boolean;
@@ -511,6 +516,7 @@ function MessageBubble({
   onSelect: () => void;
   onReply: () => void;
   onReact: (reaction: ChatReactionValue) => void;
+  onOpenShare: () => void;
 }) {
   const removed = message.moderation_status === "removed";
   const sticker = getChatSticker(message.sticker_id);
@@ -533,6 +539,7 @@ function MessageBubble({
         {sticker && !removed ? <Text style={styles.stickerInMessage}>{sticker.emoji}</Text> : null}
         <Text style={[styles.messageText, message.is_mine && styles.messageTextMine, removed && styles.removedText]}>{content}</Text>
         {message.share_description && !removed ? <Text style={[styles.shareDescription, message.is_mine && styles.shareDescriptionMine]}>{message.share_description}</Text> : null}
+        {message.share_kind && message.share_public_slug && !removed ? <Pressable accessibilityRole="button" onPress={onOpenShare} style={[styles.openShare, message.is_mine && styles.openShareMine]}><Text style={[styles.openShareText, message.is_mine && styles.openShareTextMine]}>Buka {message.share_kind === "circle" ? "Circle" : "Acara"} →</Text></Pressable> : null}
         <View style={styles.messageMeta}>
           <Text style={[styles.messageTime, message.is_mine && styles.messageTimeMine]}>{messageTime(message.created_at)}</Text>
           {message.is_mine && message.read_at ? <Text style={styles.read}>Dibaca</Text> : null}
@@ -609,6 +616,10 @@ const styles = StyleSheet.create({
   removedText: { color: colors.muted, fontStyle: "italic" },
   shareDescription: { color: colors.muted, fontSize: 11, lineHeight: 16, marginTop: 5 },
   shareDescriptionMine: { color: "rgba(255,255,255,0.78)" },
+  openShare: { alignSelf: "flex-start", backgroundColor: colors.blueSoft, borderRadius: radius.pill, marginTop: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  openShareMine: { backgroundColor: "rgba(255,255,255,0.18)" },
+  openShareText: { color: colors.blue, fontSize: 10, fontWeight: "800" },
+  openShareTextMine: { color: colors.white },
   messageMeta: { alignItems: "center", flexDirection: "row", gap: 6, justifyContent: "flex-end", marginTop: 5 },
   messageTime: { color: colors.muted, fontSize: 9 },
   messageTimeMine: { color: "rgba(255,255,255,0.72)" },

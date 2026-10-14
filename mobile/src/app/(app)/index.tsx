@@ -1,10 +1,11 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/providers/auth-provider";
 import { colors, radius } from "@/theme";
 
-const nextFeatures = ["Cari Teman dan perkenalan siap diuji", "Circle belajar", "Acara kampus", "Percakapan aman"];
+const nextFeatures = ["Cari Teman dan perkenalan", "Circle belajar", "Acara mahasiswa", "Percakapan aman"];
 
 export default function HomeScreen() {
   const { session } = useAuth();
@@ -14,7 +15,9 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.eyebrow}>HALO, KAMU SUDAH MASUK</Text>
         <Text accessibilityRole="header" style={styles.title}>Ruang mahasiswa yang mulai dari tujuan yang sama.</Text>
-        <Text style={styles.body}>Akunmu sudah tersambung. Cari Teman dan perkenalan sudah tersedia untuk pengujian, sementara fitur lain dibuka bertahap setelah alur privasinya lulus.</Text>
+        <Text style={styles.body}>Akunmu sudah tersambung. Sekarang kamu bisa mencari teman, masuk Circle belajar, menemukan acara, dan ngobrol dengan aman.</Text>
+
+        <Pressable onPress={() => router.push("/(app)/community")} style={styles.exploreButton}><Text style={styles.exploreButtonText}>Jelajahi Circle dan Acara</Text></Pressable>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Tahap berikutnya</Text>
@@ -49,4 +52,6 @@ const styles = StyleSheet.create({
   accountHint: { backgroundColor: colors.blueSoft, borderRadius: radius.medium, marginTop: 18, padding: 16 },
   accountHintTitle: { color: colors.blue, fontSize: 12, fontWeight: "800" },
   accountHintBody: { color: colors.navy, fontSize: 14, marginTop: 5 },
+  exploreButton: { alignItems: "center", backgroundColor: colors.blue, borderRadius: radius.medium, marginTop: 22, padding: 15 },
+  exploreButtonText: { color: colors.white, fontSize: 14, fontWeight: "800" },
 });
