@@ -746,7 +746,8 @@ test("message filter navigation is accessible and mobile-contained", () => {
   }
   assert.match(messagesPage, /aria-label="Filter daftar pesan"/);
   assert.match(messagesPage, /aria-current=\{active \? "page" : undefined\}/);
-  assert.match(messagesPage, /max-w-full overflow-x-auto/);
+  assert.match(messagesPage, /grid grid-cols-2/);
+  assert.match(messagesPage, /sm:flex sm:flex-wrap/);
   assert.match(messagesPage, /visibleConversations/);
   assert.doesNotMatch(messagesPage, /overflow-x-visible/);
 });
