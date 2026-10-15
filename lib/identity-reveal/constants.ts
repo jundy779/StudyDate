@@ -24,10 +24,10 @@ export type IdentityRevealCompleted = {
 export const IDENTITY_REVEAL_COPY = {
   heading: "Bagikan nama dan foto",
   description:
-    "Bagikan nama depan dan foto profil hanya setelah kalian berdua memberikan persetujuan.",
+    "Nama depan dan foto baru terbuka setelah kalian berdua sama-sama setuju.",
   privacyNote:
-    "Persetujuanmu tetap privat sampai proses selesai. Nama lengkap dan kontak tidak ikut dibuka.",
-  prepareCta: "Siapkan identitas yang ingin dibagikan",
+    "Pilihanmu tidak terlihat oleh teman ngobrol sampai dia juga setuju. Nama lengkap dan kontak tetap tertutup.",
+  prepareCta: "Pilih nama dan foto",
   firstNameLabel: "Nama depan yang ingin kamu tampilkan",
   firstNameHint:
     "Gunakan nama depan yang nyaman kamu bagikan. Nama ini tidak harus sama dengan nama resmi.",
@@ -35,10 +35,10 @@ export const IDENTITY_REVEAL_COPY = {
   photoHint:
     "Unggah foto wajah yang jelas (JPEG, PNG, atau WebP, maks. 5 MB). Foto ini tidak dipakai untuk mengenali wajah secara otomatis.",
   saveProfileCta: "Simpan nama dan foto",
-  consentCta: "Setuju bagikan nama dan foto",
-  withdrawCta: "Batalkan persetujuan",
+  consentCta: "Bagikan jika dia juga setuju",
+  withdrawCta: "Batalkan pilihan",
   selectedNote:
-    "Persetujuanmu tersimpan. Persetujuan tetap privat sampai proses selesai.",
+    "Pilihanmu tersimpan dan belum terlihat oleh teman ngobrol.",
   completedTitle: "Nama dan foto sudah dibagikan",
   completedBody:
     "Kalian sekarang dapat melihat nama depan dan foto profil satu sama lain. Informasi kontak tetap tertutup.",
@@ -46,7 +46,7 @@ export const IDENTITY_REVEAL_COPY = {
     "Nama dan foto teman ngobrolmu tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
   closedNote: "Berbagi nama dan foto tidak tersedia untuk percakapan ini.",
   notReadyNote:
-    "Kamu dapat berbagi nama dan foto setelah kalian sama-sama ingin kenal lebih jauh dan percakapan masih aktif.",
+    "Nama dan foto bisa dibagikan setelah kalian sama-sama memilih Kenal Lebih Jauh.",
   genericError: "Nama dan foto belum dapat dibagikan. Coba lagi sebentar.",
   photoError: "Foto belum dapat diproses. Periksa format dan ukuran, lalu coba lagi.",
   loading: "Memuat nama dan foto…",
