@@ -4,6 +4,7 @@ import {
   setCampusEventOfficial,
 } from "@/app/owner/events/actions";
 import { OwnerEventDirectory } from "@/components/events/owner-event-directory";
+import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
 import { StaffShell } from "@/components/staff/staff-shell";
 import { ownerLookupEventOrganizerEligibility } from "@/lib/events/service";
 import { listStaffCampusEvents } from "@/lib/events/staff-service";
@@ -184,9 +185,13 @@ async function OwnerEventsContent({ searchParams }: Props) {
                       value={organizer.public_alias}
                     />
                     <input type="hidden" name="action" value="revoke" />
-                    <button className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy">
-                      Cabut izin penyelenggara
-                    </button>
+                    <ConfirmSubmitButton
+                      triggerLabel="Cabut izin penyelenggara"
+                      title="Cabut izin penyelenggara?"
+                      description="Mahasiswa ini tidak akan bisa membuat acara sampai Owner memberikan izin lagi."
+                      confirmLabel="Ya, cabut izin"
+                      className="focus-ring min-h-11 rounded-xl border border-brand-error bg-white px-5 text-sm font-semibold text-brand-error"
+                    />
                   </form>
                 </div>
               </div>
@@ -227,13 +232,15 @@ async function OwnerEventsContent({ searchParams }: Props) {
                 >
                   Tandai resmi
                 </button>
-                <button
+                <ConfirmSubmitButton
+                  triggerLabel="Hapus tanda resmi"
+                  title="Hapus tanda resmi?"
+                  description="Acara ini tidak lagi ditampilkan sebagai acara resmi StudyDate."
+                  confirmLabel="Ya, hapus tanda"
                   name="isOfficial"
                   value="false"
-                  className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy"
-                >
-                  Hapus tanda resmi
-                </button>
+                  className="focus-ring min-h-11 rounded-xl border border-brand-error bg-white px-5 text-sm font-semibold text-brand-error"
+                />
               </div>
             </form>
           </section>
