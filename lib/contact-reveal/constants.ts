@@ -42,23 +42,23 @@ export type ContactRevealCompletedChannel = {
 };
 
 export const CONTACT_REVEAL_COPY = {
-  heading: "Bagikan kontak secara bertahap",
+  heading: "Bagikan kontak saat sudah siap",
   description:
-    "LinkedIn menjadi pilihan utama, sedangkan Instagram dan Telegram opsional. Setiap kontak hanya dibagikan jika kalian berdua setuju. Membagikan satu kontak tidak membuka kontak lainnya.",
+    "LinkedIn jadi pilihan utama. Instagram dan Telegram tetap opsional. Satu kontak baru terbuka kalau kalian memilih jenis kontak yang sama. Kontak lain tetap tertutup.",
   privacyNote:
-    "Pilihanmu tetap privat sampai kalian berdua menyetujui jenis kontak yang sama.",
+    "Pilihanmu tidak terlihat sampai teman ngobrolmu memilih jenis kontak yang sama.",
   addContactCta: "Tambahkan kontak",
   replaceCta: "Ganti kontak",
-  withdrawCta: "Batalkan persetujuan",
-  selectedNote: "Persetujuanmu tetap privat.",
-  completedTitle: "Kontak telah dibagikan",
+  withdrawCta: "Batalkan pilihan",
+  selectedNote: "Pilihanmu tersimpan dan belum terlihat oleh teman ngobrol.",
+  completedTitle: "Kontak sudah terbuka",
   completedBody:
-    "Kalian sekarang dapat melihat kontak yang sama-sama disetujui. Kontak lain tetap tertutup sampai kalian berdua setuju.",
+    "Kalian sekarang bisa melihat kontak yang sama-sama dipilih. Kontak lain tetap tertutup.",
   completedBlockedBody:
     "Kontak teman ngobrolmu tidak lagi tersedia setelah pemblokiran. Informasi yang sudah sempat dilihat tidak dapat dihapus dari perangkat lain.",
   closedNote: "Berbagi kontak tidak tersedia untuk percakapan ini.",
   notReadyNote:
-    "Kamu dapat berbagi kontak setelah kalian selesai berbagi nama dan foto dan percakapan masih aktif.",
+    "Kontak bisa dibagikan setelah nama dan foto sudah terbuka, selama percakapan masih aktif.",
   genericError: "Kontak belum dapat dibagikan. Coba lagi sebentar.",
   validationError:
     "Kontak belum dapat disimpan. Periksa formatnya, lalu coba lagi.",
