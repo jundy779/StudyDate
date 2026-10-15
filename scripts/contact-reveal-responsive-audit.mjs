@@ -42,7 +42,7 @@ const EXPECTED_PROJECT_REF = "ctbqudtvrfezuoqcecyj";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const BUCKET = "identity-reveal-photos";
-const PANEL_HEADING = "Bagikan kontak secara bertahap";
+const PANEL_HEADING = "Bagikan kontak saat sudah siap";
 
 mkdirSync(shotDir, { recursive: true });
 mkdirSync(join(projectRoot, "audit-artifacts"), { recursive: true });
