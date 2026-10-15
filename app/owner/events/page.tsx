@@ -51,15 +51,15 @@ async function OwnerEventsContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="events" access={access}>
-      <main className="min-h-svh bg-brand-surface">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
           <p className="section-label">Khusus owner</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
             Operasional acara kampus
           </h1>
           <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
-            Kelola izin penyelenggara dan penanda acara resmi menggunakan
-            identitas publik yang aman. Setiap perubahan tetap diperiksa oleh sistem.
+            Atur siapa yang boleh membuat acara dan tandai acara resmi tanpa
+            membuka data pribadi mahasiswa. Setiap perubahan penting tetap tercatat.
           </p>
 
           {message ? (
@@ -82,9 +82,9 @@ async function OwnerEventsContent({ searchParams }: Props) {
               Izin penyelenggara
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-              Cari nama samaran mahasiswa secara tepat. StudyDate Plus menambah kapasitas
-              produk, tetapi tidak otomatis memberi izin penyelenggara. Mahasiswa dapat
-              menjadi penyelenggara karena terverifikasi atau mendapat izin Owner.
+              Masukkan nama samaran mahasiswa dengan tepat. Paket Plus menambah batas
+              penggunaan, tetapi tidak otomatis memberi izin membuat acara. Izin diberikan
+              kepada akun terverifikasi atau langsung oleh Owner.
             </p>
 
             <form
@@ -157,7 +157,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                   <div>
                     <dt className="text-sm text-brand-muted">Hasil akhir</dt>
                     <dd className="mt-1 font-semibold text-brand-navy">
-                      {organizer.effective_eligible ? "Memenuhi syarat" : "Tidak memenuhi syarat"}
+                      {organizer.effective_eligible ? "Boleh membuat acara" : "Belum boleh membuat acara"}
                     </dd>
                   </div>
                 </dl>
