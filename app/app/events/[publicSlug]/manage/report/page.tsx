@@ -4,11 +4,14 @@ import { getCampusEventManagement } from "@/lib/events/management";
 import { buildCampusEventReport } from "@/lib/events/reporting";
 import {
   AlertCircle,
+  ArrowRight,
   CheckCircle2,
   ClipboardCheck,
+  Download,
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
+import Link from "next/link";
 
 type EventReportPageProps = {
   params: Promise<{ publicSlug: string }>;
@@ -26,6 +29,14 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
     ["Terkonfirmasi", overview.going_count],
     ["Hadir", overview.checked_in_count],
   ] as const;
+  const statusBreakdown = [
+    ["Menunggu keputusan", overview.pending_count],
+    ["Diterima", overview.going_count],
+    ["Daftar tunggu", overview.waitlisted_count],
+    ["Ditolak", overview.declined_count],
+    ["Dibatalkan peserta", overview.cancelled_count],
+  ] as const;
+  const managementBase = `/app/events/${event.public_slug}/manage`;
 
   return (
     <AppShell current="events">
@@ -47,8 +58,8 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
             <dl className="mt-8 grid grid-cols-2 border-y border-brand-border sm:grid-cols-4">
               {[
                 ["Pendaftaran", report.totalRegistrations],
-                ["Kuota terisi", `${report.fillRate}%`],
-                ["Keputusan selesai", `${report.decisionRate}%`],
+                ["Konfirmasi", `${report.confirmationRate}%`],
+                ["Sisa kuota", report.remainingSpots],
                 ["Tingkat kehadiran", `${report.attendanceRate}%`],
               ].map(([label, value], index) => (
                 <div
@@ -152,6 +163,91 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
                       </p>
                     </div>
                   </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="mt-12 grid gap-10 border-y border-brand-border py-8 lg:grid-cols-2">
+            <section aria-labelledby="registration-status-title">
+              <h2
+                id="registration-status-title"
+                className="font-heading text-xl font-semibold text-brand-navy"
+              >
+                Rincian status pendaftaran
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-brand-muted">
+                Ringkasan ini membantu penyelenggara melihat antrean tanpa membuka
+                data pribadi peserta.
+              </p>
+              <dl className="mt-5 divide-y divide-brand-border">
+                {statusBreakdown.map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between gap-4 py-3">
+                    <dt className="text-sm text-brand-muted">{label}</dt>
+                    <dd className="font-heading text-xl font-semibold text-brand-navy">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <a
+                href={`/api/events/${event.public_slug}/registrations/export`}
+                className="focus-ring mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Unduh daftar peserta CSV
+              </a>
+            </section>
+
+            <section aria-labelledby="next-actions-title">
+              <h2
+                id="next-actions-title"
+                className="font-heading text-xl font-semibold text-brand-navy"
+              >
+                Langkah berikutnya
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-brand-muted">
+                Pilih pekerjaan yang perlu diselesaikan sebelum acara dimulai.
+              </p>
+              <div className="mt-5 divide-y divide-brand-border border-y border-brand-border">
+                {[
+                  {
+                    href: `${managementBase}/registrations`,
+                    title: "Tinjau pendaftaran",
+                    detail:
+                      overview.pending_count > 0
+                        ? `${overview.pending_count} pendaftaran masih menunggu keputusan.`
+                        : "Tidak ada pendaftaran yang menunggu keputusan.",
+                  },
+                  {
+                    href: `${managementBase}/check-in`,
+                    title: "Siapkan kehadiran",
+                    detail: "Buka pemindai QR dan daftar hadir manual.",
+                  },
+                  {
+                    href: `${managementBase}/settings`,
+                    title: "Periksa pengaturan",
+                    detail: "Pastikan jadwal, lokasi, kuota, dan aturan pendaftaran sudah tepat.",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="focus-ring group flex min-h-20 items-center gap-4 py-4"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold text-brand-navy">
+                        {item.title}
+                      </span>
+                      <span className="mt-1 block text-sm leading-6 text-brand-muted">
+                        {item.detail}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-brand-blue transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </Link>
                 ))}
               </div>
             </section>
