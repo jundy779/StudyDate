@@ -174,8 +174,8 @@ test("contact versions are conversation-scoped immutable encrypted snapshots", (
 
 test("channels are independent; no global open-all operation", () => {
   assert.match(migration, /primary key \(conversation_id, channel\)/);
-  assert.match(constants, /Bagikan kontak secara bertahap/);
-  assert.match(constants, /Setiap kontak hanya dibagikan jika kalian berdua setuju/);
+  assert.match(constants, /Bagikan kontak saat sudah siap/);
+  assert.match(constants, /Satu kontak baru terbuka kalau kalian memilih jenis kontak yang sama/);
   assert.doesNotMatch(panel, /Buka semua kontak|Setujui semua/i);
   assert.doesNotMatch(constants, /Buka semua|Open all contacts/i);
 });
@@ -259,10 +259,10 @@ test("UI is gated on Identity Reveal and uses calm per-channel consent copy", ()
   assert.match(room, /ContactRevealPanel/);
   assert.match(room, /identityRevealCompleted=\{Boolean\(identityReveal\.completed\)\}/);
   assert.match(constants, /Setujui berbagi Telegram/);
-  assert.match(constants, /Persetujuanmu tetap privat/);
+  assert.match(constants, /Pilihanmu tersimpan dan belum terlihat oleh teman ngobrol/);
   assert.match(panel, /consentCtas/);
   assert.match(panel, /privacyNote/);
-  assert.match(constants, /Kontak telah dibagikan/);
+  assert.match(constants, /Kontak sudah terbuka/);
 });
 
 test("ciphertext is never returned through authenticated preview RPC", () => {
