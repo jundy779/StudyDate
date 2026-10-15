@@ -56,7 +56,7 @@ async function AdminContent() {
 
   return (
     <StaffShell role={access.role} current="overview" access={access}>
-      <main className="min-h-svh bg-brand-surface">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <div className="page-shell py-10 sm:py-14">
           <p className="section-label">Area Admin</p>
           <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
