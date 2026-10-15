@@ -89,15 +89,15 @@ export function EventManagementShell({
 
       <nav
         aria-label="Navigasi pengelolaan acara"
-        className="-mx-1 overflow-x-auto border-b border-brand-border"
+        className="border-b border-brand-border"
       >
-        <div className="flex min-w-max gap-1 px-1">
+        <div className="grid grid-cols-2 gap-1 py-1 sm:grid-cols-3 lg:flex">
           {visibleSections.map(([key, label, suffix]) => (
             <Link
               key={key}
               href={`${base}${suffix}`}
               aria-current={active === key ? "page" : undefined}
-              className={`focus-ring inline-flex min-h-12 items-center border-b-2 px-3 text-sm font-semibold ${
+              className={`focus-ring inline-flex min-h-12 min-w-0 items-center justify-center border-b-2 px-3 text-center text-sm font-semibold lg:justify-start ${
                 active === key
                   ? "border-brand-blue text-brand-blue"
                   : "border-transparent text-brand-muted hover:text-brand-navy"
