@@ -174,10 +174,10 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
             ) : null}
           </form>
 
-          <div className="mt-5 max-w-full overflow-x-auto pb-1">
+          <div className="mt-5 max-w-3xl">
             <nav
               aria-label="Filter daftar pesan"
-              className="inline-flex min-w-max items-center gap-1 rounded-xl border border-brand-border bg-white p-1"
+              className="grid grid-cols-2 gap-1 rounded-xl border border-brand-border bg-white p-1 sm:flex sm:flex-wrap"
             >
               {CONVERSATION_VIEWS.map((view) => {
                 const active = selectedView === view.value;
@@ -186,7 +186,7 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
                     key={view.value}
                     href={messagesHref(view.value, searchQuery)}
                     aria-current={active ? "page" : undefined}
-                    className={`focus-ring inline-flex min-h-10 items-center justify-center rounded-lg px-3.5 text-sm font-semibold ${
+                    className={`focus-ring inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg px-3 text-center text-sm font-semibold sm:px-3.5 ${
                       active
                         ? "bg-brand-navy text-white"
                         : "text-brand-muted hover:text-brand-navy"
