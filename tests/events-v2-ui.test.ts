@@ -134,6 +134,11 @@ test("EV2UI-08 aggregate reporting stays permission-gated and privacy-safe", () 
   assert.match(report, /buildCampusEventReport/);
   assert.match(report, /Tingkat kehadiran/);
   assert.match(report, /Kesiapan acara/);
+  assert.match(report, /Rincian status pendaftaran/);
+  assert.match(report, /Unduh daftar peserta CSV/);
+  assert.match(report, /Langkah berikutnya/);
+  assert.match(report, /report\.confirmationRate/);
+  assert.match(report, /report\.remainingSpots/);
   assert.doesNotMatch(report, /listCampusEventRegistrations|listCampusEventAttendees/);
   assert.doesNotMatch(report, /targetUserId|user_id|UUID/);
   assert.match(managementShell, /\["report", "Laporan", "\/report"\]/);
