@@ -46,13 +46,12 @@ async function CirclesContent({ searchParams }: CirclesPageProps) {
         <div className="page-shell py-8 sm:py-12 lg:py-16">
           <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="section-label">Study Circle</p>
+              <p className="section-label">Circle Belajar</p>
               <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-                Belajar bersama, tetap kenal perlahan
+                Belajar bareng lewat topik yang kamu suka
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan kelompok kecil berdasarkan topik belajar. Bergabung tidak
-                membuka identitas, kontak, atau percakapan privat.
+                Temukan kelompok belajar kecil, ikut berdiskusi, dan kenalan lewat kegiatan\n                yang sama. Nama asli dan kontakmu tetap privat.
               </p>
             </div>
             <Link
@@ -135,7 +134,7 @@ export default function CirclesPage(props: CirclesPageProps) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-sm text-brand-muted">
-            Menyiapkan Study Circle…
+            Menyiapkan Circle Belajar…
           </p>
         </main>
       }

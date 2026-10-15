@@ -66,8 +66,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 Kegiatan kampus, bertemu di tempat publik
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan acara belajar dan komunitas yang akan datang. Mendaftar tidak
-                membuka identitas, kontak, atau percakapan privat.
+                Temukan seminar, workshop, meetup, hackathon, dan kegiatan kampus lainnya.\n                Kamu tetap memakai nama samaran saat mendaftar.
               </p>
             </div>
             {eligibility?.eligible ? (
@@ -82,8 +81,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
                 <p className="font-semibold text-brand-navy">Pembuatan acara terbatas</p>
                 <p className="mt-1">
-                  Diperlukan verifikasi mahasiswa atau izin dari Owner. StudyDate
-                  Plus menambah kapasitas, bukan kepercayaan penyelenggara.
+                  Kamu perlu menyelesaikan verifikasi mahasiswa atau mendapat izin dari\n                  tim StudyDate sebelum membuat acara.
                 </p>
               </aside>
             )}
@@ -200,7 +198,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               Cari acara mendatang
             </h2>
             <p className="mt-2 text-sm leading-6 text-brand-muted">
-              Gunakan judul, kategori, atau cakupan. Tidak ada ranking atau popularitas.
+              Cari berdasarkan nama atau jenis acara, lalu pilih siapa yang boleh melihatnya.
             </p>
             <EventFilterForm filters={filters} />
             {!parsed.success ? (
@@ -217,7 +215,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 id="event-results-title"
                 className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
               >
-                Pilih kegiatan yang sesuai
+                Temukan kegiatan yang ingin kamu ikuti
               </h2>
             </div>
             {result.events.length ? (
@@ -235,7 +233,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                       ? "Belum ada acara yang cocok"
                       : "Belum ada acara mendatang"
                   }
-                  description="Coba ubah filter atau buat kegiatan kecil di tempat publik."
+                  description="Coba kurangi pilihan pencarian atau buat acara baru di tempat umum."
                   action={
                     eligibility?.eligible
                       ? { href: "/app/events/create", label: "Buat acara" }

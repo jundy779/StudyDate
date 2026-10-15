@@ -7,7 +7,7 @@ export function CircleFilterForm({ filters }: { filters: CircleFilters }) {
     <form
       method="get"
       action="/app/circles"
-      className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_220px_auto]"
+      className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_220px_220px_auto]"
     >
       <div>
         <label htmlFor="circle-search" className="text-sm font-semibold text-brand-navy">
@@ -43,7 +43,7 @@ export function CircleFilterForm({ filters }: { filters: CircleFilters }) {
       </div>
       <div>
         <label htmlFor="circle-scope" className="text-sm font-semibold text-brand-navy">
-          Cakupan
+          Siapa yang bisa melihat?
         </label>
         <select
           id="circle-scope"
@@ -51,7 +51,7 @@ export function CircleFilterForm({ filters }: { filters: CircleFilters }) {
           defaultValue={filters.scope ?? ""}
           className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-white px-3 text-sm text-brand-navy"
         >
-          <option value="">Semua cakupan</option>
+          <option value="">Semua mahasiswa</option>
           {CIRCLE_SCOPES.map((scope) => (
             <option key={scope.value} value={scope.value}>
               {scope.label}
@@ -59,18 +59,18 @@ export function CircleFilterForm({ filters }: { filters: CircleFilters }) {
           ))}
         </select>
       </div>
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-2 sm:col-span-2 xl:col-span-1">
         <button
           type="submit"
           className="focus-ring inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white"
         >
-          Terapkan
+          Tampilkan
         </button>
         <Link
           href="/app/circles"
           className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-muted"
         >
-          Reset
+          Hapus pilihan
         </Link>
       </div>
     </form>
