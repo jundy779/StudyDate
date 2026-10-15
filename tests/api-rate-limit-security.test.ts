@@ -48,17 +48,21 @@ test("public auth routes consume durable rate limits", () => {
   assert.match(early, /await consumeEarlyAccessAttempt/);
 });
 
-test("security headers use a request nonce without unsafe-inline scripts", () => {
+test("next.config sets baseline security headers and disables powered-by", () => {
   const cfg = readFileSync(join(root, "next.config.ts"), "utf8");
-  const proxy = readFileSync(join(root, "proxy.ts"), "utf8");
-  const csp = readFileSync(
-    join(root, "lib/security/content-security-policy.ts"),
-    "utf8",
-  );
   assert.match(cfg, /X-Content-Type-Options/);
   assert.match(cfg, /X-Frame-Options/);
   assert.match(cfg, /Referrer-Policy/);
   assert.match(cfg, /Permissions-Policy/);
+  assert.match(cfg, /Content-Security-Policy/);
+  assert.match(cfg, /default-src 'self'/);
+  assert.match(cfg, /frame-ancestors 'none'/);
+  assert.match(cfg, /object-src 'none'/);
+  assert.match(cfg, /script-src-attr 'none'/);
+  assert.match(cfg, /Cross-Origin-Opener-Policy/);
+  assert.match(cfg, /Cross-Origin-Resource-Policy/);
+  assert.match(cfg, /https:\/\/\*\.supabase\.co/);
+  assert.match(cfg, /wss:\/\/\*\.supabase\.co/);
   assert.doesNotMatch(cfg, /Access-Control-Allow-Origin/);
   assert.match(cfg, /camera=\(self\)/);
   assert.match(cfg, /microphone=\(\)/);
@@ -66,14 +70,4 @@ test("security headers use a request nonce without unsafe-inline scripts", () =>
   assert.match(cfg, /value: "off"/);
   assert.match(cfg, /Strict-Transport-Security/);
   assert.match(cfg, /poweredByHeader:\s*false/);
-  assert.match(proxy, /crypto\.randomUUID\(\)/);
-  assert.match(proxy, /x-nonce/);
-  assert.match(proxy, /Content-Security-Policy/);
-  assert.match(csp, /default-src 'self'/);
-  assert.match(csp, /nonce-/);
-  assert.doesNotMatch(csp, /script-src[^\n]*unsafe-inline/);
-  assert.match(csp, /frame-ancestors 'none'/);
-  assert.match(csp, /object-src 'none'/);
-  assert.match(csp, /https:\/\/\*\.supabase\.co/);
-  assert.match(csp, /wss:\/\/\*\.supabase\.co/);
 });

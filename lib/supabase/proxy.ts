@@ -28,12 +28,9 @@ function applyRobotsBoundary(response: NextResponse, pathname: string) {
   return response;
 }
 
-export async function updateSession(
-  request: NextRequest,
-  requestHeaders: Headers = request.headers,
-) {
+export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
-    request: { headers: requestHeaders },
+    request,
   });
   const pathname = request.nextUrl.pathname;
   const isProtectedRoute =
@@ -84,7 +81,7 @@ export async function updateSession(
             request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
-            request: { headers: requestHeaders },
+            request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
