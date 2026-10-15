@@ -1,4 +1,5 @@
 import { setCampusEventOfficial } from "@/app/owner/events/actions";
+import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
 import { EVENT_CATEGORY_LABELS, formatEventDateTime } from "@/lib/events/presentation";
 import type { StaffCampusEvent } from "@/lib/events/staff-service";
 import { BadgeCheck, CalendarDays, ExternalLink, UsersRound } from "lucide-react";
@@ -44,9 +45,25 @@ export function OwnerEventDirectory({ events }: { events: StaffCampusEvent[] }) 
                 ) : null}
                 <form action={setCampusEventOfficial}>
                   <input type="hidden" name="publicSlug" value={event.public_slug} />
-                  <button name="isOfficial" value={event.is_official ? "false" : "true"} className={`focus-ring min-h-11 rounded-xl px-4 text-sm font-semibold ${event.is_official ? "border border-brand-border bg-white text-brand-navy" : "bg-brand-blue text-white"}`}>
-                    {event.is_official ? "Hapus tanda resmi" : "Tandai resmi"}
-                  </button>
+                  {event.is_official ? (
+                    <ConfirmSubmitButton
+                      triggerLabel="Hapus tanda resmi"
+                      title="Hapus tanda resmi?"
+                      description="Acara ini tidak lagi ditampilkan sebagai acara resmi StudyDate."
+                      confirmLabel="Ya, hapus tanda"
+                      name="isOfficial"
+                      value="false"
+                      className="focus-ring min-h-11 rounded-xl border border-brand-error bg-white px-4 text-sm font-semibold text-brand-error"
+                    />
+                  ) : (
+                    <button
+                      name="isOfficial"
+                      value="true"
+                      className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
+                    >
+                      Tandai resmi
+                    </button>
+                  )}
                 </form>
               </div>
             </article>
