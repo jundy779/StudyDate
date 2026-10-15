@@ -39,13 +39,13 @@ async function AdminEventsContent({ searchParams }: Props) {
             peserta. Penandaan acara resmi tetap menjadi keputusan Owner.
           </p>
 
-          <nav className="mt-8 flex gap-2 overflow-x-auto pb-2" aria-label="Filter status acara">
+          <nav className="mt-8 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" aria-label="Filter status acara">
             {eventStatuses.map((item) => (
               <Link
                 key={item}
                 href={`/admin/events?status=${item}`}
                 aria-current={status === item ? "page" : undefined}
-                className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
+                className={`focus-ring inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl border px-4 py-2 text-center text-sm font-semibold ${
                   status === item
                     ? "border-brand-blue bg-brand-blue text-white"
                     : "border-brand-border bg-white text-brand-navy"
