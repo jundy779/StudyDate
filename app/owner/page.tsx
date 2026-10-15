@@ -20,19 +20,19 @@ async function OwnerContent() {
   const readiness = await getVerificationReadiness();
   return (
     <StaffShell role={access.role} current="overview" access={access}>
-      <main className="min-h-svh bg-brand-surface">
+      <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-10 sm:py-14">
         <p className="section-label">Area Owner</p>
         <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">Kelola StudyDate dari satu tempat</h1>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-muted">Pilih pekerjaan yang perlu ditangani. Akses data mahasiswa tetap dibatasi dan setiap perubahan penting tetap tercatat.</p>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           <Link href="/staff/users" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akun mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Bantu kendala akun, pengaturan awal, profil, paket, dan apakah profil mereka bisa ditemukan.</p></Link>
           <Link href="/owner/memberships" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CreditCard className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Paket & pembayaran</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur penawaran Plus serta kelola paket mahasiswa melalui email.</p></Link>
           <Link href="/owner/events" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CalendarDays className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Acara Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur izin penyelenggara, status acara, dan halaman yang dilihat pengguna.</p></Link>
           <Link href="/owner/staff" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><UserCog className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Tim operasional</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tambahkan Admin dan pilih tugas yang boleh mereka tangani.</p></Link>
           <Link href="/owner/early-access" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ScrollText className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akses Awal</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Periksa pendaftar, terima atau tolak, lalu kirim undangan Akses Awal.</p></Link>
         </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2">
           <Link href="/admin/verifications" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Verifikasi mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tinjau data akademik dan bukti kepemilikan secara terpisah.</p></Link>
           <section id="system-readiness" className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"><Wrench className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Kesiapan verifikasi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kartu mahasiswa: <strong className="text-brand-navy">{readiness.manualCardReady ? "Siap" : "Belum siap"}</strong><br />Email kampus: <strong className="text-brand-navy">{readiness.manualEmailReady ? "Siap" : "Belum siap"}</strong><br />Pemeriksaan otomatis: <strong className="text-brand-navy">{readiness.providerReady ? "Siap" : "Tetap nonaktif"}</strong></p></section>
           <Link href="/owner/moderation" className="focus-ring scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6" id="moderation"><h2 className="font-heading text-xl font-semibold">Laporan & moderasi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tinjau laporan mahasiswa dan catat hasil penanganannya.</p></Link>
