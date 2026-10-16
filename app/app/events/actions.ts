@@ -8,6 +8,7 @@ import {
   cancelCampusEventRsvp,
   checkInCampusEventTicket,
   createCampusEvent,
+  createCampusEventAnnouncement,
   deleteCampusEventRegistrationQuestion,
   inviteCampusEventTeamMember,
   issueMyCampusEventTicket,
@@ -28,6 +29,7 @@ import {
   updateCampusEventRegistrationSettings,
 } from "@/lib/events/service";
 import {
+  eventAnnouncementSchema,
   eventCircleLinkSchema,
   eventFormSchema,
   eventManualCheckInSchema,
@@ -325,6 +327,47 @@ export async function blockCampusEventOrganizerAction(formData: FormData) {
 export const joinCampusEventWaitlistAction = registerCampusEventAction;
 /** @deprecated Waitlist cancellation is the unified registration cancellation. */
 export const leaveCampusEventWaitlistAction = cancelCampusEventRsvpAction;
+
+export async function sendCampusEventAnnouncementAction(formData: FormData) {
+  await requireEventStudent();
+  const parsed = eventAnnouncementSchema.safeParse({
+    publicSlug: formData.get("publicSlug"),
+    title: formData.get("title"),
+    body: formData.get("body"),
+    idempotencyKey: formData.get("idempotencyKey"),
+  });
+  if (!parsed.success) {
+    const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+    if (!slug.success) redirect("/app/events?state=error");
+    redirect(
+      managePath(
+        slug.data,
+        "",
+        `?state=announcement-error&notice=${encodeURIComponent(
+          firstIssueMessage(parsed, "Pengumuman belum dapat dikirim."),
+        )}`,
+      ),
+    );
+  }
+  try {
+    await createCampusEventAnnouncement(parsed.data);
+  } catch (error) {
+    redirect(
+      managePath(
+        parsed.data.publicSlug,
+        "",
+        `?state=announcement-error&notice=${encodeURIComponent(
+          error instanceof Error
+            ? error.message
+            : "Pengumuman belum dapat dikirim.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(detailPath(parsed.data.publicSlug));
+  revalidatePath(managePath(parsed.data.publicSlug));
+  redirect(managePath(parsed.data.publicSlug, "", "?state=announcement-sent"));
+}
 
 export async function sendCampusEventMessageAction(formData: FormData) {
   await requireEventStudent();
