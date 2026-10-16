@@ -35,6 +35,18 @@ create trigger campus_event_announcements_reject_deletion_locked_mutation
 before insert or update or delete on public.campus_event_announcements
 for each row execute function public.reject_account_deletion_locked_mutation();
 
+alter table public.campus_event_audit_events
+  drop constraint campus_event_audit_type,
+  add constraint campus_event_audit_type check (event_type in (
+    'created', 'updated', 'rsvp_joined', 'rsvp_cancelled', 'cancelled',
+    'archived', 'event_reported', 'organizer_reported',
+    'team_invited', 'team_accepted', 'team_declined', 'team_removed',
+    'registration_submitted', 'registration_approved',
+    'registration_declined', 'ticket_issued', 'ticket_regenerated',
+    'checked_in_qr', 'checked_in_manual', 'checkin_undone',
+    'official_enabled', 'official_disabled', 'announcement_sent'
+  ));
+
 alter table public.user_notifications
   drop constraint user_notifications_type_allowed,
   drop constraint user_notifications_metadata_safe;
