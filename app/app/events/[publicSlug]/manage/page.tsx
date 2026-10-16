@@ -1,6 +1,8 @@
+import { sendCampusEventAnnouncementAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventManagementShell } from "@/components/events/event-management-shell";
 import { getCampusEventManagement } from "@/lib/events/management";
+import { listCampusEventAnnouncements } from "@/lib/events/service";
 import {
   BarChart3,
   CalendarCheck,
@@ -10,9 +12,11 @@ import {
   UserRoundCog,
 } from "lucide-react";
 import Link from "next/link";
+import { randomBytes } from "node:crypto";
 
 type EventManagePageProps = {
   params: Promise<{ publicSlug: string }>;
+  searchParams: Promise<{ state?: string; notice?: string }>;
 };
 
 const destinations = [
@@ -53,9 +57,21 @@ const destinations = [
   },
 ] as const;
 
-export default async function EventManagePage({ params }: EventManagePageProps) {
+export default async function EventManagePage({
+  params,
+  searchParams,
+}: EventManagePageProps) {
   const { publicSlug } = await params;
-  const { event, overview } = await getCampusEventManagement(publicSlug);
+  const [{ event, overview }, query] = await Promise.all([
+    getCampusEventManagement(publicSlug),
+    searchParams,
+  ]);
+  const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
+  const announcements =
+    blastEnabled && event.can_manage_registrations
+      ? await listCampusEventAnnouncements(event.public_slug)
+      : [];
+  const idempotencyKey = randomBytes(18).toString("base64url");
   const base = `/app/events/${event.public_slug}/manage`;
   const visibleDestinations = destinations.filter(({ permission }) => {
     if (permission === "registrations") return event.can_manage_registrations;
@@ -102,6 +118,87 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
                 </Link>
               ))}
             </div>
+
+            {blastEnabled && event.can_manage_registrations ? (
+              <section
+                id="event-announcements"
+                className="mt-10 border-t border-brand-border pt-9"
+                aria-labelledby="event-announcement-title"
+              >
+                <p className="section-label">Pengumuman acara</p>
+                <h2
+                  id="event-announcement-title"
+                  className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
+                >
+                  Kirim kabar ke peserta
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
+                  Pengumuman dikirim sebagai notifikasi dalam aplikasi kepada peserta
+                  yang sudah diterima. Maksimal lima pengumuman per hari.
+                </p>
+                {query.state === "announcement-sent" ? (
+                  <p role="status" className="mt-5 border-l-2 border-emerald-600 pl-4 text-sm font-semibold text-emerald-700">
+                    Pengumuman berhasil dikirim.
+                  </p>
+                ) : null}
+                {query.state === "announcement-error" ? (
+                  <p role="alert" className="mt-5 border-l-2 border-brand-error pl-4 text-sm font-semibold text-brand-error">
+                    {query.notice ?? "Pengumuman belum dapat dikirim."}
+                  </p>
+                ) : null}
+                <form action={sendCampusEventAnnouncementAction} className="mt-6 max-w-2xl space-y-4">
+                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                  <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+                  <label className="block text-sm font-semibold text-brand-navy">
+                    Judul pengumuman
+                    <input
+                      name="title"
+                      required
+                      minLength={5}
+                      maxLength={100}
+                      placeholder="Contoh: Perubahan ruang acara"
+                      className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-white px-4 text-sm"
+                    />
+                  </label>
+                  <label className="block text-sm font-semibold text-brand-navy">
+                    Isi pengumuman
+                    <textarea
+                      name="body"
+                      required
+                      minLength={10}
+                      maxLength={1200}
+                      rows={5}
+                      placeholder="Tulis informasi yang benar-benar perlu diketahui peserta."
+                      className="focus-ring mt-2 w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6"
+                    />
+                  </label>
+                  <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
+                    Kirim pengumuman
+                  </button>
+                </form>
+                <div className="mt-8 divide-y divide-brand-border border-y border-brand-border">
+                  {announcements.length ? announcements.map((announcement) => (
+                    <article key={announcement.announcement_public_id} className="py-5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="font-heading text-lg font-semibold text-brand-navy">
+                          {announcement.title}
+                        </h3>
+                        <span className="text-xs font-semibold text-brand-muted">
+                          {announcement.recipient_count} notifikasi
+                        </span>
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-brand-muted">
+                        {announcement.body}
+                      </p>
+                    </article>
+                  )) : (
+                    <p className="py-5 text-sm text-brand-muted">
+                      Belum ada pengumuman untuk acara ini.
+                    </p>
+                  )}
+                </div>
+              </section>
+            ) : null}
 
             <aside className="mt-8 flex max-w-3xl items-start gap-3 border-l-2 border-brand-blue pl-4 text-sm leading-7 text-brand-muted">
               <CalendarCheck className="mt-1 h-4 w-4 shrink-0 text-brand-blue" aria-hidden="true" />
