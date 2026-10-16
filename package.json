@@ -25,7 +25,7 @@
     "test:circles": "node --experimental-strip-types --test tests/study-circles.test.ts",
     "test:membership": "node --experimental-strip-types --test tests/membership.test.ts tests/autogopay-billing.test.ts",
     "test:meeting-plans": "node --experimental-strip-types --test tests/safety-meeting-flow.test.ts",
-    "test:events": "node --experimental-strip-types --test tests/campus-events.test.ts tests/event-roadmap.test.ts tests/events-v2-database.test.ts tests/events-v2-service.test.ts tests/events-v2-owner.test.ts tests/events-v2-qr-ui.test.ts tests/events-v2-ui.test.ts tests/public-events.test.ts",
+    "test:events": "node --experimental-strip-types --test tests/campus-events.test.ts tests/event-roadmap.test.ts tests/event-blast.test.ts tests/events-v2-database.test.ts tests/events-v2-service.test.ts tests/events-v2-owner.test.ts tests/events-v2-qr-ui.test.ts tests/events-v2-ui.test.ts tests/public-events.test.ts",
     "test:account-privacy": "node --experimental-strip-types --test tests/account-privacy-controls.test.ts tests/profile-edit.test.ts tests/account-lifecycle.test.ts",
     "test:telegram": "node --experimental-strip-types --test tests/telegram-companion.test.ts tests/telegram-companion-security-matrix.test.ts",
     "test:telegram:browser": "node scripts/telegram-companion-responsive-audit.mjs",
