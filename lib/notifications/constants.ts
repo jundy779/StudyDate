@@ -39,6 +39,7 @@ export const NOTIFICATION_TYPES = [
   "EVENT_REGISTRATION_DECLINED",
   "EVENT_WAITLISTED",
   "EVENT_TEAM_INVITED",
+  "EVENT_ANNOUNCEMENT",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -254,6 +255,15 @@ export function getNotificationCopy(item: NotificationItem): NotificationCopy {
           "Organizer mengundangmu membantu satu Campus Event.",
         ),
         Icon: Users,
+      };
+    case "EVENT_ANNOUNCEMENT":
+      return {
+        title: "Pengumuman acara",
+        description: quotedHeadline(
+          item.headline,
+          "Penyelenggara mengirim kabar terbaru untuk peserta.",
+        ),
+        Icon: MessageSquare,
       };
     default: {
       const exhaustive: never = item.type;
