@@ -16,6 +16,7 @@ import {
   getCampusEvent,
   getCampusEventCircle,
   getMyCampusEventTicketState,
+  listCampusEventAnnouncements,
   listCampusEventMessages,
   listCampusEventRegistrationQuestions,
 } from "@/lib/events/service";
@@ -134,10 +135,19 @@ export default async function EventDetailPage({
     event.can_check_in && !event.can_manage_registrations
       ? `/app/events/${event.public_slug}/manage/check-in`
       : `/app/events/${event.public_slug}/manage`;
-  const [eventCircle, eventMessages, ticketState, registrationQuestions] =
-    await Promise.all([
+  const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
+  const [
+    eventCircle,
+    eventMessages,
+    eventAnnouncements,
+    ticketState,
+    registrationQuestions,
+  ] = await Promise.all([
     getCampusEventCircle(event.public_slug),
     canUseParticipantFeatures ? listCampusEventMessages(event.public_slug) : [],
+    blastEnabled && canUseParticipantFeatures
+      ? listCampusEventAnnouncements(event.public_slug)
+      : [],
     event.rsvp_status === "going"
       ? getMyCampusEventTicketState(event.public_slug)
       : null,
@@ -465,6 +475,34 @@ export default async function EventDetailPage({
               </p>
             </div>
           </aside>
+
+          {eventAnnouncements.length ? (
+            <section
+              id="event-announcements"
+              className="border-b border-brand-border py-10"
+              aria-labelledby="event-announcements-title"
+            >
+              <p className="section-label">Kabar dari penyelenggara</p>
+              <h2
+                id="event-announcements-title"
+                className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
+              >
+                Pengumuman acara
+              </h2>
+              <div className="mt-6 divide-y divide-brand-border border-y border-brand-border">
+                {eventAnnouncements.map((announcement) => (
+                  <article key={announcement.announcement_public_id} className="py-5">
+                    <h3 className="font-heading text-lg font-semibold text-brand-navy">
+                      {announcement.title}
+                    </h3>
+                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-brand-muted">
+                      {announcement.body}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="py-10" aria-labelledby="event-attendee-gate">
             <h2 id="event-attendee-gate" className="font-heading text-2xl font-semibold text-brand-navy">
