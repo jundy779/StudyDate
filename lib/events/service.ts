@@ -852,3 +852,45 @@ export async function undoCampusEventCheckIn(
   if (error) throw new Error(mapCampusEventError(error.message));
   return Boolean(data);
 }
+
+export type CampusEventAnnouncement = {
+  announcement_public_id: string;
+  title: string;
+  body: string;
+  recipient_count: number;
+  created_at: string;
+};
+
+export async function listCampusEventAnnouncements(
+  publicSlug: string,
+): Promise<CampusEventAnnouncement[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_campus_event_announcements", {
+    p_public_slug: publicSlug,
+    p_limit: 20,
+  });
+  if (error) return [];
+  return (data ?? []) as CampusEventAnnouncement[];
+}
+
+export async function createCampusEventAnnouncement(input: {
+  publicSlug: string;
+  title: string;
+  body: string;
+  idempotencyKey: string;
+}) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_campus_event_announcement", {
+    p_public_slug: input.publicSlug,
+    p_title: input.title,
+    p_body: input.body,
+    p_client_idempotency_key: input.idempotencyKey,
+  });
+  if (error) throw new Error(mapCampusEventError(error.message));
+  return (
+    (data ?? [])[0] as
+      | { announcement_public_id: string; recipient_count: number }
+      | undefined
+  ) ?? null;
+}
+
