@@ -1,5 +1,7 @@
 import { z } from "zod";
 import {
+  EVENT_ANNOUNCEMENT_BODY_MAX,
+  EVENT_ANNOUNCEMENT_TITLE_MAX,
   EVENT_CAPACITY_MAX,
   EVENT_CAPACITY_MIN,
   EVENT_CATEGORIES,
@@ -55,6 +57,19 @@ export const eventMessageSchema = z
   .object({
     publicSlug: eventSlugSchema,
     body: plainText("Pesan harus berupa teks biasa.").min(1).max(800),
+    idempotencyKey: z.string().regex(/^[A-Za-z0-9_-]{16,80}$/),
+  })
+  .strict();
+
+export const eventAnnouncementSchema = z
+  .object({
+    publicSlug: eventSlugSchema,
+    title: plainText("Judul pengumuman harus berupa teks biasa.")
+      .min(5)
+      .max(EVENT_ANNOUNCEMENT_TITLE_MAX),
+    body: plainText("Isi pengumuman harus berupa teks biasa.")
+      .min(10)
+      .max(EVENT_ANNOUNCEMENT_BODY_MAX),
     idempotencyKey: z.string().regex(/^[A-Za-z0-9_-]{16,80}$/),
   })
   .strict();
