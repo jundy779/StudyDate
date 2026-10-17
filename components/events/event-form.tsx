@@ -83,6 +83,7 @@ export function EventForm({
   template,
   duplicateFrom,
   duplicateCadence,
+  seriesEditing = false,
   submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
@@ -90,6 +91,7 @@ export function EventForm({
   template?: EventFormDefaults;
   duplicateFrom?: string;
   duplicateCadence?: EventDuplicateCadence;
+  seriesEditing?: boolean;
   submitLabel: string;
 }) {
   const defaults = createDefaults();
@@ -124,7 +126,36 @@ export function EventForm({
           ) : null}
         </>
       ) : null}
-      {duplicateFrom ? (
+      {event && seriesEditing ? (
+        <fieldset className="rounded-xl border border-brand-border bg-brand-surface p-4">
+          <legend className="px-1 text-sm font-semibold text-brand-navy">
+            Terapkan perubahan ke
+          </legend>
+          <div className="mt-3 grid gap-3">
+            {[
+              ["current", "Pertemuan ini saja", "Pertemuan lain tidak ikut berubah."],
+              ["following", "Pertemuan ini dan setelahnya", "Jadwal berikutnya ikut bergeser dengan selisih yang sama."],
+              ["all", "Semua pertemuan yang akan datang", "Pertemuan yang sudah selesai tetap tidak berubah."],
+            ].map(([value, label, help]) => (
+              <label key={value} className="flex items-start gap-3 rounded-lg bg-white p-3">
+                <input
+                  type="radio"
+                  name="updateScope"
+                  value={value}
+                  defaultChecked={value === "current"}
+                  className="mt-1 h-4 w-4 accent-brand-blue"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-brand-navy">{label}</span>
+                  <span className="mt-1 block text-xs leading-5 text-brand-muted">{help}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+            {duplicateFrom ? (
         <>
           <input type="hidden" name="duplicateFrom" value={duplicateFrom} />
           <input
