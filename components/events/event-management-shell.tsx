@@ -9,6 +9,7 @@ import type { ReactNode } from "react";
 const sections = [
   ["overview", "Ringkasan", ""],
   ["registrations", "Pendaftaran", "/registrations"],
+  ["tickets", "Tiket", "/tickets"],
   ["report", "Laporan", "/report"],
   ["check-in", "Kehadiran", "/check-in"],
   ["team", "Tim", "/team"],
@@ -29,8 +30,9 @@ export function EventManagementShell({
   const base = `/app/events/${event.public_slug}/manage`;
   const visibleSections = sections.filter(
     ([key]) =>
-      ((key !== "registrations" && key !== "report") ||
+      ((key !== "registrations" && key !== "report" && key !== "tickets") ||
         event.can_manage_registrations) &&
+      (key !== "tickets" || process.env.EVENT_TICKETING_ENABLED === "true") &&
       (key !== "check-in" || event.can_check_in) &&
       ((key !== "team" && key !== "settings") || event.can_manage_team),
   );

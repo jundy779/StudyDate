@@ -277,6 +277,14 @@ export default async function EventDetailPage({
                   Kelola acara
                 </Link>
               ) : null}
+              {process.env.EVENT_TICKETING_ENABLED === "true" && event.status === "scheduled" ? (
+                <Link
+                  href={`/app/events/${event.public_slug}/tickets`}
+                  className="focus-ring inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-blue px-5 text-sm font-semibold text-brand-blue"
+                >
+                  Pilih tiket
+                </Link>
+              ) : null}
               {event.rsvp_status === "pending" ? (
                 <p className="border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
                   Pendaftaranmu sedang ditinjau penyelenggara.
