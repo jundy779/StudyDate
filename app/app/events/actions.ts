@@ -14,6 +14,7 @@ import {
   deleteCampusEventRegistrationQuestion,
   inviteCampusEventTeamMember,
   issueMyCampusEventTicket,
+  listCampusEventSeriesSessions,
   manageCampusEventRegistration,
   manualCheckInCampusEventRegistration,
   ownerManageEventOrganizerEligibility,
@@ -64,6 +65,10 @@ import {
   parseEventSeriesCount,
 } from "@/lib/events/duplication";
 import { blockStudentByAlias } from "@/lib/introductions/service";
+import {
+  planEventSeriesUpdates,
+  type EventSeriesUpdateScope,
+} from "@/lib/events/series-update";
 import { z } from "zod";
 import { requireOwner } from "@/lib/staff/authorization";
 import { revalidatePath } from "next/cache";
@@ -227,8 +232,30 @@ export async function updateCampusEventAction(formData: FormData) {
   if (!slug.success || !parsed.success) {
     redirect("/app/events?state=error");
   }
+  const requestedScope = z
+    .enum(["current", "following", "all"])
+    .safeParse(formData.get("updateScope"));
+  const updateScope: EventSeriesUpdateScope =
+    requestedScope.success ? requestedScope.data : "current";
+  let updatedCount = 0;
   try {
-    await updateCampusEvent(slug.data, parsed.data);
+    const sessions =
+      process.env.EVENT_SERIES_ENABLED === "true" && updateScope !== "current"
+        ? await listCampusEventSeriesSessions(slug.data)
+        : [];
+    const planned = planEventSeriesUpdates({
+      sessions,
+      targetSlug: slug.data,
+      scope: updateScope,
+      update: parsed.data,
+    });
+    if (!planned.length) {
+      throw new Error("Tidak ada pertemuan mendatang yang dapat diubah.");
+    }
+    for (const item of planned) {
+      await updateCampusEvent(item.publicSlug, item.update);
+      updatedCount += 1;
+    }
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Acara belum dapat diperbarui.";
@@ -236,13 +263,25 @@ export async function updateCampusEventAction(formData: FormData) {
       managePath(
         slug.data,
         "/settings",
-        `?state=error&notice=${encodeURIComponent(message)}`,
+        `?state=error&notice=${encodeURIComponent(
+          updatedCount
+            ? `${updatedCount} pertemuan berhasil diubah. ${message}`
+            : message,
+        )}`,
       ),
     );
   }
   revalidatePath(detailPath(slug.data));
   revalidatePath("/app/events");
-  redirect(managePath(slug.data, "/settings", "?state=updated"));
+  redirect(
+    managePath(
+      slug.data,
+      "/settings",
+      updatedCount > 1
+        ? `?state=series-updated&count=${updatedCount}`
+        : "?state=updated",
+    ),
+  );
 }
 
 async function runBooleanAction(
