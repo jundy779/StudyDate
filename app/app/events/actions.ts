@@ -13,9 +13,7 @@ import {
   createCampusEventAnnouncement,
   deleteCampusEventRegistrationQuestion,
   inviteCampusEventTeamMember,
-  getCampusEvent,
   issueMyCampusEventTicket,
-  listCampusEventSeriesSessions,
   manageCampusEventRegistration,
   manualCheckInCampusEventRegistration,
   ownerManageEventOrganizerEligibility,
@@ -200,29 +198,6 @@ export async function createCampusEventAction(formData: FormData) {
   );
 }
 
-function eventLocalTimestamp(value: string, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(new Date(value));
-  const part = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((candidate) => candidate.type === type)?.value ?? "";
-  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
-}
-
-function localClockMs(value: string) {
-  return Date.parse(`${value}:00Z`);
-}
-
-function shiftedLocalTimestamp(value: string, milliseconds: number) {
-  return new Date(localClockMs(value) + milliseconds).toISOString().slice(0, 16);
-}
-
 export async function updateCampusEventAction(formData: FormData) {
   await requireEventStudent();
   const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
@@ -252,84 +227,8 @@ export async function updateCampusEventAction(formData: FormData) {
   if (!slug.success || !parsed.success) {
     redirect("/app/events?state=error");
   }
-  const requestedScope = z
-    .enum(["current", "following", "all"])
-    .safeParse(formData.get("updateScope"));
-  const updateScope = requestedScope.success ? requestedScope.data : "current";
-  let updatedCount = 0;
   try {
-    const seriesEnabled = process.env.EVENT_SERIES_ENABLED === "true";
-    const sessions =
-      seriesEnabled && updateScope !== "current"
-        ? await listCampusEventSeriesSessions(slug.data)
-        : [];
-    if (sessions.length < 2) {
-      await updateCampusEvent(slug.data, parsed.data);
-      updatedCount = 1;
-    } else {
-      const target = await getCampusEvent(slug.data);
-      const targetSession = sessions.find(
-        (session) => session.public_slug === slug.data,
-      );
-      if (!target || !targetSession) {
-        throw new Error("Pertemuan ini tidak ditemukan dalam rangkaian.");
-      }
-      const oldTargetLocal = eventLocalTimestamp(
-        target.starts_at,
-        target.timezone_name,
-      );
-      const startShift =
-        localClockMs(parsed.data.startsAtLocal) - localClockMs(oldTargetLocal);
-      const newDuration =
-        localClockMs(parsed.data.endsAtLocal) -
-        localClockMs(parsed.data.startsAtLocal);
-      const registrationOffset = parsed.data.registrationClosesAt
-        ? new Date(parsed.data.registrationClosesAt).getTime() -
-          new Date(`${parsed.data.startsAtLocal}:00${target.timezone_name === "Asia/Makassar" ? "+08:00" : target.timezone_name === "Asia/Jayapura" ? "+09:00" : "+07:00"}`).getTime()
-        : null;
-      const affected = sessions.filter((session) => {
-        if (session.status !== "scheduled") return false;
-        if (new Date(session.starts_at).getTime() <= Date.now() + 2 * 60 * 60 * 1000) {
-          return false;
-        }
-        return updateScope === "all"
-          ? true
-          : session.series_position >= targetSession.series_position;
-      });
-      for (const session of affected) {
-        const current = await getCampusEvent(session.public_slug);
-        if (!current) continue;
-        const oldLocal = eventLocalTimestamp(
-          current.starts_at,
-          current.timezone_name,
-        );
-        const startsAtLocal =
-          session.public_slug === slug.data
-            ? parsed.data.startsAtLocal
-            : shiftedLocalTimestamp(oldLocal, startShift);
-        const endsAtLocal =
-          session.public_slug === slug.data
-            ? parsed.data.endsAtLocal
-            : shiftedLocalTimestamp(startsAtLocal, newDuration);
-        const startIso = new Date(
-          `${startsAtLocal}:00${parsed.data.timezone === "Asia/Makassar" ? "+08:00" : parsed.data.timezone === "Asia/Jayapura" ? "+09:00" : "+07:00"}`,
-        );
-        const registrationClosesAt =
-          registrationOffset === null
-            ? undefined
-            : new Date(startIso.getTime() + registrationOffset).toISOString();
-        await updateCampusEvent(session.public_slug, {
-          ...parsed.data,
-          startsAtLocal,
-          endsAtLocal,
-          registrationClosesAt,
-        });
-        updatedCount += 1;
-      }
-      if (!updatedCount) {
-        throw new Error("Tidak ada pertemuan mendatang yang dapat diubah.");
-      }
-    }
+    await updateCampusEvent(slug.data, parsed.data);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Acara belum dapat diperbarui.";
@@ -337,23 +236,13 @@ export async function updateCampusEventAction(formData: FormData) {
       managePath(
         slug.data,
         "/settings",
-        `?state=error&notice=${encodeURIComponent(
-          updatedCount
-            ? `${updatedCount} pertemuan berhasil diubah. ${message}`
-            : message,
-        )}`,
+        `?state=error&notice=${encodeURIComponent(message)}`,
       ),
     );
   }
   revalidatePath(detailPath(slug.data));
   revalidatePath("/app/events");
-  redirect(
-    managePath(
-      slug.data,
-      "/settings",
-      updatedCount > 1 ? `?state=series-updated&count=${updatedCount}` : "?state=updated",
-    ),
-  );
+  redirect(managePath(slug.data, "/settings", "?state=updated"));
 }
 
 async function runBooleanAction(

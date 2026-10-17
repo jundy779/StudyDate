@@ -14,7 +14,6 @@ import { getCampusEventManagement } from "@/lib/events/management";
 import {
   getCampusEventCircle,
   listCampusEventRegistrationQuestions,
-  listCampusEventSeriesSessions,
   listMyCircleOptionsForEvent,
 } from "@/lib/events/service";
 import { Archive, CalendarPlus, CopyPlus, ShieldAlert } from "lucide-react";
@@ -58,14 +57,10 @@ export default async function SettingsPage({
 }: SettingsPageProps) {
   const { publicSlug } = await params;
   const { event, overview } = await getCampusEventManagement(publicSlug, "team");
-  const seriesEnabled = process.env.EVENT_SERIES_ENABLED === "true";
-  const [questions, eventCircle, circleOptions, seriesSessions] = await Promise.all([
+  const [questions, eventCircle, circleOptions] = await Promise.all([
     listCampusEventRegistrationQuestions(event.public_slug),
     getCampusEventCircle(event.public_slug),
     listMyCircleOptionsForEvent(),
-    seriesEnabled
-      ? listCampusEventSeriesSessions(event.public_slug)
-      : Promise.resolve([]),
   ]);
   const query = await searchParams;
   const state = first(query.state);
@@ -73,7 +68,6 @@ export default async function SettingsPage({
   const successCopy: Record<string, string> = {
     updated: "Detail acara berhasil diperbarui.",
     "settings-updated": "Pengaturan registrasi berhasil diperbarui.",
-    "series-updated": `${first(query.count) ?? "Beberapa"} pertemuan berhasil diperbarui.`,
     "question-added": "Pertanyaan registrasi berhasil ditambahkan.",
     "question-deleted": "Pertanyaan registrasi berhasil dihapus.",
   };
@@ -237,12 +231,7 @@ export default async function SettingsPage({
             </h2>
             {event.can_edit ? (
               <div className="mt-6 max-w-3xl">
-                <EventForm
-                  action={updateCampusEventAction}
-                  event={event}
-                  seriesEditing={seriesSessions.length > 1}
-                  submitLabel="Simpan perubahan"
-                />
+                <EventForm action={updateCampusEventAction} event={event} submitLabel="Simpan perubahan" />
               </div>
             ) : (
               <p className="mt-4 text-sm leading-7 text-brand-muted">
