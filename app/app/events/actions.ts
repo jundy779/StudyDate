@@ -4,6 +4,7 @@ import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   addCampusEventRegistrationQuestion,
   archiveCampusEvent,
+  attachCampusEventSeries,
   cancelCampusEvent,
   cancelCampusEventRsvp,
   checkInCampusEventTicket,
@@ -173,6 +174,16 @@ export async function createCampusEventAction(formData: FormData) {
     redirect(
       `${createPath}${createPath.includes("?") ? "&" : "?"}state=error&notice=${encodeURIComponent(message)}`,
     );
+  }
+  if (
+    process.env.EVENT_SERIES_ENABLED === "true" &&
+    createdSlugs.length > 1
+  ) {
+    try {
+      await attachCampusEventSeries(createdSlugs, duplicateCadence);
+    } catch {
+      // Events remain usable independently if series linking is temporarily unavailable.
+    }
   }
   revalidatePath("/app/events");
   const publicSlug = createdSlugs[0];

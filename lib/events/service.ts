@@ -894,3 +894,42 @@ export async function createCampusEventAnnouncement(input: {
   ) ?? null;
 }
 
+
+
+export type CampusEventSeriesSession = {
+  series_public_id: string;
+  cadence: "weekly" | "monthly";
+  public_slug: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  status: "scheduled" | "cancelled" | "archived";
+  series_position: number;
+};
+
+export async function attachCampusEventSeries(
+  publicSlugs: string[],
+  cadence: "weekly" | "monthly",
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("attach_campus_event_series", {
+    p_public_slugs: publicSlugs,
+    p_cadence: cadence,
+  });
+  if (error || typeof data !== "string") {
+    throw new Error(mapCampusEventError(error?.message));
+  }
+  return data;
+}
+
+export async function listCampusEventSeriesSessions(
+  publicSlug: string,
+): Promise<CampusEventSeriesSession[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "list_campus_event_series_sessions",
+    { p_public_slug: publicSlug },
+  );
+  if (error) return [];
+  return (data ?? []) as CampusEventSeriesSession[];
+}

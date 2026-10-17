@@ -2,7 +2,10 @@ import { sendCampusEventAnnouncementAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventManagementShell } from "@/components/events/event-management-shell";
 import { getCampusEventManagement } from "@/lib/events/management";
-import { listCampusEventAnnouncements } from "@/lib/events/service";
+import {
+  listCampusEventAnnouncements,
+  listCampusEventSeriesSessions,
+} from "@/lib/events/service";
 import {
   BarChart3,
   CalendarCheck,
@@ -67,10 +70,14 @@ export default async function EventManagePage({
     searchParams,
   ]);
   const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
+  const seriesEnabled = process.env.EVENT_SERIES_ENABLED === "true";
   const announcements =
     blastEnabled && event.can_manage_registrations
       ? await listCampusEventAnnouncements(event.public_slug)
       : [];
+  const seriesSessions = seriesEnabled
+    ? await listCampusEventSeriesSessions(event.public_slug)
+    : [];
   const idempotencyKey = randomBytes(18).toString("base64url");
   const base = `/app/events/${event.public_slug}/manage`;
   const visibleDestinations = destinations.filter(({ permission }) => {
@@ -118,6 +125,40 @@ export default async function EventManagePage({
                 </Link>
               ))}
             </div>
+
+            {seriesSessions.length > 1 ? (
+              <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-series-title">
+                <p className="section-label">Rangkaian acara</p>
+                <h2 id="event-series-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
+                  Semua pertemuan
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
+                  Setiap sesi memiliki peserta, tiket, kehadiran, dan laporan sendiri.
+                </p>
+                <ol className="mt-6 divide-y divide-brand-border border-y border-brand-border">
+                  {seriesSessions.map((session) => (
+                    <li key={session.public_slug} className="grid gap-3 py-4 sm:grid-cols-[48px_minmax(0,1fr)_auto] sm:items-center">
+                      <span className="text-sm font-semibold text-brand-blue">
+                        {session.series_position}
+                      </span>
+                      <span>
+                        <span className="block font-semibold text-brand-navy">{session.title}</span>
+                        <span className="mt-1 block text-xs text-brand-muted">
+                          {new Intl.DateTimeFormat("id-ID", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                            timeZone: event.timezone_name,
+                          }).format(new Date(session.starts_at))} · {session.status}
+                        </span>
+                      </span>
+                      <Link href={`/app/events/${session.public_slug}/manage`} className="focus-ring rounded-lg text-sm font-semibold text-brand-blue">
+                        Kelola
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
 
             {blastEnabled && event.can_manage_registrations ? (
               <section
