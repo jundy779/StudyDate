@@ -3,6 +3,10 @@ import { EventManagementShell } from "@/components/events/event-management-shell
 import { getCampusEventManagement } from "@/lib/events/management";
 import { buildCampusEventReport } from "@/lib/events/reporting";
 import {
+  getCampusEventRegistrationOverview,
+  listCampusEventSeriesSessions,
+} from "@/lib/events/service";
+import {
   AlertCircle,
   ArrowRight,
   CheckCircle2,
@@ -24,6 +28,39 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
     "registrations",
   );
   const report = buildCampusEventReport(event, overview);
+  const seriesSessions =
+    process.env.EVENT_SERIES_ENABLED === "true"
+      ? await listCampusEventSeriesSessions(event.public_slug)
+      : [];
+  const seriesRows =
+    seriesSessions.length > 1
+      ? await Promise.all(
+          seriesSessions.map(async (session) => ({
+            session,
+            overview:
+              session.public_slug === event.public_slug
+                ? overview
+                : await getCampusEventRegistrationOverview(session.public_slug),
+          })),
+        )
+      : [];
+  const seriesTotals = seriesRows.reduce(
+    (totals, row) => ({
+      registrations:
+        totals.registrations +
+        (row.overview
+          ? row.overview.pending_count +
+            row.overview.going_count +
+            row.overview.waitlisted_count +
+            row.overview.declined_count +
+            row.overview.cancelled_count
+          : 0),
+      going: totals.going + (row.overview?.going_count ?? 0),
+      checkedIn: totals.checkedIn + (row.overview?.checked_in_count ?? 0),
+      waitlisted: totals.waitlisted + (row.overview?.waitlisted_count ?? 0),
+    }),
+    { registrations: 0, going: 0, checkedIn: 0, waitlisted: 0 },
+  );
   const funnel = [
     ["Semua pendaftaran", report.totalRegistrations],
     ["Terkonfirmasi", overview.going_count],
@@ -76,6 +113,63 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
               ))}
             </dl>
           </section>
+
+          {seriesRows.length > 1 ? (
+            <section className="mt-12 border-t border-brand-border pt-9" aria-labelledby="series-report-title">
+              <p className="section-label">Laporan rangkaian</p>
+              <h2 id="series-report-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
+                Ringkasan semua pertemuan
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
+                Angka berikut merupakan jumlah dari seluruh pertemuan dalam rangkaian ini.
+                Data pribadi peserta tetap tidak ditampilkan.
+              </p>
+              <dl className="mt-7 grid grid-cols-2 border-y border-brand-border sm:grid-cols-4">
+                {[
+                  ["Pertemuan", seriesRows.length],
+                  ["Pendaftaran", seriesTotals.registrations],
+                  ["Diterima", seriesTotals.going],
+                  ["Sudah hadir", seriesTotals.checkedIn],
+                ].map(([label, value], index) => (
+                  <div key={label} className={`py-5 ${index % 2 ? "pl-5" : "pr-5"} sm:border-r sm:px-5 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0`}>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted">{label}</dt>
+                    <dd className="mt-2 font-heading text-3xl font-semibold text-brand-navy">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-7 divide-y divide-brand-border border-y border-brand-border">
+                {seriesRows.map(({ session, overview: sessionOverview }) => (
+                  <Link
+                    key={session.public_slug}
+                    href={`/app/events/${session.public_slug}/manage/report`}
+                    className="focus-ring grid gap-3 py-4 sm:grid-cols-[48px_minmax(0,1fr)_auto] sm:items-center"
+                  >
+                    <span className="text-sm font-semibold text-brand-blue">
+                      {session.series_position}
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-brand-navy">{session.title}</span>
+                      <span className="mt-1 block text-xs leading-5 text-brand-muted">
+                        {new Intl.DateTimeFormat("id-ID", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          timeZone: event.timezone_name,
+                        }).format(new Date(session.starts_at))}
+                      </span>
+                    </span>
+                    <span className="text-sm text-brand-muted">
+                      {sessionOverview?.going_count ?? 0} diterima · {sessionOverview?.checked_in_count ?? 0} hadir
+                    </span>
+                  </Link>
+                ))}
+              </div>
+              {seriesTotals.waitlisted > 0 ? (
+                <p className="mt-4 text-sm leading-6 text-brand-muted">
+                  Ada {seriesTotals.waitlisted} pendaftaran dalam daftar tunggu di seluruh pertemuan.
+                </p>
+              ) : null}
+            </section>
+          ) : null}
 
           <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
             <section aria-labelledby="registration-funnel-title">
