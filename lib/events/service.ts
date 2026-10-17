@@ -933,3 +933,19 @@ export async function listCampusEventSeriesSessions(
   if (error) return [];
   return (data ?? []) as CampusEventSeriesSession[];
 }
+
+
+export async function cancelCampusEventSeriesSessions(
+  publicSlug: string,
+  scope: "following" | "all",
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "cancel_campus_event_series_sessions",
+    { p_public_slug: publicSlug, p_scope: scope },
+  );
+  if (error || typeof data !== "number") {
+    throw new Error(mapCampusEventError(error?.message));
+  }
+  return data;
+}

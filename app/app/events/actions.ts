@@ -6,6 +6,7 @@ import {
   archiveCampusEvent,
   attachCampusEventSeries,
   cancelCampusEvent,
+  cancelCampusEventSeriesSessions,
   cancelCampusEventRsvp,
   checkInCampusEventTicket,
   createCampusEvent,
@@ -284,6 +285,37 @@ export async function cancelCampusEventRsvpAction(formData: FormData) {
 
 export async function cancelCampusEventAction(formData: FormData) {
   return runBooleanAction(formData, "cancel-event");
+}
+
+export async function cancelCampusEventSeriesAction(formData: FormData) {
+  await requireEventStudent();
+  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+  const scope = z.enum(["following", "all"]).safeParse(formData.get("scope"));
+  if (!slug.success || !scope.success) redirect("/app/events?state=error");
+  if (process.env.EVENT_SERIES_ENABLED !== "true") {
+    redirect(detailPath(slug.data, "?state=error&notice=Rangkaian acara belum diaktifkan."));
+  }
+  try {
+    const count = await cancelCampusEventSeriesSessions(slug.data, scope.data);
+    revalidatePath("/app/events");
+    redirect(
+      detailPath(
+        slug.data,
+        `?state=series-cancelled&count=${count}`,
+      ),
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Rangkaian acara belum dapat dibatalkan.";
+    redirect(
+      detailPath(
+        slug.data,
+        `?state=error&notice=${encodeURIComponent(message)}`,
+      ),
+    );
+  }
 }
 
 export async function archiveCampusEventAction(formData: FormData) {

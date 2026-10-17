@@ -1,4 +1,7 @@
-import { sendCampusEventAnnouncementAction } from "@/app/app/events/actions";
+import {
+  cancelCampusEventSeriesAction,
+  sendCampusEventAnnouncementAction,
+} from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventManagementShell } from "@/components/events/event-management-shell";
 import { getCampusEventManagement } from "@/lib/events/management";
@@ -157,6 +160,42 @@ export default async function EventManagePage({
                     </li>
                   ))}
                 </ol>
+                {event.can_manage_registrations ? (
+                  <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                    <details className="rounded-xl border border-brand-border bg-white p-5">
+                      <summary className="focus-ring cursor-pointer rounded-lg font-semibold text-brand-navy">
+                        Batalkan mulai pertemuan ini
+                      </summary>
+                      <p className="mt-3 text-sm leading-6 text-brand-muted">
+                        Pertemuan ini dan semua pertemuan setelahnya akan dibatalkan.
+                        Pertemuan yang sudah selesai tetap tersimpan.
+                      </p>
+                      <form action={cancelCampusEventSeriesAction} className="mt-4">
+                        <input type="hidden" name="publicSlug" value={event.public_slug} />
+                        <input type="hidden" name="scope" value="following" />
+                        <button className="focus-ring min-h-11 rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error">
+                          Ya, batalkan mulai sesi ini
+                        </button>
+                      </form>
+                    </details>
+                    <details className="rounded-xl border border-brand-border bg-white p-5">
+                      <summary className="focus-ring cursor-pointer rounded-lg font-semibold text-brand-navy">
+                        Batalkan semua pertemuan
+                      </summary>
+                      <p className="mt-3 text-sm leading-6 text-brand-muted">
+                        Semua pertemuan yang belum dimulai akan dibatalkan. Peserta
+                        akan tetap mendapatkan pemberitahuan dari sistem.
+                      </p>
+                      <form action={cancelCampusEventSeriesAction} className="mt-4">
+                        <input type="hidden" name="publicSlug" value={event.public_slug} />
+                        <input type="hidden" name="scope" value="all" />
+                        <button className="focus-ring min-h-11 rounded-xl border border-brand-error px-4 text-sm font-semibold text-brand-error">
+                          Ya, batalkan semua
+                        </button>
+                      </form>
+                    </details>
+                  </div>
+                ) : null}
               </section>
             ) : null}
 
