@@ -132,6 +132,27 @@ export function EventForm({
             name="duplicateCadence"
             value={duplicateCadence ?? "weekly"}
           />
+          <div className="rounded-xl border border-brand-border bg-brand-surface p-4">
+            <label htmlFor="event-series-count" className="text-sm font-semibold text-brand-navy">
+              Jumlah pertemuan
+            </label>
+            <select
+              id="event-series-count"
+              name="seriesCount"
+              defaultValue="1"
+              className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
+            >
+              {Array.from({ length: 12 }, (_, index) => index + 1).map((count) => (
+                <option key={count} value={count}>
+                  {count === 1 ? "1 pertemuan saja" : `${count} pertemuan`}
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs leading-5 text-brand-muted">
+              Setiap pertemuan dibuat sebagai acara terpisah agar peserta, tiket,
+              check-in, dan laporan tetap rapi. Periksa kembali semua tanggal setelah dibuat.
+            </p>
+          </div>
         </>
       ) : null}
 

@@ -56,7 +56,11 @@ import {
   EVENT_QUESTION_OPTIONS_MAX,
   EVENT_REGISTRATION_ANSWER_MAX_BYTES,
 } from "@/lib/events/constants";
-import { parseEventDuplicateCadence } from "@/lib/events/duplication";
+import {
+  buildEventSeriesInputs,
+  parseEventDuplicateCadence,
+  parseEventSeriesCount,
+} from "@/lib/events/duplication";
 import { blockStudentByAlias } from "@/lib/introductions/service";
 import { z } from "zod";
 import { requireOwner } from "@/lib/staff/authorization";
@@ -136,8 +140,11 @@ export async function createCampusEventAction(formData: FormData) {
   const duplicateCadence = parseEventDuplicateCadence(
     formData.get("duplicateCadence"),
   );
+  const seriesCount = duplicate.success
+    ? parseEventSeriesCount(formData.get("seriesCount"))
+    : 1;
   const createPath = duplicate.success
-    ? `/app/events/create?duplicate=${encodeURIComponent(duplicate.data)}&cadence=${duplicateCadence}`
+    ? `/app/events/create?duplicate=${encodeURIComponent(duplicate.data)}&cadence=${duplicateCadence}&occurrences=${seriesCount}`
     : "/app/events/create";
   const parsed = eventFormSchema.safeParse(formValues(formData));
   if (!parsed.success) {
@@ -148,18 +155,35 @@ export async function createCampusEventAction(formData: FormData) {
     );
   }
 
-  let publicSlug: string;
+  const inputs =
+    duplicate.success && seriesCount > 1
+      ? buildEventSeriesInputs(parsed.data, duplicateCadence, seriesCount)
+      : [parsed.data];
+  const createdSlugs: string[] = [];
   try {
-    publicSlug = await createCampusEvent(parsed.data);
+    for (const input of inputs) {
+      createdSlugs.push(await createCampusEvent(input));
+    }
   } catch (error) {
-    const message =
+    const baseMessage =
       error instanceof Error ? error.message : "Acara belum dapat dibuat.";
+    const message = createdSlugs.length
+      ? `${createdSlugs.length} sesi berhasil dibuat, tetapi proses berhenti. ${baseMessage}`
+      : baseMessage;
     redirect(
       `${createPath}${createPath.includes("?") ? "&" : "?"}state=error&notice=${encodeURIComponent(message)}`,
     );
   }
   revalidatePath("/app/events");
-  redirect(detailPath(publicSlug, "?state=created"));
+  const publicSlug = createdSlugs[0];
+  redirect(
+    detailPath(
+      publicSlug,
+      createdSlugs.length > 1
+        ? `?state=series-created&occurrences=${createdSlugs.length}`
+        : "?state=created",
+    ),
+  );
 }
 
 export async function updateCampusEventAction(formData: FormData) {

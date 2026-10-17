@@ -155,3 +155,61 @@ export function parseEventDuplicateCadence(
 ): EventDuplicateCadence {
   return value === "monthly" ? "monthly" : "weekly";
 }
+
+export const EVENT_SERIES_MAX_OCCURRENCES = 12;
+
+export function parseEventSeriesCount(value: unknown) {
+  const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.min(EVENT_SERIES_MAX_OCCURRENCES, Math.max(1, parsed));
+}
+
+function shiftLocalDateTime(
+  value: string,
+  cadence: EventDuplicateCadence,
+  steps: number,
+) {
+  if (!steps) return value;
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return value;
+  const [, yearText, monthText, dayText, hourText, minuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const shifted =
+    cadence === "weekly"
+      ? new Date(Date.UTC(year, month - 1, day + steps * 7, hour, minute))
+      : (() => {
+          const monthIndex = year * 12 + month - 1 + steps;
+          const nextYear = Math.floor(monthIndex / 12);
+          const nextMonth = (monthIndex % 12) + 1;
+          const lastDay = new Date(Date.UTC(nextYear, nextMonth, 0)).getUTCDate();
+          return new Date(
+            Date.UTC(nextYear, nextMonth - 1, Math.min(day, lastDay), hour, minute),
+          );
+        })();
+  return shifted.toISOString().slice(0, 16);
+}
+
+export function buildEventSeriesInputs<
+  T extends {
+    startsAtLocal: string;
+    endsAtLocal: string;
+    registrationClosesAt?: string;
+  },
+>(
+  first: T,
+  cadence: EventDuplicateCadence,
+  count: number,
+): T[] {
+  return Array.from({ length: parseEventSeriesCount(String(count)) }, (_, index) => ({
+    ...first,
+    startsAtLocal: shiftLocalDateTime(first.startsAtLocal, cadence, index),
+    endsAtLocal: shiftLocalDateTime(first.endsAtLocal, cadence, index),
+    registrationClosesAt: first.registrationClosesAt
+      ? shiftLocalDateTime(first.registrationClosesAt, cadence, index)
+      : undefined,
+  }));
+}
