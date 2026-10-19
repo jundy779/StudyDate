@@ -5,6 +5,7 @@ Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran
 ## Yang benar-benar tersedia untuk uji
 
 - Penyelenggara membuat tiket gratis yang terbuka untuk semua, dengan kuota dan periode pengambilan.
+- Penyelenggara bisa memperbarui nama, keterangan, dan kuota tiket, serta menjeda penjualan. Tiket gratis publik bisa dibuka kembali. Perubahan kuota di bawah tiket yang sudah dipesan ditolak oleh database. Tiket berbayar yang sedang dijual akan dijeda saat pengaturan disimpan dan perlu dibuka kembali melalui tombol khusus.
 - Peserta harus mendaftar ke acara melalui alur pendaftaran biasa terlebih dahulu. Setelah terkonfirmasi, ia dapat mengambil satu tiket gratis.
 - Pesanan gratis langsung selesai. Membatalkan pendaftaran acara akan membatalkan pesanan tiket gratis dan mengembalikan kuotanya.
 - Pengelola melihat pesanan tanpa nama asli atau kontak pembeli. Tahap 2 juga menyiapkan daftar kode dan pemantauan pesanan.
@@ -36,3 +37,4 @@ Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran
 7. Setelah hasil cocok, hidupkan `EVENT_TICKET_PAYMENTS_ENABLED=true` di staging dan ubah `campus_event_payment_settings.is_enabled` menjadi `true` di database staging. Uji lagi sebelum melakukan proses terkontrol di production.
 
 Jika migrasi belum diterapkan, biarkan `EVENT_TICKETING_ENABLED=false`. Jangan menerapkan migrasi tanpa audit database yang benar: feature flag aplikasi tidak membatasi pemanggilan RPC database secara langsung setelah fungsi diberi izin `authenticated`.
+
