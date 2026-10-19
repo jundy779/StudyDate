@@ -51,6 +51,10 @@ export function mapTicketingError(message?: string) {
   if (value.includes("capacity below sold")) return "Kuota tidak boleh lebih kecil dari tiket yang sudah terjual.";
   if (value.includes("type quota")) return "Maksimal 12 jenis tiket untuk satu acara.";
   if (value.includes("order unavailable")) return "Tiket tidak tersedia atau kuotanya baru saja habis.";
+  if (value.includes("confirmed event registration required")) return "Daftar ke acara dulu dan tunggu sampai pendaftaranmu dikonfirmasi.";
+  if (value.includes("ticket already held")) return "Kamu sudah punya tiket aktif untuk acara ini.";
+  if (value.includes("paid or private ticket checkout unavailable")) return "Tiket berbayar dan undangan belum bisa dipesan.";
+  if (value.includes("only free public tickets can go on sale")) return "Saat ini hanya tiket gratis yang terbuka untuk semua yang bisa dibuka. Simpan tiket lainnya sebagai rancangan.";
   if (value.includes("management required")) return "Kamu tidak memiliki izin mengelola tiket acara ini.";
   return "Tiket belum dapat diproses. Coba lagi sebentar.";
 }

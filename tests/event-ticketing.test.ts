@@ -30,3 +30,13 @@ test("ticketing UI stays behind its server feature flag", async () => {
   assert.match(participant, /Tiket belum tersedia/);
   assert.match(manage, /Atur tiket tanpa istilah rumit/);
 });
+
+test("free ticket checkout needs a confirmed RSVP and allows one active ticket", async () => {
+  const sql = await readFile(migrationUrl, "utf8");
+  const participant = await readFile(participantUrl, "utf8");
+  assert.match(sql, /ticket\.price_amount <> 0 or ticket\.access_type <> 'public' or p_quantity <> 1/);
+  assert.match(sql, /registration_status is distinct from 'going'/);
+  assert.match(sql, /campus_event_ticket_orders_one_active_per_buyer_idx/);
+  assert.match(sql, /p_quantity_total < reserved \+ sold/);
+  assert.match(participant, /event\.rsvp_status !== "going"/);
+});

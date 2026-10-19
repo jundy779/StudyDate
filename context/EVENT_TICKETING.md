@@ -1,33 +1,37 @@
 # Tiket Acara
 
-Paket ini menambahkan jenis tiket, kuota, jadwal penjualan, batas pembelian, kode akses atau promo, pesanan idempoten, dan fondasi pembayaran. Fitur sengaja tidak aktif otomatis.
+Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran. Fitur sengaja tidak aktif otomatis. Saat ini jalur yang layak diuji hanya satu tiket gratis per peserta yang pendaftarannya sudah berstatus terkonfirmasi.
 
-## Kemampuan tahap 2
+## Yang benar-benar tersedia untuk uji
 
-- Penyelenggara dapat membuat kode promo atau kode akses tanpa menyimpan kode mentah.
-- Penyelenggara dapat melihat pesanan, tiket selesai, dan penjualan kotor tanpa melihat identitas pribadi pembeli.
-- Peserta dapat membatalkan pesanan yang masih menunggu pembayaran.
-- Pesanan kedaluwarsa melepas kembali kuota tiket dan jatah kode.
-- Rekonsiliasi pembayaran bersifat idempoten dan hanya dapat dijalankan oleh service role.
-- Adapter pembayaran gagal tertutup sampai satu penyedia dipilih dan diuji.
+- Penyelenggara membuat tiket gratis yang terbuka untuk semua, dengan kuota dan periode pengambilan.
+- Peserta harus mendaftar ke acara melalui alur pendaftaran biasa terlebih dahulu. Setelah terkonfirmasi, ia dapat mengambil satu tiket gratis.
+- Pesanan gratis langsung selesai. Membatalkan pendaftaran acara akan membatalkan pesanan tiket gratis dan mengembalikan kuotanya.
+- Pengelola melihat pesanan tanpa nama asli atau kontak pembeli. Tahap 2 juga menyiapkan daftar kode dan pemantauan pesanan.
+- Tiket QR lama tetap mengikuti status pendaftaran acara; pesanan gratis bukan pengganti pemeriksaan kehadiran.
+
+## Masih dikunci
+
+- Tiket berbayar, kode akses untuk tiket privat, undangan, checkout, webhook gateway, refund, dan pembayaran sungguhan belum siap untuk publik. Jenis tiket ini hanya dapat disimpan sebagai rancangan.
+- Kode promo/akses dapat dipersiapkan, tetapi tidak dipromosikan sebagai fitur aktif sampai alur berbayar dan privat diuji.
+- Jumlah tiket per peserta masih satu. Pembelian beberapa tiket untuk teman belum tersedia karena pendaftaran acara terikat satu akun mahasiswa.
 
 ## Batas aman v1
 
 - Harga disimpan sebagai rupiah bulat, bukan pecahan desimal.
 - Kode akses tidak disimpan mentah. Aplikasi mengirim hash SHA-256 yang sudah dinormalisasi.
-- Pesanan gratis langsung selesai. Pesanan berbayar berhenti di status `pending` sampai penyedia pembayaran dan webhook benar-benar siap.
+- Pesanan berbayar ditolak di database. Tidak ada pembayaran yang diproses.
 - Payload webhook mentah, nomor kartu, rekening, dan rahasia pembayaran tidak disimpan.
 - Tiket QR check-in yang sudah ada tetap menjadi bukti masuk. Modul ini mengurus pilihan tiket dan pesanan.
 
 ## Cara mengaktifkan
 
 1. Pastikan target Supabase benar dan cocokkan riwayat migrasinya.
-2. Terapkan `202610170004_event_ticketing_v1.sql`, lalu `202610190001_event_ticketing_operations.sql` di staging.
-3. Jalankan database advisor, cek RLS, grant fungsi, pemesanan ganda, kuota serentak, dan kedaluwarsa pesanan.
-4. Konfigurasikan cron kedaluwarsa pesanan dengan `CRON_SECRET`.
-5. Atur `EVENT_TICKETING_ENABLED=true` hanya di staging.
-6. Uji tiket gratis terlebih dahulu.
-7. Sambungkan satu penyedia pembayaran, verifikasi tanda tangan webhook, dan lakukan rekonsiliasi sebelum tiket berbayar menerima uang sungguhan.
-8. Setelah lolos, ulangi proses terkontrol di production.
+2. Terapkan `202610170004_event_ticketing_v1.sql`, lalu `202610190001_event_ticketing_operations.sql` di staging. Jangan mengubah migrasi lama jika ternyata sudah diterapkan; buat migrasi koreksi baru.
+3. Jalankan database advisor, cek RLS, grant fungsi, pemesanan ganda, kuota serentak, pembatalan pendaftaran, dan kedaluwarsa pesanan. Cron kedaluwarsa belum perlu dinyalakan selama pesanan berbayar ditutup.
+4. Atur `EVENT_TICKETING_ENABLED=true` hanya di staging.
+5. Uji pendaftaran terkonfirmasi, tiket gratis, dua permintaan serentak, pembatalan RSVP, pengembalian kuota, dan akses peserta lain.
+6. Sambungkan satu penyedia pembayaran dalam perubahan terpisah, verifikasi tanda tangan webhook serta nominal transaksi sebelum tiket berbayar dapat dibuka.
+7. Setelah lolos, ulangi proses terkontrol di production.
 
-Jika migrasi belum diterapkan, biarkan `EVENT_TICKETING_ENABLED=false`. Semua halaman dan panggilan database tiket baru tetap tersembunyi.
+Jika migrasi belum diterapkan, biarkan `EVENT_TICKETING_ENABLED=false`. Jangan menerapkan migrasi tanpa audit database yang benar: feature flag aplikasi tidak membatasi pemanggilan RPC database secara langsung setelah fungsi diberi izin `authenticated`.

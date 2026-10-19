@@ -93,6 +93,7 @@ begin
   if actor is null then raise exception 'authentication required' using errcode = '42501'; end if;
   select * into target from public.campus_event_ticket_orders orders
     where orders.public_id = p_order_public_id and orders.buyer_user_id = actor for update;
+  -- Confirmed free tickets follow the existing RSVP cancellation flow.
   if target.id is null or target.status <> 'pending' then return false; end if;
   update public.campus_event_ticket_types ticket set
     quantity_reserved = greatest(0, ticket.quantity_reserved - item.quantity),
@@ -106,11 +107,39 @@ begin
   return true;
 end; $$;
 
+create or replace function public.release_campus_event_ticket_after_rsvp()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare order_row record;
+begin
+  if old.status = 'going' and new.status <> 'going' then
+    for order_row in
+      select orders.id, orders.discount_code_id, item.ticket_type_id, item.quantity
+      from public.campus_event_ticket_orders orders
+      join public.campus_event_ticket_order_items item on item.order_id = orders.id
+      where orders.event_id = new.event_id and orders.buyer_user_id = new.user_id
+        and orders.status = 'free' for update of orders
+    loop
+      update public.campus_event_ticket_types set quantity_sold = greatest(0, quantity_sold - order_row.quantity),
+        updated_at = timezone('utc', now()) where id = order_row.ticket_type_id;
+      update public.campus_event_discount_codes set redemption_count = greatest(0, redemption_count - 1)
+        where id = order_row.discount_code_id;
+      update public.campus_event_ticket_orders set status = 'cancelled', cancelled_at = timezone('utc', now()),
+        updated_at = timezone('utc', now()) where id = order_row.id;
+    end loop;
+  end if;
+  return new;
+end; $$;
+create trigger campus_event_rsvps_release_ticket_order
+after update of status on public.campus_event_rsvps
+for each row execute function public.release_campus_event_ticket_after_rsvp();
+
 create or replace function public.expire_campus_event_ticket_orders(p_limit integer default 500)
 returns integer language plpgsql security definer set search_path = '' as $$
 declare target record; processed integer := 0;
 begin
-  if current_user <> 'service_role' then raise exception 'service role required' using errcode = '42501'; end if;
+  if current_setting('request.jwt.claim.role', true) is distinct from 'service_role' then
+    raise exception 'service role required' using errcode = '42501';
+  end if;
   for target in
     select orders.id, orders.discount_code_id from public.campus_event_ticket_orders orders
     where orders.status = 'pending' and orders.expires_at <= timezone('utc', now())
@@ -134,7 +163,9 @@ create or replace function public.reconcile_campus_event_ticket_payment(
 returns text language plpgsql security definer set search_path = '' as $$
 declare target public.campus_event_ticket_orders%rowtype;
 begin
-  if current_user <> 'service_role' then raise exception 'service role required' using errcode = '42501'; end if;
+  if current_setting('request.jwt.claim.role', true) is distinct from 'service_role' then
+    raise exception 'service role required' using errcode = '42501';
+  end if;
   insert into public.campus_event_payment_webhooks (provider, event_id, payload_hash)
     values (p_provider, p_provider_event_id, p_payload_hash)
     on conflict (provider, event_id) do nothing;
@@ -173,6 +204,7 @@ revoke all on function public.list_campus_event_discount_codes(text) from public
 revoke all on function public.upsert_campus_event_discount_code(text,text,text,text,text,text,integer,integer,timestamptz,timestamptz,text) from public, anon;
 revoke all on function public.list_campus_event_ticket_orders(text) from public, anon;
 revoke all on function public.cancel_my_campus_event_ticket_order(text) from public, anon;
+revoke all on function public.release_campus_event_ticket_after_rsvp() from public, anon, authenticated;
 revoke all on function public.expire_campus_event_ticket_orders(integer) from public, anon, authenticated;
 revoke all on function public.reconcile_campus_event_ticket_payment(text,text,text,text,text,text) from public, anon, authenticated;
 grant execute on function public.list_campus_event_discount_codes(text) to authenticated;

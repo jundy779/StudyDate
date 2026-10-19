@@ -81,6 +81,9 @@ create index campus_event_ticket_orders_buyer_idx
   on public.campus_event_ticket_orders (buyer_user_id, created_at desc);
 create index campus_event_ticket_orders_event_idx
   on public.campus_event_ticket_orders (event_id, status, created_at desc);
+create unique index campus_event_ticket_orders_one_active_per_buyer_idx
+  on public.campus_event_ticket_orders (event_id, buyer_user_id)
+  where buyer_user_id is not null and status in ('pending', 'paid', 'free');
 
 create table public.campus_event_ticket_order_items (
   id uuid primary key default gen_random_uuid(),
@@ -157,7 +160,7 @@ begin
         target.status = 'scheduled' and ticket.status = 'on_sale'
         and (ticket.sales_start_at is null or ticket.sales_start_at <= timezone('utc', now()))
         and (ticket.sales_end_at is null or ticket.sales_end_at > timezone('utc', now()))
-        and ticket.access_type <> 'invite_only'
+        and ticket.access_type = 'public' and ticket.price_amount = 0
       ))
     order by ticket.sort_order, ticket.created_at;
 end; $$;
@@ -169,7 +172,8 @@ create or replace function public.upsert_campus_event_ticket_type(
   p_sales_end_at timestamptz, p_status text
 )
 returns text language plpgsql security definer set search_path = '' as $$
-declare actor uuid := auth.uid(); target public.campus_events%rowtype; result text; sold integer;
+declare actor uuid := auth.uid(); target public.campus_events%rowtype; result text;
+  reserved integer; sold integer; old_price integer; old_access text;
 begin
   select * into target from public.campus_events event where event.public_slug = p_event_public_slug for update;
   if actor is null or target.id is null or not public.event_can_manage_registrations(target.id, actor) then
@@ -177,6 +181,10 @@ begin
   end if;
   if target.status <> 'scheduled' or target.starts_at <= timezone('utc', now()) then
     raise exception 'event ticket sales unavailable' using errcode = 'P0001';
+  end if;
+  if p_status = 'on_sale' and (p_access_type <> 'public' or p_price_amount <> 0
+    or p_min_per_order > 1) then
+    raise exception 'only free public tickets can go on sale' using errcode = 'P0001';
   end if;
   if p_ticket_public_id is null then
     if (select count(*) from public.campus_event_ticket_types where event_id = target.id and status <> 'archived') >= 12 then
@@ -191,10 +199,15 @@ begin
       p_sales_start_at, p_sales_end_at, p_status, actor
     ) returning public_id into result;
   else
-    select quantity_sold into sold from public.campus_event_ticket_types
+    select quantity_reserved, quantity_sold, price_amount, access_type
+      into reserved, sold, old_price, old_access from public.campus_event_ticket_types
       where event_id = target.id and public_id = p_ticket_public_id for update;
     if not found then raise exception 'event ticket type unavailable' using errcode = 'P0001'; end if;
-    if p_quantity_total < sold then raise exception 'ticket capacity below sold' using errcode = 'P0001'; end if;
+    if p_quantity_total < reserved + sold then raise exception 'ticket capacity below sold' using errcode = 'P0001'; end if;
+    if sold > 0 and (p_price_amount is distinct from old_price
+      or p_access_type is distinct from old_access) then
+      raise exception 'issued ticket terms cannot change' using errcode = 'P0001';
+    end if;
     update public.campus_event_ticket_types set
       name = trim(p_name), description = trim(coalesce(p_description, '')),
       access_type = p_access_type, price_amount = p_price_amount,
@@ -219,27 +232,57 @@ declare
   ticket public.campus_event_ticket_types%rowtype; discount public.campus_event_discount_codes%rowtype;
   existing public.campus_event_ticket_orders%rowtype; created public.campus_event_ticket_orders%rowtype;
   subtotal integer; reduction integer := 0; final integer;
+  registration_status text; active_order_id uuid;
 begin
   if actor is null then raise exception 'authentication required' using errcode = '42501'; end if;
-  select * into existing from public.campus_event_ticket_orders
-    where buyer_user_id = actor and idempotency_key = p_idempotency_key;
-  if existing.id is not null then
-    return query select existing.public_id, existing.status, existing.total_amount, existing.expires_at;
-    return;
+  if p_idempotency_key is null or char_length(p_idempotency_key) not between 16 and 100 then
+    raise exception 'invalid ticket request' using errcode = '22023';
   end if;
   select * into target from public.campus_events event
     where event.public_slug = p_event_public_slug and event.status = 'scheduled' for update;
+  if target.id is null then raise exception 'event ticket order unavailable' using errcode = 'P0001'; end if;
+  select * into existing from public.campus_event_ticket_orders
+    where buyer_user_id = actor and idempotency_key = p_idempotency_key;
+  if existing.id is not null then
+    if existing.event_id <> (select event.id from public.campus_events event where event.public_slug = p_event_public_slug)
+      or not exists (
+        select 1 from public.campus_event_ticket_order_items item
+        join public.campus_event_ticket_types item_type on item_type.id = item.ticket_type_id
+        where item.order_id = existing.id and item_type.public_id = p_ticket_public_id
+          and item.quantity = p_quantity
+      ) then
+      raise exception 'ticket request key already used' using errcode = '22023';
+    end if;
+    return query select existing.public_id, existing.status, existing.total_amount, existing.expires_at;
+    return;
+  end if;
+  -- Match the RSVP cancellation lock order: RSVP, order, then ticket.
+  select registration.status into registration_status
+    from public.campus_event_rsvps registration
+    where registration.event_id = target.id and registration.user_id = actor
+    for update;
+  if registration_status is distinct from 'going' then
+    raise exception 'confirmed event registration required' using errcode = 'P0001';
+  end if;
+  select orders.id into active_order_id from public.campus_event_ticket_orders orders
+    where orders.event_id = target.id and orders.buyer_user_id = actor
+      and orders.status in ('pending', 'paid', 'free') for update;
+  if active_order_id is not null then
+    raise exception 'ticket already held for this event' using errcode = 'P0001';
+  end if;
   select * into ticket from public.campus_event_ticket_types item
     where item.event_id = target.id and item.public_id = p_ticket_public_id for update;
   if target.id is null or ticket.id is null or ticket.status <> 'on_sale'
+    or target.starts_at <= timezone('utc', now())
     or (ticket.sales_start_at is not null and ticket.sales_start_at > timezone('utc', now()))
     or (ticket.sales_end_at is not null and ticket.sales_end_at <= timezone('utc', now()))
     or p_quantity not between ticket.min_per_order and ticket.max_per_order
     or ticket.quantity_total - ticket.quantity_reserved - ticket.quantity_sold < p_quantity then
     raise exception 'event ticket order unavailable' using errcode = 'P0001';
   end if;
-  if ticket.access_type in ('code', 'invite_only') and p_code_hash is null then
-    raise exception 'event ticket access code required' using errcode = '42501';
+  -- Paid checkout and private invitations need a verified provider/invite flow.
+  if ticket.price_amount <> 0 or ticket.access_type <> 'public' or p_quantity <> 1 then
+    raise exception 'paid or private ticket checkout unavailable' using errcode = 'P0001';
   end if;
   if p_code_hash is not null then
     select * into discount from public.campus_event_discount_codes code
@@ -248,7 +291,9 @@ begin
         and (code.ends_at is null or code.ends_at > timezone('utc', now()))
         and (code.max_redemptions is null or code.redemption_count < code.max_redemptions)
       for update;
-    if discount.id is null then raise exception 'event ticket code invalid' using errcode = '42501'; end if;
+    if discount.id is null or discount.purpose <> 'discount' then
+      raise exception 'event ticket code invalid' using errcode = '42501';
+    end if;
   end if;
   subtotal := ticket.price_amount * p_quantity;
   if discount.purpose = 'discount' then
@@ -261,20 +306,13 @@ begin
     event_id, buyer_user_id, status, subtotal_amount, discount_amount, total_amount,
     discount_code_id, idempotency_key, expires_at, paid_at
   ) values (
-    target.id, actor, case when final = 0 then 'free' else 'pending' end,
-    subtotal, reduction, final, discount.id, p_idempotency_key,
-    case when final = 0 then null else timezone('utc', now()) + interval '15 minutes' end,
-    case when final = 0 then timezone('utc', now()) else null end
+    target.id, actor, 'free', subtotal, reduction, final,
+    discount.id, p_idempotency_key, null, timezone('utc', now())
   ) returning * into created;
   insert into public.campus_event_ticket_order_items (order_id, ticket_type_id, quantity, unit_amount)
     values (created.id, ticket.id, p_quantity, ticket.price_amount);
-  if final = 0 then
-    update public.campus_event_ticket_types set quantity_sold = quantity_sold + p_quantity,
-      updated_at = timezone('utc', now()) where id = ticket.id;
-  else
-    update public.campus_event_ticket_types set quantity_reserved = quantity_reserved + p_quantity,
-      updated_at = timezone('utc', now()) where id = ticket.id;
-  end if;
+  update public.campus_event_ticket_types set quantity_sold = quantity_sold + p_quantity,
+    updated_at = timezone('utc', now()) where id = ticket.id;
   if discount.id is not null then
     update public.campus_event_discount_codes set redemption_count = redemption_count + 1 where id = discount.id;
   end if;
