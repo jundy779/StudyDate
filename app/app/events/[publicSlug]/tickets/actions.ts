@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { reservePaidEventTicket } from "@/lib/events/paid-ticket-checkout";
-import { createCampusEventTicketOrder, saveCampusEventTicketType } from "@/lib/events/ticketing-service";
+import { createCampusEventCodeTicketOrder, createCampusEventTicketOrder, saveCampusEventTicketType } from "@/lib/events/ticketing-service";
 import { ticketOrderSchema, ticketTypeSchema } from "@/lib/events/ticketing";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -51,6 +51,25 @@ export async function createTicketOrderAction(publicSlug: string, formData: Form
   redirect(`/app/events/${publicSlug}/tickets?order=${state}`);
 }
 
+export async function createCodeTicketOrderAction(publicSlug: string, formData: FormData) {
+  requiredFlag();
+  const parsed = ticketOrderSchema.safeParse({
+    eventPublicSlug: publicSlug, ticketPublicId: formData.get("ticketPublicId"),
+    quantity: 1, code: formData.get("code"),
+    idempotencyKey: formData.get("idempotencyKey") || randomUUID(),
+  });
+  if (!parsed.success) redirect(`/app/events/${publicSlug}/tickets?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Periksa kode tiket.")}`);
+  try {
+    const order = await createCampusEventCodeTicketOrder(parsed.data);
+    if (!order) throw new Error("Tiket belum berhasil diambil.");
+  } catch (error) {
+    redirect(`/app/events/${publicSlug}/tickets?error=${encodeURIComponent(error instanceof Error ? error.message : "Tiket belum berhasil diambil.")}`);
+  }
+  revalidatePath(`/app/events/${publicSlug}/tickets`);
+  revalidatePath(`/app/events/${publicSlug}`);
+  redirect(`/app/events/${publicSlug}/tickets?order=free`);
+}
+
 export async function createPaidTicketOrderAction(publicSlug: string, formData: FormData) {
   requiredFlag();
   const parsed = ticketOrderSchema.safeParse({
@@ -70,3 +89,4 @@ export async function createPaidTicketOrderAction(publicSlug: string, formData: 
   revalidatePath(`/app/events/${publicSlug}/tickets`);
   redirect(`/app/events/${publicSlug}/tickets/payment/${orderId}`);
 }
+
