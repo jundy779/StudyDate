@@ -257,6 +257,8 @@ begin
     return 'mismatch';
   end if;
   if attempt.status = 'paid' then return 'duplicate'; end if;
+  if attempt.status = 'refunded' then return 'duplicate'; end if;
+  if attempt.status <> 'pending' then return 'review'; end if;
   insert into public.campus_event_payment_webhooks (provider, event_id, payload_hash)
     values ('autogopay', p_transaction_id, p_payload_hash)
     on conflict (provider, event_id) do nothing;
