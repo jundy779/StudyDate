@@ -1,6 +1,6 @@
 import "server-only";
 
-import { generateAutoGoPayQris, isAutoGoPayEnabled } from "@/lib/billing/autogopay";
+import { cancelAutoGoPayQris, generateAutoGoPayQris, getAutoGoPayQrisStatus, isAutoGoPayEnabled } from "@/lib/billing/autogopay";
 import { createServerAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -71,4 +71,28 @@ export async function getMyPaidEventTicket(orderPublicId: string) {
     checkout_url: string | null; expires_at: string | null;
     provider_transaction_id: string | null; payment_status: string;
   }[])[0] ?? null;
+}
+
+export async function cancelMyPaidEventTicket(orderPublicId: string) {
+  const payment = await getMyPaidEventTicket(orderPublicId);
+  if (!payment || payment.status !== "pending" || !payment.provider_transaction_id) {
+    throw new Error("Pesanan ini tidak bisa dibatalkan dari sini.");
+  }
+  const providerStatus = await getAutoGoPayQrisStatus(payment.provider_transaction_id);
+  if (providerStatus === "settlement") {
+    throw new Error("Pembayaran sedang diproses. Periksa status lagi sebentar.");
+  }
+  if (providerStatus !== "pending") {
+    throw new Error("Status pembayaran belum jelas. Hubungi bantuan dengan nomor pesananmu.");
+  }
+  if (!await cancelAutoGoPayQris(payment.provider_transaction_id)) {
+    throw new Error("Pembayaran belum bisa dibatalkan. Coba lagi nanti.");
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("cancel_my_campus_event_ticket_order", {
+    p_order_public_id: orderPublicId,
+  });
+  if (error || data !== true) {
+    throw new Error("Status pesanan berubah. Periksa halaman pembayaran lagi.");
+  }
 }
