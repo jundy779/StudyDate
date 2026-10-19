@@ -1,7 +1,6 @@
 import { expireTicketOrders } from "@/lib/events/ticketing-operations";
 import { NextResponse, type NextRequest } from "next/server";
 
-export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   if (process.env.EVENT_TICKETING_ENABLED !== "true") return NextResponse.json({ ok: false, error: "disabled" }, { status: 503 });
