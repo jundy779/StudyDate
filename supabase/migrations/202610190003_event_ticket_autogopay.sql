@@ -168,8 +168,9 @@ begin
   if auth.role() <> 'service_role' then raise exception 'service role required' using errcode = '42501'; end if;
   if char_length(coalesce(p_transaction_id, '')) not between 1 and 160
     or char_length(coalesce(p_provider_order_id, '')) not between 1 and 160
+    or p_checkout_url is null
     or p_checkout_url !~ '^https://autogopay[.]site/pay/[A-Za-z0-9_-]{1,200}$'
-    or p_expires_at <= timezone('utc', now())
+    or p_expires_at is null or p_expires_at <= timezone('utc', now())
     or p_expires_at > timezone('utc', now()) + interval '30 minutes' then
     raise exception 'invalid provider payment' using errcode = '22023';
   end if;
@@ -242,8 +243,8 @@ begin
   if auth.role() <> 'service_role' then raise exception 'service role required' using errcode = '42501'; end if;
   if char_length(coalesce(p_transaction_id, '')) not between 1 and 160
     or char_length(coalesce(p_provider_order_id, '')) not between 1 and 160
-    or p_amount_idr not between 1 and 10000000
-    or p_payload_hash !~ '^[0-9a-f]{64}$'
+    or p_amount_idr is null or p_amount_idr not between 1 and 10000000
+    or p_payload_hash is null or p_payload_hash !~ '^[0-9a-f]{64}$'
     or p_paid_at is null or p_paid_at > timezone('utc', now()) + interval '10 minutes' then
     raise exception 'invalid paid transaction' using errcode = '22023';
   end if;

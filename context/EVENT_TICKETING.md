@@ -28,7 +28,7 @@ Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran
 ## Cara mengaktifkan
 
 1. Pastikan target Supabase benar dan cocokkan riwayat migrasinya.
-2. Terapkan `202610170004_event_ticketing_v1.sql`, `202610190001_event_ticketing_operations.sql`, `202610190002_event_ticket_admission.sql`, lalu `202610190003_event_ticket_autogopay.sql` di staging. Jangan mengubah migrasi lama jika ternyata sudah diterapkan; buat migrasi koreksi baru.
+2. Terapkan `202610170004_event_ticketing_v1.sql`, `202610190001_event_ticketing_operations.sql`, `202610190002_event_ticket_admission.sql`, `202610190003_event_ticket_autogopay.sql`, lalu `202610190004_event_ticket_admission_guard.sql` di staging. Jangan mengubah migrasi lama jika ternyata sudah diterapkan; buat migrasi koreksi baru.
 3. Jalankan database advisor, cek RLS, grant fungsi, pemesanan ganda, kuota serentak, pembatalan pendaftaran, dan kedaluwarsa pesanan. Cron kedaluwarsa belum perlu dinyalakan selama pesanan berbayar ditutup.
 4. Atur `EVENT_TICKETING_ENABLED=true` hanya di staging.
 5. Uji pendaftaran terkonfirmasi, tiket gratis, dua permintaan serentak, pembatalan RSVP, pengembalian kuota, QR masuk, check-in manual, dan akses peserta lain. Pastikan acara tanpa tiket baru tetap berjalan seperti semula.
