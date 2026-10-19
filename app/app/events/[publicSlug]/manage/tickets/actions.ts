@@ -1,6 +1,7 @@
 "use server";
 
 import { saveTicketDiscountCode } from "@/lib/events/ticketing-operations";
+import { publishPaidEventTicket } from "@/lib/events/paid-ticket-checkout";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -30,4 +31,19 @@ export async function createTicketCodeAction(publicSlug: string, formData: FormD
   catch (error) { redirect(`/app/events/${publicSlug}/manage/tickets/codes?error=${encodeURIComponent(error instanceof Error ? error.message : "Kode belum tersimpan.")}`); }
   revalidatePath(`/app/events/${publicSlug}/manage/tickets/codes`);
   redirect(`/app/events/${publicSlug}/manage/tickets/codes?saved=1`);
+}
+
+export async function publishPaidTicketAction(publicSlug: string, formData: FormData) {
+  const ticketPublicId = String(formData.get("ticketPublicId") ?? "");
+  if (!/^ett_[0-9a-f]{24}$/.test(ticketPublicId)) {
+    redirect(`/app/events/${publicSlug}/manage/tickets?error=Periksa%20jenis%20tiket.`);
+  }
+  try {
+    await publishPaidEventTicket(ticketPublicId);
+  } catch (error) {
+    redirect(`/app/events/${publicSlug}/manage/tickets?error=${encodeURIComponent(error instanceof Error ? error.message : "Tiket belum bisa dibuka.")}`);
+  }
+  revalidatePath(`/app/events/${publicSlug}/manage/tickets`);
+  revalidatePath(`/app/events/${publicSlug}/tickets`);
+  redirect(`/app/events/${publicSlug}/manage/tickets?saved=1`);
 }

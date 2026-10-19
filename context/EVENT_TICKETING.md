@@ -12,7 +12,7 @@ Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran
 
 ## Masih dikunci
 
-- Tiket berbayar, kode akses untuk tiket privat, undangan, checkout, webhook gateway, refund, dan pembayaran sungguhan belum siap untuk publik. Jenis tiket ini hanya dapat disimpan sebagai rancangan.
+- Tiket berbayar GoPay QRIS sudah punya jalur teknis terpisah, tetapi tetap terkunci sampai pengujian database, webhook, dan transaksi staging selesai. Kode akses privat, undangan, promo berbayar, dan refund otomatis belum siap untuk publik.
 - Kode promo/akses dapat dipersiapkan, tetapi tidak dipromosikan sebagai fitur aktif sampai alur berbayar dan privat diuji.
 - Jumlah tiket per peserta masih satu. Pembelian beberapa tiket untuk teman belum tersedia karena pendaftaran acara terikat satu akun mahasiswa.
 
@@ -20,18 +20,19 @@ Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran
 
 - Harga disimpan sebagai rupiah bulat, bukan pecahan desimal.
 - Kode akses tidak disimpan mentah. Aplikasi mengirim hash SHA-256 yang sudah dinormalisasi.
-- Pesanan berbayar ditolak di database. Tidak ada pembayaran yang diproses.
+- Checkout berbayar butuh `EVENT_TICKET_PAYMENTS_ENABLED=true`, AutoGoPay aktif, dan `campus_event_payment_settings.is_enabled=true` di database. Default semuanya mati untuk tiket acara.
+- Callback pembayaran yang datang terlambat tetap tercatat; jika kuota atau pendaftaran sudah berubah, pesanan harus diperiksa manual. Peserta diminta tidak membayar ulang.
 - Payload webhook mentah, nomor kartu, rekening, dan rahasia pembayaran tidak disimpan.
 - Tiket QR check-in yang sudah ada tetap menjadi bukti masuk. Modul ini mengurus pilihan tiket dan pesanan.
 
 ## Cara mengaktifkan
 
 1. Pastikan target Supabase benar dan cocokkan riwayat migrasinya.
-2. Terapkan `202610170004_event_ticketing_v1.sql`, `202610190001_event_ticketing_operations.sql`, lalu `202610190002_event_ticket_admission.sql` di staging. Jangan mengubah migrasi lama jika ternyata sudah diterapkan; buat migrasi koreksi baru.
+2. Terapkan `202610170004_event_ticketing_v1.sql`, `202610190001_event_ticketing_operations.sql`, `202610190002_event_ticket_admission.sql`, lalu `202610190003_event_ticket_autogopay.sql` di staging. Jangan mengubah migrasi lama jika ternyata sudah diterapkan; buat migrasi koreksi baru.
 3. Jalankan database advisor, cek RLS, grant fungsi, pemesanan ganda, kuota serentak, pembatalan pendaftaran, dan kedaluwarsa pesanan. Cron kedaluwarsa belum perlu dinyalakan selama pesanan berbayar ditutup.
 4. Atur `EVENT_TICKETING_ENABLED=true` hanya di staging.
 5. Uji pendaftaran terkonfirmasi, tiket gratis, dua permintaan serentak, pembatalan RSVP, pengembalian kuota, QR masuk, check-in manual, dan akses peserta lain. Pastikan acara tanpa tiket baru tetap berjalan seperti semula.
-6. Sambungkan satu penyedia pembayaran dalam perubahan terpisah, verifikasi tanda tangan webhook serta nominal transaksi sebelum tiket berbayar dapat dibuka.
-7. Setelah lolos, ulangi proses terkontrol di production.
+6. Untuk tiket berbayar, uji AutoGoPay GoPay QRIS dengan key server yang sudah aman: pembuatan pesanan, respons gagal/timeout, pembayaran, callback asli dan duplikat, nominal salah, pembayaran terlambat, serta pembatalan RSVP. Callback yang sama dipakai membership dan tiket, jadi uji keduanya.
+7. Setelah hasil cocok, hidupkan `EVENT_TICKET_PAYMENTS_ENABLED=true` di staging dan ubah `campus_event_payment_settings.is_enabled` menjadi `true` di database staging. Uji lagi sebelum melakukan proses terkontrol di production.
 
 Jika migrasi belum diterapkan, biarkan `EVENT_TICKETING_ENABLED=false`. Jangan menerapkan migrasi tanpa audit database yang benar: feature flag aplikasi tidak membatasi pemanggilan RPC database secara langsung setelah fungsi diberi izin `authenticated`.

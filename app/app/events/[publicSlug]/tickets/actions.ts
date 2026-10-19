@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import { reservePaidEventTicket } from "@/lib/events/paid-ticket-checkout";
 import { createCampusEventTicketOrder, saveCampusEventTicketType } from "@/lib/events/ticketing-service";
 import { ticketOrderSchema, ticketTypeSchema } from "@/lib/events/ticketing";
 import { revalidatePath } from "next/cache";
@@ -48,4 +49,24 @@ export async function createTicketOrderAction(publicSlug: string, formData: Form
   revalidatePath(`/app/events/${publicSlug}/tickets`);
   revalidatePath(`/app/events/${publicSlug}`);
   redirect(`/app/events/${publicSlug}/tickets?order=${state}`);
+}
+
+export async function createPaidTicketOrderAction(publicSlug: string, formData: FormData) {
+  requiredFlag();
+  const parsed = ticketOrderSchema.safeParse({
+    eventPublicSlug: publicSlug, ticketPublicId: formData.get("ticketPublicId"),
+    quantity: 1, code: "", idempotencyKey: formData.get("idempotencyKey") || randomUUID(),
+  });
+  if (!parsed.success) redirect(`/app/events/${publicSlug}/tickets?error=Periksa%20pilihan%20tiket.`);
+  let orderId: string;
+  try {
+    orderId = await reservePaidEventTicket({
+      eventPublicSlug: publicSlug, ticketPublicId: parsed.data.ticketPublicId,
+      idempotencyKey: parsed.data.idempotencyKey,
+    });
+  } catch (error) {
+    redirect(`/app/events/${publicSlug}/tickets?error=${encodeURIComponent(error instanceof Error ? error.message : "Pembayaran belum tersedia.")}`);
+  }
+  revalidatePath(`/app/events/${publicSlug}/tickets`);
+  redirect(`/app/events/${publicSlug}/tickets/payment/${orderId}`);
 }
