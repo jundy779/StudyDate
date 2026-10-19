@@ -78,3 +78,10 @@ export async function listMyCampusEventTicketOrders(publicSlug: string) {
   if (error) throw new Error(mapTicketingError(error.message));
   return (data ?? []) as CampusEventTicketOrder[];
 }
+
+export async function myCampusEventRequiresTicketOrder(publicSlug: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("my_campus_event_requires_ticket_order", { p_public_slug: publicSlug });
+  if (error) throw new Error(mapTicketingError(error.message));
+  return data === true;
+}

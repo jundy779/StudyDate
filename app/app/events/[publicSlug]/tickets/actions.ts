@@ -37,13 +37,15 @@ export async function createTicketOrderAction(publicSlug: string, formData: Form
   requiredFlag();
   const parsed = ticketOrderSchema.safeParse({ eventPublicSlug: publicSlug, ticketPublicId: formData.get("ticketPublicId"), quantity: formData.get("quantity"), code: formData.get("code"), idempotencyKey: formData.get("idempotencyKey") || randomUUID() });
   if (!parsed.success) redirect(`/app/events/${publicSlug}/tickets?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Periksa pilihan tiket.")}`);
+  let state: "free" | "pending";
   try {
     const order = await createCampusEventTicketOrder(parsed.data);
     if (!order) throw new Error("Pesanan belum terbentuk.");
-    const state = order.order_status === "free" ? "free" : "pending";
-    revalidatePath(`/app/events/${publicSlug}/tickets`);
-    redirect(`/app/events/${publicSlug}/tickets?order=${state}`);
+    state = order.order_status === "free" ? "free" : "pending";
   } catch (error) {
     redirect(`/app/events/${publicSlug}/tickets?error=${encodeURIComponent(error instanceof Error ? error.message : "Pesanan belum berhasil.")}`);
   }
+  revalidatePath(`/app/events/${publicSlug}/tickets`);
+  revalidatePath(`/app/events/${publicSlug}`);
+  redirect(`/app/events/${publicSlug}/tickets?order=${state}`);
 }

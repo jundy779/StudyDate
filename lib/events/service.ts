@@ -191,6 +191,8 @@ export type CampusEventCheckInResult = {
 
 export function mapCampusEventError(message?: string) {
   const value = (message ?? "").toLowerCase();
+  if (value.includes("event ticket order required")) return "Ambil tiket acara dulu sebelum membuat QR atau masuk ke lokasi.";
+  if (value.includes("paid event ticket cancellation requires support")) return "Tiket berbayar perlu dibantu penyelenggara untuk pembatalan dan pengembalian dana.";
   if (value.includes("private venue")) {
     return "Lokasi pribadi tidak diperbolehkan. Pilih tempat umum.";
   }

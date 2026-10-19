@@ -10,6 +10,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { EventRegistrationForm } from "@/components/events/event-registration-form";
 import { EventCover } from "@/components/events/event-cover";
 import { EventTicketIssuer } from "@/components/events/event-ticket-issuer";
+import { listMyCampusEventTicketOrders, myCampusEventRequiresTicketOrder } from "@/lib/events/ticketing-service";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { EVENT_CATEGORIES, EVENT_REPORT_REASONS } from "@/lib/events/constants";
 import {
@@ -158,6 +159,16 @@ export default async function EventDetailPage({
       ? listCampusEventRegistrationQuestions(event.public_slug)
       : [],
   ]);
+  const ticketingEnabled = process.env.EVENT_TICKETING_ENABLED === "true";
+  const [ticketOrderRequired, myTicketOrders] = ticketingEnabled && event.rsvp_status === "going"
+    ? await Promise.all([
+        myCampusEventRequiresTicketOrder(event.public_slug),
+        listMyCampusEventTicketOrders(event.public_slug),
+      ])
+    : [false, []] as const;
+  const hasValidTicketOrder = myTicketOrders.some((order) =>
+    order.status === "free" || order.status === "paid"
+  );
   const isFull = event.attendee_count >= event.capacity;
   const registrationClosed =
     Boolean(event.registration_closes_at) &&
@@ -576,6 +587,12 @@ export default async function EventDetailPage({
           {event.rsvp_status === "going" ? (
             <section className="border-t border-brand-border py-8">
               <h2 className="font-heading text-2xl font-semibold text-brand-navy">Tiket kehadiran</h2>
+              {ticketOrderRequired && !hasValidTicketOrder ? (
+                <div className="mt-4 rounded-2xl border border-brand-line bg-white p-5">
+                  <p className="text-sm leading-6 text-brand-muted">Pendaftaranmu sudah dikonfirmasi. Ambil tiket acara dulu supaya QR masuk bisa dipakai.</p>
+                  <Link href={`/app/events/${event.public_slug}/tickets`} className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">Pilih tiket</Link>
+                </div>
+              ) : (
               <EventTicketIssuer
                 publicSlug={event.public_slug}
                 ticketState={ticketState}
@@ -585,6 +602,7 @@ export default async function EventDetailPage({
                 timezone={event.timezone_name}
                 venue={`${event.venue_name}, ${event.venue_area}, ${event.city}`}
               />
+              )}
             </section>
           ) : null}
 
