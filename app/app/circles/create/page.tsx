@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { createCircleAction } from "@/app/app/circles/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { CircleForm } from "@/components/circles/circle-form";
@@ -13,6 +14,7 @@ type CreateCirclePageProps = {
 export default async function CreateCirclePage({
   searchParams,
 }: CreateCirclePageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);

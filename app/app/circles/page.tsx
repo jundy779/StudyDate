@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { CircleFilterForm } from "@/components/circles/circle-filter-form";
@@ -28,6 +29,7 @@ function paginationHref(
 }
 
 async function CirclesContent({ searchParams }: CirclesPageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);

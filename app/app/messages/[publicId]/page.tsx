@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
 import { ConversationRoom } from "@/components/messages/conversation-room";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
@@ -42,6 +43,7 @@ async function ConversationContent({
   params,
   searchParams,
 }: ConversationPageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);

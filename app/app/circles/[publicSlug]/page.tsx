@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import {
   archiveCircleAction,
   joinCircleAction,
@@ -91,6 +92,7 @@ export default async function CircleDetailPage({
   params,
   searchParams,
 }: CircleDetailPageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const ownProfile = await getPrivateProfile(user.id);

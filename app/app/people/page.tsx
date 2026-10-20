@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import {
   updatePeopleVisibility,
   updateStudyStatus,
@@ -62,6 +63,7 @@ function peopleOrderHref(
 }
 
 async function PeopleContent({ searchParams }: PeoplePageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const ownProfile = await getPrivateProfile(user.id);

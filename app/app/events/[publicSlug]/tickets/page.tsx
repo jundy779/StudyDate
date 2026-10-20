@@ -1,3 +1,4 @@
+import { requireEventFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
 import { createCodeTicketOrderAction, createPaidTicketOrderAction, createTicketOrderAction } from "@/app/app/events/[publicSlug]/tickets/actions";
 import { getCampusEvent } from "@/lib/events/service";
@@ -11,6 +12,7 @@ type PageProps = { params: Promise<{ publicSlug: string }>; searchParams: Promis
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
 
 export default async function EventTicketsPage({ params, searchParams }: PageProps) {
+  await requireEventFeatureAccess();
   const { publicSlug } = await params;
   if (process.env.EVENT_TICKETING_ENABLED !== "true") notFound();
   const event = await getCampusEvent(publicSlug);

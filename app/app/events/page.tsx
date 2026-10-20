@@ -1,3 +1,8 @@
+import {
+  EDUCATIONAL_EVENT_CATEGORIES,
+  getMyStudentAccess,
+  requireEventFeatureAccess,
+} from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { EventFilterForm } from "@/components/events/event-filter-form";
@@ -33,6 +38,7 @@ function paginationHref(
 }
 
 async function EventsContent({ searchParams }: EventsPageProps) {
+  await requireEventFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
@@ -41,6 +47,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
   const rawSearchParams = await searchParams;
   const parsed = parseEventFilters(rawSearchParams);
   const filters = parsed.success ? parsed.data : {};
+  const access = await getMyStudentAccess();
+  const isSchool = access?.tier === "school";
   const [result, eligibility, invitations] = await Promise.all([
     parsed.success
       ? listCampusEvents(parsed.data)
@@ -70,7 +78,16 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 Kamu tetap memakai nama samaran saat mendaftar.
               </p>
             </div>
-            {eligibility?.eligible ? (
+            {isSchool ? (
+              <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
+                <p className="font-semibold text-brand-navy">Akun sekolah</p>
+                <p className="mt-1">
+                  Akun dengan email sekolah bisa mengikuti acara edukatif seperti belajar
+                  bareng, workshop, seminar, dan persiapan ujian. Cari Teman, Circle, dan
+                  Pesan terbuka setelah kamu masuk dengan email kampus dan lolos verifikasi.
+                </p>
+              </aside>
+            ) : eligibility?.eligible ? (
               <Link
                 href="/app/events/create"
                 className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
@@ -202,7 +219,10 @@ async function EventsContent({ searchParams }: EventsPageProps) {
             <p className="mt-2 text-sm leading-6 text-brand-muted">
               Cari berdasarkan nama atau jenis acara, lalu pilih siapa yang boleh melihatnya.
             </p>
-            <EventFilterForm filters={filters} />
+            <EventFilterForm
+              filters={filters}
+              allowedCategories={isSchool ? EDUCATIONAL_EVENT_CATEGORIES : undefined}
+            />
             {!parsed.success ? (
               <p role="alert" className="mt-4 text-sm font-medium text-brand-error">
                 Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.

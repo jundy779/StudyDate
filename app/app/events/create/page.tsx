@@ -1,3 +1,4 @@
+import { requireEventFeatureAccess } from "@/lib/account/student-access";
 import { createCampusEventAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventForm } from "@/components/events/event-form";
@@ -20,6 +21,7 @@ type CreateEventPageProps = {
 export default async function CreateEventPage({
   searchParams,
 }: CreateEventPageProps) {
+  await requireEventFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);

@@ -915,3 +915,20 @@ entitlement dan quota usage. Deactivation tidak menghapus entitlement.
 ## Early Access review reasons + revision (repository migration 202608260001)
 
 `early_access_waitlist.status` adds `needs_revision` between waiting and a final decision. Review metadata includes structured `review_reason_codes`, an applicant-facing `review_user_note`, an internal-only `review_internal_note`, a SHA-256 `revision_token_hash`, expiry, and `resubmitted_at`. Raw revision tokens are never stored. A successful correction consumes the token and returns the entry to `waiting`; Early Access approval remains separate from Student Verification.
+
+## Akses mahasiswa per jenis akun (repository migration 202610200001)
+
+Status: **Repository implemented**. Belum dipasang ke Supabase production.
+
+- `platform_settings`: tabel privat (RLS, tanpa grant langsung). Kunci `require_student_verification`, default `false`.
+- `is_student_verification_required()`, `is_school_email_account(uuid)` (domain email login `sch.id` atau `*.sch.id` dari `auth.users`), `passes_student_verification_gate(uuid)`, `is_educational_event_category(text)`, `is_base_student_account(uuid)`.
+- Guard yang diubah:
+  - `is_eligible_introduction_student`: dasar akun + bukan akun sekolah + lolos gerbang verifikasi. Dipakai Cari Teman, Perkenalan, Chat, Kenal Lebih Jauh, Identitas, Kontak, dan berbagi di chat.
+  - `is_study_circle_student`: kondisi lama + bukan akun sekolah + gerbang verifikasi.
+  - `is_campus_event_student`: dasar akun + (akun sekolah atau gerbang verifikasi).
+  - `is_event_organizer_eligible`: akun sekolah tidak pernah bisa jadi penyelenggara, termasuk lewat izin Owner.
+- Trigger `campus_event_rsvps_school_account_category`: akun sekolah hanya bisa berstatus aktif di acara kategori edukatif (`study_together`, `coding_tech`, `design`, `languages`, `exam_prep`, `workshop`, `seminar`).
+- `list_campus_events` diperbarui: filter kategori menerima `seminar`, `meetup`, `hackathon` (sebelumnya galat), dan akun sekolah hanya melihat acara edukatif.
+- RPC: `get_my_student_access()` untuk mahasiswa; `owner_get_student_verification_requirement()` dan `owner_set_student_verification_requirement(boolean)` untuk Owner.
+
+Saat saklar menyala, acara milik penyelenggara yang belum terverifikasi (misalnya hanya lewat izin Owner) ikut tidak tampil, karena `list_campus_events` memeriksa `is_campus_event_student` milik penyelenggara.

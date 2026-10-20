@@ -1,4 +1,7 @@
+import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
 import { StaffShell } from "@/components/staff/staff-shell";
+import { setVerificationRequirementAction } from "@/app/owner/actions";
+import { ownerGetVerificationRequirement } from "@/lib/staff/platform-settings";
 import { requireOwner } from "@/lib/staff/authorization";
 import { getVerificationReadiness } from "@/lib/verification/readiness";
 import {
@@ -15,9 +18,28 @@ import {
 import Link from "next/link";
 import { Suspense } from "react";
 
-async function OwnerContent() {
+const requirementMessages: Record<string, string> = {
+  on: "Verifikasi PDDikti sekarang wajib untuk semua mahasiswa.",
+  off: "Verifikasi tidak lagi diwajibkan.",
+  not_ready: "Belum bisa diwajibkan: verifikasi mahasiswa belum dibuka atau jalur kartu mahasiswa belum siap.",
+  failed: "Pengaturan belum tersimpan. Pastikan migration akses mahasiswa sudah terpasang, lalu coba lagi.",
+  invalid: "Pilihan tidak dikenali.",
+};
+
+async function OwnerContent({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const access = await requireOwner();
-  const readiness = await getVerificationReadiness();
+  const [readiness, requirement, query] = await Promise.all([
+    getVerificationReadiness(),
+    ownerGetVerificationRequirement(),
+    searchParams,
+  ]);
+  const requirementState =
+    typeof query.verifikasi === "string" ? requirementMessages[query.verifikasi] : undefined;
+  const canRequire = readiness.enabled && readiness.manualCardReady;
   return (
     <StaffShell role={access.role} current="overview" access={access}>
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
@@ -40,12 +62,74 @@ async function OwnerContent() {
           <Link href="/owner/study-programs" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><BookOpen className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Program studi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur daftar program studi yang tersedia saat pendaftaran.</p></Link>
           <Link href="/owner/audit" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Riwayat akses</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat perubahan tim dan akses operasional tanpa membuka data privat.</p></Link>
         </div>
+        <section
+          id="verification-requirement"
+          className="mt-8 scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"
+          aria-labelledby="verification-requirement-title"
+        >
+          <ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" />
+          <h2 id="verification-requirement-title" className="mt-7 font-heading text-xl font-semibold">
+            Wajib verifikasi PDDikti
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
+            Kalau dinyalakan, mahasiswa yang belum terverifikasi tidak bisa memakai Cari Teman,
+            Perkenalan, Pesan, Circle, dan Acara sampai verifikasinya selesai. Akun email sekolah
+            (.sch.id) selalu hanya bisa mengikuti acara edukatif.
+          </p>
+          <p className="mt-4 text-sm font-semibold text-brand-navy">
+            Status sekarang:{" "}
+            {requirement.required === null
+              ? "belum tersedia (migration belum terpasang)"
+              : requirement.required
+                ? "wajib"
+                : "belum diwajibkan"}
+          </p>
+          {requirementState ? (
+            <p role="status" className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy">
+              {requirementState}
+            </p>
+          ) : null}
+          {requirement.required === null ? null : requirement.required ? (
+            <form action={setVerificationRequirementAction} className="mt-5">
+              <ConfirmSubmitButton
+                name="required"
+                value="off"
+                triggerLabel="Matikan kewajiban verifikasi"
+                title="Matikan kewajiban verifikasi?"
+                description="Mahasiswa yang belum terverifikasi bisa kembali memakai fitur utama."
+                confirmLabel="Matikan"
+                className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
+              />
+            </form>
+          ) : canRequire ? (
+            <form action={setVerificationRequirementAction} className="mt-5">
+              <ConfirmSubmitButton
+                name="required"
+                value="on"
+                triggerLabel="Wajibkan verifikasi"
+                title="Wajibkan verifikasi untuk semua mahasiswa?"
+                description="Semua mahasiswa yang belum terverifikasi langsung kehilangan akses ke fitur utama sampai verifikasinya selesai."
+                confirmLabel="Wajibkan sekarang"
+                className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
+              />
+            </form>
+          ) : (
+            <p className="mt-4 text-sm leading-6 text-brand-muted">
+              Tombol akan muncul setelah verifikasi mahasiswa dibuka dan jalur kartu mahasiswa siap,
+              supaya tidak ada mahasiswa yang terkunci tanpa bisa menyelesaikan verifikasi.
+            </p>
+          )}
+        </section>
       </div>
       </main>
     </StaffShell>
   );
 }
 
-export default function OwnerPage() {
-  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan halaman Owner…</p></main>}><OwnerContent /></Suspense>;
+export default function OwnerPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan halaman Owner…</p></main>}><OwnerContent searchParams={searchParams} /></Suspense>;
 }

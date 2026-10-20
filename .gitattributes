@@ -1,0 +1,15 @@
+# Semua file teks memakai akhir baris LF di setiap komputer, termasuk Windows.
+# Ini menjaga test, patch, dan migrasi SQL tetap sama persis dengan di Vercel.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.zip binary
+*.pdf binary

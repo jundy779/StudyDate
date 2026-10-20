@@ -6,7 +6,7 @@
  */
 
 export const STUDENT_EMAIL_DOMAIN_HELP =
-  "Gunakan email @gmail.com, @vk.com, atau yang berakhiran .ac.id / .sch.id.";
+  "Gunakan email @gmail.com, @vk.com, atau yang berakhiran .ac.id / .sch.id. Email sekolah (.sch.id) hanya bisa mengikuti acara edukatif.";
 
 export const STUDENT_EMAIL_DOMAIN_ERROR =
   "Email ini belum didukung. Gunakan @gmail.com, @vk.com, atau email berakhiran .ac.id / .sch.id.";
@@ -18,6 +18,15 @@ export function getEmailDomain(email: string): string | null {
     return null;
   }
   return normalized.slice(at + 1);
+}
+
+/** Email sekolah (.sch.id): hanya boleh mengikuti acara edukatif. */
+export function isSchoolEmail(email: string | null | undefined): boolean {
+  const domain = email ? getEmailDomain(email) : null;
+  if (!domain) {
+    return false;
+  }
+  return domain === "sch.id" || domain.endsWith(".sch.id");
 }
 
 export function isAllowedStudentEmail(email: string): boolean {

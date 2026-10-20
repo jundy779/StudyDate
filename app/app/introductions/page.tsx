@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { IntroductionCard } from "@/components/introductions/introduction-card";
@@ -29,6 +30,7 @@ const stateMessages: Record<string, string> = {
 export default async function IntroductionsPage({
   searchParams,
 }: IntroductionsPageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);

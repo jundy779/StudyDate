@@ -1,4 +1,9 @@
 import {
+  getMyStudentAccess,
+  isEducationalEventCategory,
+  requireEventFeatureAccess,
+} from "@/lib/account/student-access";
+import {
   blockCampusEventOrganizerAction,
   cancelCampusEventRsvpAction,
   registerCampusEventAction,
@@ -114,6 +119,7 @@ export default async function EventDetailPage({
   params,
   searchParams,
 }: EventDetailPageProps) {
+  await requireEventFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const ownProfile = await getPrivateProfile(user.id);
@@ -124,6 +130,14 @@ export default async function EventDetailPage({
   if (!parsedSlug.success) notFound();
   const event = await getCampusEvent(parsedSlug.data);
   if (!event) notFound();
+  const access = await getMyStudentAccess();
+  if (
+    access?.tier === "school" &&
+    !isEducationalEventCategory(event.category) &&
+    !event.rsvp_status
+  ) {
+    redirect("/app/events?akses=sekolah");
+  }
 
   const query = await searchParams;
   const state = Array.isArray(query.state) ? query.state[0] : query.state;

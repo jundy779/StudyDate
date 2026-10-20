@@ -46,3 +46,6 @@ debug.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# File patch kiriman Claude, jangan ikut di-commit
+*.patch

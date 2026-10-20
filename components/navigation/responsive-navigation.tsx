@@ -85,6 +85,8 @@ type ResponsiveNavigationProps = {
   pendingIntroductions?: number;
   unreadMessages?: number;
   unreadNotifications?: number;
+  /** Menu mahasiswa yang disembunyikan, misalnya untuk akun sekolah. */
+  hiddenItemKeys?: string[];
 };
 
 const iconMap = {
@@ -441,6 +443,7 @@ export function ResponsiveNavigation({
   pendingIntroductions = 0,
   unreadMessages = 0,
   unreadNotifications = 0,
+  hiddenItemKeys = [],
 }: ResponsiveNavigationProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [liveUnreadNotifications, setLiveUnreadNotifications] =
@@ -451,7 +454,9 @@ export function ResponsiveNavigation({
   const isStaff = variant === "staff" && Boolean(role);
   const items = isStaff
     ? getStaffItems(role as StaffRole, staffCapabilities)
-    : studentItems.map((item) => {
+    : studentItems
+        .filter((item) => !hiddenItemKeys.includes(item.key))
+        .map((item) => {
         if (item.key === "introductions" && pendingIntroductions > 0) {
           return { ...item, badge: pendingIntroductions };
         }

@@ -22,7 +22,17 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   other: "Lainnya",
 };
 
-export function EventFilterForm({ filters }: { filters: EventFilters }) {
+export function EventFilterForm({
+  filters,
+  allowedCategories,
+}: {
+  filters: EventFilters;
+  /** Batasi pilihan kategori, misalnya untuk akun sekolah. */
+  allowedCategories?: readonly string[];
+}) {
+  const categories = allowedCategories
+    ? EVENT_CATEGORIES.filter((category) => allowedCategories.includes(category))
+    : EVENT_CATEGORIES;
   return (
     <form
       method="get"
@@ -54,7 +64,7 @@ export function EventFilterForm({ filters }: { filters: EventFilters }) {
           className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-white px-3 text-sm text-brand-navy"
         >
           <option value="">Semua kategori</option>
-          {EVENT_CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <option key={category} value={category}>
               {categoryLabels[category]}
             </option>

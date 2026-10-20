@@ -1,3 +1,4 @@
+import { getMyStudentAccess } from "@/lib/account/student-access";
 import { VerificationForm } from "@/components/verification/verification-form";
 import { LinkedInVerificationCard } from "@/components/verification/linkedin-verification-card";
 import {
@@ -34,13 +35,15 @@ async function VerificationContent({
   if (!user) redirect("/login");
   const profile = await getPrivateProfile(user.id);
   if (!profile?.onboarding_completed_at) redirect("/onboarding");
-  const [verificationAllowed, capabilities, request, linkedInStatus] =
+  const [verificationAllowed, capabilities, request, linkedInStatus, access] =
     await Promise.all([
       isVerificationRequestAllowed(user.id),
       getVerificationCapabilities(user.id),
       getLatestVerificationStatus(user.id),
       getLinkedInVerificationStatus(user.id),
+      getMyStudentAccess(),
     ]);
+  const isSchool = access?.tier === "school";
   const awaitingOwnership =
     request?.method === "academic_pending" &&
     request.pddikti_match_status === "matched";
@@ -59,8 +62,11 @@ async function VerificationContent({
             Verifikasi status mahasiswa
           </h1>
           <p className="mt-5 text-lg leading-8 text-brand-muted">
-            Kami mencocokkan data akademik dan memastikan akun ini benar-benar
-            milikmu. Verifikasi ini opsional.
+            Kami mencocokkan data akademik dengan PDDikti dan memastikan akun ini
+            benar-benar milikmu.{" "}
+            {access?.verificationRequired
+              ? "Verifikasi wajib sebelum kamu bisa memakai Cari Teman, Circle, Pesan, dan Acara."
+              : "Verifikasi akan diwajibkan untuk semua mahasiswa sebelum memakai fitur utama."}
           </p>
         </div>
         {request ? (
@@ -77,7 +83,22 @@ async function VerificationContent({
             </div>
           </section>
         ) : <div className="h-8 sm:h-10" />}
-        {!verificationAllowed ? (
+        {isSchool ? (
+          <section
+            className="rounded-[20px] border border-brand-border bg-white p-6 sm:p-8"
+            aria-labelledby="verification-school"
+          >
+            <ShieldCheck className="h-7 w-7 text-brand-blue" aria-hidden="true" />
+            <h2 id="verification-school" className="mt-4 font-heading text-2xl font-semibold">
+              Akun sekolah tidak bisa diverifikasi lewat PDDikti
+            </h2>
+            <p className="mt-3 max-w-2xl leading-7 text-brand-muted">
+              PDDikti hanya berisi data perguruan tinggi. Dengan email sekolah, kamu tetap
+              bisa mengikuti acara edukatif. Setelah kuliah, masuk dengan email kampus
+              (.ac.id) atau Gmail untuk verifikasi dan membuka fitur lainnya.
+            </p>
+          </section>
+        ) : !verificationAllowed ? (
           <section
             className="rounded-[20px] border border-brand-border bg-white p-6 sm:p-8"
             aria-labelledby="verification-unavailable"

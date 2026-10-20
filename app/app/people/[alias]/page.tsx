@@ -1,3 +1,4 @@
+import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
 import {
   PrivacyFieldGrid,
@@ -63,6 +64,7 @@ export default async function PeopleDetailPage({
   params,
   searchParams,
 }: PeopleDetailPageProps) {
+  await requireSocialFeatureAccess();
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
   const ownProfile = await getPrivateProfile(user.id);
