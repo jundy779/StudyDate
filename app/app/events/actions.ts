@@ -52,9 +52,17 @@ import {
   eventTeamResponseSchema,
   eventTicketCheckInSchema,
   eventTicketIssueSchema,
+  eventOnlineLinkSchema,
   eventUpdateSchema,
   parseBoundedJson,
+  type EventOnlineLinkInput,
 } from "@/lib/events/validation";
+import {
+  EVENT_ONLINE_CITY,
+  EVENT_ONLINE_VENUE_AREA,
+  meetingPlatformLabel,
+} from "@/lib/events/online";
+import { setCampusEventOnlineLink } from "@/lib/events/media";
 import {
   EVENT_QUESTION_OPTIONS_MAX,
   EVENT_REGISTRATION_ANSWER_MAX_BYTES,
@@ -98,9 +106,47 @@ function firstIssueMessage(
   return result.error.issues[0]?.message ?? fallback;
 }
 
+function onlineValues(formData: FormData) {
+  return {
+    attendanceMode: formData.get("attendanceMode") ?? "offline",
+    onlineUrl:
+      typeof formData.get("onlineUrl") === "string"
+        ? String(formData.get("onlineUrl")).trim()
+        : "",
+  };
+}
+
+/** Acara online tidak punya lokasi fisik; isi tempat diganti keterangan platform. */
+function onlineVenueValues(formData: FormData) {
+  const online = onlineValues(formData);
+  if (online.attendanceMode !== "online") return null;
+  const lockedName = formData.get("venueName");
+  return {
+    venueCategory: "online",
+    venueName:
+      typeof lockedName === "string" && lockedName.trim()
+        ? lockedName
+        : (meetingPlatformLabel(online.onlineUrl) ?? "Online"),
+    venueArea: EVENT_ONLINE_VENUE_AREA,
+    city: EVENT_ONLINE_CITY,
+    confirmsPublicPlace: false,
+    confirmsExpectedOperating: false,
+    confirmsNotPrivateResidence: false,
+    confirmsNoPrivateLocationDisclosure: false,
+  };
+}
+
+async function saveOnlineLink(publicSlug: string, online: EventOnlineLinkInput) {
+  await setCampusEventOnlineLink(
+    publicSlug,
+    online.attendanceMode === "offline" ? null : online.onlineUrl,
+  );
+}
+
 function formValues(formData: FormData) {
   const timezone = formData.get("timezone");
   const registrationClosesAt = formData.get("registrationClosesAt");
+  const onlineVenue = onlineVenueValues(formData);
   return {
     title: formData.get("title"),
     description: formData.get("description"),
@@ -124,6 +170,7 @@ function formValues(formData: FormData) {
       formData.get("confirmsNotPrivateResidence") === "on",
     confirmsNoPrivateLocationDisclosure:
       formData.get("confirmsNoPrivateLocationDisclosure") === "on",
+    ...onlineVenue,
   };
 }
 
@@ -154,10 +201,16 @@ export async function createCampusEventAction(formData: FormData) {
     ? `/app/events/create?duplicate=${encodeURIComponent(duplicate.data)}&cadence=${duplicateCadence}&occurrences=${seriesCount}`
     : "/app/events/create";
   const parsed = eventFormSchema.safeParse(formValues(formData));
-  if (!parsed.success) {
+  const online = eventOnlineLinkSchema.safeParse(onlineValues(formData));
+  if (!parsed.success || !online.success) {
+    const message = !parsed.success
+      ? firstIssueMessage(parsed, "Periksa kembali detail acara.")
+      : !online.success
+        ? firstIssueMessage(online, "Periksa kembali link acara online.")
+        : "Periksa kembali detail acara.";
     redirect(
       `${createPath}${createPath.includes("?") ? "&" : "?"}state=invalid&notice=${encodeURIComponent(
-        firstIssueMessage(parsed, "Periksa kembali detail acara."),
+        message,
       )}`,
     );
   }
@@ -189,6 +242,26 @@ export async function createCampusEventAction(formData: FormData) {
       await attachCampusEventSeries(createdSlugs, duplicateCadence);
     } catch {
       // Events remain usable independently if series linking is temporarily unavailable.
+    }
+  }
+  if (online.data.attendanceMode !== "offline") {
+    try {
+      for (const createdSlug of createdSlugs) {
+        await saveOnlineLink(createdSlug, online.data);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Link acara online belum tersimpan.";
+      revalidatePath("/app/events");
+      redirect(
+        managePath(
+          createdSlugs[0],
+          "/settings",
+          `?state=error&notice=${encodeURIComponent(
+            `Acara sudah dibuat, tetapi link online belum tersimpan. ${message} Isi lagi di sini.`,
+          )}`,
+        ),
+      );
     }
   }
   revalidatePath("/app/events");
@@ -229,8 +302,21 @@ export async function updateCampusEventAction(formData: FormData) {
       values.confirmsNoPrivateLocationDisclosure,
   };
   const parsed = eventUpdateSchema.safeParse(updateValues);
-  if (!slug.success || !parsed.success) {
-    redirect("/app/events?state=error");
+  const online = eventOnlineLinkSchema.safeParse(onlineValues(formData));
+  if (!slug.success) redirect("/app/events?state=error");
+  if (!parsed.success || !online.success) {
+    const message = !parsed.success
+      ? firstIssueMessage(parsed, "Periksa kembali detail acara.")
+      : !online.success
+        ? firstIssueMessage(online, "Periksa kembali link acara online.")
+        : "Periksa kembali detail acara.";
+    redirect(
+      managePath(
+        slug.data,
+        "/settings",
+        `?state=error&notice=${encodeURIComponent(message)}`,
+      ),
+    );
   }
   const requestedScope = z
     .enum(["current", "following", "all"])
@@ -254,6 +340,7 @@ export async function updateCampusEventAction(formData: FormData) {
     }
     for (const item of planned) {
       await updateCampusEvent(item.publicSlug, item.update);
+      await saveOnlineLink(item.publicSlug, online.data);
       updatedCount += 1;
     }
   } catch (error) {

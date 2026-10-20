@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EVENT_MEETING_URL_ERROR, isAllowedMeetingUrl } from "./online.ts";
 import {
   EVENT_ANNOUNCEMENT_BODY_MAX,
   EVENT_ANNOUNCEMENT_TITLE_MAX,
@@ -28,7 +29,8 @@ import {
   EVENT_TITLE_MIN,
   EVENT_VENUE_AREA_MAX,
   EVENT_VENUE_AREA_MIN,
-  EVENT_VENUE_CATEGORIES,
+  EVENT_ALL_VENUE_CATEGORIES,
+  EVENT_ATTENDANCE_MODES,
   EVENT_VENUE_NAME_MAX,
   EVENT_VENUE_NAME_MIN,
 } from "./constants.ts";
@@ -115,7 +117,7 @@ const eventFields = {
     .string()
     .regex(localDateTime, "Waktu selesai tidak valid."),
   timezone: z.enum(EVENT_TIMEZONES),
-  venueCategory: z.enum(EVENT_VENUE_CATEGORIES),
+  venueCategory: z.enum(EVENT_ALL_VENUE_CATEGORIES),
   venueName: plainText("Nama tempat harus berupa teks biasa.")
       .min(EVENT_VENUE_NAME_MIN, "Nama tempat terlalu pendek.")
       .max(EVENT_VENUE_NAME_MAX, "Nama tempat terlalu panjang."),
@@ -130,11 +132,28 @@ const eventFields = {
     .int()
     .min(EVENT_CAPACITY_MIN)
     .max(EVENT_CAPACITY_MAX),
-  confirmsPublicPlace: z.literal(true),
-  confirmsExpectedOperating: z.literal(true),
-  confirmsNotPrivateResidence: z.literal(true),
-  confirmsNoPrivateLocationDisclosure: z.literal(true),
+  // Wajib true untuk tempat fisik; acara online tidak punya lokasi (lihat refine).
+  confirmsPublicPlace: z.boolean(),
+  confirmsExpectedOperating: z.boolean(),
+  confirmsNotPrivateResidence: z.boolean(),
+  confirmsNoPrivateLocationDisclosure: z.boolean(),
 };
+
+const PUBLIC_PLACE_CONFIRMATION_MESSAGE =
+  "Centang semua konfirmasi tempat publik sebelum menyimpan.";
+
+const publicPlaceConfirmed = (value: {
+  venueCategory: (typeof EVENT_ALL_VENUE_CATEGORIES)[number];
+  confirmsPublicPlace: boolean;
+  confirmsExpectedOperating: boolean;
+  confirmsNotPrivateResidence: boolean;
+  confirmsNoPrivateLocationDisclosure: boolean;
+}) =>
+  value.venueCategory === "online" ||
+  (value.confirmsPublicPlace &&
+    value.confirmsExpectedOperating &&
+    value.confirmsNotPrivateResidence &&
+    value.confirmsNoPrivateLocationDisclosure);
 
 const validTimeOrder = (value: {
   startsAtLocal: string;
@@ -144,6 +163,7 @@ const validTimeOrder = (value: {
 const eventObjectSchema = z.object(eventFields).strict();
 
 export const eventFormSchema = eventObjectSchema
+  .refine(publicPlaceConfirmed, PUBLIC_PLACE_CONFIRMATION_MESSAGE)
   .refine(validTimeOrder, "Waktu selesai harus setelah waktu mulai.")
   .refine(
     (value) =>
@@ -155,6 +175,7 @@ export const eventFormSchema = eventObjectSchema
 
 export const eventUpdateSchema = eventObjectSchema
   .omit({ scope: true })
+  .refine(publicPlaceConfirmed, PUBLIC_PLACE_CONFIRMATION_MESSAGE)
   .refine(validTimeOrder, "Waktu selesai harus setelah waktu mulai.");
 
 function timezoneOffset(timezone: (typeof EVENT_TIMEZONES)[number]) {
@@ -448,3 +469,22 @@ export function parseEventFilters(
     cursor: firstValue(values.cursor),
   });
 }
+
+export const eventOnlineLinkSchema = z
+  .object({
+    attendanceMode: z.enum(EVENT_ATTENDANCE_MODES),
+    onlineUrl: z.union([
+      z
+        .string()
+        .trim()
+        .refine(isAllowedMeetingUrl, EVENT_MEETING_URL_ERROR),
+      z.literal(""),
+    ]),
+  })
+  .strict()
+  .refine(
+    (value) => value.attendanceMode === "offline" || value.onlineUrl !== "",
+    "Isi link acara online.",
+  );
+
+export type EventOnlineLinkInput = z.infer<typeof eventOnlineLinkSchema>;

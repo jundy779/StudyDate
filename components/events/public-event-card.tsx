@@ -5,6 +5,7 @@ import {
 } from "@/lib/events/presentation";
 import type { PublicCampusEvent } from "@/lib/events/public-service";
 import { EventCover } from "@/components/events/event-cover";
+import { eventCoverUrl, eventPlaceLine } from "@/lib/events/online";
 import { SavedEventButton } from "@/components/events/saved-event-button";
 import {
   ArrowUpRight,
@@ -24,8 +25,9 @@ export function PublicEventCard({ event }: { event: PublicCampusEvent }) {
       <EventCover
         category={event.category}
         title={event.title}
-        city={event.city}
+        city={event.attendance_mode === "online" ? "Online" : event.city}
         className="w-full"
+        coverUrl={eventCoverUrl(event.cover_path)}
       />
 
       <div className="min-w-0">
@@ -61,7 +63,7 @@ export function PublicEventCard({ event }: { event: PublicCampusEvent }) {
           <span>{formatEventDateTime(event.starts_at, event.timezone_name)}</span>
           <span className="inline-flex items-center gap-2">
             <MapPin className="h-4 w-4" aria-hidden="true" />
-            {event.venue_name}, {event.city}
+            {eventPlaceLine(event)}
           </span>
           <span className="inline-flex items-center gap-2">
             <UsersRound className="h-4 w-4" aria-hidden="true" />

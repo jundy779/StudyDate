@@ -1,6 +1,7 @@
 import { EVENT_CATEGORIES } from "@/lib/events/constants";
 import type { CampusEventSummary } from "@/lib/events/service";
 import { EventCover } from "@/components/events/event-cover";
+import { eventCoverUrl, eventPlaceLine } from "@/lib/events/online";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -49,8 +50,9 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
       <EventCover
         category={event.category}
         title={event.title}
-        city={event.city}
+        city={event.attendance_mode === "online" ? "Online" : event.city}
         className="w-full"
+        coverUrl={eventCoverUrl(event.cover_path)}
       />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-brand-blue">
@@ -105,7 +107,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
           <span className="inline-flex min-w-0 items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="break-words">
-              {event.venue_name}, {event.city}
+              {eventPlaceLine(event)}
             </span>
           </span>
           <span className="inline-flex items-center gap-2">

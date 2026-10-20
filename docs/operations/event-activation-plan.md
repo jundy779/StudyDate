@@ -78,6 +78,34 @@ Memeriksa:
 Mematikan: tidak ada saklar. Bila perlu, hapus trigger
 `campus_event_circle_links_notify_followers` untuk menghentikan notifikasi.
 
+## 2c. Foto sampul, acara online, dan pratinjau saat dibagikan
+
+Kode: migration `202610210003_event_cover_online_v1.sql`. Tidak ada flag. Sebelum
+migration terpasang, unggah sampul dan mode online menampilkan pesan "belum tersedia",
+dan semua acara tetap tampil seperti biasa.
+
+Isi migration:
+- Kategori tempat `online`. Acara online tidak memakai konfirmasi tempat publik; acara
+  tatap muka tetap wajib empat konfirmasi seperti sebelumnya.
+- Tabel privat `campus_event_online_links`. Link hanya dibuka untuk penyelenggara,
+  cohost, petugas check-in, dan peserta berstatus terdaftar. Host yang diizinkan:
+  Zoom, Google Meet, Microsoft Teams, YouTube, Webex, Jitsi. Wajib https.
+- Kolom `campus_events.cover_path` dan bucket publik `event-covers` (hanya WebP,
+  maksimal 2 MB, tanpa policy tulis untuk pengguna; server menulis memakai service role).
+
+Memeriksa:
+- [ ] Buat acara online dengan link Meet. Akun lain yang belum daftar melihat
+      "Link muncul di sini setelah pendaftaranmu diterima", tanpa link.
+- [ ] Setelah akun itu terdaftar, tombol "Buka Google Meet" muncul.
+- [ ] Halaman publik `/events/...`, file .ics, dan gambar pratinjau tidak memuat link.
+- [ ] Unggah foto sampul dari Kelola acara, Pengaturan. Foto tampil di daftar acara,
+      detail, dan pratinjau saat link dibagikan (`/events/<slug>/opengraph-image`).
+- [ ] Ganti foto: file lama terhapus dari bucket `event-covers`.
+- [ ] Sitemap memuat halaman acara resmi publik.
+
+Mematikan: tidak ada saklar. Sampul bisa dihapus per acara. Bila perlu menghentikan
+link online, kosongkan tabel `campus_event_online_links`.
+
 ## 3. Acara berseri
 
 Kode: migration `202610170002`, `202610170003`, flag `EVENT_SERIES_ENABLED`.

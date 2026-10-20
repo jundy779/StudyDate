@@ -1,6 +1,7 @@
 import "server-only";
 
 import type {
+  EventAttendanceMode,
   EventCategory,
   EventRegistrationMode,
   EventVenueCategory,
@@ -28,6 +29,9 @@ export type PublicCampusEvent = {
   registration_open: boolean;
   organizer_alias: string;
   organizer_is_verified: boolean;
+  cover_path: string | null;
+  /** Hanya mode. Link acara online tidak pernah ikut ke halaman publik. */
+  attendance_mode: EventAttendanceMode;
 };
 
 type EventRow = Omit<
@@ -36,6 +40,8 @@ type EventRow = Omit<
   | "registration_open"
   | "organizer_alias"
   | "organizer_is_verified"
+  | "cover_path"
+  | "attendance_mode"
 > & {
   id: string;
   organizer_user_id: string;
@@ -67,6 +73,32 @@ const PUBLIC_EVENT_COLUMNS = [
   "registration_closes_at",
 ].join(",");
 
+type AdminClient = NonNullable<ReturnType<typeof createServerAdminClient>>;
+
+/**
+ * Sampul dan ada tidaknya link online (migration 202610210003). Dibaca terpisah
+ * supaya halaman publik tetap jalan bila migration belum terpasang.
+ */
+async function loadPublicEventMedia(admin: AdminClient, eventIds: string[]) {
+  const covers = new Map<string, string>();
+  const withLink = new Set<string>();
+  const [coverResult, linkResult] = await Promise.all([
+    admin.from("campus_events").select("id,cover_path").in("id", eventIds),
+    admin.from("campus_event_online_links").select("event_id").in("event_id", eventIds),
+  ]);
+  if (!coverResult.error) {
+    for (const row of (coverResult.data ?? []) as { id: string; cover_path: string | null }[]) {
+      if (row.cover_path) covers.set(row.id, row.cover_path);
+    }
+  }
+  if (!linkResult.error) {
+    for (const row of (linkResult.data ?? []) as { event_id: string }[]) {
+      withLink.add(row.event_id);
+    }
+  }
+  return { covers, withLink };
+}
+
 async function hydratePublicEvents(rows: EventRow[]) {
   const admin = createServerAdminClient();
   if (!admin || rows.length === 0) return [];
@@ -88,6 +120,7 @@ async function hydratePublicEvents(rows: EventRow[]) {
   if (profilesResult.error || registrationsResult.error) {
     throw new Error("Daftar acara publik belum dapat dimuat.");
   }
+  const media = await loadPublicEventMedia(admin, eventIds);
 
   const profiles = new Map(
     ((profilesResult.data ?? []) as ProfileRow[]).map((profile) => [
@@ -118,6 +151,13 @@ async function hydratePublicEvents(rows: EventRow[]) {
           new Date(event.registration_closes_at).getTime() > checkedAt,
         organizer_alias: profile.public_alias,
         organizer_is_verified: profile.verification_status === "verified",
+        cover_path: media.covers.get(id) ?? null,
+        attendance_mode:
+          event.venue_category === "online"
+            ? ("online" as const)
+            : media.withLink.has(id)
+              ? ("hybrid" as const)
+              : ("offline" as const),
       },
     ];
   });

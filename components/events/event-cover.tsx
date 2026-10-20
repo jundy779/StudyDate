@@ -103,12 +103,15 @@ export function EventCover({
   city,
   variant = "card",
   className = "",
+  coverUrl,
 }: {
   category: EventCategory;
   title: string;
   city?: string;
   variant?: "card" | "hero";
   className?: string;
+  /** Foto sampul dari penyelenggara. Bila kosong, pakai sampul kategori. */
+  coverUrl?: string | null;
 }) {
   const style = coverStyles[category];
   const Icon = style.icon;
@@ -117,13 +120,30 @@ export function EventCover({
   return (
     <div
       aria-hidden="true"
-      className={`relative isolate overflow-hidden rounded-[22px] bg-gradient-to-br ${style.background} text-white shadow-[0_18px_50px_rgba(15,27,51,0.16)] ${
+      className={`relative isolate overflow-hidden rounded-[22px] ${coverUrl ? "bg-[#0F1B33]" : `bg-gradient-to-br ${style.background}`} text-white shadow-[0_18px_50px_rgba(15,27,51,0.16)] ${
         hero ? "min-h-[260px] sm:min-h-[340px]" : "aspect-[16/10] min-h-[180px]"
       } ${className}`}
     >
-      <div className="absolute -right-10 -top-16 h-52 w-52 rounded-full border-[32px] border-white/10" />
-      <div className="absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-white/10 blur-sm" />
-      <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,transparent_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_54%,transparent_54%)]" />
+      {coverUrl ? (
+        <>
+          {/* Sampul diunggah penyelenggara dan sudah diubah server ke WebP 16:9. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverUrl}
+            alt=""
+            loading={hero ? "eager" : "lazy"}
+            decoding="async"
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0F1B33]/85 via-[#0F1B33]/30 to-[#0F1B33]/10" />
+        </>
+      ) : (
+        <>
+          <div className="absolute -right-10 -top-16 h-52 w-52 rounded-full border-[32px] border-white/10" />
+          <div className="absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-white/10 blur-sm" />
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,transparent_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_54%,transparent_54%)]" />
+        </>
+      )}
 
       <div
         className={`relative flex h-full min-h-[inherit] flex-col justify-between ${
@@ -140,11 +160,13 @@ export function EventCover({
         </div>
 
         <div className={hero ? "max-w-3xl" : "max-w-xl"}>
-          <span className={`inline-flex items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20 ${
-            hero ? "h-14 w-14 sm:h-16 sm:w-16" : "h-11 w-11"
-          }`}>
-            <Icon className={hero ? "h-7 w-7 sm:h-8 sm:w-8" : "h-5 w-5"} />
-          </span>
+          {coverUrl ? null : (
+            <span className={`inline-flex items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20 ${
+              hero ? "h-14 w-14 sm:h-16 sm:w-16" : "h-11 w-11"
+            }`}>
+              <Icon className={hero ? "h-7 w-7 sm:h-8 sm:w-8" : "h-5 w-5"} />
+            </span>
+          )}
           <p className={`mt-4 line-clamp-2 break-words font-heading font-semibold leading-tight tracking-[-0.03em] ${
             hero ? "text-3xl sm:text-4xl lg:text-5xl" : "text-xl sm:text-2xl"
           }`}>

@@ -10,12 +10,14 @@ import {
   formatEventDateTime,
 } from "@/lib/events/presentation";
 import { getPublicCampusEvent } from "@/lib/events/public-service";
+import { eventCoverUrl } from "@/lib/events/online";
 import { getPublicSiteUrl } from "@/lib/marketing/site-origin";
 import {
   ArrowLeft,
   BadgeCheck,
   CalendarDays,
   Clock3,
+  Globe2,
   LockKeyhole,
   MapPin,
   ShieldCheck,
@@ -59,6 +61,7 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
   const event = await resolveEvent(publicSlug);
   if (!event) notFound();
 
+  const coverUrl = eventCoverUrl(event.cover_path);
   const full = event.attendee_count >= event.capacity;
   const registrationClosed = !event.registration_open;
   const registrationLabel = registrationClosed
@@ -78,9 +81,25 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
     startsAt: event.starts_at,
     endsAt: event.ends_at,
     timezone: event.timezone_name,
-    venue: `${event.venue_name}, ${event.venue_area}, ${event.city}`,
+    venue:
+      event.attendance_mode === "online"
+        ? `Online lewat ${event.venue_name}. Link ada di halaman acara StudyDate setelah terdaftar.`
+        : `${event.venue_name}, ${event.venue_area}, ${event.city}`,
     publicUrl,
   };
+  const physicalPlace = {
+    "@type": "Place",
+    name: event.venue_name,
+    address: `${event.venue_area}, ${event.city}`,
+  };
+  // URL VirtualLocation sengaja halaman acara, bukan link rapat.
+  const virtualPlace = { "@type": "VirtualLocation", url: publicUrl };
+  const isOnline = event.attendance_mode === "online";
+  const placeValue = isOnline
+    ? `Online lewat ${event.venue_name}`
+    : `${event.venue_name}, ${event.venue_area}, ${event.city}${
+        event.attendance_mode === "hybrid" ? ". Bisa juga ikut online." : ""
+      }`;
 
   return (
     <article>
@@ -93,13 +112,18 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
           startDate: event.starts_at,
           endDate: event.ends_at,
           eventStatus: "https://schema.org/EventScheduled",
-          eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+          eventAttendanceMode: isOnline
+            ? "https://schema.org/OnlineEventAttendanceMode"
+            : event.attendance_mode === "hybrid"
+              ? "https://schema.org/MixedEventAttendanceMode"
+              : "https://schema.org/OfflineEventAttendanceMode",
           url: publicUrl,
-          location: {
-            "@type": "Place",
-            name: event.venue_name,
-            address: `${event.venue_area}, ${event.city}`,
-          },
+          ...(coverUrl ? { image: [coverUrl] } : {}),
+          location: isOnline
+            ? virtualPlace
+            : event.attendance_mode === "hybrid"
+              ? [physicalPlace, virtualPlace]
+              : physicalPlace,
           organizer: {
             "@type": "Person",
             name: event.organizer_alias,
@@ -120,9 +144,10 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
           <EventCover
             category={event.category}
             title={event.title}
-            city={event.city}
+            city={isOnline ? "Online" : event.city}
             variant="hero"
             className="mt-7 w-full"
+            coverUrl={coverUrl}
           />
 
           <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
@@ -185,7 +210,7 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
           {[
             [CalendarDays, "Mulai", formatEventDateTime(event.starts_at, event.timezone_name)],
             [Clock3, "Selesai", `${formatEventDateTime(event.ends_at, event.timezone_name)} ${eventTimezoneLabel(event.timezone_name)}`],
-            [MapPin, EVENT_VENUE_LABELS[event.venue_category], `${event.venue_name}, ${event.venue_area}, ${event.city}`],
+            [isOnline ? Globe2 : MapPin, isOnline ? "Acara online" : EVENT_VENUE_LABELS[event.venue_category], placeValue],
             [UsersRound, "Kapasitas", `${event.attendee_count} terdaftar dari ${event.capacity} peserta`],
           ].map(([Icon, label, value]) => {
             const DetailIcon = Icon as typeof CalendarDays;
@@ -203,11 +228,23 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
           <div className="flex gap-4">
             <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-brand-blue" aria-hidden="true" />
             <div>
-              <h2 className="font-heading text-xl font-semibold text-brand-navy">Bertemu di tempat umum</h2>
-              <p className="mt-2 leading-7 text-brand-muted">
-                Lokasi acara harus berupa tempat publik. Tetap beri tahu orang
-                terpercaya dan pertahankan kendali atas transportasimu sendiri.
-              </p>
+              {isOnline ? (
+                <>
+                  <h2 className="font-heading text-xl font-semibold text-brand-navy">Link hanya untuk peserta</h2>
+                  <p className="mt-2 leading-7 text-brand-muted">
+                    Link acara online tidak ditampilkan di halaman publik. Peserta
+                    terdaftar melihatnya di halaman acara setelah masuk ke StudyDate.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-heading text-xl font-semibold text-brand-navy">Bertemu di tempat umum</h2>
+                  <p className="mt-2 leading-7 text-brand-muted">
+                    Lokasi acara harus berupa tempat publik. Tetap beri tahu orang
+                    terpercaya dan pertahankan kendali atas transportasimu sendiri.
+                  </p>
+                </>
+              )}
             </div>
           </div>
           <div className="flex gap-4">

@@ -1,6 +1,6 @@
 import {
   EVENT_CATEGORIES,
-  EVENT_VENUE_CATEGORIES,
+  EVENT_ALL_VENUE_CATEGORIES,
 } from "@/lib/events/constants";
 
 export const EVENT_CATEGORY_LABELS: Record<
@@ -24,7 +24,7 @@ export const EVENT_CATEGORY_LABELS: Record<
 };
 
 export const EVENT_VENUE_LABELS: Record<
-  (typeof EVENT_VENUE_CATEGORIES)[number],
+  (typeof EVENT_ALL_VENUE_CATEGORIES)[number],
   string
 > = {
   campus_public_area: "Area publik kampus",
@@ -33,6 +33,7 @@ export const EVENT_VENUE_LABELS: Record<
   coworking_space: "Coworking space",
   community_space: "Ruang komunitas",
   other_public_place: "Tempat umum lainnya",
+  online: "Online",
 };
 
 export function formatEventDateTime(value: string, timezone: string) {

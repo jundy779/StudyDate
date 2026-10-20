@@ -4,6 +4,7 @@ import {
   EVENT_GENERIC_ERROR,
   EVENT_PAGE_SIZE,
   EVENT_REGISTRATION_PAGE_SIZE,
+  type EventAttendanceMode,
   type EventCategory,
   type EventCheckinStatus,
   type EventQuestionType,
@@ -50,6 +51,9 @@ export type CampusEventSummary = CampusEventV2Settings & {
   attendee_count: number;
   rsvp_status: EventRegistrationStatus | null;
   is_organizer: boolean;
+  /** Dari get_campus_event_media (migration 202610210003); null bila belum ada. */
+  cover_path?: string | null;
+  attendance_mode?: EventAttendanceMode;
 };
 
 export type CampusEventV2Settings = {
@@ -306,6 +310,37 @@ export function mapCampusEventError(message?: string) {
   return EVENT_GENERIC_ERROR;
 }
 
+type EventMediaRow = {
+  public_slug: string;
+  cover_path: string | null;
+  attendance_mode: EventAttendanceMode;
+};
+
+/** Sampul dan mode kehadiran. Gagal diam-diam bila migration belum terpasang. */
+async function loadCampusEventMedia(publicSlugs: string[]) {
+  const media = new Map<string, EventMediaRow>();
+  if (!publicSlugs.length) return media;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_campus_event_media", {
+    p_public_slugs: [...new Set(publicSlugs)].slice(0, 50),
+  });
+  if (error) return media;
+  for (const row of (data ?? []) as EventMediaRow[]) media.set(row.public_slug, row);
+  return media;
+}
+
+function withMedia<T extends { public_slug: string }>(
+  event: T,
+  media: Map<string, EventMediaRow>,
+) {
+  const row = media.get(event.public_slug);
+  return {
+    ...event,
+    cover_path: row?.cover_path ?? null,
+    attendance_mode: row?.attendance_mode ?? ("offline" as const),
+  };
+}
+
 export async function listCampusEvents(filters: EventFilters) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("list_campus_events", {
@@ -319,10 +354,13 @@ export async function listCampusEvents(filters: EventFilters) {
   if (error) throw new Error(mapCampusEventError(error.message));
   const rows = (data ?? []) as Omit<CampusEventSummary, keyof CampusEventV2Settings>[];
   const summaries = rows.slice(0, EVENT_PAGE_SIZE);
+  const media = await loadCampusEventMedia(summaries.map((event) => event.public_slug));
   const events = await Promise.all(
     summaries.map(async (event) => {
       const settings = await getCampusEventV2Settings(event.public_slug);
-      return settings ? { ...event, ...settings } : null;
+      return settings
+        ? (withMedia({ ...event, ...settings }, media) as CampusEventSummary)
+        : null;
     }),
   ).then((items) => items.filter((item): item is CampusEventSummary => item !== null));
   const last = events.at(-1);
@@ -346,9 +384,10 @@ export async function getCampusEventV2Settings(publicSlug: string) {
 
 export async function getCampusEvent(publicSlug: string) {
   const supabase = await createClient();
-  const [detailResult, settingsResult] = await Promise.all([
+  const [detailResult, settingsResult, media] = await Promise.all([
     supabase.rpc("get_campus_event", { p_public_slug: publicSlug }),
     supabase.rpc("get_campus_event_v2_settings", { p_public_slug: publicSlug }),
+    loadCampusEventMedia([publicSlug]),
   ]);
   if (detailResult.error) {
     throw new Error(mapCampusEventError(detailResult.error.message));
@@ -362,7 +401,9 @@ export async function getCampusEvent(publicSlug: string) {
   const settings = ((settingsResult.data ?? [])[0] as
     | CampusEventV2Settings
     | undefined);
-  return detail && settings ? { ...detail, ...settings } : null;
+  return detail && settings
+    ? (withMedia({ ...detail, ...settings }, media) as CampusEventDetail)
+    : null;
 }
 
 function formRpcInput(input: EventFormInput | EventUpdateInput) {

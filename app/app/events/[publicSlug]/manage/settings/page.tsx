@@ -9,6 +9,9 @@ import {
 } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventForm } from "@/components/events/event-form";
+import { EventCoverUploader } from "@/components/events/event-cover-uploader";
+import { getCampusEventOnlineLink } from "@/lib/events/media";
+import { eventCoverUrl } from "@/lib/events/online";
 import { EventManagementShell } from "@/components/events/event-management-shell";
 import { getCampusEventManagement } from "@/lib/events/management";
 import {
@@ -59,13 +62,14 @@ export default async function SettingsPage({
   const { publicSlug } = await params;
   const { event, overview } = await getCampusEventManagement(publicSlug, "team");
   const seriesEnabled = process.env.EVENT_SERIES_ENABLED === "true";
-  const [questions, eventCircle, circleOptions, seriesSessions] = await Promise.all([
+  const [questions, eventCircle, circleOptions, seriesSessions, onlineLink] = await Promise.all([
     listCampusEventRegistrationQuestions(event.public_slug),
     getCampusEventCircle(event.public_slug),
     listMyCircleOptionsForEvent(),
     seriesEnabled
       ? listCampusEventSeriesSessions(event.public_slug)
       : Promise.resolve([]),
+    getCampusEventOnlineLink(event.public_slug),
   ]);
   const query = await searchParams;
   const state = first(query.state);
@@ -230,6 +234,24 @@ export default async function SettingsPage({
             </form>
           </section>
 
+          {event.status === "scheduled" && !event.is_past ? (
+            <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-cover-settings-title">
+              <p className="font-hand text-xl text-brand-blue">Biar acaramu mudah dikenali</p>
+              <h2 id="event-cover-settings-title" className="mt-1 font-heading text-2xl font-semibold text-brand-navy">
+                Foto sampul
+              </h2>
+              <div className="mt-6">
+                <EventCoverUploader
+                  publicSlug={event.public_slug}
+                  category={event.category}
+                  title={event.title}
+                  city={event.city}
+                  coverUrl={eventCoverUrl(event.cover_path)}
+                />
+              </div>
+            </section>
+          ) : null}
+
           <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-detail-settings-title">
             <p className="section-label">Detail acara</p>
             <h2 id="event-detail-settings-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
@@ -242,6 +264,7 @@ export default async function SettingsPage({
                   event={event}
                   seriesEditing={seriesSessions.length > 1}
                   submitLabel="Simpan perubahan"
+                  onlineUrl={onlineLink?.meetingUrl}
                 />
               </div>
             ) : (

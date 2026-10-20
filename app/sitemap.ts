@@ -5,8 +5,22 @@ import {
 } from "../lib/marketing/public-routes";
 import { insightArticles } from "../content/insight/articles";
 import { getPublicSiteOrigin } from "../lib/marketing/site-origin";
+import { listPublicCampusEvents } from "../lib/events/public-service";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+async function publicEventEntries(origin: string): Promise<MetadataRoute.Sitemap> {
+  try {
+    const events = await listPublicCampusEvents();
+    return events.map((event) => ({
+      url: `${origin}/events/${event.public_slug}`,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = getPublicSiteOrigin();
   const docsLastModified = new Date(
     `${PUBLIC_DOC_LAST_UPDATED_ISO}T00:00:00.000Z`,
@@ -44,5 +58,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }));
 
-  return [home, events, ...docs, ...articles];
+  const eventPages = await publicEventEntries(origin);
+
+  return [home, events, ...eventPages, ...docs, ...articles];
 }

@@ -34,9 +34,13 @@ test("ECUI-01 every event category receives a branded fallback cover", () => {
   assert.match(cover, /EVENT_CATEGORY_LABELS\[category\]/);
 });
 
-test("ECUI-02 cover is local, decorative, and does not depend on remote images", () => {
+test("ECUI-02 cover is decorative and only shows an organizer photo passed as coverUrl", () => {
   assert.match(cover, /aria-hidden="true"/);
-  assert.doesNotMatch(cover, /https?:\/\/|<img|next\/image|storage\.from/);
+  // Tanpa URL tertanam dan tanpa akses storage langsung; foto hanya lewat prop.
+  assert.doesNotMatch(cover, /https?:\/\/|next\/image|storage\.from/);
+  assert.match(cover, /src=\{coverUrl\}/);
+  assert.match(cover, /alt=""/);
+  assert.equal((cover.match(/<img/g) ?? []).length, 1);
   assert.match(cover, /overflow-hidden/);
   assert.match(cover, /break-words/);
   assert.match(cover, /line-clamp-2/);

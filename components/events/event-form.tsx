@@ -8,13 +8,9 @@ import {
   EVENT_TIMEZONES,
   EVENT_TITLE_MAX,
   EVENT_TITLE_MIN,
-  EVENT_VENUE_AREA_MAX,
-  EVENT_VENUE_AREA_MIN,
-  EVENT_VENUE_CATEGORIES,
-  EVENT_VENUE_NAME_MAX,
-  EVENT_VENUE_NAME_MIN,
 } from "@/lib/events/constants";
 import type { CampusEventDetail } from "@/lib/events/service";
+import { EventVenueFields } from "@/components/events/event-venue-fields";
 import type {
   EventDuplicateCadence,
   EventFormDefaults,
@@ -35,15 +31,6 @@ const categoryLabels: Record<(typeof EVENT_CATEGORIES)[number], string> = {
   meetup: "Meetup",
   hackathon: "Hackathon",
   other: "Lainnya",
-};
-
-const venueLabels: Record<(typeof EVENT_VENUE_CATEGORIES)[number], string> = {
-  campus_public_area: "Area publik kampus",
-  cafe: "Kafe",
-  library: "Perpustakaan",
-  coworking_space: "Coworking space",
-  community_space: "Ruang komunitas",
-  other_public_place: "Tempat publik lainnya",
 };
 
 const timezoneLabels: Record<(typeof EVENT_TIMEZONES)[number], string> = {
@@ -85,6 +72,7 @@ export function EventForm({
   duplicateCadence,
   seriesEditing = false,
   submitLabel,
+  onlineUrl,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   event?: CampusEventDetail;
@@ -93,6 +81,8 @@ export function EventForm({
   duplicateCadence?: EventDuplicateCadence;
   seriesEditing?: boolean;
   submitLabel: string;
+  /** Link acara online saat ini, hanya diisi untuk penyelenggara dan cohost. */
+  onlineUrl?: string | null;
 }) {
   const defaults = createDefaults();
   const initial = event ?? template;
@@ -415,112 +405,16 @@ export function EventForm({
         </div>
       </fieldset>
 
-      <fieldset
-        disabled={event?.schedule_venue_locked}
-        className="border-t border-brand-border pt-7 disabled:opacity-70"
-      >
-        <legend className="font-heading text-xl font-semibold text-brand-navy">
-          Tempat publik
-        </legend>
-        <p className="mt-2 text-sm leading-6 text-brand-muted">
-          Gunakan tempat publik yang ramai dan masih beroperasi. Jangan gunakan rumah,
-          kamar kos, apartemen pribadi, atau kamar hotel.
-        </p>
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          <div>
-            <label htmlFor="event-venue-category" className="text-sm font-semibold text-brand-navy">
-              Jenis tempat
-            </label>
-            <select
-              id="event-venue-category"
-              name="venueCategory"
-              required
-              defaultValue={initial?.venue_category ?? "campus_public_area"}
-              className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
-            >
-              {EVENT_VENUE_CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {venueLabels[category]}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="event-city" className="text-sm font-semibold text-brand-navy">
-              Kota atau wilayah
-            </label>
-            <input
-              id="event-city"
-              name="city"
-              required
-              minLength={2}
-              maxLength={100}
-              defaultValue={initial?.city}
-              className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
-            />
-          </div>
-        </div>
-        <div className="mt-5">
-          <label htmlFor="event-venue-name" className="text-sm font-semibold text-brand-navy">
-            Nama tempat
-          </label>
-          <input
-            id="event-venue-name"
-            name="venueName"
-            required
-            minLength={EVENT_VENUE_NAME_MIN}
-            maxLength={EVENT_VENUE_NAME_MAX}
-            defaultValue={initial?.venue_name}
-            className="focus-ring mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-white px-4 text-sm text-brand-navy"
-          />
-        </div>
-        <div className="mt-5">
-          <label htmlFor="event-venue-area" className="text-sm font-semibold text-brand-navy">
-            Alamat atau area pertemuan
-          </label>
-          <textarea
-            id="event-venue-area"
-            name="venueArea"
-            rows={3}
-            required
-            minLength={EVENT_VENUE_AREA_MIN}
-            maxLength={EVENT_VENUE_AREA_MAX}
-            defaultValue={initial?.venue_area}
-            className="focus-ring mt-2 w-full resize-y rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-navy"
-          />
-        </div>
-      </fieldset>
-
-      <fieldset className="rounded-[18px] border border-brand-border bg-brand-surface p-5">
-        <legend className="px-2 font-heading text-lg font-semibold text-brand-navy">
-          Konfirmasi tempat publik
-        </legend>
-        <p className="mt-1 text-sm leading-6 text-brand-muted">
-          Konfirmasi ini membantu membatasi risiko, tetapi tidak menjamin keselamatan.
-        </p>
-        <div className="mt-4 space-y-3">
-          {[
-            ["confirmsPublicPlace", "Lokasi merupakan tempat publik."],
-            ["confirmsExpectedOperating", "Tempat diperkirakan masih beroperasi saat acara."],
-            ["confirmsNotPrivateResidence", "Lokasi bukan rumah atau ruang tinggal/pribadi."],
-            [
-              "confirmsNoPrivateLocationDisclosure",
-              "Peserta tidak wajib membagikan lokasi privat untuk hadir.",
-            ],
-          ].map(([name, label]) => (
-            <label key={name} className="flex items-start gap-3 text-sm leading-6 text-brand-navy">
-              <input
-                type="checkbox"
-                name={name}
-                required
-                defaultChecked={Boolean(event)}
-                className="mt-1 h-4 w-4 shrink-0 accent-brand-blue"
-              />
-              <span>{label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <EventVenueFields
+        initialMode={
+          event?.attendance_mode ??
+          (initial?.venue_category === "online" ? "online" : "offline")
+        }
+        initialOnlineUrl={onlineUrl ?? ""}
+        locked={Boolean(event?.schedule_venue_locked)}
+        editing={Boolean(event)}
+        venue={initial}
+      />
 
       {event ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">

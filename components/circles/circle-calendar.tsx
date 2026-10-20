@@ -4,6 +4,7 @@ import { MascotHead } from "@/components/brand/mascot-head";
 import { setCircleCalendarFollowAction } from "@/app/app/circles/actions";
 import type { CircleCalendar, CircleCalendarEvent } from "@/lib/circles/calendar";
 import { EVENT_CATEGORY_LABELS, eventTimezoneLabel } from "@/lib/events/presentation";
+import { eventPlaceLine } from "@/lib/events/online";
 
 function dayKey(value: string, timezone: string) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -151,7 +152,7 @@ export function CircleCalendarSection({
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-brand-muted">
                           <span className="inline-flex items-center gap-1.5">
                             <MapPin className="h-4 w-4" aria-hidden="true" />
-                            {event.venue_name}, {event.city}
+                            {eventPlaceLine(event)}
                           </span>
                           <span className="inline-flex items-center gap-1.5">
                             <UsersRound className="h-4 w-4" aria-hidden="true" />

@@ -27,7 +27,10 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
     startsAt: event.starts_at,
     endsAt: event.ends_at,
     timezone: event.timezone_name,
-    venue: `${event.venue_name}, ${event.venue_area}, ${event.city}`,
+    venue:
+      event.attendance_mode === "online"
+        ? `Online lewat ${event.venue_name}. Link ada di halaman acara StudyDate setelah terdaftar.`
+        : `${event.venue_name}, ${event.venue_area}, ${event.city}`,
     publicUrl,
   });
 

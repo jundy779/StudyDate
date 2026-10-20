@@ -85,6 +85,17 @@ export const EVENT_VENUE_CATEGORIES = [
   "community_space",
   "other_public_place",
 ] as const;
+/** Kategori khusus acara online. Tidak dipakai Meeting Flow, karena itu dipisah. */
+export const EVENT_ONLINE_VENUE = "online" as const;
+export const EVENT_ALL_VENUE_CATEGORIES = [
+  ...EVENT_VENUE_CATEGORIES,
+  EVENT_ONLINE_VENUE,
+] as const;
+export const EVENT_ATTENDANCE_MODES = ["offline", "online", "hybrid"] as const;
+export const EVENT_COVER_BUCKET = "event-covers";
+export const EVENT_COVER_MAX_BYTES = 5 * 1024 * 1024;
+export const EVENT_COVER_WIDTH = 1600;
+export const EVENT_COVER_HEIGHT = 900;
 export const EVENT_REPORT_REASONS = [
   "harassment",
   "spam",
@@ -104,7 +115,9 @@ export type EventTeamRole = (typeof EVENT_TEAM_ROLES)[number];
 export type EventTeamStatus = (typeof EVENT_TEAM_STATUSES)[number];
 export type EventCheckinStatus = (typeof EVENT_CHECKIN_STATUSES)[number];
 export type EventTimezone = (typeof EVENT_TIMEZONES)[number];
-export type EventVenueCategory = (typeof EVENT_VENUE_CATEGORIES)[number];
+export type EventPhysicalVenueCategory = (typeof EVENT_VENUE_CATEGORIES)[number];
+export type EventVenueCategory = (typeof EVENT_ALL_VENUE_CATEGORIES)[number];
+export type EventAttendanceMode = (typeof EVENT_ATTENDANCE_MODES)[number];
 
 export const EVENT_GENERIC_ERROR =
   "Campus Event belum dapat diperbarui. Coba lagi sebentar.";

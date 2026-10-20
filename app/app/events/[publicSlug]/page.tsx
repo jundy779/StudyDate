@@ -27,9 +27,13 @@ import {
   listCampusEventRegistrationQuestions,
 } from "@/lib/events/service";
 import { eventSlugSchema } from "@/lib/events/validation";
+import { getCampusEventOnlineLink } from "@/lib/events/media";
+import { eventCoverUrl, meetingPlatformLabel } from "@/lib/events/online";
 import {
   BadgeCheck,
   CalendarDays,
+  ExternalLink,
+  Globe2,
   LockKeyhole,
   MapPin,
   UsersRound,
@@ -151,12 +155,14 @@ export default async function EventDetailPage({
       ? `/app/events/${event.public_slug}/manage/check-in`
       : `/app/events/${event.public_slug}/manage`;
   const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
+  const attendanceMode = event.attendance_mode ?? "offline";
   const [
     eventCircle,
     eventMessages,
     eventAnnouncements,
     ticketState,
     registrationQuestions,
+    onlineLink,
   ] = await Promise.all([
     getCampusEventCircle(event.public_slug),
     canUseParticipantFeatures ? listCampusEventMessages(event.public_slug) : [],
@@ -172,7 +178,12 @@ export default async function EventDetailPage({
     !["pending", "going", "waitlisted"].includes(event.rsvp_status ?? "")
       ? listCampusEventRegistrationQuestions(event.public_slug)
       : [],
+    attendanceMode !== "offline" ? getCampusEventOnlineLink(event.public_slug) : null,
   ]);
+  const venueSummary =
+    attendanceMode === "online"
+      ? `Online (${event.venue_name})`
+      : `${event.venue_name}, ${event.venue_area}, ${event.city}`;
   const ticketingEnabled = process.env.EVENT_TICKETING_ENABLED === "true";
   const [ticketOrderRequired, myTicketOrders] = ticketingEnabled && event.rsvp_status === "going"
     ? await Promise.all([
@@ -258,9 +269,10 @@ export default async function EventDetailPage({
           <EventCover
             category={event.category}
             title={event.title}
-            city={event.city}
+            city={attendanceMode === "online" ? "Online" : event.city}
             variant="hero"
             className="mt-7 w-full"
+            coverUrl={eventCoverUrl(event.cover_path)}
           />
 
           <header className="mt-9 grid gap-8 border-b border-brand-border pb-9 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
@@ -446,15 +458,33 @@ export default async function EventDetailPage({
                 ({timezoneShort(event.timezone_name)})
               </p>
             </div>
-            <div className="min-w-0">
-              <MapPin className="h-5 w-5 text-brand-blue" aria-hidden="true" />
-              <h2 className="mt-3 text-sm font-semibold text-brand-navy">Tempat publik</h2>
-              <p className="mt-2 break-words text-sm leading-6 text-brand-muted">
-                {event.venue_name}
-                <br />
-                {event.venue_area}, {event.city}
-              </p>
-            </div>
+            {attendanceMode === "online" ? (
+              <div className="min-w-0">
+                <Globe2 className="h-5 w-5 text-brand-blue" aria-hidden="true" />
+                <h2 className="mt-3 text-sm font-semibold text-brand-navy">Acara online</h2>
+                <p className="mt-2 break-words text-sm leading-6 text-brand-muted">
+                  Lewat {event.venue_name}
+                  <br />
+                  Link dibagikan ke peserta yang sudah terdaftar.
+                </p>
+              </div>
+            ) : (
+              <div className="min-w-0">
+                <MapPin className="h-5 w-5 text-brand-blue" aria-hidden="true" />
+                <h2 className="mt-3 text-sm font-semibold text-brand-navy">Tempat publik</h2>
+                <p className="mt-2 break-words text-sm leading-6 text-brand-muted">
+                  {event.venue_name}
+                  <br />
+                  {event.venue_area}, {event.city}
+                  {attendanceMode === "hybrid" ? (
+                    <>
+                      <br />
+                      <span className="font-semibold text-brand-blue">Bisa juga ikut online.</span>
+                    </>
+                  ) : null}
+                </p>
+              </div>
+            )}
             <div className="min-w-0">
               <UsersRound className="h-5 w-5 text-brand-blue" aria-hidden="true" />
               <h2 className="mt-3 text-sm font-semibold text-brand-navy">Peserta</h2>
@@ -482,6 +512,40 @@ export default async function EventDetailPage({
               </p>
             </div>
           </section>
+
+          {onlineLink?.hasLink ? (
+            <section
+              className="border-b border-brand-border py-8"
+              aria-labelledby="event-online-link-title"
+            >
+              <div className="flex flex-col gap-4 rounded-2xl border-2 border-brand-navy bg-[#EAF1FF] p-5 shadow-[4px_4px_0_#0F1B33] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div className="min-w-0">
+                  <h2 id="event-online-link-title" className="font-heading text-lg font-semibold text-brand-navy">
+                    Link acara online
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-brand-muted">
+                    {onlineLink.meetingUrl
+                      ? "Jangan sebarkan link ini di luar peserta. Masuk dengan nama samaranmu kalau ingin tetap anonim."
+                      : event.status !== "scheduled"
+                        ? "Link tidak lagi ditampilkan karena acara sudah tidak berjalan."
+                        : "Link muncul di sini setelah pendaftaranmu diterima."}
+                  </p>
+                </div>
+                {onlineLink.meetingUrl ? (
+                  <a
+                    href={onlineLink.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="focus-ring inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl border-2 border-brand-navy bg-brand-blue px-5 text-sm font-semibold text-white"
+                  >
+                    Buka {meetingPlatformLabel(onlineLink.meetingUrl) ?? "link"}
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">(tab baru)</span>
+                  </a>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
 
           {eventCircle ? (
             <section className="border-b border-brand-border py-8">
@@ -614,7 +678,7 @@ export default async function EventDetailPage({
                 attendeeAlias={ownProfile.public_alias}
                 startsAt={event.starts_at}
                 timezone={event.timezone_name}
-                venue={`${event.venue_name}, ${event.venue_area}, ${event.city}`}
+                venue={venueSummary}
               />
               )}
             </section>
