@@ -3,6 +3,10 @@ import { MascotHead } from "@/components/brand/mascot-head";
 import { stickerButton } from "@/components/marketing/brand-ui";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
+import { SocialIcon } from "@/components/brand/social-icon";
+import { getPublicContactLinks } from "@/lib/marketing/contact-links";
+import { CONTACT_LINK_META } from "@/lib/marketing/contact-links-config";
 
 const footerGroups = [
   {
@@ -37,6 +41,36 @@ const footerGroups = [
     ],
   },
 ] as const;
+
+async function FooterContactLinks() {
+  const links = await getPublicContactLinks().catch(() => []);
+  if (!links.length) return null;
+
+  return (
+    <div className="mt-8">
+      <p className="font-hand text-lg text-[#8DB9F6]">Ikuti dan hubungi kami</p>
+      <ul className="mt-3 flex flex-wrap gap-2.5" aria-label="Media sosial dan kontak StudyDate">
+        {links.map((link) => {
+          const label = CONTACT_LINK_META[link.kind].label;
+          const external = link.kind !== "email";
+          return (
+            <li key={link.kind}>
+              <a
+                href={link.url}
+                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 text-white/80 transition-colors hover:border-white hover:bg-white hover:text-brand-navy"
+                aria-label={`${label} StudyDate${external ? " (tab baru)" : ""}`}
+                title={label}
+              >
+                <SocialIcon kind={link.kind} />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 export function PublicFooter() {
   return (
@@ -83,6 +117,9 @@ export function PublicFooter() {
               Ikut Akses Awal
               <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
+            <Suspense fallback={null}>
+              <FooterContactLinks />
+            </Suspense>
           </div>
 
           <nav

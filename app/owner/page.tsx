@@ -9,6 +9,7 @@ import {
   CalendarDays,
   CreditCard,
   GraduationCap,
+  MessageCircle,
   ScrollText,
   ShieldCheck,
   UserCog,
@@ -52,6 +53,7 @@ async function OwnerContent({
           <Link href="/owner/memberships" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CreditCard className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Paket & pembayaran</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur penawaran Plus serta kelola paket mahasiswa melalui email.</p></Link>
           <Link href="/owner/events" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CalendarDays className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Acara Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur izin penyelenggara, status acara, dan halaman yang dilihat pengguna.</p></Link>
           <Link href="/owner/staff" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><UserCog className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Tim operasional</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tambahkan Admin dan pilih tugas yang boleh mereka tangani.</p></Link>
+          <Link href="/owner/contact" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><MessageCircle className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Media sosial & kontak</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Isi WhatsApp, Telegram, Instagram, dan kanal resmi lain yang tampil di footer situs.</p></Link>
           <Link href="/owner/early-access" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ScrollText className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akses Awal</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Periksa pendaftar, terima atau tolak, lalu kirim undangan Akses Awal.</p></Link>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
