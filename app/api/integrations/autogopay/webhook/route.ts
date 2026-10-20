@@ -50,6 +50,9 @@ export async function POST(request: Request) {
   const admin = createServerAdminClient();
   if (!admin) return NextResponse.json({ success: false }, { status: 503 });
   const transaction = parsed.data.transaction;
+  // Preserve the existing membership callback until ticket payments have been
+  // enabled and their database migration has been verified.
+  if (process.env.EVENT_TICKETING_ENABLED === "true" && process.env.EVENT_TICKET_PAYMENTS_ENABLED === "true") {
   const ticketResult = await admin.rpc("finalize_campus_event_autogopay_payment", {
     p_transaction_id: transaction.transaction_id,
     p_provider_order_id: transaction.order_id,
@@ -67,6 +70,7 @@ export async function POST(request: Request) {
   if (ticketResult.error && ticketResult.error.code !== "PGRST202") {
     return NextResponse.json({ success: false }, { status: 503 });
   }
+  }
   const { data, error } = await admin.rpc("finalize_membership_payment", {
     p_provider_transaction_id: transaction.transaction_id,
     p_provider_order_id: transaction.order_id,
@@ -79,3 +83,4 @@ export async function POST(request: Request) {
   }
   return NextResponse.json({ success: true });
 }
+

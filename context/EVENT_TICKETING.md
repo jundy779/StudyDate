@@ -22,6 +22,7 @@ Paket ini menyiapkan jenis tiket, kuota, pesanan, kode, serta fondasi pembayaran
 - Harga disimpan sebagai rupiah bulat, bukan pecahan desimal.
 - Kode akses tidak disimpan mentah. Aplikasi mengirim hash SHA-256 yang sudah dinormalisasi.
 - Checkout berbayar butuh `EVENT_TICKET_PAYMENTS_ENABLED=true`, AutoGoPay aktif, dan `campus_event_payment_settings.is_enabled=true` di database. Default semuanya mati untuk tiket acara.
+- Webhook tiket baru ikut memproses pembayaran jika `EVENT_TICKETING_ENABLED=true` dan `EVENT_TICKET_PAYMENTS_ENABLED=true`. Jangan matikan sakelar ini saat masih ada pembayaran tiket menunggu; selesaikan atau rekonsiliasi dahulu agar callback tidak diarahkan ke alur membership.
 - Peserta bisa membatalkan QRIS yang masih menunggu pembayaran. Callback pembayaran yang datang terlambat tetap tercatat; jika kuota atau pendaftaran sudah berubah, pesanan harus diperiksa manual. Peserta diminta tidak membayar ulang.
 - Payload webhook mentah, nomor kartu, rekening, dan rahasia pembayaran tidak disimpan.
 - Tiket QR check-in yang sudah ada tetap menjadi bukti masuk. Modul ini mengurus pilihan tiket dan pesanan.
