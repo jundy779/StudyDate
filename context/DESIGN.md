@@ -105,6 +105,15 @@ maskot, dengan scroll di dalam dialog pada layar pendek.
 - Detail acara online menampilkan kotak "Link acara online" bergaya stiker hanya untuk yang berhak.
 - Gambar pratinjau per acara: kertas buku tulis di kiri, foto sampul atau stiker maskot di kanan.
 
+### Setelah acara (21 Oktober 2026)
+
+- Rekap memakai kartu stiker (border navy, bayangan padat). Ulasan memakai lima bintang kuning bergaris navy
+  dengan label tulisan tangan ("Keren banget"). Bintang adalah radio asli, jadi tetap jalan dengan keyboard.
+- Sertifikat di web dan PNG memakai kertas buku tulis, nama dengan sorotan stabilo kuning yang aman untuk
+  nama panjang (membungkus, tidak `nowrap`), lencana "Terverifikasi StudyDate", dan kepala maskot girang.
+- Tindakan yang tidak bisa diulang (cabut sertifikat oleh penyelenggara, batalkan sertifikat sendiri) selalu
+  lewat langkah konfirmasi.
+
 ## 7. Gerak dan 3D
 
 Efek 2.5D ringan saja (tilt kartu, kedalaman bayangan), tanpa pustaka 3D, supaya tetap lancar di HP.

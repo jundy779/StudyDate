@@ -111,7 +111,9 @@ Implemented:
   - Owner-managed official contact and social links in the footer (`202610200002`);
   - Circle event calendars with follow notifications and Event Blast fixes (`202610210002`);
   - event cover photos, online and hybrid events with a private meeting link, per-event share images,
-    and public events in the sitemap (`202610210003`).
+    and public events in the sitemap (`202610210003`);
+  - post-event feedback, organizer recaps, and verifiable attendance certificates with a public check page
+    and PNG download (`202610210004`).
   See `docs/operations/event-activation-plan.md` for the order and checks.
 - Server-side sign-out
 

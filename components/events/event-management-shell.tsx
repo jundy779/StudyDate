@@ -13,6 +13,7 @@ const sections = [
   ["report", "Laporan", "/report"],
   ["check-in", "Kehadiran", "/check-in"],
   ["team", "Tim", "/team"],
+  ["after", "Setelah acara", "/after"],
   ["settings", "Pengaturan", "/settings"],
 ] as const;
 
@@ -34,7 +35,7 @@ export function EventManagementShell({
         event.can_manage_registrations) &&
       (key !== "tickets" || process.env.EVENT_TICKETING_ENABLED === "true") &&
       (key !== "check-in" || event.can_check_in) &&
-      ((key !== "team" && key !== "settings") || event.can_manage_team),
+      ((key !== "team" && key !== "settings" && key !== "after") || event.can_manage_team),
   );
 
   return (

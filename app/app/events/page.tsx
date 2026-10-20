@@ -1,5 +1,7 @@
 import { FollowedCalendarStrip } from "@/components/events/followed-calendar-strip";
 import { listMyFollowedCalendarEvents } from "@/lib/circles/calendar";
+import { PendingFeedbackStrip } from "@/components/events/pending-feedback-strip";
+import { listMyPendingEventFeedback } from "@/lib/events/after";
 import {
   EDUCATIONAL_EVENT_CATEGORIES,
   getMyStudentAccess,
@@ -51,13 +53,14 @@ async function EventsContent({ searchParams }: EventsPageProps) {
   const filters = parsed.success ? parsed.data : {};
   const access = await getMyStudentAccess();
   const isSchool = access?.tier === "school";
-  const [result, eligibility, invitations, followedEvents] = await Promise.all([
+  const [result, eligibility, invitations, followedEvents, pendingFeedback] = await Promise.all([
     parsed.success
       ? listCampusEvents(parsed.data)
       : Promise.resolve({ events: [], nextCursor: null }),
     getMyEventOrganizerEligibility(),
     listMyCampusEventTeamInvitations(),
     isSchool ? Promise.resolve([]) : listMyFollowedCalendarEvents(6),
+    listMyPendingEventFeedback(),
   ]);
   const pendingInvitations = invitations.filter(
     (invitation) => invitation.invitation_status === "invited",
@@ -108,6 +111,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               </aside>
             )}
           </header>
+
+          <PendingFeedbackStrip events={pendingFeedback} />
 
           <FollowedCalendarStrip events={followedEvents} />
 

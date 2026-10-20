@@ -28,6 +28,8 @@ import {
 } from "@/lib/events/service";
 import { eventSlugSchema } from "@/lib/events/validation";
 import { getCampusEventOnlineLink } from "@/lib/events/media";
+import { getMyEventAfterState } from "@/lib/events/after";
+import { EventAfterSection } from "@/components/events/event-after-section";
 import { eventCoverUrl, meetingPlatformLabel } from "@/lib/events/online";
 import {
   BadgeCheck,
@@ -163,6 +165,7 @@ export default async function EventDetailPage({
     ticketState,
     registrationQuestions,
     onlineLink,
+    afterState,
   ] = await Promise.all([
     getCampusEventCircle(event.public_slug),
     canUseParticipantFeatures ? listCampusEventMessages(event.public_slug) : [],
@@ -179,6 +182,7 @@ export default async function EventDetailPage({
       ? listCampusEventRegistrationQuestions(event.public_slug)
       : [],
     attendanceMode !== "offline" ? getCampusEventOnlineLink(event.public_slug) : null,
+    event.is_past ? getMyEventAfterState(event.public_slug) : null,
   ]);
   const venueSummary =
     attendanceMode === "online"
@@ -512,6 +516,16 @@ export default async function EventDetailPage({
               </p>
             </div>
           </section>
+
+          {afterState ? (
+            <EventAfterSection
+              publicSlug={event.public_slug}
+              state={afterState}
+              isOrganizer={event.is_organizer}
+              flash={state}
+              notice={notice}
+            />
+          ) : null}
 
           {onlineLink?.hasLink ? (
             <section

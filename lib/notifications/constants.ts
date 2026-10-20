@@ -7,7 +7,9 @@ import {
   Link2,
   MapPin,
   MessageSquare,
+  NotebookPen,
   Sparkles,
+  Star,
   UserMinus,
   Users,
   ShieldCheck,
@@ -42,6 +44,8 @@ export const NOTIFICATION_TYPES = [
   "EVENT_TEAM_INVITED",
   "EVENT_ANNOUNCEMENT",
   "CIRCLE_EVENT_PUBLISHED",
+  "EVENT_FEEDBACK_REQUEST",
+  "EVENT_RECAP_PUBLISHED",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -276,6 +280,24 @@ export function getNotificationCopy(item: NotificationItem): NotificationCopy {
         ),
         Icon: CalendarPlus,
       };
+    case "EVENT_FEEDBACK_REQUEST":
+      return {
+        title: "Gimana acaranya?",
+        description: quotedHeadline(
+          item.headline,
+          "Beri ulasan singkat untuk acara yang baru kamu ikuti.",
+        ),
+        Icon: Star,
+      };
+    case "EVENT_RECAP_PUBLISHED":
+      return {
+        title: "Rekap acara sudah terbit",
+        description: quotedHeadline(
+          item.headline,
+          "Penyelenggara membagikan rekap untuk peserta.",
+        ),
+        Icon: NotebookPen,
+      };
     default: {
       const exhaustive: never = item.type;
       throw new Error(`Unsupported notification type: ${exhaustive}`);
@@ -312,4 +334,6 @@ export const NOTIFICATION_PREFERENCE_LABELS: Record<NotificationType, string> = 
   EVENT_TEAM_INVITED: "Undangan membantu acara",
   EVENT_ANNOUNCEMENT: "Pengumuman dari penyelenggara",
   CIRCLE_EVENT_PUBLISHED: "Acara baru dari kalender yang kamu ikuti",
+  EVENT_FEEDBACK_REQUEST: "Permintaan ulasan setelah acara",
+  EVENT_RECAP_PUBLISHED: "Rekap acara dari penyelenggara",
 };

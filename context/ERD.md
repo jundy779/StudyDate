@@ -489,6 +489,47 @@ erDiagram
 - Pengikut kalender Circle tidak pernah diproyeksikan; hanya jumlahnya.
 - `public_contact_links` dan `platform_settings` berdiri sendiri dan hanya diubah Owner.
 
+```mermaid
+erDiagram
+    CAMPUS_EVENTS ||--o{ CAMPUS_EVENT_FEEDBACK : rated_by
+    AUTH_USERS o|--o{ CAMPUS_EVENT_FEEDBACK : writes
+    CAMPUS_EVENTS ||--o| CAMPUS_EVENT_RECAPS : summarized_by
+    CAMPUS_EVENTS ||--o| CAMPUS_EVENT_CERTIFICATE_SETTINGS : configures
+    CAMPUS_EVENTS ||--o{ CAMPUS_EVENT_CERTIFICATES : issues
+    AUTH_USERS ||--o{ CAMPUS_EVENT_CERTIFICATES : holds
+
+    CAMPUS_EVENT_FEEDBACK {
+        uuid id PK
+        uuid event_id FK
+        uuid user_id FK
+        smallint rating
+        boolean would_attend_again
+        text comment
+    }
+    CAMPUS_EVENT_RECAPS {
+        uuid event_id PK
+        text body
+        timestamptz published_at
+    }
+    CAMPUS_EVENT_CERTIFICATE_SETTINGS {
+        uuid event_id PK
+        boolean enabled
+        text eligibility
+        boolean requires_feedback
+    }
+    CAMPUS_EVENT_CERTIFICATES {
+        uuid id PK
+        uuid event_id FK
+        uuid user_id FK
+        text verify_code UK
+        text recipient_name
+        text attendance_basis
+        timestamptz revoked_at
+    }
+```
+
+- Penyelenggara tidak pernah membaca `recipient_name` maupun penulis ulasan.
+
 ## 8. Notifications, moderation, and account lifecycle
 
 Core supporting tables include:

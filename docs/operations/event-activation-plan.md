@@ -106,6 +106,23 @@ Memeriksa:
 Mematikan: tidak ada saklar. Sampul bisa dihapus per acara. Bila perlu menghentikan
 link online, kosongkan tabel `campus_event_online_links`.
 
+## 2d. Ulasan, rekap, dan sertifikat
+
+Kode: migration `202610210004_event_after_v1.sql`. Tidak ada flag. Permintaan ulasan otomatis baru jalan
+setelah penjadwal di bagian 1 dinyalakan; tanpa itu, peserta tetap melihat ajakan ulasan di halaman Acara
+dan halaman detail acara.
+
+Memeriksa (pakai acara uji yang sudah selesai):
+- [ ] Peserta terdaftar mengisi ulasan, lalu mengubahnya. Penyelenggara tidak bisa mengulas acaranya sendiri.
+- [ ] Tab "Setelah acara" menampilkan angka gabungan. Komentar baru muncul setelah 3 ulasan, tanpa alias.
+- [ ] Rekap pertama mengirim notifikasi ke peserta; mengubah rekap tidak mengirim lagi.
+- [ ] Nyalakan sertifikat dengan syarat check-in. Peserta tanpa check-in melihat alasannya.
+- [ ] Peserta mengambil sertifikat, membuka `/certificates/<kode>`, dan mengunduh PNG.
+- [ ] Penyelenggara mencabut; halaman cek berubah menjadi "tidak berlaku" tanpa nama.
+- [ ] Setelah penjadwal menyala: permintaan ulasan terkirim sekali, 1 sampai 48 jam setelah acara.
+
+Mematikan: per acara lewat pengaturan sertifikat. Tidak ada saklar global.
+
 ## 3. Acara berseri
 
 Kode: migration `202610170002`, `202610170003`, flag `EVENT_SERIES_ENABLED`.

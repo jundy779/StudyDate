@@ -658,7 +658,18 @@ data lokasi di dalamnya dibuang. Tanpa foto, acara memakai sampul kategori.
 Link acara resmi publik menampilkan gambar pratinjau berisi judul, waktu, tempat, dan sampul. Acara resmi
 publik masuk sitemap.
 
+### Setelah acara: ulasan, rekap, sertifikat
+- Peserta terdaftar memberi nilai 1 sampai 5, "mau ikut lagi", dan komentar opsional, sampai 14 hari setelah
+  acara selesai. Penyelenggara melihat jumlah, rata-rata, sebaran, dan tingkat kehadiran. Komentar tampil
+  tanpa nama samaran dan baru dibuka setelah ada minimal 3 ulasan.
+- Penyelenggara atau cohost menulis rekap untuk peserta. Terbit pertama kali mengirim notifikasi.
+- Sertifikat kehadiran opsional per acara: untuk yang check-in atau semua peserta terdaftar, boleh wajib
+  ulasan. Peserta menulis namanya sendiri dan menyetujui bahwa nama itu tampil di halaman cek. Penyelenggara
+  tidak melihat nama itu. Setiap sertifikat punya kode cek publik dan bisa diunduh sebagai PNG. Peserta bisa
+  membatalkan sertifikatnya; penyelenggara bisa mencabut.
+- Permintaan ulasan otomatis ikut penjadwal produk, yang masih mati sampai dinyalakan.
+
 ### Yang masih kurang dibanding Luma
-Feedback dan rekap setelah acara, sertifikat, email ke peserta, alur refund tiket berbayar, visibilitas
+Email ke peserta, alur refund tiket berbayar, visibilitas
 unlisted dan undangan, filter peta atau kota, simpan acara tersinkron akun, analitik penyelenggara, dan
 acara beberapa hari.

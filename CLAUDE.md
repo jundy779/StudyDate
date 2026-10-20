@@ -498,7 +498,7 @@ Tabel ini adalah snapshot dokumentasi dan repository. Untuk status remote terbar
 | Kalender Circle dan ikuti kalender | **Repository implemented** | Migration 202610210002; notifikasi lewat trigger database. |
 | Foto sampul acara | **Repository implemented** | Migration 202610210003, bucket event-covers; unggah belum diuji ke Storage sungguhan. |
 | Acara online dan hybrid | **Repository implemented** | Migration 202610210003; link hanya untuk penyelenggara, tim, dan peserta terdaftar. |
-| Feedback, rekap, sertifikat acara | **Planned** | Tahap berikutnya rencana Acara. |
+| Ulasan, rekap, dan sertifikat acara | **Repository implemented** | Migration 202610210004; halaman cek publik /certificates/[kode]; permintaan ulasan otomatis ikut penjadwal yang masih OFF. |
 | Email ke peserta acara | **Planned** | Notifikasi acara masih in-app. |
 | Simpan Acara publik | **Local/device only** | Bookmark tersimpan di localStorage perangkat; filter melalui /events?saved=1; belum sinkron akun/Supabase. |
 | Account & Privacy controls | **Remote rollout verified menurut PRD** | Profil, privasi, blokir, discoverability, deletion lifecycle. |
@@ -969,6 +969,8 @@ Jangan memakai daftar ini untuk membuat SQL. Baca migration aktual dan context/S
 - /events
 - /events/[publicSlug]
 - /events/[publicSlug]/calendar.ics
+- /certificates/[code] (cek keaslian sertifikat, noindex)
+- /certificates/[code]/image
 - /insight
 - /insight/[slug]
 - /privacy
@@ -1010,6 +1012,7 @@ Jangan memakai daftar ini untuk membuat SQL. Baca migration aktual dan context/S
 - /app/notifications
 - /app/membership
 - /app/verification
+- /app/certificates
 
 ### Organizer Event
 
@@ -1019,6 +1022,7 @@ Jangan memakai daftar ini untuk membuat SQL. Baca migration aktual dan context/S
 - /manage/check-in/scan
 - /manage/team
 - /manage/settings
+- /manage/after
 - /manage/report
 
 ### Staff/Admin

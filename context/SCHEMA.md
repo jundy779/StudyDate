@@ -990,3 +990,34 @@ Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji
 - `campus_events.cover_path`: format `<24 hex slug>/<32 hex acak>.webp`, prefix wajib sama dengan slug acara.
 - Bucket Storage `event-covers`: publik untuk dibaca, hanya `image/webp`, maksimal 2 MB, tanpa policy tulis
   untuk pengguna. Server menulis memakai service role setelah foto diubah ke WebP 1600x900 tanpa EXIF.
+
+## Setelah acara: ulasan, rekap, sertifikat (repository migration 202610210004)
+
+Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji di Postgres lokal.
+
+- Batas frekuensi baru: `feedback_hour` (20 per jam), `recap_day` (10 per hari), `certificate_day` (10 per hari).
+- Jenis notifikasi baru: `EVENT_FEEDBACK_REQUEST` dan `EVENT_RECAP_PUBLISHED` (metadata `title` saja).
+- Helper: `campus_event_has_ended(event_id)` (status `scheduled`/`archived` dan `ends_at` sudah lewat),
+  `campus_event_certificate_code()` (12 karakter dari alfabet tanpa 0, 1, I, L, O, format `XXXX-XXXX-XXXX`),
+  `campus_event_certificate_name_valid(text)`, `campus_event_certificate_blocker(event_id, user_id)`.
+- `campus_event_feedback (event_id, user_id null, rating 1-5, would_attend_again, comment 3-800)`: unik per
+  peserta. `user_id` di-set null saat akun dihapus supaya angka gabungan tetap benar.
+- `campus_event_recaps (event_id PK, body 20-3000, published_at, updated_at, updated_by)`.
+- `campus_event_certificate_settings (event_id PK, enabled, eligibility checked_in|registered,
+  requires_feedback)`.
+- `campus_event_certificates`: `verify_code` unik, `recipient_name` ditulis peserta, salinan judul, tanggal,
+  zona waktu, alias penyelenggara, dan status resmi saat terbit; `revoked_by` `recipient` atau `organizer`.
+- Semua tabel privat (tanpa grant) dan, kecuali pengaturan sertifikat, ditolak saat akun terkunci penghapusan.
+- RPC peserta: `submit_campus_event_feedback`, `list_my_pending_event_feedback`,
+  `get_my_campus_event_after_state`, `claim_campus_event_certificate`, `revoke_my_campus_event_certificate`,
+  `list_my_campus_event_certificates`.
+- RPC penyelenggara/cohost: `get_campus_event_after_summary`, `list_campus_event_feedback_comments` (kosong
+  bila ulasan kurang dari 3; tanpa identitas, urutan acak tetap), `set_campus_event_recap` (notifikasi saat
+  terbit pertama), `set_campus_event_certificate_settings`, `list_campus_event_certificate_recipients` (alias
+  pendaftaran, tanpa nama sertifikat), `revoke_campus_event_certificate` (lewat ID pendaftaran).
+- RPC publik: `verify_campus_event_certificate(code)` boleh dipanggil `anon`. Sertifikat yang dicabut atau
+  milik akun yang sedang dihapus hanya mengembalikan status `revoked`.
+- `product_scheduler_tick()` ditambah permintaan ulasan 1 sampai 48 jam setelah acara selesai, satu kali per
+  peserta. Isi lain tidak berubah.
+- Catatan uji lokal: pola `timezone('utc', now())` mengandaikan zona waktu sesi UTC (bawaan Supabase). Di
+  Postgres lokal berzona Asia/Jakarta, pengingat 24 jam bisa salah hitung; set `timezone = 'UTC'` saat menguji.

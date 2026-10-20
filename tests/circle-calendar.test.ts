@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import {
@@ -55,8 +55,15 @@ test("event announcements can actually be sent", () => {
 });
 
 test("notification types stay in sync with the database and have readable labels", () => {
+  // Bandingkan dengan migration terakhir yang mendefinisikan ulang daftar jenis notifikasi.
+  const latestTypeMigration = readdirSync(join(process.cwd(), "supabase/migrations"))
+    .filter((name) => name.endsWith(".sql"))
+    .sort()
+    .map((name) => read(`supabase/migrations/${name}`))
+    .filter((sql) => /add constraint user_notifications_type_allowed/.test(sql))
+    .at(-1) ?? "";
   for (const type of NOTIFICATION_TYPES) {
-    assert.match(migration, new RegExp(`'${type}'`), type);
+    assert.match(latestTypeMigration, new RegExp(`'${type}'`), type);
     assert.ok(NOTIFICATION_PREFERENCE_LABELS[type], type);
     assert.doesNotMatch(NOTIFICATION_PREFERENCE_LABELS[type], /_/);
   }

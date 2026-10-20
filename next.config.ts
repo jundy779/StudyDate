@@ -65,6 +65,10 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   cacheComponents: true,
   poweredByHeader: false,
+  // Font untuk sertifikat PNG dibaca dari disk saat runtime.
+  outputFileTracingIncludes: {
+    "/certificates/[code]/image": ["./assets/fonts/**"],
+  },
   async headers() {
     return [
       {

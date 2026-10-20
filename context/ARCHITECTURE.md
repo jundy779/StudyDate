@@ -832,3 +832,16 @@ acara dibuat atau diubah. Batas data:
 Sampul WebP diubah ke JPEG di server sebelum dirender. Tanpa sampul, gambar memakai stiker maskot. JSON-LD
 memakai `OnlineEventAttendanceMode`, `MixedEventAttendanceMode`, atau `OfflineEventAttendanceMode`, dan
 `VirtualLocation` menunjuk halaman acara, bukan link rapat. `app/sitemap.ts` memuat acara resmi publik.
+
+### Setelah acara (migration 202610210004)
+- Data peserta di halaman acara datang dari satu RPC, `get_my_campus_event_after_state`, yang dimuat hanya
+  bila acara sudah lewat. Komponen `components/events/event-after-section.tsx` menampilkan rekap, form ulasan,
+  dan sertifikat. Server action ada di `app/app/events/after-actions.ts`; aturan bersama (zod, nama, kode) di
+  `lib/events/after-rules.ts` supaya bisa diuji tanpa server.
+- Penyelenggara memakai tab baru `/app/events/[slug]/manage/after`.
+- Halaman cek publik `/certificates/[code]` dan PNG `/certificates/[code]/image` memanggil
+  `verify_campus_event_certificate` lewat service role. Halaman diberi `noindex`, `/certificates/` ditolak di
+  robots, dan PNG dikirim `no-store` supaya pencabutan langsung berlaku.
+- PNG sertifikat (1754x1240) memakai Poppins dari `assets/fonts/` (OFL), dimasukkan ke bundle lewat
+  `outputFileTracingIncludes` di `next.config.ts`.
+- `lib/events/after.ts` memperlakukan RPC yang belum ada sebagai fitur belum tersedia.
