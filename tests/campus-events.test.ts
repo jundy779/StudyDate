@@ -366,7 +366,7 @@ test("CE-42 detail publik berisi count tanpa attendee list", () => {
     /organizer_profile\.verification_status = 'verified',\s*target\.status,\s*target\.ends_at <=/,
   );
   assert.doesNotMatch(
-    detail.match(/returns table \(([\s\S]*?)\)\nlanguage/)?.[1] ?? "",
+    detail.match(/returns table \(([\s\S]*?)\)\r?\nlanguage/)?.[1] ?? "",
     /\b(user_id|email|first_name|contact|uuid)\b/i,
   );
 });
@@ -377,7 +377,7 @@ test("CE-43 attendee list hanya organizer atau RSVP going", () => {
   assert.equal(model.listAttendees(B, slug).length, 2);
 });
 test("CE-44 attendee projection adalah allowlist aman", () => {
-  const projection = sql.match(/create or replace function public\.list_campus_event_attendees[\s\S]*?returns table \(([\s\S]*?)\)\nlanguage/)?.[1];
+  const projection = sql.match(/create or replace function public\.list_campus_event_attendees[\s\S]*?returns table \(([\s\S]*?)\)\r?\nlanguage/)?.[1];
   assert.ok(projection);
   assert.doesNotMatch(projection, /\b(user_id|email|first_name|photo|contact|uuid)\b/i);
   assert.match(projection, /public_alias[\s\S]*rsvped_at/);

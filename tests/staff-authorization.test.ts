@@ -134,7 +134,7 @@ test("staff tables have RLS, no direct grants, and sanitized audit output", () =
   }
   assert.match(migration, /right\(event\.target_user_id::text, 8\)/);
   const eventTable = migration.match(
-    /create table public\.staff_role_events \(([\s\S]*?)\n\);/,
+    /create table public\.staff_role_events \(([\s\S]*?)\r?\n\);/,
   );
   assert.ok(eventTable);
   assert.doesNotMatch(eventTable[1], /email|payload|token|path/);

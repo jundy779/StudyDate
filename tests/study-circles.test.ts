@@ -124,7 +124,7 @@ test("SC-11–SC-17 member projection is allowlisted and contains no private fie
     "public_alias",
   ]);
   const memberProjection = migration.match(
-    /create or replace function public\.list_study_circle_members[\s\S]*?returns table \(([\s\S]*?)\)\nlanguage/,
+    /create or replace function public\.list_study_circle_members[\s\S]*?returns table \(([\s\S]*?)\)\r?\nlanguage/,
   )?.[0];
   const memberFunction = migration.match(
     /create or replace function public\.list_study_circle_members[\s\S]*?create or replace function public\.list_study_circle_messages/,

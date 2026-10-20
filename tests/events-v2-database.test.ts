@@ -202,14 +202,14 @@ test("EV2-08 participant enumeration is management-only and paginated", () => {
     /case when is_checkin_only then '' else profile\.campus end/,
   );
   assert.doesNotMatch(
-    attendees.match(/returns table \(([\s\S]*?)\)\nlanguage/)?.[1] ?? "",
+    attendees.match(/returns table \(([\s\S]*?)\)\r?\nlanguage/)?.[1] ?? "",
     /\b(email|nim|first_name|contact|ticket_hash|user_id|uuid)\b/i,
   );
   assert.match(registrations, /registration_answers jsonb/);
   assert.match(registrations, /least\(greatest\(coalesce\(p_limit, 51\), 1\), 101\)/);
   assert.match(registrations, /\(rsvp\.rsvped_at, rsvp\.public_id\)/);
   assert.doesNotMatch(
-    registrations.match(/returns table \(([\s\S]*?)\)\nlanguage/)?.[1] ?? "",
+    registrations.match(/returns table \(([\s\S]*?)\)\r?\nlanguage/)?.[1] ?? "",
     /\b(email|nim|first_name|contact|ticket_hash|user_id|uuid)\b/i,
   );
 });
