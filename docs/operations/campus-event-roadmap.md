@@ -3,6 +3,10 @@
 Status: migration `202608210003`–`202608210010` sudah deployed dan remote lint
 bersih. Scheduler tetap OFF sampai live QA dan approval aktivasi terpisah.
 
+Untuk fitur Acara yang ditambahkan Oktober 2026 (Event Blast, kalender Circle, foto sampul, acara
+online, tiket), urutan menyalakan dan cara memeriksa ada di
+[`event-activation-plan.md`](event-activation-plan.md).
+
 ## Urutan
 
 1. Pastikan remote sudah memuat `202608170006`, lalu rencanakan `202608210001`

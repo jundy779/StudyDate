@@ -452,6 +452,43 @@ erDiagram
 
 Telegram is a transport for an existing StudyDate Anonymous Chat. It must not become a second identity system or reveal Telegram metadata to the other participant.
 
+## 5b. Tambahan Oktober 2026
+
+```mermaid
+erDiagram
+    CAMPUS_EVENTS ||--o| CAMPUS_EVENT_ONLINE_LINKS : may_have
+    STUDY_CIRCLES ||--o{ STUDY_CIRCLE_CALENDAR_FOLLOWS : followed_by
+    AUTH_USERS ||--o{ STUDY_CIRCLE_CALENDAR_FOLLOWS : follows
+    STUDY_CIRCLES ||--o{ CAMPUS_EVENT_CIRCLE_LINKS : lists
+    CAMPUS_EVENTS ||--o{ CAMPUS_EVENT_CIRCLE_LINKS : listed_in
+
+    CAMPUS_EVENT_ONLINE_LINKS {
+        uuid event_id PK
+        text meeting_url
+        timestamptz updated_at
+        uuid updated_by FK
+    }
+    STUDY_CIRCLE_CALENDAR_FOLLOWS {
+        uuid circle_id PK
+        uuid user_id PK
+        timestamptz created_at
+    }
+    PUBLIC_CONTACT_LINKS {
+        text kind PK
+        text url
+        boolean is_visible
+    }
+    PLATFORM_SETTINGS {
+        text key PK
+        boolean bool_value
+    }
+```
+
+- `campus_events.cover_path` menunjuk file WebP di bucket publik `event-covers`.
+- Link rapat online hanya keluar lewat RPC kepada penyelenggara, tim acara, dan peserta terdaftar.
+- Pengikut kalender Circle tidak pernah diproyeksikan; hanya jumlahnya.
+- `public_contact_links` dan `platform_settings` berdiri sendiri dan hanya diubah Owner.
+
 ## 8. Notifications, moderation, and account lifecycle
 
 Core supporting tables include:

@@ -106,6 +106,13 @@ Implemented:
   synchronized with the StudyDate project; controlled rollout has not started
   and automated/live audits did not call the real provider.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
+- Oktober 2026 (repository only, migrations not yet applied remotely):
+  - account-type access tiers and an Owner switch for mandatory verification (`202610200001`);
+  - Owner-managed official contact and social links in the footer (`202610200002`);
+  - Circle event calendars with follow notifications and Event Blast fixes (`202610210002`);
+  - event cover photos, online and hybrid events with a private meeting link, per-event share images,
+    and public events in the sitemap (`202610210003`).
+  See `docs/operations/event-activation-plan.md` for the order and checks.
 - Server-side sign-out
 
 Not implemented yet:
@@ -330,7 +337,8 @@ The Early Access flow includes:
 | `npm run test:contact-reveal` | Run Contact Reveal static contract and behavioral tests |
 | `npm run test:notifications` | Run Notifications v1 static/privacy/behavioral tests |
 | `npm run test:circles` | Run Study Circle privacy, abuse, projection, and lifecycle tests |
-| `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, and lifecycle tests |
+| `npm run test:events` | Run Campus Events safety, privacy, RSVP, concurrency, lifecycle, cover, and online-link tests |
+| `npm run brand:mascot-stickers` | Export mascot expression PNGs, white-border stickers, and 1080 px squares to `public/brand/mascot/expressions/` |
 | `npm run test:account-privacy` | Run Account & Privacy settings, block, projection, deletion-gate, and lifecycle tests |
 | `npm run test:telegram` | Run Telegram Companion webhook, linking, relay, delivery, privacy, unlink, and deletion contracts |
 | `npm run test:telegram:browser` | Audit local Telegram Companion states and dialog accessibility across five viewports |

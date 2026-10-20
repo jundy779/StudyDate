@@ -932,3 +932,61 @@ Status: **Repository implemented**. Belum dipasang ke Supabase production.
 - RPC: `get_my_student_access()` untuk mahasiswa; `owner_get_student_verification_requirement()` dan `owner_set_student_verification_requirement(boolean)` untuk Owner.
 
 Saat saklar menyala, acara milik penyelenggara yang belum terverifikasi (misalnya hanya lewat izin Owner) ikut tidak tampil, karena `list_campus_events` memeriksa `is_campus_event_student` milik penyelenggara.
+
+## Tautan kontak dan media sosial resmi (repository migration 202610200002)
+
+Status: **Repository implemented**. Belum dipasang ke Supabase production.
+
+- `public_contact_links`: tabel privat, satu baris per `kind` (`whatsapp`, `telegram`, `telegram_channel`,
+  `telegram_group`, `telegram_bot`, `threads`, `instagram`, `facebook`, `x`, `youtube`, `email`). Kolom `url`,
+  `is_visible`, `updated_at`, `updated_by`. Tidak ada data awal, jadi footer kosong sampai Owner mengisi.
+- `contact_link_host_allowed(kind, url)`: wajib `https://` dengan host sesuai jenis (misalnya `t.me` untuk
+  Telegram), atau `mailto:` untuk email. Dipakai sebagai constraint dan di RPC.
+- RPC Owner: `owner_list_contact_links()`, `owner_save_contact_link(kind, url, is_visible)`. URL kosong berarti
+  hapus. Footer publik membaca lewat service role dan hanya menampilkan baris `is_visible = true`.
+
+## Perbaikan acara (repository migration 202610210001)
+
+`expire_campus_event_ticket_orders(limit)` sekarang memeriksa `auth.role()` (bukan `request.jwt.claim.role`
+lama) dan menerima panggilan dari pg_cron (`postgres`/`supabase_admin`). Jadwal tidak dibuat oleh migration.
+Lihat `docs/operations/event-activation-plan.md`.
+
+## Kalender Circle (repository migration 202610210002)
+
+Status: **Repository implemented**. Belum dipasang ke Supabase production.
+
+- `study_circle_calendar_follows (circle_id, user_id, created_at)`: tabel privat. Pemilik Circle tidak bisa
+  mengikuti kalendernya sendiri. Daftar pengikut tidak pernah diproyeksikan, hanya jumlahnya.
+- `can_view_study_circle(circle_id, user_id)` dan `can_view_listed_campus_event(event_id, user_id)` sebagai
+  pemeriksa akses bersama (cakupan kampus, blokir dua arah, status).
+- RPC: `get_study_circle_calendar`, `list_study_circle_calendar_events`, `set_study_circle_calendar_follow`
+  (batas 30 per jam, bucket `calendar_follow`), `list_my_followed_calendar_events`.
+- Trigger `campus_event_circle_links_notify_followers` mengirim notifikasi `CIRCLE_EVENT_PUBLISHED` saat acara
+  ditautkan ke Circle. Jenis notifikasi baru ditambahkan ke allowlist, metadata aman, dan preferensi notifikasi.
+- Perbaikan Event Blast: bucket `announcement_day` diizinkan, `target_path` boleh memakai fragmen
+  `#[a-z][a-z0-9-]{0,39}`, dan `recipient_count` yang ambigu di `create_campus_event_announcement` dibereskan.
+  Sebelum migration ini, pengumuman selalu gagal.
+
+## Foto sampul dan acara online (repository migration 202610210003)
+
+Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji di Postgres lokal.
+
+- `campus_events.venue_category` menerima `online`. `create_campus_event` dan `update_campus_event` hanya
+  mewajibkan empat konfirmasi tempat publik dan pemeriksaan lokasi pribadi bila kategori bukan `online`.
+- `campus_event_online_links (event_id PK, meeting_url, updated_at, updated_by)`: tabel privat, tanpa grant.
+  `campus_event_meeting_url_allowed(url)` mewajibkan `https://` dengan host Zoom (termasuk subdomain),
+  Google Meet, Microsoft Teams, YouTube, Webex (termasuk subdomain), atau Jitsi Meet.
+- Mode kehadiran diturunkan, tidak disimpan: `online` bila kategori tempat online, `hybrid` bila tempat fisik
+  punya link, selain itu `offline`.
+- `can_manage_campus_event_content(event_id, user_id)`: penyelenggara atau cohost aktif.
+- RPC:
+  - `set_campus_event_online_link(slug, url)`: penyelenggara/cohost, acara `scheduled`. URL null menghapus.
+  - `get_campus_event_online_link(slug)` → `has_link`, `meeting_url`, `can_view`. `meeting_url` hanya terisi
+    untuk penyelenggara, cohost, petugas check-in, dan peserta berstatus `going`, selama acara `scheduled`.
+  - `set_campus_event_cover(slug, path)`: mengembalikan path lama supaya server bisa menghapus filenya.
+    Memakai batas `edit_day` (30 per hari).
+  - `get_campus_event_media(slugs[])`: `public_slug`, `cover_path`, `attendance_mode` untuk acara yang boleh
+    dilihat pemanggil, maksimal 50 slug.
+- `campus_events.cover_path`: format `<24 hex slug>/<32 hex acak>.webp`, prefix wajib sama dengan slug acara.
+- Bucket Storage `event-covers`: publik untuk dibaca, hanya `image/webp`, maksimal 2 MB, tanpa policy tulis
+  untuk pengguna. Server menulis memakai service role setelah foto diubah ke WebP 1600x900 tanpa EXIF.

@@ -90,6 +90,21 @@ Aturan teks yang berlaku di seluruh situs:
 - Tidak memakai tanda pisah panjang (em dash) di teks pengguna. Judul tab memakai "Judul | StudyDate ID".
 - Halaman kosong memakai `MascotEmptyState` dengan kepala maskot vektor, bukan PNG pose beresolusi rendah.
 
+### Footer, Akses Awal, dan kontak
+
+Footer memakai tepi bergelombang, judul kolom huruf tangan, dan maskot kecil. Ikon media sosial (simple-icons)
+hanya tampil untuk tautan yang diisi dan diaktifkan Owner. Dialog Akses Awal memakai tombol stiker dan kepala
+maskot, dengan scroll di dalam dialog pada layar pendek.
+
+### Acara: sampul dan cara ikut (21 Oktober 2026)
+
+- `EventCover` menampilkan foto penyelenggara bila ada, dengan gradasi navy dari bawah supaya judul tetap
+  terbaca. Tanpa foto, tetap memakai sampul kategori.
+- Pilihan "Cara ikut" berupa tiga kartu (Tatap muka, Online, Keduanya). Kartu terpilih memakai gaya stiker
+  (border navy dan bayangan padat) dan cincin fokus saat dipilih dengan keyboard.
+- Detail acara online menampilkan kotak "Link acara online" bergaya stiker hanya untuk yang berhak.
+- Gambar pratinjau per acara: kertas buku tulis di kiri, foto sampul atau stiker maskot di kanan.
+
 ## 7. Gerak dan 3D
 
 Efek 2.5D ringan saja (tilt kartu, kedalaman bayangan), tanpa pustaka 3D, supaya tetap lancar di HP.

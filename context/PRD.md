@@ -621,3 +621,44 @@ Daftar Pesan mendukung filter status dan pencarian berdasarkan nama samaran, kam
 Draf disimpan di perangkat pengguna maksimal tujuh hari, dihapus setelah pesan terkirim, dan tidak tersinkron ke perangkat lain. Pencarian lokal tidak mengirim kata kunci kepada lawan bicara dan tidak memasukkan pesan yang sudah dihapus dari tampilan.
 
 Pencarian seluruh riwayat, sematkan/arsipkan/bisukan percakapan, edit/hapus pesan, lampiran, pesan suara, dan push notification belum termasuk kemampuan ini. Fitur tersebut memerlukan aturan server, penyimpanan, moderasi, dan pengujian privasi sebelum dapat dinyatakan siap.
+
+## Pembaruan 20 dan 21 Oktober 2026 (repository implemented)
+
+Semua di bawah ini sudah ada di repository dan teruji lokal, tetapi migration-nya belum dipasang di
+Supabase production. Jangan disebut aktif sebelum dipasang dan dicek.
+
+### Akses per jenis akun
+- Akun `@gmail.com` dan `@vk.com` wajib lolos verifikasi PDDikti untuk fitur sosial dan acara bila saklar
+  Owner `require_student_verification` menyala.
+- Akun `.ac.id` dan `.sch.id`: verifikasi opsional. Keputusan tim: semua akun tetap diarahkan memakai
+  verifikasi PDDikti.
+- Akun `.sch.id` hanya mendapat acara edukatif (belajar bareng, coding, desain, bahasa, persiapan ujian,
+  workshop, seminar). Cari Teman, Perkenalan, Pesan, dan Circle disembunyikan. Akun sekolah tidak bisa
+  menjadi penyelenggara.
+
+### Kontak resmi StudyDate
+Footer menampilkan WhatsApp, Telegram (akun, kanal, grup, bot), Threads, Instagram, Facebook, X, YouTube,
+dan email yang diisi Owner di Ruang Operasional. Tidak ada tautan contoh.
+
+### Kalender Circle
+Setiap Circle punya kalender acara. Pengguna bisa mengikuti kalender tanpa bergabung ke Circle dan mendapat
+notifikasi saat acara baru ditautkan. Identitas pengikut tidak ditampilkan.
+
+### Acara online dan hybrid
+- Penyelenggara memilih Tatap muka, Online, atau Keduanya.
+- Link rapat hanya untuk penyelenggara, tim acara, dan peserta terdaftar. Halaman publik hanya menulis
+  "Online lewat <platform>".
+- Acara tatap muka tetap wajib di tempat publik dengan empat konfirmasi.
+
+### Foto sampul
+Penyelenggara dan cohost bisa mengunggah foto sampul (JPG, PNG, WebP, maksimal 5 MB). Foto dipotong 16:9 dan
+data lokasi di dalamnya dibuang. Tanpa foto, acara memakai sampul kategori.
+
+### Pratinjau saat dibagikan
+Link acara resmi publik menampilkan gambar pratinjau berisi judul, waktu, tempat, dan sampul. Acara resmi
+publik masuk sitemap.
+
+### Yang masih kurang dibanding Luma
+Feedback dan rekap setelah acara, sertifikat, email ke peserta, alur refund tiket berbayar, visibilitas
+unlisted dan undangan, filter peta atau kota, simpan acara tersinkron akun, analitik penyelenggara, dan
+acara beberapa hari.

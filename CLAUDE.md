@@ -2,7 +2,7 @@
 
 Dokumen ini adalah handoff utama agar Claude memahami StudyDate ID sebagai produk, brand, sistem, dan repository. Baca dokumen ini sebelum membuat rencana, menulis copy, mengubah desain, mengedit kode, mengubah database, atau menyatakan status fitur.
 
-Diperbarui: 9 Oktober 2026  
+Diperbarui: 21 Oktober 2026 (tabel status, route, dan akses akun; bagian lain dari 9 Oktober 2026)  
 Repository: https://github.com/jundy779/StudyDate  
 Production domain: https://studydate.id  
 Branch utama: main  
@@ -491,7 +491,15 @@ Tabel ini adalah snapshot dokumentasi dan repository. Untuk status remote terbar
 | Campus Events v1 | **Remote rollout verified menurut PRD** | Public venue, RSVP, capacity, attendee projection aman. |
 | Event enhancement 202608210003–010 | **SCHEMA mencatat deployed** | Kuota, reminder schema, preferences, Circle association, waitlist, chat, ticket/check-in. Cron reminder masih OFF. |
 | Event organizer registration/check-in v2 | **Repository implemented** | Migration 202608220002–003 perlu remote verification. |
-| Public Event pages | **Repository implemented** | Share, .ics, Google Calendar, tanpa membuka peserta. |
+| Public Event pages | **Repository implemented** | Share, .ics, Google Calendar, tanpa membuka peserta. Gambar pratinjau per acara, JSON-LD mode kehadiran, dan sitemap acara ditambahkan 21 Oktober 2026. |
+| Akses per jenis akun (.sch.id edukatif saja, saklar wajib verifikasi) | **Repository implemented** | Migration 202610200001; saklar Owner default OFF. |
+| Kontak dan media sosial resmi di footer | **Repository implemented** | Migration 202610200002; diisi Owner di /owner/contact, kosong sampai diisi. |
+| Event Blast (pengumuman ke peserta) | **Disabled** | Flag EVENT_BLAST_ENABLED; butuh migration 202610210002 karena versi lama selalu gagal. |
+| Kalender Circle dan ikuti kalender | **Repository implemented** | Migration 202610210002; notifikasi lewat trigger database. |
+| Foto sampul acara | **Repository implemented** | Migration 202610210003, bucket event-covers; unggah belum diuji ke Storage sungguhan. |
+| Acara online dan hybrid | **Repository implemented** | Migration 202610210003; link hanya untuk penyelenggara, tim, dan peserta terdaftar. |
+| Feedback, rekap, sertifikat acara | **Planned** | Tahap berikutnya rencana Acara. |
+| Email ke peserta acara | **Planned** | Notifikasi acara masih in-app. |
 | Simpan Acara publik | **Local/device only** | Bookmark tersimpan di localStorage perangkat; filter melalui /events?saved=1; belum sinkron akun/Supabase. |
 | Account & Privacy controls | **Remote rollout verified menurut PRD** | Profil, privasi, blokir, discoverability, deletion lifecycle. |
 | Safety Meeting Flow | **Remote rollout verified menurut PRD** | Proposal/consent dua pihak, tempat publik, cancel, local share, pre/post check; tanpa live location. |
@@ -995,6 +1003,7 @@ Jangan memakai daftar ini untuk membuat SQL. Baca migration aktual dan context/S
 - /app/events
 - /app/events/create
 - /app/events/[publicSlug]
+- /api/events/[publicSlug]/cover (unggah/hapus sampul, POST dan DELETE)
 - /app/profile
 - /app/settings
 - /app/account/privacy
@@ -1037,6 +1046,7 @@ Jangan memakai daftar ini untuk membuat SQL. Baca migration aktual dan context/S
 - /owner/study-programs
 - /owner/events
 - /owner/audit
+- /owner/contact
 
 Route dapat bertambah. Periksa app/ sebelum mengandalkan daftar ini.
 

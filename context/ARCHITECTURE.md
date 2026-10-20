@@ -793,3 +793,42 @@ Capability tipis di atas role Owner/Admin + `verification_reviewer`. Guard: `req
 - `send_anonymous_share_v1` repeats every authorization check at mutation time, applies existing chat rate limits, and never creates Circle membership or Event registration.
 - `list_conversation_messages_v4` is additive. The application rolls back through v3, v2, and v1 RPC projections while the database migration is pending.
 - The composer is capability-gated through `anonymous_chat_sharing_available`, so production chat remains usable before rollout.
+
+## 19. Pembaruan Oktober 2026 (repository implemented)
+
+### Gerbang akses per jenis akun
+`lib/account/student-access.ts` membaca `get_my_student_access()` lalu `requireSocialFeatureAccess()` dan
+`requireEventFeatureAccess()` mengarahkan pengguna di halaman server. Keputusan akhir tetap di database lewat
+`is_eligible_introduction_student`, `is_study_circle_student`, dan `is_campus_event_student`. Saklar Owner
+`platform_settings.require_student_verification` default mati. Akun `.sch.id` hanya mendapat acara edukatif
+dan menu sosial disembunyikan lewat `hiddenItemKeys` di app shell.
+
+### Kontak resmi
+Owner mengisi tautan di `/owner/contact` (RPC Owner). Footer publik membaca dengan service role lewat
+`lib/marketing/contact-links.ts` dan hanya merender host yang diizinkan. Ikon dari simple-icons (CC0).
+
+### Kalender Circle
+Halaman Circle memuat bagian kalender (`components/circles/circle-calendar.tsx`) dan halaman Acara memuat
+strip "Dari kalender yang kamu ikuti". Notifikasi dibuat oleh trigger database, bukan oleh server Next.js.
+
+### Foto sampul acara
+Unggah lewat `POST /api/events/[publicSlug]/cover` (route handler, bukan server action, karena batas body
+server action 1 MB). Alurnya: sesi dan izin acara dicek, ukuran body dibatasi, `lib/events/cover.ts` memakai
+sharp untuk memotong ke 1600x900 WebP tanpa EXIF, file diunggah service role ke `event-covers` dengan nama
+acak, lalu `set_campus_event_cover` dipanggil dengan klien pengguna supaya otorisasi tetap di database. Bila
+RPC gagal, file baru dihapus; bila berhasil, file lama dihapus. `DELETE` menghapus sampul.
+
+### Acara online dan hybrid
+Form mengirim `attendanceMode` dan `onlineUrl`. Untuk mode online, server mengganti isian tempat dengan
+platform, keterangan tetap, dan kota `Online`. Link disimpan lewat `set_campus_event_online_link` setelah
+acara dibuat atau diubah. Batas data:
+- halaman publik, `.ics`, gambar pratinjau, dan sitemap tidak pernah membaca link rapat;
+- `lib/events/public-service.ts` hanya membaca ada tidaknya link untuk menentukan mode hybrid;
+- `lib/events/media.ts` memperlakukan RPC yang belum ada sebagai "belum tersedia", supaya kode bisa dideploy
+  sebelum migration.
+
+### Pratinjau saat dibagikan
+`app/(public-docs)/events/[publicSlug]/opengraph-image.tsx` membuat gambar 1200x630 per acara resmi publik.
+Sampul WebP diubah ke JPEG di server sebelum dirender. Tanpa sampul, gambar memakai stiker maskot. JSON-LD
+memakai `OnlineEventAttendanceMode`, `MixedEventAttendanceMode`, atau `OfflineEventAttendanceMode`, dan
+`VirtualLocation` menunjuk halaman acara, bukan link rapat. `app/sitemap.ts` memuat acara resmi publik.
