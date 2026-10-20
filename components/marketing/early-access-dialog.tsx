@@ -1,5 +1,10 @@
 "use client";
 
+import { MascotHead } from "@/components/brand/mascot-head";
+import {
+  stickerButtonPrimary,
+  stickerButtonSecondary,
+} from "@/components/marketing/brand-ui";
 import {
   createContext,
   useCallback,
@@ -13,7 +18,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { ArrowRight, Check, LoaderCircle, X } from "lucide-react";
+import { ArrowRight, LoaderCircle, X } from "lucide-react";
 import { emitEarlyAccessEvent } from "@/lib/early-access/analytics";
 import {
   earlyAccessPayloadSchema,
@@ -306,7 +311,7 @@ function EarlyAccessDialog({
           closeDialog();
         }
       }}
-      className="m-auto max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] max-w-[620px] overflow-y-auto rounded-[24px] border border-brand-border bg-white p-0 text-brand-navy shadow-[0_32px_100px_rgba(15,27,51,0.28)] backdrop:bg-brand-navy/65 backdrop:backdrop-blur-[2px]"
+      className="m-auto max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] max-w-[620px] overflow-y-auto rounded-[24px] border-2 border-brand-navy bg-white p-0 text-brand-navy shadow-[6px_6px_0_#0F1B33] backdrop:bg-brand-navy/65 backdrop:backdrop-blur-[2px]"
     >
       <div className="relative p-6 sm:p-8">
         <button
@@ -321,16 +326,16 @@ function EarlyAccessDialog({
 
         {isComplete ? (
           <div className="pr-10">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF2FF] text-brand-blue">
-              <Check className="h-6 w-6" aria-hidden="true" />
+            <span className="block w-20" aria-hidden="true">
+              <MascotHead expression="girang" />
             </span>
             <h2
               id={titleId}
               className="mt-6 font-heading text-2xl font-semibold leading-tight sm:text-3xl"
             >
               {phase === "success"
-                ? "Kamu sudah masuk daftar akses awal 💙"
-                : "Kamu sudah tercatat 💙"}
+                ? "Kamu sudah masuk daftar akses awal."
+                : "Kamu sudah tercatat."}
             </h2>
             <p
               id={descriptionId}
@@ -343,7 +348,7 @@ function EarlyAccessDialog({
             <button
               type="button"
               onClick={closeDialog}
-              className="focus-ring mt-8 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-brand-blue px-6 py-3 font-semibold text-white transition-colors hover:bg-[#013FC7]"
+              className={`${stickerButtonPrimary} mt-8`}
             >
               Tutup
             </button>
@@ -351,9 +356,12 @@ function EarlyAccessDialog({
         ) : (
           <>
             <div className="pr-12">
-              <p className="text-sm font-semibold text-brand-blue">
-                Akses awal
-              </p>
+              <div className="flex items-center gap-3">
+                <span className="block w-11 shrink-0" aria-hidden="true">
+                  <MascotHead expression="kedip" />
+                </span>
+                <p className="font-hand text-xl text-brand-blue">Akses awal</p>
+              </div>
               <h2
                 id={titleId}
                 className="mt-3 font-heading text-2xl font-semibold leading-tight sm:text-3xl"
@@ -450,7 +458,7 @@ function EarlyAccessDialog({
                   {interestOptions.map((option) => (
                     <label
                       key={option.value}
-                      className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[12px] border border-brand-border px-3 py-2.5 text-sm font-medium text-brand-navy transition-colors hover:border-brand-blue"
+                      className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[12px] border border-brand-border px-3 py-2.5 text-sm font-medium text-brand-navy transition-colors hover:border-brand-navy has-[:checked]:border-brand-navy has-[:checked]:bg-[#EAF1FF]"
                     >
                       <input
                         type="checkbox"
@@ -523,14 +531,14 @@ function EarlyAccessDialog({
                   type="button"
                   onClick={closeDialog}
                   disabled={phase === "submitting"}
-                  className="focus-ring min-h-12 rounded-[12px] border border-brand-border px-5 py-3 font-semibold text-brand-navy transition-colors hover:border-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`${stickerButtonSecondary} min-h-12 py-3 disabled:cursor-not-allowed disabled:opacity-50`}
                 >
                   Nanti Saja
                 </button>
                 <button
                   type="submit"
                   disabled={phase === "submitting"}
-                  className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] bg-brand-blue px-5 py-3 font-semibold text-white transition-colors hover:bg-[#013FC7] disabled:cursor-not-allowed disabled:opacity-65"
+                  className={`${stickerButtonPrimary} min-h-12 py-3 disabled:cursor-not-allowed disabled:opacity-65`}
                 >
                   {phase === "submitting" ? (
                     <>

@@ -1,4 +1,6 @@
 import { ArrowRight } from "lucide-react";
+import { MascotHead } from "@/components/brand/mascot-head";
+import { stickerButton } from "@/components/marketing/brand-ui";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -38,10 +40,22 @@ const footerGroups = [
 
 export function PublicFooter() {
   return (
-    <footer id="footer" className="bg-brand-navy text-white">
-      <div className="page-shell">
-        <div className="grid gap-12 py-14 sm:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)] lg:gap-16 lg:py-20">
-          <div className="max-w-md">
+    <footer id="footer" className="relative mt-auto bg-brand-navy text-white">
+      <svg
+        className="wave-edge absolute inset-x-0 -top-[clamp(27px,5vw,63px)]"
+        viewBox="0 0 1440 64"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M0 32 C120 8 240 8 360 32 S600 56 720 32 960 8 1080 32 1320 56 1440 32 V64 H0 Z"
+          fill="#0F1B33"
+        />
+      </svg>
+
+      <div className="page-shell relative">
+        <div className="grid gap-12 pb-12 pt-14 sm:pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20 lg:pb-16 lg:pt-20">
+          <div className="relative max-w-xl">
             <Link
               href="/#beranda"
               aria-label="StudyDate ID, kembali ke beranda"
@@ -52,21 +66,20 @@ export function PublicFooter() {
                 alt="StudyDate ID"
                 width={718}
                 height={160}
-                sizes="180px"
-                className="h-auto w-[180px]"
+                sizes="170px"
+                className="h-auto w-[170px]"
               />
             </Link>
-            <p className="mt-7 font-heading text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl">
+            <p className="mt-8 text-balance font-heading text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] sm:text-[2.1rem]">
               Ketemu lewat hal yang sama.
+              <br />
+              Lanjut kalau sama-sama nyaman.
             </p>
-            <p className="mt-4 max-w-sm text-sm leading-7 text-white/65">
-              Temukan teman, circle, dan acara kampus. Kenalan tanpa harus
-              langsung membuka nama atau kontak pribadi.
+            <p className="mt-5 max-w-sm text-sm leading-7 text-white/65">
+              Temukan teman, circle, dan acara kampus. Kenalan tanpa harus langsung
+              membuka nama atau kontak pribadi.
             </p>
-            <Link
-              href="/#mulai"
-              className="focus-ring mt-7 inline-flex min-h-11 items-center gap-2 rounded-[12px] bg-white px-5 py-3 text-sm font-semibold text-brand-navy transition-colors hover:bg-brand-surface"
-            >
+            <Link href="/#mulai" className={`${stickerButton} mt-8 bg-white text-brand-navy !border-white !shadow-[4px_4px_0_#014FE7]`}>
               Ikut Akses Awal
               <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
@@ -74,17 +87,17 @@ export function PublicFooter() {
 
           <nav
             aria-label="Navigasi footer"
-            className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4"
+            className="grid grid-cols-2 gap-x-6 gap-y-10 self-center sm:grid-cols-4 lg:gap-x-8"
           >
             {footerGroups.map((group) => (
-              <div key={group.title}>
-                <h2 className="text-sm font-semibold text-white">{group.title}</h2>
-                <ul className="mt-5 space-y-3.5">
+              <div key={group.title} className="min-w-0">
+                <h2 className="font-hand text-lg text-[#8DB9F6]">{group.title}</h2>
+                <ul className="mt-4 space-y-3">
                   {group.links.map((item) => (
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="focus-ring inline-flex text-sm leading-6 text-white/60 transition-colors hover:text-white"
+                        className="focus-ring inline-flex rounded-sm text-sm leading-6 text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
                       >
                         {item.label}
                       </Link>
@@ -96,9 +109,14 @@ export function PublicFooter() {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/15 py-6 text-xs leading-5 text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 StudyDate ID. Hak cipta dilindungi.</p>
-          <p>Untuk mahasiswa dan alumni Indonesia.</p>
+        <div className="flex flex-col gap-4 border-t border-white/15 py-6 text-xs leading-5 text-white/55 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 StudyDate ID. Hak cipta dilindungi. Untuk mahasiswa dan alumni Indonesia.</p>
+          <p className="flex items-center gap-3">
+            <span className="font-hand text-base text-white/70">Sampai ketemu di kampus.</span>
+            <span className="w-9 shrink-0" aria-hidden="true">
+              <MascotHead expression="kedip" />
+            </span>
+          </p>
         </div>
       </div>
     </footer>

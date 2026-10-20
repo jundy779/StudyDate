@@ -48,7 +48,7 @@ async function RevisionState({ searchParams }: Props) {
 
 export default function EarlyAccessRevisePage({ searchParams }: Props) {
   return (
-    <main className="min-h-svh bg-brand-surface py-10 sm:py-16">
+    <main className="notebook-paper min-h-svh py-10 sm:py-16">
       <div className="page-shell max-w-3xl">
         <Link href="/" className="inline-flex">
           <Image
