@@ -1,3 +1,5 @@
+import { CircleCalendarSection } from "@/components/circles/circle-calendar";
+import { getCircleCalendar, listCircleCalendarEvents } from "@/lib/circles/calendar";
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import {
   archiveCircleAction,
@@ -108,6 +110,10 @@ export default async function CircleDetailPage({
   const state = Array.isArray(query.state) ? query.state[0] : query.state;
   const notice = Array.isArray(query.notice) ? query.notice[0] : query.notice;
   const isActiveMember = circle.membership_state === "active";
+  const [calendar, calendarEvents] = await Promise.all([
+    getCircleCalendar(circle.public_slug),
+    listCircleCalendarEvents(circle.public_slug),
+  ]);
   const [memberRows, messagePage] = isActiveMember
     ? await Promise.all([
         listCircleMembers(circle.public_slug),
@@ -135,6 +141,8 @@ export default async function CircleDetailPage({
     archived: "Circle diarsipkan. Anggota aktif masih dapat membaca riwayat.",
     reported: "Laporan telah dikirim secara privat untuk ditinjau.",
     "message-sent": "Pesan terkirim ke Circle.",
+    "calendar-followed": "Kamu mengikuti kalender Circle ini. Acara baru akan muncul di notifikasimu.",
+    "calendar-unfollowed": "Kamu berhenti mengikuti kalender Circle ini.",
   };
 
   return (
@@ -241,6 +249,16 @@ export default async function CircleDetailPage({
               ) : null}
             </div>
           </header>
+
+          {calendar ? (
+            <CircleCalendarSection
+              circleSlug={circle.public_slug}
+              circleName={circle.name}
+              calendar={calendar}
+              events={calendarEvents}
+              isOwner={circle.is_owner}
+            />
+          ) : null}
 
           {!isActiveMember ? (
             <section className="py-12" aria-labelledby="circle-member-gate">

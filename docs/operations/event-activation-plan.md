@@ -46,6 +46,10 @@ Mematikan: `select cron.unschedule('studydate-product-scheduler-v1');`
 ## 2. Pengumuman ke peserta (Event Blast)
 
 Kode: migration `202610160001_event_blast_v1`, flag `EVENT_BLAST_ENABLED`.
+Wajib pasang `202610210002_circle_calendar_v1.sql` dulu. Tanpa itu pengumuman selalu
+gagal karena tiga hal yang ditemukan saat uji lokal: bucket `announcement_day` tidak
+diizinkan oleh pembatas frekuensi, target notifikasi `#event-announcements` ditolak
+batasan database, dan kolom `recipient_count` ambigu di fungsi pengirim.
 Pengumuman tampil di halaman acara dan notifikasi, maksimal 5 per hari per penyelenggara.
 
 Menyalakan: set `EVENT_BLAST_ENABLED=true` di Vercel (Production), lalu redeploy.
@@ -56,6 +60,23 @@ Memeriksa:
 - [ ] Pengumuman keenam di hari yang sama ditolak.
 
 Mematikan: set `EVENT_BLAST_ENABLED=false`, redeploy.
+
+## 2b. Kalender Circle dan fitur ikuti
+
+Kode: migration `202610210002_circle_calendar_v1.sql`. Tidak ada flag; fitur muncul
+otomatis di halaman Circle setelah migration terpasang, dan disembunyikan bila belum.
+
+Memeriksa:
+- [ ] Pemilik Circle menautkan acara dari Kelola acara, Pengaturan, Study Circle.
+      Acara muncul di bagian "Kalender acara" halaman Circle.
+- [ ] Akun lain menekan "Ikuti kalender". Saat acara baru ditautkan, akun itu menerima
+      notifikasi "Acara baru di kalender yang kamu ikuti".
+- [ ] Akun beda kampus tidak melihat kalender Circle satu kampus, dan akun yang
+      memblokir pemilik tidak bisa mengikuti.
+- [ ] Halaman Acara menampilkan "Dari kalender yang kamu ikuti".
+
+Mematikan: tidak ada saklar. Bila perlu, hapus trigger
+`campus_event_circle_links_notify_followers` untuk menghentikan notifikasi.
 
 ## 3. Acara berseri
 

@@ -1,3 +1,5 @@
+import { FollowedCalendarStrip } from "@/components/events/followed-calendar-strip";
+import { listMyFollowedCalendarEvents } from "@/lib/circles/calendar";
 import {
   EDUCATIONAL_EVENT_CATEGORIES,
   getMyStudentAccess,
@@ -49,12 +51,13 @@ async function EventsContent({ searchParams }: EventsPageProps) {
   const filters = parsed.success ? parsed.data : {};
   const access = await getMyStudentAccess();
   const isSchool = access?.tier === "school";
-  const [result, eligibility, invitations] = await Promise.all([
+  const [result, eligibility, invitations, followedEvents] = await Promise.all([
     parsed.success
       ? listCampusEvents(parsed.data)
       : Promise.resolve({ events: [], nextCursor: null }),
     getMyEventOrganizerEligibility(),
     listMyCampusEventTeamInvitations(),
+    isSchool ? Promise.resolve([]) : listMyFollowedCalendarEvents(6),
   ]);
   const pendingInvitations = invitations.filter(
     (invitation) => invitation.invitation_status === "invited",
@@ -105,6 +108,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               </aside>
             )}
           </header>
+
+          <FollowedCalendarStrip events={followedEvents} />
 
           {pendingInvitations.length ? (
             <section

@@ -1,5 +1,6 @@
 import {
   CalendarClock,
+  CalendarPlus,
   CalendarX2,
   Handshake,
   IdCard,
@@ -40,6 +41,7 @@ export const NOTIFICATION_TYPES = [
   "EVENT_WAITLISTED",
   "EVENT_TEAM_INVITED",
   "EVENT_ANNOUNCEMENT",
+  "CIRCLE_EVENT_PUBLISHED",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -265,9 +267,49 @@ export function getNotificationCopy(item: NotificationItem): NotificationCopy {
         ),
         Icon: MessageSquare,
       };
+    case "CIRCLE_EVENT_PUBLISHED":
+      return {
+        title: "Acara baru di kalender yang kamu ikuti",
+        description: quotedHeadline(
+          item.headline,
+          "Ada acara baru dari Circle yang kalendernya kamu ikuti.",
+        ),
+        Icon: CalendarPlus,
+      };
     default: {
       const exhaustive: never = item.type;
       throw new Error(`Unsupported notification type: ${exhaustive}`);
     }
   }
 }
+
+/** Nama pemberitahuan di Pengaturan, dalam bahasa pengguna. */
+export const NOTIFICATION_PREFERENCE_LABELS: Record<NotificationType, string> = {
+  INTRODUCTION_RECEIVED: "Perkenalan baru",
+  INTRODUCTION_ACCEPTED: "Perkenalan diterima",
+  MESSAGE_RECEIVED: "Pesan baru",
+  MUTUAL_INTEREST_COMPLETED: "Kalian sama-sama ingin kenal lebih jauh",
+  IDENTITY_REVEAL_COMPLETED: "Nama dan foto dibagikan",
+  CONTACT_REVEAL_COMPLETED: "Kontak dibagikan",
+  CIRCLE_MEMBER_JOINED: "Anggota baru di Circle-mu",
+  CIRCLE_UPDATED: "Detail Circle berubah",
+  CIRCLE_ARCHIVED: "Circle diarsipkan",
+  CIRCLE_MEMBER_REMOVED: "Dikeluarkan dari Circle",
+  EVENT_REGISTERED: "Pendaftaran acara berhasil",
+  EVENT_SCHEDULE_CHANGED: "Jadwal acara berubah",
+  EVENT_LOCATION_CHANGED: "Lokasi acara berubah",
+  EVENT_CANCELLED: "Acara dibatalkan",
+  MEETING_PLAN_PROPOSED: "Ajakan bertemu",
+  MEETING_PLAN_CONFIRMED: "Rencana bertemu disetujui",
+  MEETING_PLAN_CANCELLED: "Rencana bertemu dibatalkan",
+  EVENT_REMINDER_24H: "Pengingat acara sehari sebelumnya",
+  EVENT_REMINDER_2H: "Pengingat acara dua jam sebelumnya",
+  EVENT_WAITLIST_PROMOTED: "Naik dari daftar tunggu",
+  EVENT_REGISTRATION_PENDING: "Pendaftaran acara menunggu persetujuan",
+  EVENT_REGISTRATION_APPROVED: "Pendaftaran acara disetujui",
+  EVENT_REGISTRATION_DECLINED: "Pendaftaran acara ditolak",
+  EVENT_WAITLISTED: "Masuk daftar tunggu acara",
+  EVENT_TEAM_INVITED: "Undangan membantu acara",
+  EVENT_ANNOUNCEMENT: "Pengumuman dari penyelenggara",
+  CIRCLE_EVENT_PUBLISHED: "Acara baru dari kalender yang kamu ikuti",
+};

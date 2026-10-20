@@ -12,6 +12,7 @@ import { getEditableStudentProfile } from "@/lib/profile/service";
 import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
 import { getMyTelegramCompanionState } from "@/lib/telegram/service";
 import { listNotificationPreferences } from "@/lib/notifications/preferences";
+import { NOTIFICATION_PREFERENCE_LABELS } from "@/lib/notifications/constants";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -201,7 +202,7 @@ async function SettingsContent() {
                   >
                     <input type="hidden" name="type" value={preference.type} />
                     <span className="break-words text-sm font-semibold text-brand-navy">
-                      {preference.type.replaceAll("_", " ")}
+                      {NOTIFICATION_PREFERENCE_LABELS[preference.type]}
                     </span>
                     <button
                       name="enabled"

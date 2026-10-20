@@ -18,6 +18,7 @@ import {
   circleReportSchema,
   circleSlugSchema,
 } from "@/lib/circles/validation";
+import { setCircleCalendarFollow } from "@/lib/circles/calendar";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -227,4 +228,25 @@ export async function reportCircleAction(formData: FormData) {
     redirect(detailPath(parsed.data.publicSlug, "?state=error"));
   }
   redirect(detailPath(parsed.data.publicSlug, "?state=reported"));
+}
+
+export async function setCircleCalendarFollowAction(formData: FormData) {
+  await requireCircleStudent();
+  const slug = circleSlugSchema.safeParse(formData.get("publicSlug"));
+  if (!slug.success) redirect("/app/circles?state=error");
+  const follow = formData.get("follow") === "true";
+  try {
+    await setCircleCalendarFollow(slug.data, follow);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Tindakan belum dapat diproses.";
+    redirect(
+      detailPath(slug.data, `?state=error&notice=${encodeURIComponent(message)}#kalender`),
+    );
+  }
+  revalidatePath(detailPath(slug.data));
+  revalidatePath("/app/events");
+  redirect(
+    detailPath(slug.data, `?state=${follow ? "calendar-followed" : "calendar-unfollowed"}#kalender`),
+  );
 }
