@@ -40,3 +40,16 @@ test("free ticket checkout needs a confirmed RSVP and allows one active ticket",
   assert.match(sql, /p_quantity_total < reserved \+ sold/);
   assert.match(participant, /event\.rsvp_status !== "going"/);
 });
+
+test("ticket order expiry uses the same service-role guard as other functions", async () => {
+  const guard = await readFile(
+    new URL("../supabase/migrations/202610210001_event_ticket_order_expiry_guard.sql", import.meta.url),
+    "utf8",
+  );
+  assert.match(guard, /session_user not in \('postgres', 'supabase_admin'\)/);
+  assert.match(guard, /coalesce\(auth\.role\(\), ''\) <> 'service_role'/);
+  const body = guard.slice(guard.indexOf("create or replace function"));
+  assert.doesNotMatch(body, /request\.jwt\.claim\.role/);
+  assert.doesNotMatch(guard, /cron\.schedule/);
+  assert.match(guard, /grant execute on function public\.expire_campus_event_ticket_orders\(integer\)\s+to service_role/);
+});
