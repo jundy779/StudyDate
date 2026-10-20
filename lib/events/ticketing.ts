@@ -48,6 +48,7 @@ export function mapTicketingError(message?: string) {
   const value = (message ?? "").toLowerCase();
   if (value.includes("access code required")) return "Tiket ini memerlukan kode akses.";
   if (value.includes("code invalid")) return "Kode akses atau promo tidak berlaku.";
+  if (value.includes("code ticket configuration unavailable")) return "Buat kode akses aktif untuk acara ini sebelum membuka tiket dengan kode. Pastikan tiketnya gratis dan hanya satu per peserta.";
   if (value.includes("capacity below sold")) return "Kuota tidak boleh lebih kecil dari tiket yang sudah terjual.";
   if (value.includes("type quota")) return "Maksimal 12 jenis tiket untuk satu acara.";
   if (value.includes("order unavailable")) return "Tiket tidak tersedia atau kuotanya baru saja habis.";
@@ -58,3 +59,4 @@ export function mapTicketingError(message?: string) {
   if (value.includes("management required")) return "Kamu tidak memiliki izin mengelola tiket acara ini.";
   return "Tiket belum dapat diproses. Coba lagi sebentar.";
 }
+

@@ -72,6 +72,29 @@ export async function createCampusEventTicketOrder(input: z.infer<typeof ticketO
   return ((data ?? [])[0] ?? null) as { order_public_id: string; order_status: string; total_amount: number; expires_at: string | null } | null;
 }
 
+export async function createCampusEventCodeTicketOrder(input: z.infer<typeof ticketOrderSchema>) {
+  const codeHash = hashTicketCode(input.code);
+  if (!codeHash) throw new Error("Isi kode akses tiket dulu.");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_my_campus_event_code_ticket_order", {
+    p_event_public_slug: input.eventPublicSlug,
+    p_ticket_public_id: input.ticketPublicId,
+    p_idempotency_key: input.idempotencyKey,
+    p_code_hash: codeHash,
+  });
+  if (error) throw new Error(mapTicketingError(error.message));
+  return ((data ?? [])[0] ?? null) as { order_public_id: string; order_status: string } | null;
+}
+
+export async function publishCampusEventCodeTicket(ticketPublicId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("publish_campus_event_code_ticket", {
+    p_ticket_public_id: ticketPublicId,
+  });
+  if (error) throw new Error(mapTicketingError(error.message));
+  return data === true;
+}
+
 export async function listMyCampusEventTicketOrders(publicSlug: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("list_my_campus_event_ticket_orders", { p_event_public_slug: publicSlug });
@@ -85,3 +108,4 @@ export async function myCampusEventRequiresTicketOrder(publicSlug: string) {
   if (error) throw new Error(mapTicketingError(error.message));
   return data === true;
 }
+
