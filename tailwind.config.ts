@@ -71,6 +71,7 @@ export default {
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
         heading: ["var(--font-poppins)", "sans-serif"],
+        hand: ["var(--font-hand)", "cursive"],
       },
     },
   },

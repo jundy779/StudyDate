@@ -51,7 +51,8 @@ async function CirclesContent({ searchParams }: CirclesPageProps) {
                 Belajar bareng lewat topik yang kamu suka
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan kelompok belajar kecil, ikut berdiskusi, dan kenalan lewat kegiatan\n                yang sama. Nama asli dan kontakmu tetap privat.
+                Temukan kelompok belajar kecil, ikut berdiskusi, dan kenalan lewat kegiatan
+                yang sama. Nama asli dan kontakmu tetap privat.
               </p>
             </div>
             <Link

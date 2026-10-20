@@ -277,7 +277,7 @@ test("RLS revoke-all and authenticated-only grants", () => {
 test("UI is gated on Mutual Interest and uses calm consent copy", () => {
   assert.match(room, /IdentityRevealPanel/);
   assert.match(room, /mutualCompleted=\{mutualInterest\.mutual\}/);
-  assert.match(constants, /Setuju bagikan nama dan foto/);
+  assert.match(constants, /Bagikan jika dia juga setuju/);
   assert.match(panel, /consentCta/);
   assert.match(panel, /privacyNote/);
   assert.match(constants, /Nama dan foto sudah dibagikan/);

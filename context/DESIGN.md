@@ -42,34 +42,47 @@ Desktop: generous whitespace, asymmetric editorial grids, first viewport menampi
 
 Mobile: single-column, touch target nyaman, dialog dapat scroll internal, dan tidak horizontal overflow.
 
-## 5. Landing page frozen
+## 5. Landing page (revisi 20 Oktober 2026)
 
-Struktur yang telah disetujui:
+Pemilik produk menyetujui perombakan landing agar lebih hidup dan tidak terasa template. Struktur sekarang:
 1. Navbar
-2. Hero
-3. People, Groups, Events
-4. Introduction-before-chat
-5. Progressive privacy
-6. Groups
-7. Campus Events
-8. Online-first
-9. Early Access CTA
-10. Footer (tautan publik: `/about`, `/privacy`, `/terms`, `/community-guidelines`, `/safety`, `/help`)
+2. Hero: kertas buku tulis bergaris kotak, headline dengan coretan stabilo, maskot interaktif
+3. Tiga pintu (`#people`): orbit Cari Teman, Circle Belajar, Acara Kampus
+4. Cara kerja (`#cara-kerja`): tirai privasi, profil contoh yang terbuka bertahap saat digulir
+5. Kamu pegang kendali: navy, janji privasi, maskot privasi
+6. Circle (`#groups`): kartu indeks miring dengan efek tilt
+7. Acara (`#events`): tiket 2.5D di atas Fusion Blue
+8. Early Access CTA di atas kertas buku tulis
+9. Footer
 
 Halaman legal/bantuan publik memakai shell editorial terpisah (`PublicDocShell`): Poppins heading,
-Inter body, `page-shell`, lebar baca ~42rem, tanpa ilustrasi dekoratif. Jangan redesign landing tanpa
-approval eksplisit.
+Inter body, `page-shell`, lebar baca ~42rem, tanpa ilustrasi dekoratif.
 
-## 6. Hero
+Motif: kertas buku tulis (belajar) dan gelembung obrolan (kenalan). Tombol utama bergaya stiker: border navy
+2px dengan bayangan navy padat. Huruf tulisan tangan (Kalam) hanya untuk celetukan maskot dan catatan kecil,
+tidak untuk heading atau isi panjang. Tepi bergelombang (`WaveEdge`) hanya di pergantian warna besar.
 
-Approved: large editorial headline, blue emphasis, anonymous profile visual, dua CTA, dan balanced first viewport.
+## 6. Sistem maskot
 
-Jangan mendorong konten terlalu jauh dari navbar, mengecilkan headline agresif, atau menyembunyikan CTA di bawah fold.
+Ada dua lapis maskot:
+- **Pose badan penuh resmi** (PNG di `public/brand/mascot/`). Resolusi asli pose chat, hello, dan study kecil
+  (sekitar 300 px), jadi jangan ditampilkan besar. Pose depan membawa buku paling tajam (`front-cropped.png`).
+- **Kepala maskot vektor** (`lib/brand/mascot.ts`, `components/brand/mascot-head.tsx`). Delapan ekspresi:
+  senang, girang, kedip, kaget, mikir, penasaran, ngantuk, malu. Logo S di hoodie tidak digambar ulang.
 
-## 7. Privacy section
+`MascotBuddy` membuat kepala maskot interaktif: mata mengikuti kursor (mouse saja), kedip acak, reaksi saat
+dicolek, gelembung `aria-live`, dan tertidur setelah lama diam. Semua gerak berhenti pada
+`prefers-reduced-motion`. Maskot tidak boleh dipakai sebagai janji keamanan dan tidak memakai bahasa match
+atau jodoh.
 
-Approved: navy background, large white message, anonymous-chat mockup, dan mascot resmi dekat mockup. Mascot
-disembunyikan pada mobile kecil dan tidak boleh terlihat seperti icon kecil yang nyasar.
+Stiker sosmed dibuat dari sumber yang sama: `npm run brand:mascot-stickers` menghasilkan PNG transparan,
+versi stiker bertepi putih, dan kotak 1080 px di `public/brand/mascot/expressions/`.
+
+## 7. Gerak dan 3D
+
+Efek 2.5D ringan saja (tilt kartu, kedalaman bayangan), tanpa pustaka 3D, supaya tetap lancar di HP.
+Satu momen utama per halaman: coretan stabilo di hero saat dibuka, dan tirai privasi saat digulir.
+Hindari fade-in di setiap section.
 
 ## 8. Offline safety section
 

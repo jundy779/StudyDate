@@ -6,15 +6,20 @@ import {
   ArrowRight,
   CalendarDays,
   Check,
-  Flag,
-  LockKeyhole,
+  MapPin,
+  Ticket,
   Users,
 } from "lucide-react";
 import {
   EarlyAccessProvider,
   EarlyAccessTrigger,
 } from "@/components/marketing/early-access-dialog";
+import { MascotHead } from "@/components/brand/mascot-head";
+import { MascotBuddy } from "@/components/marketing/mascot-buddy";
 import { MobileNav } from "@/components/marketing/mobile-nav";
+import { PillarOrbit } from "@/components/marketing/pillar-orbit";
+import { PrivacyReveal } from "@/components/marketing/privacy-reveal";
+import { TiltCard } from "@/components/marketing/tilt-card";
 import { PublicFooter } from "@/components/marketing/public-footer";
 
 const navigation = [
@@ -26,15 +31,6 @@ const navigation = [
   { label: "Keamanan", href: "/safety" },
 ];
 
-const peopleFlow = [
-  ["01", "Lihat profil tanpa nama asli", "Kenali minat, kampus, dan alasan mereka ingin berteman."],
-  ["02", "Kirim perkenalan", "Tulis alasan singkat kenapa kamu ingin kenalan."],
-  ["03", "Tunggu persetujuan", "Kalian baru bisa ngobrol setelah perkenalanmu diterima."],
-  ["04", "Ngobrol tanpa buru-buru", "Nama asli, foto, dan kontak tetap disembunyikan."],
-  ["05", "Sama-sama ingin lanjut", "Kalian berdua memilih apakah ingin saling mengenal lebih jauh."],
-  ["06", "Bagikan seperlunya", "Identitas dan kontak dibuka bertahap dengan persetujuan bersama."],
-];
-
 type BrandAssetPath =
   | "/brand/symbol-blue.png"
   | "/brand/app-icon.png"
@@ -44,6 +40,7 @@ type BrandAssetPath =
   | "/brand/mascot/chat-1024.png"
   | "/brand/mascot/front.png"
   | "/brand/mascot/front-1024.png"
+  | "/brand/mascot/front-cropped.png"
   | "/brand/mascot/hello.png"
   | "/brand/mascot/hello-1024.png"
   | "/brand/mascot/study.png"
@@ -188,290 +185,114 @@ export function PublicNavbar({ static: isStatic = false }: { static?: boolean })
   );
 }
 
-function ConnectionPreview() {
-  const connectionGoals = [
-    "Belajar bersama",
-    "Obrolan kampus",
-    "Teman proyek",
-  ];
-
+function WaveEdge({ fill, flip = false }: { fill: string; flip?: boolean }) {
   return (
-    <div
-      className="product-window animate-enter-delay mx-auto w-full max-w-[500px] shadow-[0_20px_50px_rgba(15,27,51,0.10)]"
-      aria-label="Pratinjau profil mahasiswa tanpa nama asli di StudyDate"
+    <svg
+      className="wave-edge"
+      viewBox="0 0 1440 64"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      style={flip ? { transform: "scaleY(-1)" } : undefined}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand-border px-4 py-3.5 sm:px-5">
-        <div className="flex items-center gap-2.5">
-          <BrandAsset
-            src="/brand/symbol-blue.png"
-            alt=""
-            width={40}
-            height={40}
-            className="h-6 w-6 object-contain"
-          />
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
-            CONTOH TAMPILAN • PROFIL TANPA NAMA ASLI
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-muted">
-          <LockKeyhole className="h-3.5 w-3.5 text-brand-blue" aria-hidden="true" />
-          Belum ada kontak dibuka
-        </span>
-      </div>
-
-      <div className="p-4 sm:p-5">
-        <div className="grid min-w-0 grid-cols-[96px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[116px_minmax(0,1fr)] sm:gap-5">
-          <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_50%_24%,#ffffff_0%,#edf4ff_66%,#e3edfc_100%)]">
-            <BrandAsset
-              src="/brand/mascot/front-1024.png"
-              alt="Maskot StudyDate membawa buku"
-              width={1024}
-              height={1024}
-              sizes="(max-width: 639px) 96px, 116px"
-              className="h-full w-full object-contain object-bottom p-2 drop-shadow-[0_8px_14px_rgba(15,27,51,0.13)]"
-            />
-          </div>
-
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-heading text-xl font-semibold tracking-[-0.025em] text-brand-navy sm:text-[1.4rem]">
-                Profil mahasiswa
-              </h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-2.5 py-1 text-xs font-semibold text-brand-blue">
-                <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />
-                Nama dan kontak belum dibagikan
-              </span>
-            </div>
-            <p className="mt-3 font-heading text-lg font-semibold leading-tight text-brand-navy">
-              Program studi
-            </p>
-            <p className="mt-1 text-sm text-brand-muted">
-              Semester • wilayah umum
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-            Mau kenalan untuk
-          </p>
-          <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-brand-navy">
-            {connectionGoals.map((item) => (
-              <span key={item} className="inline-flex items-center gap-1.5">
-                <Check
-                  className="h-3.5 w-3.5 shrink-0 text-brand-blue"
-                  aria-hidden="true"
-                />
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <dl className="mt-5 grid min-w-0 gap-4 rounded-[16px] bg-brand-surface/75 p-4 sm:grid-cols-3">
-          {[
-            ["Minat", "Teknologi, desain, kopi"],
-            ["Lagi cari", "Teman diskusi & kolaborasi"],
-            ["Aktivitas", "Workshop UI kampus"],
-          ].map(([label, value]) => (
-            <div key={label} className="min-w-0">
-              <dt className="text-xs font-semibold text-brand-muted">{label}</dt>
-              <dd className="mt-1 text-sm font-medium leading-5 text-brand-navy">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        <p className="mt-4 flex items-start gap-2.5 rounded-[14px] bg-[#EDF4FF] px-3.5 py-3 text-xs leading-5 text-brand-muted">
-          <LockKeyhole
-            className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue"
-            aria-hidden="true"
-          />
-          Nama asli, foto, dan kontak baru dibagikan jika kalian sama-sama setuju.
-        </p>
-      </div>
-    </div>
+      <path
+        d="M0 32 C120 8 240 8 360 32 S600 56 720 32 960 8 1080 32 1320 56 1440 32 V64 H0 Z"
+        fill={fill}
+      />
+    </svg>
   );
 }
 
+const stickerButton =
+  "focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border-2 border-brand-navy px-6 py-4 font-semibold shadow-[4px_4px_0_#0F1B33] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0F1B33]";
+
 function Hero() {
+  const notes = [
+    { text: "Teman diskusi", tone: undefined, rotate: "-5deg", place: "left-0 top-[46%]" },
+    { text: "Workshop UI Sabtu", tone: "blue", rotate: "4deg", place: "-right-[6%] top-[60%]" },
+    { text: "Circle skripsi", tone: "white", rotate: "-2deg", place: "left-[10%] bottom-[2%]" },
+  ];
+
   return (
-    <section id="beranda" className="bg-white pt-[76px]">
-      <div className="page-shell grid gap-12 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-14 lg:py-16 xl:grid-cols-[1.14fr_0.86fr]">
-        <div className="animate-enter min-w-0 max-w-[640px] lg:max-w-[680px]">
-          <p className="mb-6 border-l-2 border-brand-blue pl-4 text-sm font-semibold leading-6 text-brand-navy">
-            Ketemu lewat hal yang sama. Kenalan tanpa perlu terburu-buru.
+    <section id="beranda" className="notebook-paper relative overflow-x-clip pt-[76px]">
+      <span className="notebook-margin hidden sm:block" aria-hidden="true" />
+      <div className="page-shell relative grid gap-10 pb-14 pt-12 sm:pt-16 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-6 lg:pb-20">
+        <div className="animate-enter min-w-0 max-w-[660px] sm:pl-10 lg:pl-14">
+          <p className="font-hand text-xl text-brand-blue sm:text-2xl">
+            Ketemu lewat hal yang sama.
           </p>
-          <h1 className="text-balance font-heading max-w-none text-[1.9rem] font-semibold leading-[1.03] tracking-[-0.035em] text-brand-navy sm:text-[3.35rem] sm:leading-[1.08] sm:tracking-[-0.04em] lg:text-[3.65rem] xl:text-[3.9rem]">
-            Temukan teman baru{" "}
-            <span className="text-brand-blue">lewat hal yang kamu suka.</span>
+          <h1 className="mt-3 text-balance font-heading text-[2rem] min-[400px]:text-[2.35rem] font-semibold leading-[1.04] tracking-[-0.04em] text-brand-navy sm:text-[3.4rem] lg:text-[3.3rem] xl:text-[3.7rem]">
+            Temukan teman baru lewat{" "}
+            <span className="marker-underline">
+              hal yang kamu suka.
+              <svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true">
+                <path
+                  d="M4 14 C60 6 120 4 180 9 S270 15 296 7"
+                  fill="none"
+                  stroke="#014FE7"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  opacity="0.85"
+                />
+              </svg>
+            </span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-[1.6] text-brand-muted sm:mt-7 sm:leading-8">
+          <p className="mt-7 max-w-xl text-lg leading-8 text-brand-muted">
             Cari teman belajar, gabung circle, dan temukan acara kampus. Mulai dari
             sesama mahasiswa dan alumni, tanpa harus langsung membuka nama atau kontak.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row">
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row">
             <EarlyAccessTrigger
               source="hero"
-              className="focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-[12px] bg-brand-blue px-6 py-4 font-semibold text-white transition-colors hover:bg-[#013FC7]"
+              className={`${stickerButton} bg-brand-blue text-white`}
             >
               Daftar Akses Awal
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </EarlyAccessTrigger>
-            <a
-              href="#events"
-              className="focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-[12px] border border-brand-border bg-white px-6 py-4 font-semibold text-brand-navy transition-colors hover:border-brand-navy"
-            >
-              <CalendarDays className="h-4 w-4 text-brand-blue" />
+            <a href="#events" className={`${stickerButton} bg-white text-brand-navy`}>
+              <CalendarDays className="h-4 w-4 text-brand-blue" aria-hidden="true" />
               Lihat Acara Kampus
             </a>
           </div>
         </div>
 
-        <div className="relative min-h-[380px] min-w-0 pb-6 lg:-mt-4 lg:pl-4 xl:-mt-6">
-          <div className="absolute -right-5 -top-5 h-[72%] w-[68%] bg-brand-surface" />
-          <ConnectionPreview />
-          <p className="relative mt-4 text-right text-xs text-brand-muted">
-            Contoh tampilan, bukan akun mahasiswa sungguhan.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function MascotCompanion() {
-  const moments = [
-    {
-      pose: "/brand/mascot/hello.png" as const,
-      label: "Temukan",
-      title: "Mulai dari kesamaan",
-      copy: "Lihat minat, kampus, dan alasan mereka ingin berteman sebelum menyapa.",
-      imageClass:
-        "h-[17.5rem] w-[17.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[19rem] sm:w-[19rem]",
-    },
-    {
-      pose: "/brand/mascot/study.png" as const,
-      label: "Kenalan",
-      title: "Kirim alasan untuk kenalan",
-      copy: "Percakapan baru terbuka setelah perkenalan diterima.",
-      imageClass:
-        "h-[15.5rem] w-[15.5rem] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[16.5rem] sm:w-[16.5rem]",
-    },
-    {
-      pose: "/brand/mascot/chat.png" as const,
-      label: "Bagikan",
-      title: "Bagikan saat sudah siap",
-      copy: "Nama, foto, dan kontak baru dibagikan kalau kalian berdua setuju.",
-      imageClass:
-        "h-[16rem] w-[16rem] origin-bottom scale-[1.02] object-contain object-bottom drop-shadow-[0_14px_24px_rgba(15,27,51,0.14)] sm:h-[17rem] sm:w-[17rem] sm:scale-[1.03]",
-    },
-  ];
-
-  return (
-    <section
-      aria-labelledby="mascot-companion-title"
-      className="border-b border-brand-border bg-white py-16 sm:py-20"
-    >
-      <div className="page-shell">
-        <div className="max-w-2xl">
-          <p className="section-label">Cara StudyDate bekerja</p>
-          <h2 id="mascot-companion-title" className="section-title mt-4">
-            Mulai dari satu kesamaan. Lanjut kalau sama-sama nyaman.
-          </h2>
-          <p className="mt-4 max-w-xl text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
-            Mulai dari hal yang sama-sama kalian sukai, lanjutkan percakapan jika
-            perkenalan diterima, lalu bagikan identitas hanya saat sudah nyaman.
-          </p>
-        </div>
-        <ul className="mt-12 grid gap-6 lg:grid-cols-3">
-          {moments.map((item) => (
-            <li
-              key={item.label}
-              className="overflow-hidden rounded-[24px] border border-brand-border bg-brand-surface"
+        <div className="relative mx-auto w-full max-w-[460px] pt-4 sm:pt-0">
+          <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block" aria-hidden="true">
+          {notes.map((note, index) => (
+            <span
+              key={note.text}
+              className={`sticky-note float-slow absolute ${note.place}`}
+              data-tone={note.tone}
+              style={
+                {
+                  "--note-rotate": note.rotate,
+                  animationDelay: `${index * -2.3}s`,
+                } as React.CSSProperties
+              }
             >
-              <div className="flex h-72 items-end justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_18%,#ffffff_0%,#edf4ff_62%,#dce9fb_100%)] px-3 pt-4 sm:h-80 sm:px-4">
-                <BrandAsset
-                  src={item.pose}
-                  alt=""
-                  width={1024}
-                  height={1024}
-                  sizes="(max-width: 1023px) 320px, 380px"
-                  className={item.imageClass}
-                />
-              </div>
-              <div className="border-t border-brand-border bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">
-                  {item.label}
-                </p>
-                <h3 className="mt-3 font-heading text-xl font-semibold tracking-[-0.02em] text-brand-navy">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-brand-muted">
-                  {item.copy}
-                </p>
-              </div>
-            </li>
+              {note.text}
+            </span>
           ))}
-        </ul>
+          </div>
+          <MascotBuddy className="relative z-[2] mx-auto w-[min(100%,340px)] pt-6" />
+        </div>
       </div>
     </section>
   );
 }
 
 function PillarsOverview() {
-  const pillars = [
-    {
-      label: "Cari Teman",
-      title: "Cari teman yang nyambung",
-      copy: "Temukan mahasiswa lewat minat, kampus, dan alasan mereka ingin berteman.",
-    },
-    {
-      label: "Circle Belajar",
-      title: "Gabung circle belajar",
-      copy: "Belajar, berdiskusi, atau mengerjakan proyek bersama dalam kelompok kecil.",
-    },
-    {
-      label: "Acara Kampus",
-      title: "Temukan acara kampus",
-      copy: "Lihat kegiatan yang sesuai minat, waktu, dan lingkunganmu.",
-    },
-  ];
-
   return (
-    <section id="people" className="scroll-mt-20 border-y border-brand-border bg-brand-surface py-20 sm:py-24">
+    <section id="people" className="scroll-mt-20 overflow-x-clip bg-white py-20 sm:py-28">
       <div className="page-shell">
-        <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr]">
-          <div>
-            <p className="section-label">Teman · Circle · Acara</p>
-            <h2 className="section-title mt-4 max-w-lg">
-              Mulai dari yang paling kamu butuhkan.
-            </h2>
-          </div>
-          <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            Cari teman belajar, gabung circle, atau datang ke acara kampus. Bisa jadi
-            teman diskusi, rekan proyek, atau seseorang yang lebih berarti.
+        <div className="max-w-2xl">
+          <h2 className="section-title">Tiga pintu untuk mulai.</h2>
+          <p className="mt-4 text-lg leading-8 text-brand-muted">
+            Cari teman, gabung circle, atau datang ke acara kampus. Pilih satu, maskotnya
+            ikut menyesuaikan.
           </p>
         </div>
-
-        <div className="mt-14 grid gap-9 md:grid-cols-3 md:gap-8">
-          {pillars.map((pillar, index) => (
-            <article
-              key={pillar.label}
-              className={`border-t-2 pt-5 ${
-                index === 1 ? "border-brand-blue" : index === 2 ? "border-brand-navy" : "border-brand-border"
-              }`}
-            >
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-blue">
-                {pillar.label}
-              </p>
-              <h3 className="mt-5 font-heading text-xl font-semibold text-brand-navy">
-                {pillar.title}
-              </h3>
-              <p className="mt-2.5 leading-7 text-brand-muted">{pillar.copy}</p>
-            </article>
-          ))}
+        <div className="mt-14">
+          <PillarOrbit />
         </div>
       </div>
     </section>
@@ -480,174 +301,148 @@ function PillarsOverview() {
 
 function IntroductionFlow() {
   return (
-    <section id="cara-kerja" className="scroll-mt-20 bg-white py-20 sm:py-28">
-      <div className="page-shell">
-        <div className="grid gap-6 md:grid-cols-[0.7fr_1.3fr]">
-          <div>
-            <p className="section-label">Kenalan sebelum ngobrol</p>
-            <h2 className="section-title mt-4 max-w-lg">
-              Kenalan dulu, ngobrol setelah perkenalan diterima.
-            </h2>
-          </div>
-          <p className="max-w-xl text-lg leading-8 text-brand-muted md:justify-self-end md:pt-8">
-            Tulis alasan singkat kenapa kamu ingin kenalan. Jika penerima setuju,
-            barulah kalian bisa mulai ngobrol tanpa langsung membuka identitas.
+    <section id="cara-kerja" className="scroll-mt-20 bg-brand-surface">
+      <WaveEdge fill="#FFFFFF" flip />
+      <div className="page-shell py-16 sm:py-20">
+        <div className="max-w-2xl">
+          <h2 className="section-title">Kenalan dulu. Identitas menyusul kalau sama-sama nyaman.</h2>
+          <p className="mt-4 text-lg leading-8 text-brand-muted">
+            Gulir pelan-pelan. Lihat bagaimana profil tanpa nama asli terbuka sedikit demi
+            sedikit, dan hanya kalau kalian berdua setuju.
           </p>
         </div>
-
-        <ol className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {peopleFlow.map(([number, title, description]) => (
-            <li key={number} className="border-t-2 border-brand-border pt-5">
-              <span className="font-heading text-3xl font-semibold tracking-tight text-brand-muted/55">
-                {number}
-              </span>
-              <h3 className="mt-4 font-heading text-lg font-semibold text-brand-navy">
-                {title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-brand-muted">{description}</p>
-            </li>
-          ))}
-        </ol>
+        <div className="mt-12">
+          <PrivacyReveal />
+        </div>
       </div>
     </section>
   );
 }
 
 function ProgressivePrivacy() {
+  const promises = [
+    "Kalian berdua harus setuju sebelum kontak dibagikan.",
+    "Membuka satu kontak tidak otomatis membuka kontak lainnya.",
+    "Blokir, laporkan, dan akhiri percakapan selalu tersedia, gratis.",
+    "Kalau ketemuan, hanya di tempat umum yang ramai.",
+  ];
+
   return (
-    <section className="relative overflow-hidden bg-brand-navy py-24 text-white sm:pb-40 sm:pt-32 lg:pb-44">
-      <div className="page-shell grid items-center gap-16 lg:grid-cols-[0.78fr_1.22fr]">
+    <section className="relative overflow-hidden bg-brand-navy text-white">
+      <WaveEdge fill="#F7F9FC" flip />
+      <div className="page-shell grid items-center gap-12 pb-24 pt-14 sm:pb-32 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
-          <p className="section-label text-[#8DB9F6]">Kamu pegang kendali</p>
-          <h2 className="mt-5 max-w-lg font-heading text-3xl font-semibold leading-tight sm:text-4xl lg:text-[2.75rem]">
-            Nama dan kontak tidak langsung ditampilkan.
+          <p className="font-hand text-2xl text-[#8DB9F6]">Kamu pegang kendali.</p>
+          <h2 className="mt-3 max-w-xl font-heading text-3xl font-semibold leading-tight sm:text-4xl lg:text-[2.75rem]">
+            Ngobrol dulu secara online. Bertemu nanti kalau sama-sama nyaman.
           </h2>
-          <p className="mt-6 max-w-lg text-lg leading-8 text-white/65">
-            Saat mulai kenalan, orang lain hanya melihat informasi yang kamu pilih.
-            Nama, foto, dan kontak baru dibagikan setelah kalian sama-sama setuju.
+          <p className="mt-6 max-w-lg text-lg leading-8 text-white/70">
+            Kenalan bisa jadi teman belajar, rekan proyek, teman ngobrol, atau hubungan
+            yang lebih dekat. Tidak perlu ditentukan dari awal.
           </p>
-          <ul className="mt-9 space-y-4 text-sm text-white/75">
-            {[
-              "Kalian berdua harus setuju sebelum kontak dibagikan.",
-              "Membuka satu kontak tidak otomatis membuka kontak lainnya.",
-              "Blokir, laporkan, dan akhiri ruang selalu tersedia.",
-            ].map((item) => (
+          <ul className="mt-9 space-y-4 text-base text-white/80">
+            {promises.map((item) => (
               <li key={item} className="flex gap-3">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#8DB9F6]" />
+                <Check className="mt-1 h-4 w-4 shrink-0 text-[#8DB9F6]" aria-hidden="true" />
                 {item}
               </li>
             ))}
           </ul>
         </div>
-
-        <div>
-          <div
-            className="mx-auto w-full max-w-xl overflow-hidden rounded-[20px] border border-white/15 bg-[#14233E] lg:max-w-[640px]"
-            aria-label="Pratinjau percakapan StudyDate tanpa nama asli"
-          >
-            <div className="flex items-center justify-between border-b border-white/15 px-5 py-4">
-              <div>
-                <p className="font-semibold">Profil tanpa nama asli</p>
-                <p className="mt-1 text-xs text-white/45">Nama, foto, dan kontak belum dibagikan</p>
-              </div>
-              <LockKeyhole className="h-4 w-4 text-[#8DB9F6]" aria-hidden="true" />
-            </div>
-            <div className="space-y-5 p-5 sm:p-7">
-              <div className="max-w-[82%] rounded-[12px] border border-white/15 bg-white px-4 py-3 text-sm leading-6 text-brand-navy">
-                Aku juga tertarik ikut workshop desain hari Sabtu. Mau saling
-                kenal dulu sebelum daftar?
-              </div>
-              <div className="ml-auto max-w-[82%] rounded-[12px] bg-brand-blue px-4 py-3 text-sm leading-6 text-white">
-                Boleh. Kita bisa ngobrol di sini dulu dan lihat apakah minat kita cocok.
-              </div>
-            </div>
-            <div className="flex items-center justify-between border-t border-white/15 px-5 py-4 text-xs text-white/45">
-              <span>Percakapan tanpa nama asli</span>
-              <span className="flex gap-4">
-                <span className="flex items-center gap-1.5">
-                  <Flag className="h-3.5 w-3.5" /> Lapor
-                </span>
-                <span>Akhiri ruang</span>
-              </span>
-            </div>
-          </div>
+        <div className="relative mx-auto w-full max-w-[360px]">
+          <MascotBuddy
+            className="w-full"
+            greeting="Psst. Nama dan kontakmu tetap tertutup dulu."
+            label="Maskot StudyDate di bagian privasi"
+            reactions={[
+              { expression: "kedip", line: "Yang terlihat cuma nama samaran dan minatmu." },
+              { expression: "mikir", line: "Tiap kontak dibuka satu per satu, dengan persetujuan kalian berdua." },
+              { expression: "kaget", line: "Ada yang maksa minta kontak? Blokir dan laporkan saja." },
+              { expression: "senang", line: "Ketemuan? Pilih tempat umum yang ramai, ya." },
+            ]}
+          />
         </div>
       </div>
-
-      <BrandAsset
-        src="/brand/mascot/chat-1024.png"
-        alt=""
-        width={1024}
-        height={1024}
-        sizes="(max-width: 1023px) 352px, 480px"
-        className="pointer-events-none absolute hidden h-[22rem] w-[22rem] max-w-none object-contain md:-bottom-[4.25rem] md:-right-[4rem] md:block lg:-bottom-[6.375rem] lg:-right-[6.25rem] lg:h-[30rem] lg:w-[30rem]"
-        inverted
-      />
     </section>
   );
 }
 
 function Groups() {
-  const groupTypes = [
-    ["Circle belajar", "Belajar rutin bersama mahasiswa dengan target yang sejalan."],
-    ["Circle terbuka", "Mahasiswa dapat meminta bergabung sesuai topik dan tujuan circle."],
-    ["Circle satu kampus", "Khusus untuk mahasiswa dari kampus yang sama."],
+  const circles = [
+    {
+      name: "Riset & desain produk kampus",
+      meta: "Online, Kamis malam",
+      scope: "Terbuka",
+      rotate: "-2.5deg",
+    },
+    {
+      name: "Persiapan ujian akhir Statistika",
+      meta: "Perpustakaan pusat, Sabtu pagi",
+      scope: "Satu kampus",
+      rotate: "1.5deg",
+    },
+    {
+      name: "Ngobrol bahasa Jepang santai",
+      meta: "Online, Selasa sore",
+      scope: "Terbuka",
+      rotate: "-1deg",
+    },
   ];
 
   return (
-    <section id="groups" className="scroll-mt-20 bg-brand-surface py-20 sm:py-28">
-      <div className="page-shell">
-        <div className="grid items-end gap-8 lg:grid-cols-[1fr_0.75fr]">
-          <div>
-            <p className="section-label">Circle Belajar</p>
-            <h2 className="section-title mt-5 max-w-2xl">
-              Belajar dan berdiskusi dalam circle kecil.
-            </h2>
-          </div>
-          <p className="max-w-lg leading-7 text-brand-muted lg:justify-self-end">
-            Pilih circle berdasarkan topik, tujuan, dan lingkungan kampus yang
-            membuatmu nyaman.
+    <section id="groups" className="scroll-mt-20 overflow-x-clip bg-white py-20 sm:py-28">
+      <div className="page-shell grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        <div>
+          <h2 className="section-title max-w-md">Belajar dan berdiskusi dalam circle kecil.</h2>
+          <p className="mt-5 max-w-md text-lg leading-8 text-brand-muted">
+            Tiga sampai tiga puluh anggota. Bisa terbuka untuk semua kampus, atau khusus
+            mahasiswa dari kampus yang sama. Gabung circle tidak otomatis membuka identitasmu.
           </p>
-        </div>
-
-        <div className="product-showcase mt-14">
-          <aside className="border-b border-brand-border bg-brand-navy p-5 text-white lg:border-b-0 lg:border-r lg:p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/55">
-              Contoh circle
+          <div className="mt-8 flex items-center gap-4">
+            <span className="w-20 shrink-0">
+              <MascotHead expression="mikir" />
+            </span>
+            <p className="font-hand text-xl leading-snug text-brand-navy">
+              Belajar bareng lebih awet kalau kelompoknya kecil.
             </p>
-            <p className="mt-5 font-heading text-[1.65rem] font-semibold leading-snug">
-              Riset &amp; desain produk kampus
-            </p>
-            <p className="mt-2.5 text-base leading-7 text-white/70">
-              Kelompok kecil untuk diskusi mingguan, portofolio, dan kolaborasi.
-            </p>
-            <div className="mt-7 border-t border-white/15 pt-5">
-              <p className="flex items-center gap-3 text-base">
-                <Users className="h-5 w-5 shrink-0 text-[#8DB9F6]" />
-                3–30 anggota · terbuka atau satu kampus
-              </p>
-              <p className="mt-3 text-base text-white/60">Online · Kamis malam</p>
-            </div>
-          </aside>
-
-          <div className="bg-white p-5 sm:p-7">
-            <div className="divide-y divide-brand-border border-y border-brand-border">
-              {groupTypes.map(([title, copy]) => (
-                <article key={title} className="grid gap-2 py-5 sm:grid-cols-[150px_1fr] sm:gap-6">
-                  <h3 className="font-heading text-lg font-semibold text-brand-navy">{title}</h3>
-                  <p className="text-[0.9375rem] leading-7 text-brand-navy/75">{copy}</p>
-                </article>
-              ))}
-            </div>
           </div>
         </div>
+
+        <ul className="relative grid gap-5" aria-label="Contoh circle">
+          {circles.map((circle) => (
+            <li key={circle.name} style={{ rotate: circle.rotate }}>
+              <TiltCard strength={6}>
+                <article className="rounded-2xl border-2 border-brand-navy bg-[#FFFDF4] p-5 shadow-[5px_5px_0_#0F1B33] sm:p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="font-heading text-lg font-semibold text-brand-navy sm:text-xl">
+                      {circle.name}
+                    </h3>
+                    <span className="rounded-full bg-[#DCE8FF] px-3 py-1 text-xs font-semibold text-brand-blue">
+                      {circle.scope}
+                    </span>
+                  </div>
+                  <p className="mt-2 flex items-center gap-2 text-sm text-brand-muted">
+                    <Users className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+                    {circle.meta}
+                  </p>
+                </article>
+              </TiltCard>
+            </li>
+          ))}
+          <li className="text-right text-xs text-brand-muted">Contoh circle, bukan data sungguhan.</li>
+        </ul>
       </div>
     </section>
   );
 }
 
 function CampusEvents() {
-  const eventTypes = [
+  const tickets = [
+    { kind: "Workshop", title: "Dasar riset pengguna", when: "Sabtu, 09.00", where: "Perpustakaan kampus" },
+    { kind: "Hackathon", title: "48 jam bikin aplikasi kampus", when: "Jumat, 18.00", where: "Ruang kerja bersama" },
+    { kind: "Meetup", title: "Ngopi bareng anak desain", when: "Rabu, 16.00", where: "Kafe dekat kampus" },
+  ];
+  const categories = [
     "Seminar",
     "Workshop",
     "Meetup",
@@ -655,103 +450,106 @@ function CampusEvents() {
     "Komunitas kampus",
     "Kumpul belajar",
     "Kompetisi",
-    "Acara karier dan kerja bareng",
+    "Karier dan kerja bareng",
   ];
 
   return (
-    <section id="events" className="scroll-mt-20 bg-white py-20 sm:py-28">
-      <div className="page-shell grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-        <div>
-          <p className="section-label">Acara Kampus</p>
-          <h2 className="section-title mt-4 max-w-md">
-            Cari kegiatan kampus yang benar-benar ingin kamu ikuti.
-          </h2>
-          <p className="mt-5 max-w-md leading-7 text-brand-muted">
-            Lihat waktu, tempat, dan cara mendaftar. Setelah masuk, tiket acaramu
-            tersimpan di akun StudyDate.
-          </p>
+    <section id="events" className="scroll-mt-20 overflow-x-clip bg-brand-blue text-white">
+      <WaveEdge fill="#FFFFFF" flip />
+      <div className="page-shell py-16 sm:py-24">
+        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-2xl">
+            <h2 className="font-heading text-3xl font-semibold leading-tight sm:text-4xl lg:text-[2.75rem]">
+              Cari kegiatan kampus yang benar-benar ingin kamu ikuti.
+            </h2>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-white/80">
+              Lihat waktu, tempat, dan cara mendaftar. Setelah masuk, tiket acaramu
+              tersimpan di akun StudyDate dan bisa dipindai saat datang.
+            </p>
+          </div>
           <Link
             href="/events"
-            className="focus-ring mt-7 inline-flex items-center gap-2 font-semibold text-brand-blue"
+            className={`${stickerButton} bg-white text-brand-navy`}
           >
             Lihat acara mendatang
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="divide-y divide-brand-border border-y border-brand-border">
-          {eventTypes.map((item, index) => (
-            <div key={item} className="grid grid-cols-[48px_1fr] items-center gap-4 py-4">
-              <span className="font-heading text-sm font-semibold text-brand-muted/70">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <p className="font-heading text-lg font-semibold text-brand-navy">{item}</p>
-            </div>
+        <ul className="mt-14 grid gap-6 md:grid-cols-3" aria-label="Contoh tiket acara">
+          {tickets.map((ticket) => (
+            <li key={ticket.title}>
+              <TiltCard>
+                <article className="ticket p-6 text-brand-navy">
+                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue">
+                    <Ticket className="h-4 w-4" aria-hidden="true" />
+                    {ticket.kind}
+                  </p>
+                  <h3 className="tilt-pop mt-3 min-h-[3.5rem] font-heading text-xl font-semibold leading-snug">
+                    {ticket.title}
+                  </h3>
+                  <div className="ticket-perforation mt-6 pt-5 text-sm text-brand-muted">
+                    <p className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+                      {ticket.when}
+                    </p>
+                    <p className="mt-2 flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+                      {ticket.where}
+                    </p>
+                  </div>
+                </article>
+              </TiltCard>
+            </li>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+        </ul>
+        <p className="mt-4 text-sm text-white/70">Contoh tiket, bukan acara sungguhan.</p>
 
-function OnlineFirst() {
-  return (
-    <section className="border-y border-brand-border bg-brand-surface">
-      <div className="page-shell grid gap-10 py-20 md:grid-cols-[160px_1fr] md:py-24 lg:gap-16">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-blue">
-          Kenalan online lebih dulu
-        </p>
-        <div>
-          <h2 className="max-w-4xl font-heading text-3xl font-medium leading-[1.35] tracking-[-0.025em] text-brand-navy sm:text-4xl lg:text-[2.75rem]">
-            Ngobrol dulu secara online. Bertemu nanti kalau sama-sama nyaman.
-          </h2>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-brand-muted">
-            Kenalan bisa berkembang menjadi teman belajar, rekan proyek, teman ngobrol,
-            atau hubungan personal. Tidak perlu ditentukan dari awal.
-          </p>
-        </div>
+        <ul className="mt-12 flex flex-wrap gap-2.5" aria-label="Jenis acara">
+          {categories.map((item) => (
+            <li
+              key={item}
+              className="rounded-full border border-white/35 px-4 py-2 text-sm font-medium text-white"
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
+      <WaveEdge fill="#F6F9FF" />
     </section>
   );
 }
 
 function EarlyAccessCTA() {
   return (
-    <section id="mulai" className="bg-brand-surface py-14 sm:py-20">
-      <div className="page-shell">
-        <div className="grid overflow-hidden rounded-[30px] bg-brand-blue lg:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)]">
-          <div className="flex items-end justify-center px-4 pb-3 pt-6 sm:px-6 sm:pb-4 lg:min-h-[340px] lg:px-8 lg:pb-6 lg:pt-8">
-            <BrandAsset
-              src="/brand/mascot/front.png"
-              alt="Maskot StudyDate"
-              width={1024}
-              height={1024}
-              sizes="(max-width: 1024px) 300px, 400px"
-              className="mascot-cta-slot mascot-cta-shadow object-contain object-bottom"
-              inverted
-            />
-          </div>
-          <div className="flex items-center border-t border-white/15 p-7 sm:p-12 lg:border-l lg:border-t-0 lg:p-16">
-            <div className="max-w-xl text-white">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/65">
-                Akses awal
-              </p>
-              <h2 className="mt-5 font-heading text-3xl font-semibold leading-tight sm:text-4xl">
-                Mulai kenalan dari lingkungan kampusmu.
-              </h2>
-              <p className="mt-5 leading-7 text-white/70">
-                Daftar akses awal untuk mencoba StudyDate ID dan bantu kami memperluas
-                komunitas mahasiswa dan alumni Indonesia.
-              </p>
-              <EarlyAccessTrigger
-                source="final-cta"
-                className="focus-ring mt-8 inline-flex items-center gap-2 rounded-[12px] bg-white px-6 py-4 font-semibold text-brand-blue transition-colors hover:bg-brand-surface"
-              >
-                Ikut Akses Awal
-                <ArrowRight className="h-4 w-4" />
-              </EarlyAccessTrigger>
-            </div>
-          </div>
+    <section id="mulai" className="notebook-paper relative overflow-x-clip py-16 sm:py-24">
+      <div className="page-shell grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="relative mx-auto w-full max-w-[220px] lg:max-w-[260px]">
+          <BrandAsset
+            src="/brand/mascot/front-cropped.png"
+            alt="Maskot StudyDate membawa buku"
+            width={472}
+            height={843}
+            sizes="(max-width: 1023px) 220px, 260px"
+            className="mascot-cta-shadow h-auto w-full object-contain"
+          />
+        </div>
+        <div className="max-w-xl">
+          <p className="font-hand text-2xl text-brand-blue">Akses awal sudah dibuka.</p>
+          <h2 className="section-title mt-3">Mulai kenalan dari lingkungan kampusmu.</h2>
+          <p className="mt-5 text-lg leading-8 text-brand-muted">
+            Daftar akses awal untuk mencoba StudyDate ID dan bantu kami memperluas
+            komunitas mahasiswa dan alumni Indonesia. Fitur dibuka bertahap, dan belum
+            dibuka untuk semua pengguna sekaligus.
+          </p>
+          <EarlyAccessTrigger
+            source="final-cta"
+            className={`${stickerButton} mt-8 bg-brand-blue text-white`}
+          >
+            Ikut Akses Awal
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </EarlyAccessTrigger>
         </div>
       </div>
     </section>
@@ -765,12 +563,10 @@ export function LandingPage() {
       <main>
         <Hero />
         <PillarsOverview />
-        <MascotCompanion />
         <IntroductionFlow />
         <ProgressivePrivacy />
         <Groups />
         <CampusEvents />
-        <OnlineFirst />
         <EarlyAccessCTA />
       </main>
       <PublicFooter />

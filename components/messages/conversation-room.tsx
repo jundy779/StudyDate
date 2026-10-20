@@ -124,6 +124,10 @@ function makeIdempotencyKey() {
   return `k${Date.now()}${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function currentTimeMs() {
+  return Date.now();
+}
+
 export function ConversationRoom({
   conversation,
   initialMessages,
@@ -566,7 +570,7 @@ export function ConversationRoom({
     const channel = realtimeChannelRef.current;
     if (!realtimeConnected || !channel) return;
     typingActiveRef.current = active;
-    if (active) lastTypingSignalAtRef.current = Date.now();
+    if (active) lastTypingSignalAtRef.current = currentTimeMs();
     void channel
       .send({
         type: "broadcast",
@@ -587,7 +591,7 @@ export function ConversationRoom({
       return;
     }
 
-    const now = Date.now();
+    const now = currentTimeMs();
     if (now - lastTypingSignalAtRef.current >= 1_200) {
       publishTyping(true);
     }

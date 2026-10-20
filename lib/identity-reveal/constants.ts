@@ -30,7 +30,7 @@ export const IDENTITY_REVEAL_COPY = {
   prepareCta: "Pilih nama dan foto",
   firstNameLabel: "Nama depan yang ingin kamu tampilkan",
   firstNameHint:
-    "Gunakan nama depan yang nyaman kamu bagikan. Nama ini tidak harus sama dengan nama resmi.",
+    "Gunakan nama depan yang nyaman kamu bagikan. Nama ini tidak harus sama dengan nama resmi dan tidak diperiksa sebagai nama resmi.",
   photoLabel: "Foto profil",
   photoHint:
     "Unggah foto wajah yang jelas (JPEG, PNG, atau WebP, maks. 5 MB). Foto ini tidak dipakai untuk mengenali wajah secara otomatis.",

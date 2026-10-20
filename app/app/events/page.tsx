@@ -66,7 +66,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                 Kegiatan kampus, bertemu di tempat publik
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan seminar, workshop, meetup, hackathon, dan kegiatan kampus lainnya.\n                Kamu tetap memakai nama samaran saat mendaftar.
+                Temukan seminar, workshop, meetup, hackathon, dan kegiatan kampus lainnya.
+                Kamu tetap memakai nama samaran saat mendaftar.
               </p>
             </div>
             {eligibility?.eligible ? (
@@ -81,7 +82,8 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
                 <p className="font-semibold text-brand-navy">Pembuatan acara terbatas</p>
                 <p className="mt-1">
-                  Kamu perlu menyelesaikan verifikasi mahasiswa atau mendapat izin dari\n                  tim StudyDate sebelum membuat acara.
+                  Kamu perlu menyelesaikan verifikasi mahasiswa atau mendapat izin dari
+                  tim StudyDate sebelum membuat acara. StudyDate Plus menambah kapasitas, bukan kepercayaan penyelenggara.
                 </p>
               </aside>
             )}

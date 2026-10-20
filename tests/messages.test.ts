@@ -80,6 +80,10 @@ const introMigration = readFileSync(
   ),
   "utf8",
 );
+const messageFilters = readFileSync(
+  new URL("../lib/messages/filters.ts", import.meta.url),
+  "utf8",
+);
 const messagesPage = readFileSync(
   new URL("../app/app/messages/page.tsx", import.meta.url),
   "utf8",
@@ -312,7 +316,7 @@ test("empty conversations offer student-focused conversation starters", () => {
   }
   assert.match(room, /Belum tahu mau bahas apa/);
   assert.match(room, /CHAT_STARTERS\.map/);
-  assert.match(room, /setBody\(starter\.message\)/);
+  assert.match(room, /updateComposerBody\(starter\.message\)/);
 });
 
 test("message polling preserves sticker metadata", () => {
@@ -391,7 +395,7 @@ test("sticker migration preserves privacy, rate limits, and rolling-deploy compa
   assert.doesNotMatch(stickerMigration, /https?:\/\//i);
   assert.match(
     service,
-    /error\.code !== "PGRST202" && error\.code !== "42883"/,
+    /error\.code === "PGRST202" \|\|\s+error\.code === "42883"/,
   );
   assert.match(service, /list_conversation_messages_v2/);
   assert.match(service, /list_conversation_messages"/);
@@ -701,7 +705,7 @@ test("sharing migration preserves durable snapshots and chat rate limits", () =>
   assert.match(sharingMigration, /sent_last_minute >= 20/);
   assert.match(sharingMigration, /sent_last_day >= 300/);
   assert.match(sharingMigration, /duplicate message/);
-  assert.match(sharingMigration, /reply_target\.conversation_id = shell\.id/);
+  assert.match(sharingMigration, /candidate\.conversation_id = shell\.id/);
   assert.match(sharingMigration, /'message_sent'/);
 });
 
@@ -742,8 +746,9 @@ test("message filter navigation is accessible and mobile-contained", () => {
     "Masih aktif",
     "Sudah selesai",
   ]) {
-    assert.match(messagesPage, new RegExp(label));
+    assert.match(messageFilters, new RegExp(label));
   }
+  assert.match(messagesPage, /CONVERSATION_VIEWS/);
   assert.match(messagesPage, /aria-label="Filter daftar pesan"/);
   assert.match(messagesPage, /aria-current=\{active \? "page" : undefined\}/);
   assert.match(messagesPage, /grid grid-cols-2/);

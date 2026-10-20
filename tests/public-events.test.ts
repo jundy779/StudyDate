@@ -77,7 +77,8 @@ test("PUBE-06 visitors can save events locally and revisit the saved list", () =
   assert.match(publicCard, /SavedEventButton/);
   assert.match(publicActions, /SavedEventButton/);
   assert.match(savedEventButton, /aria-pressed/);
-  assert.match(savedEventButton, /studydate:saved-events-changed/);
+  assert.match(savedEventButton, /SAVED_EVENTS_CHANGED_EVENT/);
+  assert.match(read("lib/events/saved-events.ts"), /studydate:saved-events-changed/);
   assert.match(savedEvents, /studydate:saved-events:v1/);
   assert.match(savedEvents, /MAX_SAVED_EVENTS = 100/);
   assert.doesNotMatch(savedEvents, /supabase|fetch\(/i);

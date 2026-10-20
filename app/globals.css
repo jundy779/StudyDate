@@ -126,6 +126,248 @@
   animation: enter 750ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ===== Marketing: buku catatan, maskot, tirai privasi, tiket =====
+   Motif StudyDate: kertas buku tulis bergaris kotak dan gelembung obrolan.
+   Semua gerak ditulis sendiri untuk StudyDate. */
+
+.notebook-paper {
+  --grid: rgba(1, 79, 231, 0.075);
+  background-color: #f6f9ff;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+}
+
+.notebook-margin {
+  position: absolute;
+  inset-block: 0;
+  left: clamp(18px, 6vw, 88px);
+  width: 2px;
+  background: rgba(1, 79, 231, 0.22);
+}
+
+/* Coretan stabilo di bawah frasa hero. Satu-satunya animasi saat halaman dibuka. */
+.marker-underline {
+  position: relative;
+  white-space: nowrap;
+}
+
+.marker-underline svg {
+  position: absolute;
+  left: -2%;
+  bottom: -0.18em;
+  width: 104%;
+  height: 0.42em;
+  overflow: visible;
+}
+
+.marker-underline path {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: marker-draw 900ms 450ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes marker-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Maskot */
+.mascot-head {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.mascot-head .mascot-pupil {
+  transform: translate(var(--mascot-px, 0px), var(--mascot-py, 0px));
+  transition: transform 120ms ease-out;
+}
+
+.mascot-head .mascot-eye-up .mascot-pupil {
+  transform: translate(-3px, -6px);
+}
+
+.mascot-head .mascot-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 90ms ease-in;
+}
+
+.is-blinking .mascot-head .mascot-eye {
+  transform: scaleY(0.12);
+}
+
+.mascot-head .mascot-antenna {
+  transform-box: fill-box;
+  transform-origin: 30% 100%;
+  animation: antenna-sway 4.8s ease-in-out infinite;
+}
+
+@keyframes antenna-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(4deg); }
+}
+
+.mascot-buddy {
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+
+.mascot-poke {
+  display: block;
+  width: 100%;
+  border-radius: 999px;
+  cursor: pointer;
+  transform: rotate(var(--mascot-tilt, 0deg));
+  transition: transform 200ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mascot-poke:hover {
+  transform: rotate(var(--mascot-tilt, 0deg)) translateY(-4px);
+}
+
+.mascot-poke.is-bouncing {
+  animation: mascot-boing 620ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes mascot-boing {
+  0% { transform: scale(1, 1); }
+  20% { transform: scale(1.08, 0.9) translateY(6px); }
+  45% { transform: scale(0.94, 1.08) translateY(-18px); }
+  70% { transform: scale(1.03, 0.97) translateY(0); }
+  100% { transform: scale(1, 1); }
+}
+
+.is-sleeping .mascot-poke {
+  animation: mascot-doze 3.2s ease-in-out infinite;
+}
+
+@keyframes mascot-doze {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(5px) rotate(2deg); }
+}
+
+.mascot-bubble {
+  position: relative;
+  z-index: 2;
+  max-width: 17rem;
+  margin-bottom: 0.9rem;
+  padding: 0.7rem 1rem;
+  border: 2px solid #0f1b33;
+  border-radius: 18px 18px 18px 4px;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 #0f1b33;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: #0f1b33;
+  text-align: left;
+}
+
+/* Kertas tempel kecil */
+.sticky-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 6px;
+  background: #fff6c7;
+  box-shadow: 0 6px 14px rgba(15, 27, 51, 0.1);
+  font-family: var(--font-hand), cursive;
+  font-size: 1.05rem;
+  color: #0f1b33;
+  rotate: var(--note-rotate, -2deg);
+}
+
+.sticky-note[data-tone="blue"] {
+  background: #dce8ff;
+}
+
+.sticky-note[data-tone="white"] {
+  background: #ffffff;
+}
+
+.float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+
+/* Orbit Teman, Circle, Acara */
+.orbit-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed rgba(1, 79, 231, 0.28);
+  border-radius: 999px;
+  animation: orbit-spin 60s linear infinite;
+}
+
+@keyframes orbit-spin {
+  to { rotate: 360deg; }
+}
+
+/* Tirai privasi: kolom yang perlahan terbuka */
+.reveal-field {
+  transition: filter 500ms ease, opacity 500ms ease, background-color 500ms ease;
+}
+
+.reveal-field[data-open="false"] {
+  filter: blur(6px);
+  opacity: 0.55;
+  user-select: none;
+}
+
+.reveal-step {
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.reveal-step[data-active="false"] {
+  opacity: 0.38;
+}
+
+/* Tiket acara 2.5D */
+.tilt-card {
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.tilt-card .tilt-pop {
+  transform: translateZ(28px);
+}
+
+.ticket {
+  --notch: 14px;
+  position: relative;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 0 62%, transparent var(--notch), #ffffff calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 62%, transparent var(--notch), #ffffff calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+  filter: drop-shadow(0 14px 22px rgba(15, 27, 51, 0.12));
+}
+
+.ticket-perforation {
+  border-top: 2px dashed rgba(15, 27, 51, 0.16);
+}
+
+/* Tepi bergelombang antar section */
+.wave-edge {
+  display: block;
+  width: 100%;
+  height: clamp(28px, 5vw, 64px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -138,5 +380,20 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .mascot-head .mascot-antenna,
+  .orbit-ring,
+  .float-slow,
+  .is-sleeping .mascot-poke {
+    animation: none !important;
+  }
+
+  .marker-underline path {
+    stroke-dashoffset: 0;
+  }
+
+  .tilt-card {
+    transform: none !important;
   }
 }

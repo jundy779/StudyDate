@@ -193,7 +193,11 @@ test("privacy-safe projections exclude private identity fields", () => {
     /profile\.first_name|\blegal_name\b|profile\.nim|@gmail/i,
   );
   assert.match(detailPage, /NIM tidak pernah\s+dibagikan ke pengguna lain/);
-  assert.match(detailPage, /Kirim perkenalan/);
+  assert.match(detailPage, /SendIntroductionDialog/);
+  assert.match(
+    readFileSync(new URL("../components/introductions/send-introduction-dialog.tsx", import.meta.url), "utf8"),
+    /Kirim perkenalan/,
+  );
 });
 
 test("accepted handoff creates conversation shell and safe chat CTA", () => {

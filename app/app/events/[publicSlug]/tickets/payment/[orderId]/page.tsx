@@ -9,6 +9,10 @@ import { notFound } from "next/navigation";
 
 type PageProps = { params: Promise<{ publicSlug: string; orderId: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
+function isStillOpen(expiresAt: string) {
+  return new Date(expiresAt).getTime() > Date.now();
+}
+
 export default async function TicketPaymentPage({ params, searchParams }: PageProps) {
   if (process.env.EVENT_TICKETING_ENABLED !== "true") notFound();
   const { publicSlug, orderId } = await params;
@@ -22,7 +26,7 @@ export default async function TicketPaymentPage({ params, searchParams }: PagePr
   const needsReview = payment.payment_status === "paid" && payment.status !== "paid";
   const waiting = payment.status === "pending";
   const checkoutReady = waiting && payment.checkout_url && payment.expires_at
-    && new Date(payment.expires_at).getTime() > Date.now();
+    && isStillOpen(payment.expires_at);
 
   return <AppShell current="events"><main className="min-h-svh bg-brand-surface px-4 py-8 sm:px-6"><div className="mx-auto max-w-2xl">
     <Link href={`/app/events/${publicSlug}/tickets`} className="text-sm font-semibold text-brand-blue">← Kembali ke tiket</Link>

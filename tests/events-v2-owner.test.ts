@@ -34,7 +34,7 @@ test("EV2O-01 owner Events route is protected and linked", () => {
 
 test("EV2O-02 organizer trust UI uses exact public alias without private IDs", () => {
   assert.match(ownerPage, /ownerLookupEventOrganizerEligibility/);
-  assert.match(ownerPage, /StudyDate Plus[\s\S]*tidak otomatis memberi izin penyelenggara/);
+  assert.match(ownerPage, /Paket Plus[\s\S]*tidak otomatis memberi izin membuat acara/);
   assert.match(ownerPage, /Terverifikasi/);
   assert.match(ownerPage, /Keputusan Owner/);
   assert.match(ownerPage, /Hasil akhir/);

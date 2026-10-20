@@ -28,7 +28,7 @@ test("ticketing UI stays behind its server feature flag", async () => {
   assert.match(participant, /EVENT_TICKETING_ENABLED !== "true"/);
   assert.match(manage, /EVENT_TICKETING_ENABLED !== "true"/);
   assert.match(participant, /Tiket belum tersedia/);
-  assert.match(manage, /Atur tiket tanpa istilah rumit/);
+  assert.match(manage, /Atur tiket acara/);
 });
 
 test("free ticket checkout needs a confirmed RSVP and allows one active ticket", async () => {

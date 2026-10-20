@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { Inter, Kalam, Poppins } from "next/font/google";
 import { getPublicSiteOrigin } from "@/lib/marketing/site-origin";
 import "./globals.css";
 
@@ -46,6 +46,13 @@ const poppins = Poppins({
   weight: ["500", "600", "700"],
 });
 
+const kalam = Kalam({
+  variable: "--font-hand",
+  display: "swap",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,7 +60,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className={`${inter.variable} ${poppins.variable} antialiased`}>
+      <body className={`${inter.variable} ${poppins.variable} ${kalam.variable} antialiased`}>
         {children}
       </body>
     </html>
