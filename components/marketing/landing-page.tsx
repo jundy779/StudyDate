@@ -15,6 +15,7 @@ import {
   EarlyAccessTrigger,
 } from "@/components/marketing/early-access-dialog";
 import { MascotHead } from "@/components/brand/mascot-head";
+import { stickerButton, WaveEdge } from "@/components/marketing/brand-ui";
 import { MascotBuddy } from "@/components/marketing/mascot-buddy";
 import { MobileNav } from "@/components/marketing/mobile-nav";
 import { PillarOrbit } from "@/components/marketing/pillar-orbit";
@@ -174,7 +175,7 @@ export function PublicNavbar({ static: isStatic = false }: { static?: boolean })
 
         <EarlyAccessTrigger
           source="navbar"
-          className="focus-ring hidden rounded-[12px] bg-brand-blue px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#013FC7] lg:inline-flex"
+          className="focus-ring hidden rounded-xl border-2 border-brand-navy bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white shadow-[3px_3px_0_#0F1B33] transition-transform hover:-translate-y-0.5 lg:inline-flex"
         >
           Ikut Akses Awal
         </EarlyAccessTrigger>
@@ -184,26 +185,6 @@ export function PublicNavbar({ static: isStatic = false }: { static?: boolean })
     </header>
   );
 }
-
-function WaveEdge({ fill, flip = false }: { fill: string; flip?: boolean }) {
-  return (
-    <svg
-      className="wave-edge"
-      viewBox="0 0 1440 64"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      style={flip ? { transform: "scaleY(-1)" } : undefined}
-    >
-      <path
-        d="M0 32 C120 8 240 8 360 32 S600 56 720 32 960 8 1080 32 1320 56 1440 32 V64 H0 Z"
-        fill={fill}
-      />
-    </svg>
-  );
-}
-
-const stickerButton =
-  "focus-ring inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border-2 border-brand-navy px-6 py-4 font-semibold shadow-[4px_4px_0_#0F1B33] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0F1B33]";
 
 function Hero() {
   const notes = [
@@ -240,7 +221,7 @@ function Hero() {
             Cari teman belajar, gabung circle, dan temukan acara kampus. Mulai dari
             sesama mahasiswa dan alumni, tanpa harus langsung membuka nama atau kontak.
           </p>
-          <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <EarlyAccessTrigger
               source="hero"
               className={`${stickerButton} bg-brand-blue text-white`}
@@ -256,7 +237,7 @@ function Hero() {
         </div>
 
         <div className="relative mx-auto w-full max-w-[460px] pt-4 sm:pt-0">
-          <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block" aria-hidden="true">
+          <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block lg:hidden xl:block" aria-hidden="true">
           {notes.map((note, index) => (
             <span
               key={note.text}

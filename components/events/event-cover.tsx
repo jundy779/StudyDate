@@ -131,7 +131,7 @@ export function EventCover({
         }`}
       >
         <div className="flex items-center justify-between gap-4">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
+          <span className="text-[11px] font-semibold text-white/80">
             StudyDate Event
           </span>
           <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ${style.accent}`}>

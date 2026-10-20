@@ -47,9 +47,9 @@ const venueLabels: Record<(typeof EVENT_VENUE_CATEGORIES)[number], string> = {
 };
 
 const timezoneLabels: Record<(typeof EVENT_TIMEZONES)[number], string> = {
-  "Asia/Jakarta": "WIB — Jakarta",
-  "Asia/Makassar": "WITA — Makassar",
-  "Asia/Jayapura": "WIT — Jayapura",
+  "Asia/Jakarta": "WIB (Jakarta)",
+  "Asia/Makassar": "WITA (Makassar)",
+  "Asia/Jayapura": "WIT (Jayapura)",
 };
 
 function localDateTimeValue(value: string, timezone: string) {

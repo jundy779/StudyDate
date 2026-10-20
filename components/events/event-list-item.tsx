@@ -53,7 +53,7 @@ export function EventListItem({ event }: { event: CampusEventSummary }) {
         className="w-full"
       />
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-[0.11em] text-brand-blue">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-brand-blue">
           <span>{categoryLabels[event.category]}</span>
           <span aria-hidden="true">•</span>
           <span>{event.scope === "open" ? "Terbuka" : "Kampus yang sama"}</span>

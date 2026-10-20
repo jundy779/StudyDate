@@ -56,7 +56,7 @@ export function buildEarlyAccessReviewEmail(input: {
       "Tautan ini hanya untuk pendaftaranmu dan akan kedaluarsa.",
     );
   }
-  textLines.push("", "— StudyDate ID", "MEET • CONNECT • GROW");
+  textLines.push("", "Tim StudyDate ID", "MEET • CONNECT • GROW");
 
   const reasonItems = labels
     .map(

@@ -78,6 +78,18 @@ atau jodoh.
 Stiker sosmed dibuat dari sumber yang sama: `npm run brand:mascot-stickers` menghasilkan PNG transparan,
 versi stiker bertepi putih, dan kotak 1080 px di `public/brand/mascot/expressions/`.
 
+## 6a. Halaman publik lain (revisi 20 Oktober 2026)
+
+Tentang, Acara publik, Insight, dokumen (Keamanan, Bantuan, Privasi, Ketentuan, Pedoman), Masuk, dan 404 memakai
+potongan bersama di `components/marketing/brand-ui.tsx`: `PageHero` (kertas buku tulis + celetukan + maskot),
+`HandNote`, `WaveEdge`, dan kelas tombol stiker. Dokumen panjang memakai daftar isi menempel di desktop dan
+lipatan "Isi halaman" di HP.
+
+Aturan teks yang berlaku di seluruh situs:
+- `section-label` tidak lagi huruf kapital dengan jarak huruf lebar. Label kecil ditulis biasa.
+- Tidak memakai tanda pisah panjang (em dash) di teks pengguna. Judul tab memakai "Judul | StudyDate ID".
+- Halaman kosong memakai `MascotEmptyState` dengan kepala maskot vektor, bukan PNG pose beresolusi rendah.
+
 ## 7. Gerak dan 3D
 
 Efek 2.5D ringan saja (tilt kartu, kedalaman bayangan), tanpa pustaka 3D, supaya tetap lancar di HP.

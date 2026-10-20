@@ -119,7 +119,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
               <div className="mt-7 bg-white p-6 sm:p-7">
                 <div className="grid gap-5 border-b border-brand-border pb-6 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                    <p className="text-xs font-semibold text-brand-muted">
                       Nama samaran
                     </p>
                     <p className="mt-2 font-heading text-xl font-semibold text-brand-navy">
@@ -127,7 +127,7 @@ async function OwnerEventsContent({ searchParams }: Props) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                    <p className="text-xs font-semibold text-brand-muted">
                       Akademik
                     </p>
                     <p className="mt-2 font-semibold text-brand-navy">

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import {
+  stickerButtonPrimary,
+  stickerButtonSecondary,
+} from "@/components/marketing/brand-ui";
+import { MascotBuddy } from "@/components/marketing/mascot-buddy";
 
 export const metadata: Metadata = {
   title: "Halaman tidak ditemukan",
@@ -9,51 +13,40 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-svh flex-col bg-white">
-      <div className="page-shell flex flex-1 flex-col justify-center py-16 sm:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-16">
-          <div>
-            <p className="font-heading text-6xl font-semibold tracking-[-0.04em] text-brand-blue sm:text-7xl">
-              404
-            </p>
-            <h1 className="mt-4 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
-              Halaman belum ditemukan
+    <main className="notebook-paper relative flex min-h-svh flex-col overflow-x-clip">
+      <span className="notebook-margin hidden sm:block" aria-hidden="true" />
+      <div className="page-shell relative flex flex-1 flex-col justify-center py-16 sm:py-24">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-16">
+          <div className="sm:pl-10 lg:pl-14">
+            <p className="font-hand text-2xl text-brand-blue">Halaman 404</p>
+            <h1 className="mt-3 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
+              Halaman ini belum ada.
             </h1>
-            <p className="mt-4 max-w-md text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
-              Tenang—maskot StudyDate siap mengarahkanmu kembali ke tempat yang
-              tepat.
+            <p className="mt-5 max-w-md text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
+              Mungkin tautannya salah ketik atau halamannya sudah dipindah. Pilih salah satu
+              tujuan di bawah untuk kembali.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/"
-                className="focus-ring inline-flex min-h-12 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white transition-colors hover:bg-[#013FC7]"
-              >
+            <div className="mt-9 flex flex-wrap gap-4">
+              <Link href="/" className={stickerButtonPrimary}>
                 Ke beranda
               </Link>
-              <Link
-                href="/app"
-                className="focus-ring inline-flex min-h-12 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-navy transition-colors hover:border-brand-blue hover:text-brand-blue"
-              >
+              <Link href="/app" className={stickerButtonSecondary}>
                 Ruang mahasiswa
               </Link>
-              <Link
-                href="/help"
-                className="focus-ring inline-flex min-h-12 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-navy transition-colors hover:border-brand-blue hover:text-brand-blue"
-              >
+              <Link href="/help" className={stickerButtonSecondary}>
                 Bantuan
               </Link>
             </div>
           </div>
-          <div className="relative mx-auto flex min-h-[320px] w-full max-w-[380px] items-center justify-center overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_50%_18%,#ffffff_0%,#edf4ff_55%,#dce9fb_100%)] sm:min-h-[380px] sm:max-w-[440px] lg:min-h-[440px] lg:max-w-[500px]">
-            <Image
-              src="/brand/mascot/hello.png"
-              alt="Maskot StudyDate melambaikan tangan"
-              width={276}
-              height={346}
-              priority
-              className="h-auto w-[225px] object-contain drop-shadow-[0_16px_28px_rgba(15,27,51,0.14)] sm:w-[270px] lg:w-[320px]"
-            />
-          </div>
+          <MascotBuddy
+            className="mx-auto w-[min(100%,300px)]"
+            greeting="Eh, aku juga nyasar."
+            reactions={[
+              { expression: "kaget", line: "Halamannya beneran nggak ada." },
+              { expression: "mikir", line: "Coba lewat beranda, biasanya ketemu." },
+              { expression: "malu", line: "Maaf ya, bukan salahmu kok." },
+            ]}
+          />
         </div>
       </div>
     </main>

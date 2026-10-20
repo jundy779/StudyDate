@@ -77,7 +77,7 @@ export function EventManagementShell({
               ["Sudah hadir", overview.checked_in_count],
             ].map(([label, value]) => (
               <div key={label}>
-                <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted">
+                <dt className="text-xs font-semibold text-brand-muted">
                   {label}
                 </dt>
                 <dd className="mt-1 font-heading text-2xl font-semibold text-brand-navy">

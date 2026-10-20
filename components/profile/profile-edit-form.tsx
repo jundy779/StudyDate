@@ -211,7 +211,7 @@ export function ProfileEditForm({
             />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-blue">
+            <p className="text-[11px] font-semibold text-brand-blue">
               Profil tanpa nama asli
             </p>
             <p className="mt-1 truncate font-heading text-lg font-semibold text-brand-navy">

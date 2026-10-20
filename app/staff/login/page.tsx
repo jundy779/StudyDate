@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Staff Login — StudyDate ID",
+  title: "Staff Login | StudyDate ID",
   robots: { index: false, follow: false, nocache: true },
 };
 

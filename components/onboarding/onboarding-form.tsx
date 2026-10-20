@@ -413,7 +413,7 @@ export function OnboardingForm({
       {showEarlyAccessWelcome && step === 0 ? (
         <p className="mt-3 text-sm leading-relaxed text-brand-muted sm:text-base">
           Akses Awal kamu sudah terhubung. Lengkapi profil StudyDate untuk
-          melanjutkan — tanpa daftar ulang.
+          melanjutkan tanpa daftar ulang.
         </p>
       ) : null}
 

@@ -328,7 +328,7 @@ function NavigationLinks({
   return (
     <nav aria-label={ariaLabel} className="space-y-1.5">
       {sectionLabel && !compact ? (
-        <p className="px-3.5 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
+        <p className="px-3.5 pb-1 text-[11px] font-semibold text-brand-muted">
           {sectionLabel}
         </p>
       ) : null}
@@ -546,7 +546,7 @@ export function ResponsiveNavigation({
 
         <div className="app-sidebar-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-5 lg:px-4">
           <div className="mb-5 hidden px-3 lg:block">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
+            <p className="text-[11px] font-semibold text-brand-muted">
               {areaLabel}
             </p>
           </div>
@@ -665,7 +665,7 @@ export function ResponsiveNavigation({
           >
             <div className="flex min-h-20 items-center justify-between border-b border-brand-border px-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">
+                <p className="text-xs font-semibold text-brand-blue">
                   StudyDate ID
                 </p>
                 <p className="mt-1 text-sm font-semibold text-brand-navy">{areaLabel}</p>

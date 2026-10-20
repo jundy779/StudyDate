@@ -177,7 +177,7 @@ export default async function SettingsPage({
                   <li key={question.question_public_id} className="flex flex-col gap-3 py-5 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="break-words font-semibold text-brand-navy">{question.prompt}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.08em] text-brand-muted">
+                      <p className="mt-1 text-xs text-brand-muted">
                         {questionTypeLabels[question.question_type] ?? "Pertanyaan"} · {question.is_required ? "Wajib" : "Opsional"}
                       </p>
                       {question.options.length ? (

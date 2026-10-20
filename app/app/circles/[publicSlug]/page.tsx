@@ -174,7 +174,7 @@ export default async function CircleDetailPage({
 
           <header className="mt-7 grid gap-8 border-b border-brand-border pb-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
             <div className="min-w-0">
-              <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+              <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs font-semibold text-brand-blue">
                 <span>{circleTopicLabels.get(circle.topic) ?? circle.topic}</span>
                 <span aria-hidden="true">•</span>
                 <span>{circleScopeLabels.get(circle.scope) ?? circle.scope}</span>

@@ -36,7 +36,7 @@ export function PeopleProfileCard({
           <Image src={imageSrc} alt="" width={124} height={124} className="h-[88%] w-[88%] object-contain object-bottom" />
         </div>
         <div className="min-w-0 self-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">Profil tanpa nama asli</p>
+          <p className="text-xs font-semibold text-brand-blue">Profil tanpa nama asli</p>
           <h2 className="mt-2 break-words font-heading text-xl font-semibold tracking-[-0.02em] text-brand-navy">{profile.public_alias}</h2>
           {profile.is_verified && (
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-brand-blue">

@@ -3,12 +3,12 @@ import { PublicDocArticle } from "@/components/marketing/public-doc-article";
 import { privacyIntro, privacySections } from "@/content/public-docs/privacy";
 
 export const metadata: Metadata = {
-  title: "Kebijakan Privasi — StudyDate ID",
+  title: "Kebijakan Privasi | StudyDate ID",
   description:
     "Bagaimana StudyDate ID mengumpulkan, memakai, dan melindungi data akun, profil tanpa nama asli, percakapan, identitas, dan kontak.",
   alternates: { canonical: "/privacy" },
   openGraph: {
-    title: "Kebijakan Privasi — StudyDate ID",
+    title: "Kebijakan Privasi | StudyDate ID",
     description:
       "Privasi, persetujuan, dan data yang StudyDate ID proses berdasarkan perilaku produk saat ini.",
     url: "/privacy",

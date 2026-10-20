@@ -153,7 +153,7 @@ export default async function RegistrationsPage({
                         <h3 className="break-words font-heading text-lg font-semibold text-brand-navy">
                           {registration.public_alias}
                         </h3>
-                        <span className="text-xs font-semibold uppercase tracking-[0.09em] text-brand-blue">
+                        <span className="text-xs font-semibold text-brand-blue">
                           {statusLabels[registration.registration_status]}
                         </span>
                         {registration.checked_in_at ? (

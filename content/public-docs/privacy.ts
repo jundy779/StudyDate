@@ -62,7 +62,7 @@ export const privacySections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "NIM bersifat opsional. Jika diisi, disimpan secara terpisah dan terlindungi—bukan bagian dari profil publik.",
+          "NIM bersifat opsional. Jika diisi, disimpan secara terpisah dan terlindungi, bukan bagian dari profil publik.",
           "Kami tidak meminta nomor telepon, alamat rumah, lokasi tepat, atau dokumen identitas sebagai syarat pengaturan profil biasa.",
           "Kamu juga menyetujui aturan untuk bertemu langsung hanya di tempat umum.",
         ],
@@ -290,7 +290,7 @@ export const privacySections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate menawarkan Masuk dengan Google sebagai alternatif tautan email. Saat kamu memilih Google, kami menerima dari Google data dasar yang diperlukan untuk autentikasi—terutama alamat email akun Google dan pengenal akun—melalui Supabase Auth.",
+        text: "StudyDate menawarkan Masuk dengan Google sebagai alternatif tautan email. Saat kamu memilih Google, kami menerima dari Google data dasar yang diperlukan untuk autentikasi (terutama alamat email akun Google dan pengenal akun) melalui Supabase Auth.",
       },
       {
         type: "ul",

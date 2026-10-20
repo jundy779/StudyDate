@@ -140,7 +140,7 @@ async function PrivateAppHome() {
                 Semua ruang sosialmu
               </h2>
             </div>
-            <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">
+            <span className="rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold text-white">
               Belajar, kenalan & tumbuh
             </span>
           </div>

@@ -37,7 +37,7 @@ export function PublicEventCard({ event }: { event: PublicCampusEvent }) {
             <span className="block font-heading text-3xl font-semibold text-brand-navy">
               {day}
             </span>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-blue">
+            <span className="block text-[11px] font-semibold text-brand-blue">
               {month}
             </span>
           </time>

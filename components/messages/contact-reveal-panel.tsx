@@ -308,7 +308,7 @@ export function ContactRevealPanel({
                     />
                   ) : (
                     <div className="rounded-2xl border border-brand-border bg-white p-3">
-                      <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+                      <p className="text-xs font-medium text-brand-muted">
                         {CONTACT_REVEAL_COPY.counterpartLabel}
                       </p>
                       <p className="mt-3 text-sm text-brand-muted">
@@ -517,7 +517,7 @@ function ContactDisplay({
 }) {
   return (
     <div className="rounded-2xl border border-brand-border bg-white p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+      <p className="text-xs font-medium text-brand-muted">
         {label}
       </p>
       {display ? (

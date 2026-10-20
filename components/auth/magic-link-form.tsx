@@ -158,7 +158,7 @@ export function MagicLinkForm() {
 
           <div className="flex items-center gap-3" aria-hidden="true">
             <div className="h-px flex-1 bg-brand-border" />
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-brand-muted">
+            <span className="text-xs font-medium text-brand-muted">
               atau
             </span>
             <div className="h-px flex-1 bg-brand-border" />

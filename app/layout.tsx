@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(getPublicSiteOrigin()),
   applicationName: "StudyDate ID",
   title: {
-    default: "StudyDate ID — Teman, circle, dan acara kampus",
+    default: "StudyDate ID | Teman, circle, dan acara kampus",
     template: "%s",
   },
   description,
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: "StudyDate ID",
-    title: "StudyDate ID — Teman, circle, dan acara kampus",
+    title: "StudyDate ID | Teman, circle, dan acara kampus",
     description,
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "StudyDate ID — Teman, circle, dan acara kampus",
+    title: "StudyDate ID | Teman, circle, dan acara kampus",
     description,
   },
 };

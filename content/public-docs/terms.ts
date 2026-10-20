@@ -10,7 +10,7 @@ export const termsSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Dengan mengakses StudyDate ID—termasuk beranda, Akses Awal, halaman masuk, pengaturan awal akun, atau aplikasi—kamu menyatakan telah membaca Ketentuan ini, Kebijakan Privasi, dan Pedoman Komunitas, serta bersedia mematuhinya.",
+        text: "Dengan mengakses StudyDate ID, termasuk beranda, Akses Awal, halaman masuk, pengaturan awal akun, atau aplikasi, kamu menyatakan telah membaca Ketentuan ini, Kebijakan Privasi, dan Pedoman Komunitas, serta bersedia mematuhinya.",
       },
     ],
   },
@@ -45,7 +45,7 @@ export const termsSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "StudyDate ID adalah platform sosial mahasiswa untuk menemukan teman, circle kecil, dan kegiatan kampus. Belajar dan kehidupan kampus menjadi konteks awal. Koneksi dapat berkembang menjadi teman belajar, teman baru, networking, kolaborasi, atau hubungan yang lebih dekat secara alami—tanpa kewajiban atau jaminan arah romantis.",
+        text: "StudyDate ID adalah platform sosial mahasiswa untuk menemukan teman, circle kecil, dan kegiatan kampus. Belajar dan kehidupan kampus menjadi konteks awal. Koneksi dapat berkembang menjadi teman belajar, teman baru, networking, kolaborasi, atau hubungan yang lebih dekat secara alami, tanpa kewajiban atau jaminan arah romantis.",
       },
       {
         type: "note",

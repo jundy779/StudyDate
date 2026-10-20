@@ -351,7 +351,7 @@ function EarlyAccessDialog({
         ) : (
           <>
             <div className="pr-12">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-blue">
+              <p className="text-sm font-semibold text-brand-blue">
                 Akses awal
               </p>
               <h2

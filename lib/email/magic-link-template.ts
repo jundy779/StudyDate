@@ -53,7 +53,7 @@ export function buildMagicLinkEmail(input: {
     "",
     "Jika kamu tidak meminta tautan ini, abaikan email ini.",
     "",
-    "— StudyDate ID",
+    "Tim StudyDate ID",
     "MEET • CONNECT • GROW",
   ].join("\n");
 

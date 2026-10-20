@@ -30,7 +30,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Dari profil mahasiswa, kirim pesan perkenalan singkat. Penerima dapat menerima, menolak, atau membiarkan kedaluwarsa. Ada batas frekuensi agar ruang tetap tenang. Penerimaan membuka jalur ke percakapan—bukan ke kontak.",
+        text: "Dari profil mahasiswa, kirim pesan perkenalan singkat. Penerima dapat menerima, menolak, atau membiarkan kedaluwarsa. Ada batas frekuensi agar ruang tetap tenang. Penerimaan membuka jalur ke percakapan, bukan ke kontak.",
       },
     ],
   },
@@ -79,7 +79,7 @@ export const helpSections: PublicDocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Setelah kalian sama-sama memilih Kenal Lebih Jauh, siapkan nama depan dan foto untuk percakapan itu, lalu setujui pembukaan bersama. Yang terbuka hanya nama depan dan foto yang disiapkan—bukan kontak atau dokumen.",
+        text: "Setelah kalian sama-sama memilih Kenal Lebih Jauh, siapkan nama depan dan foto untuk percakapan itu, lalu setujui pembukaan bersama. Yang terbuka hanya nama depan dan foto yang disiapkan, bukan kontak atau dokumen.",
       },
     ],
   },
@@ -130,10 +130,10 @@ export const helpSections: PublicDocSection[] = [
       {
         type: "ul",
         items: [
-          "Kebijakan Privasi — /privacy",
-          "Ketentuan Layanan — /terms",
-          "Pedoman Komunitas — /community-guidelines",
-          "Pusat Keamanan — /safety",
+          "Kebijakan Privasi: /privacy",
+          "Ketentuan Layanan: /terms",
+          "Pedoman Komunitas: /community-guidelines",
+          "Pusat Keamanan: /safety",
         ],
       },
     ],

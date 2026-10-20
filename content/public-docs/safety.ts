@@ -150,7 +150,7 @@ export const safetySections: PublicDocSection[] = [
           "Beritahu orang yang kamu percaya ke mana kamu pergi dan kapan perkiraan selesai.",
           "Atur transportasi sendiri bila memungkinkan.",
           "Tetap di area publik selama pertemuan.",
-          "Jika merasa tidak nyaman, kamu berhak meninggalkan tempat itu kapan saja—tanpa perlu menjelaskan panjang.",
+          "Jika merasa tidak nyaman, kamu berhak meninggalkan tempat itu kapan saja, tanpa perlu menjelaskan panjang.",
         ],
       },
       {

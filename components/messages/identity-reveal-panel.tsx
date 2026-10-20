@@ -194,7 +194,7 @@ export function IdentityRevealPanel({
             />
           ) : (
             <div className="rounded-2xl border border-brand-border bg-white p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+              <p className="text-xs font-medium text-brand-muted">
                 {IDENTITY_REVEAL_COPY.counterpartLabel}
               </p>
               <p className="mt-3 text-sm text-brand-muted">
@@ -410,7 +410,7 @@ function RevealedCard({
 }) {
   return (
     <div className="rounded-2xl border border-brand-border bg-white p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+      <p className="text-xs font-medium text-brand-muted">
         {label}
       </p>
       <div className="mt-3 flex items-center gap-3">

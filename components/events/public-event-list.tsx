@@ -6,8 +6,8 @@ import {
   readSavedEventSlugs,
 } from "@/lib/events/saved-events";
 import type { PublicCampusEvent } from "@/lib/events/public-service";
-import { Bookmark, CalendarDays } from "lucide-react";
 import Link from "next/link";
+import { MascotHead } from "@/components/brand/mascot-head";
 import { useSyncExternalStore } from "react";
 
 function subscribeToSavedEvents(listener: () => void) {
@@ -63,11 +63,11 @@ export function PublicEventList({
     );
   }
 
-  const Icon = savedOnly ? Bookmark : CalendarDays;
-
   return (
     <div className="py-16 text-center">
-      <Icon className="mx-auto h-10 w-10 text-brand-blue" aria-hidden="true" />
+      <div className="mx-auto w-28">
+        <MascotHead expression={savedOnly ? "penasaran" : "ngantuk"} />
+      </div>
       <h2 className="mt-5 font-heading text-2xl font-semibold text-brand-navy">
         {savedOnly
           ? "Belum ada acara yang kamu simpan"

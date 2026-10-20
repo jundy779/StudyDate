@@ -73,7 +73,7 @@ export function EventTicketIssuer({
       {state.ticketToken ? (
         <article className="overflow-hidden rounded-[22px] border border-brand-border bg-white">
           <div className="border-b border-brand-border bg-brand-navy px-5 py-4 text-white">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-200">
+            <p className="text-xs font-semibold text-blue-200">
               StudyDate ID · Tiket kehadiran
             </p>
             <h3 className="mt-2 break-words font-heading text-xl font-semibold">

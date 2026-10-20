@@ -3,12 +3,12 @@ import { PublicDocArticle } from "@/components/marketing/public-doc-article";
 import { safetyIntro, safetySections } from "@/content/public-docs/safety";
 
 export const metadata: Metadata = {
-  title: "Pusat Keamanan — StudyDate ID",
+  title: "Pusat Keamanan | StudyDate ID",
   description:
     "Panduan menjaga identitas dan kontak, keamanan akun, blokir/lapor, serta pertemuan hanya di tempat umum.",
   alternates: { canonical: "/safety" },
   openGraph: {
-    title: "Pusat Keamanan — StudyDate ID",
+    title: "Pusat Keamanan | StudyDate ID",
     description:
       "Panduan keamanan StudyDate: membuka identitas bertahap, bertemu di tempat umum, dan mengenali penipuan.",
     url: "/safety",

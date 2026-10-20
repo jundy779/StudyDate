@@ -265,7 +265,7 @@ export default async function EventDetailPage({
 
           <header className="mt-9 grid gap-8 border-b border-brand-border pb-9 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
             <div className="min-w-0">
-              <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+              <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs font-semibold text-brand-blue">
                 <span>{categoryLabels[event.category]}</span>
                 <span aria-hidden="true">•</span>
                 <span>{event.scope === "open" ? "Terbuka" : "Kampus yang sama"}</span>

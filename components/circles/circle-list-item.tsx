@@ -10,7 +10,7 @@ export function CircleListItem({ circle }: { circle: CircleSummary }) {
   return (
     <article className="grid gap-5 border-b border-brand-border py-7 first:pt-0 last:border-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-[0.11em] text-brand-blue">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-brand-blue">
           <span>{circleTopicLabels.get(circle.topic) ?? circle.topic}</span>
           <span aria-hidden="true">•</span>
           <span>{circleScopeLabels.get(circle.scope) ?? circle.scope}</span>

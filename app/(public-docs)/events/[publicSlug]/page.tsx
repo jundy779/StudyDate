@@ -39,10 +39,10 @@ async function resolveEvent(rawSlug: string) {
 export async function generateMetadata({ params }: EventDetailProps): Promise<Metadata> {
   const { publicSlug } = await params;
   const event = await resolveEvent(publicSlug);
-  if (!event) return { title: "Acara tidak ditemukan — StudyDate ID" };
+  if (!event) return { title: "Acara tidak ditemukan | StudyDate ID" };
   const description = event.description.slice(0, 160);
   return {
-    title: `${event.title} — StudyDate ID`,
+    title: `${event.title} | StudyDate ID`,
     description,
     alternates: { canonical: `/events/${event.public_slug}` },
     openGraph: {
@@ -192,7 +192,7 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
             return (
               <div key={label as string} className="border-t-2 border-brand-navy pt-5">
                 <DetailIcon className="h-5 w-5 text-brand-blue" aria-hidden="true" />
-                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">{label as string}</p>
+                <p className="mt-4 text-xs font-semibold text-brand-muted">{label as string}</p>
                 <p className="mt-2 text-sm font-semibold leading-6 text-brand-navy">{value as string}</p>
               </div>
             );

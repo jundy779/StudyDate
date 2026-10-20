@@ -6,7 +6,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
       <body className="bg-white font-sans text-[#0F1B33]">
         <main className="flex min-h-screen items-center justify-center px-6 py-12">
           <div className="max-w-md text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#014FE7]">
+            <p className="text-sm font-semibold text-[#014FE7]">
               StudyDate ID
             </p>
             <h1 className="mt-4 text-3xl font-semibold">

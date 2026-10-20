@@ -28,46 +28,61 @@ export function PublicDocArticle({
   intro,
   sections,
 }: PublicDocArticleProps) {
-  return (
-    <article className="page-shell py-10 sm:py-14 lg:py-16">
-      <div className="mx-auto max-w-[42rem]">
-        <p className="section-label">{eyebrow}</p>
-        <h1 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
-          {title}
-        </h1>
-        <p className="mt-4 text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
-          {intro}
-        </p>
-        <p className="mt-5 text-sm text-brand-muted">
-          Terakhir diperbarui:{" "}
-          <time dateTime={PUBLIC_DOC_LAST_UPDATED_ISO}>
-            {PUBLIC_DOC_LAST_UPDATED_LABEL}
-          </time>
-        </p>
+  const toc = (
+    <ol className="space-y-1.5 text-sm leading-6 text-brand-navy">
+      {sections.map((section, index) => (
+        <li key={section.id}>
+          <a
+            href={`#${section.id}`}
+            className="focus-ring grid grid-cols-[1.75rem_minmax(0,1fr)] rounded-md px-1 py-0.5 hover:bg-white hover:text-brand-blue"
+          >
+            <span className="font-semibold text-brand-blue">{index + 1}</span>
+            <span>{section.title}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  );
 
-        <nav
-          className="mt-8 rounded-2xl border border-brand-border bg-brand-surface/70 px-5 py-4"
-          aria-label="Daftar isi"
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">
-            Isi halaman
-          </p>
-          <ol className="mt-3 space-y-2 text-sm leading-6 text-brand-navy">
-            {sections.map((section, index) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  className="focus-ring rounded-sm underline-offset-4 hover:underline"
-                >
-                  {index + 1}. {section.title}
-                </a>
-              </li>
-            ))}
-          </ol>
+  return (
+    <article>
+      <header className="notebook-paper relative overflow-x-clip border-b border-brand-border">
+        <span className="notebook-margin hidden sm:block" aria-hidden="true" />
+        <div className="page-shell relative py-12 sm:py-16">
+          <div className="max-w-3xl sm:pl-10 lg:pl-14">
+            <p className="font-hand text-xl text-brand-blue sm:text-2xl">{eyebrow}</p>
+            <h1 className="mt-3 text-balance font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl lg:text-5xl lg:leading-[1.1]">
+              {title}
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
+              {intro}
+            </p>
+            <p className="mt-5 text-sm text-brand-muted">
+              Terakhir diperbarui:{" "}
+              <time dateTime={PUBLIC_DOC_LAST_UPDATED_ISO}>
+                {PUBLIC_DOC_LAST_UPDATED_LABEL}
+              </time>
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="page-shell grid gap-10 py-10 sm:py-14 lg:grid-cols-[260px_minmax(0,42rem)] lg:gap-16 xl:gap-24">
+        <nav aria-label="Daftar isi" className="lg:sticky lg:top-24 lg:self-start">
+          <details className="rounded-2xl bg-brand-surface px-4 py-3 lg:hidden">
+            <summary className="cursor-pointer text-sm font-semibold text-brand-navy">
+              Isi halaman ({sections.length} bagian)
+            </summary>
+            <div className="mt-3">{toc}</div>
+          </details>
+          <div className="hidden lg:block">
+            <p className="text-sm font-semibold text-brand-navy">Isi halaman</p>
+            <div className="mt-3">{toc}</div>
+          </div>
         </nav>
 
-        <div className="mt-12 space-y-12">
-          {sections.map((section) => (
+        <div className="min-w-0 space-y-12">
+          {sections.map((section, index) => (
             <section
               key={section.id}
               id={section.id}
@@ -76,13 +91,14 @@ export function PublicDocArticle({
             >
               <h2
                 id={`${section.id}-heading`}
-                className="font-heading text-xl font-semibold tracking-[-0.02em] text-brand-navy sm:text-2xl"
+                className="flex gap-3 font-heading text-xl font-semibold tracking-[-0.02em] text-brand-navy sm:text-2xl"
               >
-                {section.title}
+                <span className="text-brand-blue" aria-hidden="true">{index + 1}.</span>
+                <span>{section.title}</span>
               </h2>
               <div className="mt-4 space-y-4 text-[15px] leading-7 text-brand-navy/90 sm:text-base sm:leading-8">
-                {section.blocks.map((block, index) => (
-                  <DocBlock key={`${section.id}-${index}`} block={block} />
+                {section.blocks.map((block, blockIndex) => (
+                  <DocBlock key={`${section.id}-${blockIndex}`} block={block} />
                 ))}
               </div>
             </section>
@@ -115,7 +131,7 @@ function DocBlock({ block }: { block: PublicDocBlock }) {
       );
     case "note":
       return (
-        <p className="rounded-xl border border-brand-border bg-brand-surface px-4 py-3 text-sm leading-7 text-brand-navy/85">
+        <p className="rounded-xl border-l-4 border-brand-blue bg-[#FFF6C7] px-4 py-3 text-sm leading-7 text-brand-navy">
           {block.text}
         </p>
       );

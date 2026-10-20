@@ -1089,7 +1089,7 @@ export function ConversationRoom({
               className="scroll-mt-28"
             >
               {showDay ? (
-                <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                <p className="mb-3 text-center text-xs font-semibold text-brand-muted">
                   {formatDay(message.created_at)}
                 </p>
               ) : null}

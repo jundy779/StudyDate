@@ -169,7 +169,7 @@ export function OnboardingCatalogDirectory({
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+                <p className="text-xs font-semibold text-brand-blue">
                   {STATUS_LABEL[item.status]} · {SOURCE_LABEL[item.source]}
                 </p>
                 <h3 className="mt-2 font-heading text-xl font-semibold text-brand-navy">

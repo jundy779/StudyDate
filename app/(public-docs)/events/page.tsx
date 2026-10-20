@@ -3,17 +3,19 @@ import { EVENT_CATEGORIES, type EventCategory } from "@/lib/events/constants";
 import { EVENT_CATEGORY_LABELS } from "@/lib/events/presentation";
 import { listPublicCampusEvents } from "@/lib/events/public-service";
 import { CalendarDays, ShieldCheck, TicketCheck } from "lucide-react";
+import { MascotHead } from "@/components/brand/mascot-head";
+import { PageHero, stickerButtonPrimary } from "@/components/marketing/brand-ui";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Acara Kampus — StudyDate ID",
+  title: "Acara Kampus | StudyDate ID",
   description:
     "Temukan seminar, workshop, komunitas, dan kegiatan kampus resmi yang akan datang di StudyDate ID.",
   alternates: { canonical: "/events" },
   openGraph: {
-    title: "Acara Kampus — StudyDate ID",
+    title: "Acara Kampus | StudyDate ID",
     description:
       "Cari kegiatan kampus resmi, lihat detailnya tanpa login, lalu daftar melalui akun StudyDate.",
     url: "/events",
@@ -36,30 +38,28 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
 
   return (
     <article>
-      <section className="bg-brand-navy py-16 text-white sm:py-20">
-        <div className="page-shell grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-          <div>
-            <h1 className="max-w-4xl font-heading text-4xl font-semibold leading-tight tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-              Acara kampus yang layak masuk kalendermu.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/70">
-              Lihat seminar, workshop, komunitas, dan kegiatan kampus yang sudah
-              diperiksa StudyDate. Detail acara dapat dibaca tanpa harus masuk.
-            </p>
+      <PageHero
+        note="Acara Kampus"
+        title="Acara kampus yang layak masuk kalendermu."
+        aside={
+          <div className="relative mx-auto w-full max-w-[320px]">
+            <div className="mx-auto w-36 sm:w-44">
+              <MascotHead expression="girang" />
+            </div>
+            <div className="mt-4 w-full rounded-xl bg-[#FFF6C7] p-5 text-left shadow-[0_10px_22px_rgba(15,27,51,0.10)] [rotate:-1.5deg]">
+              <p className="font-hand text-lg leading-snug text-brand-navy">
+                Masuk hanya saat kamu ingin mendaftar, melihat tiket, atau membuat acara.
+              </p>
+              <Link href="/login" className={`${stickerButtonPrimary} mt-4 w-full`}>
+                Masuk ke StudyDate
+              </Link>
+            </div>
           </div>
-          <div className="border-l-2 border-brand-blue pl-6">
-            <p className="font-heading text-xl font-semibold leading-8">
-              Masuk hanya saat kamu ingin mendaftar, melihat tiket, atau membuat acara.
-            </p>
-            <Link
-              href="/login"
-              className="focus-ring mt-5 inline-flex min-h-11 items-center rounded-xl bg-white px-5 text-sm font-semibold text-brand-navy"
-            >
-              Masuk ke StudyDate
-            </Link>
-          </div>
-        </div>
-      </section>
+        }
+      >
+        Lihat seminar, workshop, komunitas, dan kegiatan kampus yang sudah diperiksa
+        StudyDate. Detail acara dapat dibaca tanpa harus masuk.
+      </PageHero>
 
       <section className="border-b border-brand-border bg-brand-surface">
         <div className="page-shell grid gap-6 py-7 sm:grid-cols-3">
@@ -101,8 +101,8 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
               aria-current={!category && !savedOnly ? "page" : undefined}
               className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
                 !category && !savedOnly
-                  ? "border-brand-blue bg-brand-blue text-white"
-                  : "border-brand-border bg-white text-brand-navy"
+                  ? "border-brand-navy bg-brand-blue text-white shadow-[2px_2px_0_#0F1B33]"
+                  : "border-brand-border bg-white text-brand-navy hover:border-brand-navy"
               }`}
             >
               Semua
@@ -112,8 +112,8 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
               aria-current={savedOnly ? "page" : undefined}
               className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
                 savedOnly
-                  ? "border-brand-blue bg-brand-blue text-white"
-                  : "border-brand-border bg-white text-brand-navy"
+                  ? "border-brand-navy bg-brand-blue text-white shadow-[2px_2px_0_#0F1B33]"
+                  : "border-brand-border bg-white text-brand-navy hover:border-brand-navy"
               }`}
             >
               Tersimpan
@@ -125,8 +125,8 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
                 aria-current={category === item ? "page" : undefined}
                 className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
                   category === item
-                    ? "border-brand-blue bg-brand-blue text-white"
-                    : "border-brand-border bg-white text-brand-navy"
+                    ? "border-brand-navy bg-brand-blue text-white shadow-[2px_2px_0_#0F1B33]"
+                    : "border-brand-border bg-white text-brand-navy hover:border-brand-navy"
                 }`}
               >
                 {EVENT_CATEGORY_LABELS[item]}
@@ -148,16 +148,7 @@ async function PublicEventsContent({ searchParams }: EventsPageProps) {
 function PublicEventsFallback() {
   return (
     <article aria-busy="true">
-      <section className="bg-brand-navy py-16 text-white sm:py-20">
-        <div className="page-shell">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-blue-light">
-            Acara Kampus
-          </p>
-          <h1 className="mt-4 max-w-4xl font-heading text-4xl font-semibold leading-tight tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-            Menyiapkan acara yang layak masuk kalendermu.
-          </h1>
-        </div>
-      </section>
+      <PageHero note="Acara Kampus" title="Menyiapkan acara yang layak masuk kalendermu." />
       <section className="page-shell py-14 sm:py-20">
         <div className="h-10 w-64 animate-pulse rounded-lg bg-brand-surface" />
         <div className="mt-8 space-y-4">

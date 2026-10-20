@@ -103,7 +103,7 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
                   key={label}
                   className={`py-5 ${index % 2 ? "pl-5" : "pr-5"} sm:border-r sm:px-5 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0`}
                 >
-                  <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted">
+                  <dt className="text-xs font-semibold text-brand-muted">
                     {label}
                   </dt>
                   <dd className="mt-2 font-heading text-3xl font-semibold text-brand-navy">
@@ -132,7 +132,7 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
                   ["Sudah hadir", seriesTotals.checkedIn],
                 ].map(([label, value], index) => (
                   <div key={label} className={`py-5 ${index % 2 ? "pl-5" : "pr-5"} sm:border-r sm:px-5 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0`}>
-                    <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted">{label}</dt>
+                    <dt className="text-xs font-semibold text-brand-muted">{label}</dt>
                     <dd className="mt-2 font-heading text-3xl font-semibold text-brand-navy">{value}</dd>
                   </div>
                 ))}

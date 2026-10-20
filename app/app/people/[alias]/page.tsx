@@ -146,7 +146,7 @@ export default async function PeopleDetailPage({
           <article className="mt-5 overflow-hidden rounded-[22px] border border-brand-border bg-white shadow-[0_14px_36px_rgba(15,27,51,0.055)] md:rounded-[26px]">
             <div className="grid md:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)]">
               <div className="relative flex min-h-[240px] items-end justify-center overflow-hidden bg-[radial-gradient(circle_at_30%_25%,#ffffff_0%,#edf4ff_50%,#dfeaff_100%)] px-6 pb-6 pt-14 sm:min-h-[300px] sm:px-8 sm:pb-8 md:min-h-full md:pt-16">
-                <p className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue sm:left-7 sm:top-7">
+                <p className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-brand-blue sm:left-7 sm:top-7">
                   Maskot profil
                 </p>
                 <Image
@@ -239,7 +239,7 @@ export default async function PeopleDetailPage({
                     <div>
                       <h2
                         id="privacy-title"
-                        className="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted"
+                        className="text-sm font-semibold text-brand-muted"
                       >
                         Identitas & kontak
                       </h2>
@@ -258,7 +258,7 @@ export default async function PeopleDetailPage({
                 <section className="mt-6 sm:mt-7" aria-labelledby="goals-title">
                   <h2
                     id="goals-title"
-                    className="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted"
+                    className="text-sm font-semibold text-brand-muted"
                   >
                     Mau kenalan untuk
                   </h2>
@@ -280,7 +280,7 @@ export default async function PeopleDetailPage({
                 >
                   <h2
                     id="interests-title"
-                    className="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted"
+                    className="text-sm font-semibold text-brand-muted"
                   >
                     Minat
                   </h2>
