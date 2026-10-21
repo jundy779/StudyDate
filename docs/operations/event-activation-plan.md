@@ -123,6 +123,15 @@ Memeriksa (pakai acara uji yang sudah selesai):
 
 Mematikan: per acara lewat pengaturan sertifikat. Tidak ada saklar global.
 
+## 2e. Antrean Akses Awal (bukan fitur Acara, dicatat di sini supaya urutan migration jelas)
+
+Kode: migration `202610210005_early_access_queue_insights_v1.sql`. Tanpa flag. Sebelum terpasang, halaman
+antrean tetap jalan seperti lama (fallback ke v2) dan ringkasan tidak muncul.
+
+Memeriksa: ringkasan angka muncul di /owner/early-access, "Terlama dulu" mengurutkan benar, pendaftar lama
+bertanda merah, tombol "Kirim pengingat" hanya muncul untuk undangan lebih dari 24 jam, dan pengingat kedua
+dalam 24 jam ditolak.
+
 ## 3. Acara berseri
 
 Kode: migration `202610170002`, `202610170003`, flag `EVENT_SERIES_ENABLED`.

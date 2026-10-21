@@ -1021,3 +1021,17 @@ Status: **Repository implemented**. Migration terpasang di Supabase production p
   peserta. Isi lain tidak berubah.
 - Catatan uji lokal: pola `timezone('utc', now())` mengandaikan zona waktu sesi UTC (bawaan Supabase). Di
   Postgres lokal berzona Asia/Jakarta, pengingat 24 jam bisa salah hitung; set `timezone = 'UTC'` saat menguji.
+
+## Antrean Akses Awal: ringkasan, urutan, pengingat (repository migration 202610210005)
+
+Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji di Postgres lokal.
+
+- `list_early_access_waitlist_ops_v3`: sama dengan v2 ditambah `p_queue` (`stale_waiting` menunggu lebih
+  dari 7 hari, `pending_claim` disetujui dan undangan terkirim lebih dari 3 hari tanpa login,
+  `unsent_invitation` disetujui tetapi email belum terkirim) dan `p_sort` (`priority`, `oldest`, `newest`).
+  Urutan prioritas kini mendahulukan yang paling lama menunggu di dalam tiap status. v2 tetap ada.
+- `get_early_access_queue_summary()`: jumlah per status, tiga antrean khusus, dan waktu pendaftar menunggu
+  paling lama. Hanya angka, tanpa email. Butuh `early_access.read`.
+- `prepare_early_access_reminder(email)`: untuk status `approved`, menolak bila email terakhir dikirim kurang
+  dari 24 jam lalu. Butuh `early_access.review`. Pengingat memakai tautan masuk baru yang sama dengan
+  undangan, lalu `mark_early_access_invitation_sent` mencatatnya.

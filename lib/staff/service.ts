@@ -241,6 +241,40 @@ export async function reviewEarlyAccessEntry(input: {
   return row;
 }
 
+export type EarlyAccessQueueSummary = {
+  waiting_count: number;
+  needs_revision_count: number;
+  approved_count: number;
+  rejected_count: number;
+  claimed_count: number;
+  stale_waiting_count: number;
+  pending_claim_count: number;
+  unsent_invitation_count: number;
+  oldest_waiting_at: string | null;
+};
+
+/** null bila migration 202610210005 belum terpasang. */
+export async function getEarlyAccessQueueSummary() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_early_access_queue_summary");
+  if (error) return null;
+  return ((data ?? [])[0] as EarlyAccessQueueSummary | undefined) ?? null;
+}
+
+export async function prepareEarlyAccessReminder(email: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("prepare_early_access_reminder", {
+    p_email: email,
+  });
+  if (error && /reminder cooldown/i.test(error.message)) {
+    throw new Error("cooldown");
+  }
+  if (error || typeof data !== "string" || !data) {
+    throw new Error("Pengingat Akses Awal belum dapat disiapkan.");
+  }
+  return data;
+}
+
 export async function prepareEarlyAccessInvitation(email: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("prepare_early_access_invitation", {
@@ -268,10 +302,30 @@ export async function listEarlyAccessWaitlistOps(input: {
   campus?: string | null;
   interest?: string | null;
   source?: string | null;
+  queue?: string | null;
+  sort?: string | null;
   limit?: number;
   offset?: number;
 }) {
   const supabase = await createClient();
+  const insights = await supabase.rpc("list_early_access_waitlist_ops_v3", {
+    p_email: input.email ?? null,
+    p_status: input.status ?? null,
+    p_campus: input.campus ?? null,
+    p_interest: input.interest ?? null,
+    p_source: input.source ?? null,
+    p_queue: input.queue ?? null,
+    p_sort: input.sort ?? "priority",
+    p_limit: input.limit ?? 25,
+    p_offset: input.offset ?? 0,
+  });
+  if (!insights.error) {
+    return (insights.data ?? []) as EarlyAccessWaitlistRow[];
+  }
+  if (insights.error.code !== "PGRST202" && insights.error.code !== "42883") {
+    throw new Error("Daftar Akses Awal belum dapat dimuat.");
+  }
+
   const params = {
     p_email: input.email ?? null,
     p_status: input.status ?? null,

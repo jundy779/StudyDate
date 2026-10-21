@@ -604,6 +604,14 @@ Jangan menampilkan angka target publik yang belum disetujui.
 
 - Authorized Staff Operations v1: satu Early Access moderation queue, Owner full access, Staff read/review capability terpisah, safe user account ops, staff assign by email + capability grants (Owner-managed).
 
+### Antrean Akses Awal (21 Oktober 2026, repository implemented)
+- Ringkasan di atas antrean: menunggu, menunggu lebih dari 7 hari (merah), disetujui tapi belum login 3 hari,
+  undangan belum terkirim, dan sudah login. Setiap angka adalah tautan ke filter yang sesuai.
+- Urutan "Perlu ditangani dulu", "Terlama dulu", "Terbaru dulu". Target: semua pendaftar diperiksa dalam 7 hari.
+- Lencana jenis email per pendaftar: email kampus (verifikasi opsional), email sekolah (acara edukatif saja),
+  email pribadi Gmail/VK (wajib PDDikti saat saklar dinyalakan), domain lain. Hanya bantuan tampilan.
+- "Kirim pengingat" untuk yang belum login 3 hari, paling sering sekali per 24 jam per pendaftar.
+
 ### Early Access review outcomes
 
 Owner or explicitly authorized Early Access staff may Approve, Minta Perbaikan, or Reject. Minta Perbaikan must carry at least one structured reason and sends a private one-time correction link. Reject also requires a reason and sends a notification email. Internal reviewer notes are never sent to applicants. Corrected applications return to the moderation queue and require a fresh approval before onboarding.

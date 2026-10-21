@@ -5,7 +5,23 @@ import {
 } from "@/lib/early-access/review-reasons";
 import type { StaffAccess } from "@/lib/staff/authorization";
 import { staffHasCapability } from "@/lib/staff/authorization";
-import { listEarlyAccessWaitlistOps } from "@/lib/staff/service";
+import {
+  getEarlyAccessQueueSummary,
+  listEarlyAccessWaitlistOps,
+} from "@/lib/staff/service";
+import {
+  EMAIL_KIND_COPY,
+  canSendReminder,
+  classifyEmailDomain,
+  daysSince,
+  isStaleWaiting,
+  needsClaimReminder,
+  queueReferenceTime,
+  waitingAgeLabel,
+  type EarlyAccessQueue as QueueFilter,
+  type EarlyAccessSort,
+} from "@/lib/early-access/queue-insights";
+import { getVerificationReadiness } from "@/lib/verification/readiness";
 import Link from "next/link";
 
 export type EarlyAccessQueueSearchParams = {
@@ -14,6 +30,8 @@ export type EarlyAccessQueueSearchParams = {
   campus?: string;
   interest?: string;
   source?: string;
+  queue?: string;
+  sort?: string;
   page?: string;
   state?: string;
 };
@@ -71,6 +89,14 @@ const stateMessages: Record<
     text: "Undangan Akses Awal berhasil dikirim ulang.",
     tone: "success",
   },
+  reminded: {
+    text: "Pengingat sudah dikirim berupa tautan masuk baru. Tautan lama tidak berlaku lagi.",
+    tone: "success",
+  },
+  remind_cooldown: {
+    text: "Pengingat untuk pendaftar ini baru saja dikirim. Tunggu 24 jam sebelum mengirim lagi.",
+    tone: "warning",
+  },
   approved_email_error: {
     text: "Akses sudah disetujui, tetapi email undangan belum berhasil dikirim. Gunakan Kirim ulang undangan setelah layanan email siap.",
     tone: "warning",
@@ -126,7 +152,7 @@ function DirectReviewAction({
   basePath,
 }: {
   email: string;
-  action: "approve" | "resend";
+  action: "approve" | "resend" | "remind";
   label: string;
   basePath: Props["basePath"];
 }) {
@@ -140,7 +166,9 @@ function DirectReviewAction({
         className={`focus-ring min-h-11 rounded-xl px-4 text-sm font-semibold ${
           action === "approve"
             ? "bg-brand-blue text-white"
-            : "border border-brand-border bg-white text-brand-blue"
+            : action === "remind"
+              ? "border-2 border-brand-navy bg-[#FFDC72] text-brand-navy"
+              : "border border-brand-border bg-white text-brand-blue"
         }`}
       >
         {label}
@@ -267,6 +295,20 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
     query.source === "final-cta"
       ? query.source
       : null;
+  const queue: QueueFilter | null =
+    query.queue === "stale_waiting" ||
+    query.queue === "pending_claim" ||
+    query.queue === "unsent_invitation"
+      ? query.queue
+      : null;
+  const sort: EarlyAccessSort =
+    query.sort === "oldest" || query.sort === "newest" ? query.sort : "priority";
+  const [summary, readiness] = await Promise.all([
+    getEarlyAccessQueueSummary(),
+    getVerificationReadiness().catch(() => null),
+  ]);
+  const personalNeedsCardPath = !readiness?.manualCardReady;
+  const nowMs = queueReferenceTime();
 
   let rows: Awaited<ReturnType<typeof listEarlyAccessWaitlistOps>> = [];
   let loadError = "";
@@ -277,6 +319,8 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
       campus,
       interest,
       source,
+      queue,
+      sort,
       limit: PAGE_SIZE,
       offset,
     });
@@ -294,6 +338,8 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
     if (campus) params.set("campus", campus);
     if (interest) params.set("interest", interest);
     if (source) params.set("source", source);
+    if (queue) params.set("queue", queue);
+    if (sort !== "priority") params.set("sort", sort);
     if (nextPage > 1) params.set("page", String(nextPage));
     const qs = params.toString();
     return qs ? `${basePath}?${qs}` : basePath;
@@ -333,6 +379,71 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
             Kamu hanya dapat melihat daftar ini. Hubungi Owner jika perlu
             menyetujui, meminta perbaikan, menolak, atau mengirim ulang undangan.
           </p>
+        ) : null}
+
+        {summary ? (
+          <section aria-labelledby="early-access-summary" className="mt-8">
+            <h2 id="early-access-summary" className="sr-only">Ringkasan antrean</h2>
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {[
+                {
+                  label: "Menunggu diperiksa",
+                  value: summary.waiting_count,
+                  href: `${basePath}?status=waiting&sort=oldest`,
+                  alert: false,
+                },
+                {
+                  label: "Menunggu lebih dari 7 hari",
+                  value: summary.stale_waiting_count,
+                  href: `${basePath}?queue=stale_waiting&sort=oldest`,
+                  alert: summary.stale_waiting_count > 0,
+                },
+                {
+                  label: "Disetujui, belum login 3 hari",
+                  value: summary.pending_claim_count,
+                  href: `${basePath}?queue=pending_claim&sort=oldest`,
+                  alert: false,
+                },
+                {
+                  label: "Undangan belum terkirim",
+                  value: summary.unsent_invitation_count,
+                  href: `${basePath}?queue=unsent_invitation`,
+                  alert: summary.unsent_invitation_count > 0,
+                },
+                {
+                  label: "Sudah login",
+                  value: summary.claimed_count,
+                  href: `${basePath}?status=claimed&sort=newest`,
+                  alert: false,
+                },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className={`focus-ring block h-full rounded-2xl border-2 p-4 transition-transform hover:-translate-y-0.5 motion-reduce:transition-none ${
+                      item.alert
+                        ? "border-brand-error bg-red-50 shadow-[3px_3px_0_#B42318]"
+                        : "border-brand-navy bg-white shadow-[3px_3px_0_#0F1B33]"
+                    }`}
+                  >
+                    <span className={`block font-heading text-3xl font-semibold ${item.alert ? "text-brand-error" : "text-brand-navy"}`}>
+                      {item.value}
+                    </span>
+                    <span className="mt-1 block text-sm leading-5 text-brand-muted">{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {summary.oldest_waiting_at ? (
+              <p className="mt-3 text-sm text-brand-muted">
+                Pendaftar paling lama:{" "}
+                <strong className={isStaleWaiting("waiting", summary.oldest_waiting_at, nowMs) ? "text-brand-error" : "text-brand-navy"}>
+                  {waitingAgeLabel(daysSince(summary.oldest_waiting_at, nowMs) ?? 0).toLowerCase()}
+                </strong>
+                . Usahakan semua pendaftar diperiksa dalam 7 hari.
+              </p>
+            ) : null}
+          </section>
         ) : null}
 
         <form
@@ -399,6 +510,31 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
               <option value="final-cta">Ajakan di bagian akhir</option>
             </select>
           </label>
+          <label className="text-sm font-semibold">
+            Antrean khusus
+            <select
+              name="queue"
+              defaultValue={queue ?? ""}
+              className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+            >
+              <option value="">Tidak ada</option>
+              <option value="stale_waiting">Menunggu lebih dari 7 hari</option>
+              <option value="pending_claim">Disetujui, belum login 3 hari</option>
+              <option value="unsent_invitation">Undangan belum terkirim</option>
+            </select>
+          </label>
+          <label className="text-sm font-semibold">
+            Urutan
+            <select
+              name="sort"
+              defaultValue={sort}
+              className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+            >
+              <option value="priority">Perlu ditangani dulu</option>
+              <option value="oldest">Terlama dulu</option>
+              <option value="newest">Terbaru dulu</option>
+            </select>
+          </label>
           <div className="flex items-end">
             <button
               type="submit"
@@ -435,6 +571,54 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                 >
                   <div>
                     <p className="break-all font-semibold">{row.email}</p>
+                    {(() => {
+                      const kind = classifyEmailDomain(row.email);
+                      const waitingSince = row.resubmitted_at ?? row.created_at;
+                      const stale = isStaleWaiting(row.status, waitingSince, nowMs);
+                      const waitingDays = daysSince(waitingSince, nowMs);
+                      return (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span
+                            title={EMAIL_KIND_COPY[kind].help}
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                              kind === "campus"
+                                ? "border-brand-blue/30 bg-[#EAF1FF] text-brand-blue"
+                                : kind === "school"
+                                  ? "border-amber-300 bg-amber-50 text-amber-900"
+                                  : kind === "personal"
+                                    ? "border-brand-navy/20 bg-brand-surface text-brand-navy"
+                                    : "border-red-200 bg-red-50 text-brand-error"
+                            }`}
+                          >
+                            {EMAIL_KIND_COPY[kind].label}
+                            <span className="sr-only">. {EMAIL_KIND_COPY[kind].help}</span>
+                          </span>
+                          {row.status === "waiting" && waitingDays !== null ? (
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                stale ? "bg-brand-error text-white" : "bg-brand-surface text-brand-muted"
+                              }`}
+                            >
+                              {waitingAgeLabel(waitingDays)}
+                            </span>
+                          ) : null}
+                          {needsClaimReminder(row.status, row.invitation_sent_at, nowMs) ? (
+                            <span className="inline-flex items-center rounded-full bg-[#FFF4CC] px-2.5 py-0.5 text-xs font-semibold text-amber-900">
+                              Belum login {daysSince(row.invitation_sent_at, nowMs)} hari
+                            </span>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
+                    {classifyEmailDomain(row.email) === "personal" &&
+                    personalNeedsCardPath &&
+                    row.status !== "claimed" &&
+                    row.status !== "rejected" ? (
+                      <p className="mt-2 text-xs leading-5 text-brand-muted">
+                        Email pribadi nanti wajib verifikasi PDDikti. Jalur kartu mahasiswa belum
+                        siap, jadi saklar wajib verifikasi belum bisa dinyalakan.
+                      </p>
+                    ) : null}
                     <p className="mt-1 text-sm text-brand-muted">
                       {row.campus || "Kampus tidak diisi"} ·{" "}
                       {(row.interests ?? [])
@@ -489,13 +673,24 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                             label="Setujui dan kirim email"
                             basePath={basePath}
                           />
-                        ) : (
+                        ) : !row.invitation_sent_at ? (
                           <DirectReviewAction
                             email={row.email}
                             action="resend"
                             label="Kirim ulang undangan"
                             basePath={basePath}
                           />
+                        ) : canSendReminder(row.invitation_sent_at, nowMs) ? (
+                          <DirectReviewAction
+                            email={row.email}
+                            action="remind"
+                            label="Kirim pengingat"
+                            basePath={basePath}
+                          />
+                        ) : (
+                          <p className="text-xs leading-5 text-brand-muted lg:text-right">
+                            Undangan baru dikirim. Pengingat bisa dikirim 24 jam setelahnya.
+                          </p>
                         )}
                         {row.status !== "approved" ? (
                           <DecisionForm

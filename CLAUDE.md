@@ -472,6 +472,7 @@ Tabel ini adalah snapshot dokumentasi dan repository. Untuk status remote terbar
 | Landing dan halaman publik | **Repository implemented** dan digunakan pada domain production | Termasuk about, privacy, terms, guidelines, safety, help, insight, dan Acara publik. |
 | Early Access dasar | **Repository implemented** | Insert waitlist, duplicate handling, consent, honeypot, dan rate limit. |
 | Early Access moderation/invitation/revision | **Repository implemented** | Migration 202608250002 dan 202608260001 perlu remote verification sebelum disebut aktif penuh. |
+| Antrean Akses Awal: ringkasan, urutan, lencana email, pengingat | **Repository implemented** | Migration 202610210005, belum dipasang di production. |
 | Email magic link + PKCE | **Repository implemented** | Delivery nyata dan callback perlu environment test. |
 | Onboarding empat langkah | **Repository implemented** | Atomic RPC dan privacy fields tersedia. |
 | People Discovery v1 | **Repository implemented** | Safe projection, filter, pagination, discoverability. |

@@ -845,3 +845,9 @@ memakai `OnlineEventAttendanceMode`, `MixedEventAttendanceMode`, atau `OfflineEv
 - PNG sertifikat (1754x1240) memakai Poppins dari `assets/fonts/` (OFL), dimasukkan ke bundle lewat
   `outputFileTracingIncludes` di `next.config.ts`.
 - `lib/events/after.ts` memperlakukan RPC yang belum ada sebagai fitur belum tersedia.
+
+### Antrean Akses Awal (migration 202610210005)
+`components/staff/early-access-queue.tsx` memanggil `list_early_access_waitlist_ops_v3` dengan fallback ke v2
+lalu v1 untuk deploy bertahap, dan `get_early_access_queue_summary` (disembunyikan bila belum ada). Aturan
+tampilan (jenis email, umur antrean, jeda pengingat) ada di `lib/early-access/queue-insights.ts` supaya bisa
+diuji tanpa server. Jeda 24 jam pengingat ditegakkan di database, bukan hanya di tombol.

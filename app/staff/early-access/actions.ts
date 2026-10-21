@@ -9,6 +9,7 @@ import { requireStaffCapability } from "@/lib/staff/authorization";
 import {
   markEarlyAccessInvitationSent,
   prepareEarlyAccessInvitation,
+  prepareEarlyAccessReminder,
   reviewEarlyAccessEntry,
 } from "@/lib/staff/service";
 import { earlyAccessReviewActionSchema } from "@/lib/staff/validation";
@@ -140,6 +141,26 @@ export async function moderateEarlyAccess(formData: FormData) {
     }
 
     redirect(destination("revision_requested"));
+  }
+
+  if (action === "remind") {
+    let targetEmail: string;
+    try {
+      targetEmail = await prepareEarlyAccessReminder(email);
+    } catch (error) {
+      redirect(
+        destination(
+          error instanceof Error && error.message === "cooldown" ? "remind_cooldown" : "email_error",
+        ),
+      );
+    }
+    try {
+      await sendInvitation(targetEmail);
+      refreshEarlyAccessViews();
+    } catch {
+      redirect(destination("email_error"));
+    }
+    redirect(destination("reminded"));
   }
 
   if (action === "resend") {
