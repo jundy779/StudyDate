@@ -346,6 +346,8 @@ logo pemerintah/PDDIKTI atau visual KYC.
 - Setelah aksi, redirect membawa anchor ke pesan hasil supaya tidak tersembunyi di atas halaman.
 - Panel yang melayang harus bisa ditutup dengan klik di luar panel, tombol Escape, atau tombol "Batal".
   Panel yang dibiarkan terbuka tidak boleh menghalangi tombol di baris lain.
+- Tombol yang memicu email atau keputusan menampilkan "Mengirim..." dan terkunci selama proses, supaya tidak
+  diklik dua kali. Setelah hasil keluar, panel tertutup dan pesan hasil digulir ke tengah layar.
 
 ### Staff shell
 

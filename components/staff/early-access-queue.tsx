@@ -2,6 +2,7 @@ import { moderateEarlyAccess } from "@/app/staff/early-access/actions";
 import {
   DecisionPanelCloser,
   DecisionSubmitButton,
+  PendingSubmitButton,
 } from "@/components/staff/decision-submit-button";
 import {
   EARLY_ACCESS_REVIEW_REASONS,
@@ -178,8 +179,7 @@ function DirectReviewAction({
       <input type="hidden" name="email" value={email} />
       <input type="hidden" name="action" value={action} />
       <input type="hidden" name="returnTo" value={basePath} />
-      <button
-        type="submit"
+      <PendingSubmitButton
         className={`focus-ring min-h-11 rounded-xl px-4 text-sm font-semibold ${
           action === "approve"
             ? "bg-brand-blue text-white"
@@ -189,7 +189,7 @@ function DirectReviewAction({
         }`}
       >
         {label}
-      </button>
+      </PendingSubmitButton>
     </form>
   );
 }

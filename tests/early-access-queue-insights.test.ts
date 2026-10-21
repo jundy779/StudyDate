@@ -102,3 +102,13 @@ test("tanpa migration 202610210005, tombol pengingat kembali ke kirim ulang unda
   assert.match(queue, /const remindersAvailable = summary !== null;/);
   assert.match(queue, /!remindersAvailable \? \(\s*<DirectReviewAction[\s\S]{0,120}action="resend"/);
 });
+
+test("tombol keputusan menunjukkan sedang mengirim, panel tertutup setelah ada hasil", () => {
+  const button = read("components/staff/decision-submit-button.tsx");
+  assert.match(button, /useFormStatus/);
+  assert.match(button, /"Mengirim\.\.\."/);
+  assert.match(button, /useSearchParams\(\)\.get\("state"\)/);
+  assert.match(button, /getElementById\("hasil-pemeriksaan"\)\?\.scrollIntoView/);
+  const queue = read("components/staff/early-access-queue.tsx");
+  assert.match(queue, /<PendingSubmitButton/);
+});

@@ -1,6 +1,31 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState, type MouseEvent } from "react";
+import { useFormStatus } from "react-dom";
+
+/** Tombol kirim biasa yang menampilkan "Mengirim..." dan terkunci selama proses. */
+export function PendingSubmitButton({
+  className,
+  pendingLabel = "Mengirim...",
+  children,
+}: {
+  className: string;
+  pendingLabel?: string;
+  children: React.ReactNode;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending || undefined}
+      className={`${className} disabled:cursor-wait disabled:opacity-70`}
+    >
+      {pending ? pendingLabel : children}
+    </button>
+  );
+}
 
 /**
  * Panel keputusan (Tolak, Minta perbaikan) melayang di atas baris lain. Komponen ini
@@ -8,6 +33,20 @@ import { useEffect, useState, type MouseEvent } from "react";
  * panel tidak menghalangi tombol di baris lain.
  */
 export function DecisionPanelCloser({ group }: { group: string }) {
+  const resultState = useSearchParams().get("state");
+
+  // Setelah keputusan diproses halaman memuat ulang dengan ?state=...; tutup panel
+  // yang masih terbuka dan tampilkan pesan hasilnya.
+  useEffect(() => {
+    if (!resultState) return;
+    document
+      .querySelectorAll<HTMLDetailsElement>(`details[name="${group}"][open]`)
+      .forEach((panel) => {
+        panel.open = false;
+      });
+    document.getElementById("hasil-pemeriksaan")?.scrollIntoView({ block: "center" });
+  }, [group, resultState]);
+
   useEffect(() => {
     const openPanels = () =>
       Array.from(document.querySelectorAll<HTMLDetailsElement>(`details[name="${group}"][open]`));
@@ -52,6 +91,7 @@ export function DecisionSubmitButton({
   children: React.ReactNode;
 }) {
   const [problem, setProblem] = useState("");
+  const { pending } = useFormStatus();
 
   function check(event: MouseEvent<HTMLButtonElement>) {
     const form = event.currentTarget.form;
@@ -81,13 +121,20 @@ export function DecisionSubmitButton({
   return (
     <>
       <div className="flex gap-2">
-        <button type="submit" onClick={check} className={`flex-1 ${className}`}>
-          {children}
+        <button
+          type="submit"
+          onClick={check}
+          disabled={pending}
+          aria-busy={pending || undefined}
+          className={`flex-1 ${className} disabled:cursor-wait disabled:opacity-70`}
+        >
+          {pending ? "Mengirim..." : children}
         </button>
         {cancelLabel ? (
           <button
             type="button"
             onClick={close}
+            disabled={pending}
             className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy"
           >
             {cancelLabel}
