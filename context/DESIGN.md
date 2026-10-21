@@ -336,6 +336,15 @@ Reviewer membedakan `AUTO LOOKUP MATCH` dan `MANUAL ACADEMIC REVIEW`; primary
 manual action adalah `Setujui data akademik`, bukan `Verify user`. Jangan pakai
 logo pemerintah/PDDIKTI atau visual KYC.
 
+### Keputusan di Ruang Operasional (21 Oktober 2026)
+
+- Panel keputusan yang melayang (Tolak, Minta perbaikan) memakai `<details name="...">` yang sama, sehingga
+  hanya satu yang bisa terbuka. Dua panel di posisi yang sama tidak boleh terbuka bersamaan, karena alasan
+  bisa dicentang di panel yang tertutupi.
+- Judul panel menyebut keputusan dan target. Validasi yang mudah (alasan wajib) dicek di tombol dan
+  pesannya muncul di dalam panel; server tetap memvalidasi ulang.
+- Setelah aksi, redirect membawa anchor ke pesan hasil supaya tidak tersembunyi di atas halaman.
+
 ### Staff shell
 
 `/staff/login` memakai AuthShell StudyDate tetapi jelas sebagai restricted access tanpa self-registration. Owner dan

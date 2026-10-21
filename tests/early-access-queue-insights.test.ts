@@ -75,3 +75,14 @@ test("aksi pengingat lewat server action yang sama dan jeda dijelaskan", () => {
   assert.match(queue, /Menunggu lebih dari 7 hari/);
   assert.match(queue, /classifyEmailDomain\(row\.email\)/);
 });
+
+test("panel Tolak dan Minta perbaikan tidak bisa terbuka bersamaan dan alasan dicek sebelum kirim", () => {
+  const queue = read("components/staff/early-access-queue.tsx");
+  assert.match(queue, /<details className="relative" name="early-access-decision">/);
+  assert.match(queue, /<DecisionSubmitButton/);
+  const button = read("components/staff/decision-submit-button.tsx");
+  assert.match(button, /input\[name="reasonCode"\]:checked/);
+  assert.match(button, /event\.preventDefault\(\)/);
+  assert.match(read("app/staff/early-access/actions.ts"), /#hasil-pemeriksaan/);
+  assert.match(queue, /id="hasil-pemeriksaan"/);
+});

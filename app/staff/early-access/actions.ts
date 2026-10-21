@@ -55,7 +55,8 @@ export async function moderateEarlyAccess(formData: FormData) {
     requestedReturnTo === "/owner/early-access"
       ? "/owner/early-access"
       : "/staff/early-access";
-  const destination = (state: string) => `${returnTo}?state=${state}`;
+  // Lompat ke pesan hasil supaya terlihat walau tombol ada jauh di bawah.
+  const destination = (state: string) => `${returnTo}?state=${state}#hasil-pemeriksaan`;
 
   const parsed = earlyAccessReviewActionSchema.safeParse({
     email: formData.get("email"),

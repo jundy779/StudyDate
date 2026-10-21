@@ -1,4 +1,5 @@
 import { moderateEarlyAccess } from "@/app/staff/early-access/actions";
+import { DecisionSubmitButton } from "@/components/staff/decision-submit-button";
 import {
   EARLY_ACCESS_REVIEW_REASONS,
   getEarlyAccessReviewReasonLabel,
@@ -137,8 +138,9 @@ function StatusNotice({ state }: { state?: string }) {
 
   return (
     <p
+      id="hasil-pemeriksaan"
       role={notice.tone === "error" ? "alert" : "status"}
-      className={`mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${toneClass}`}
+      className={`mt-6 scroll-mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${toneClass}`}
     >
       {notice.text}
     </p>
@@ -188,7 +190,7 @@ function DecisionForm({
 }) {
   const revision = action === "needs_revision";
   return (
-    <details className="relative">
+    <details className="relative" name="early-access-decision">
       <summary
         className={`focus-ring flex min-h-11 cursor-pointer list-none items-center rounded-xl border px-4 text-sm font-semibold ${
           revision
@@ -199,6 +201,10 @@ function DecisionForm({
         {revision ? "Minta perbaikan" : "Tolak"}
       </summary>
       <div className="mt-2 w-full rounded-2xl border border-brand-border bg-white p-4 shadow-sm lg:absolute lg:right-0 lg:z-20 lg:w-[390px]">
+        <p className="mb-3 border-b border-brand-border pb-3 text-sm font-semibold text-brand-navy">
+          {revision ? "Minta perbaikan untuk" : "Tolak pendaftaran"}{" "}
+          <span className="break-all font-normal text-brand-muted">{email}</span>
+        </p>
         <form action={moderateEarlyAccess} className="space-y-4">
           <input type="hidden" name="email" value={email} />
           <input type="hidden" name="action" value={action} />
@@ -252,8 +258,8 @@ function DecisionForm({
               placeholder="Hanya Owner atau Admin yang bertugas yang dapat melihat catatan ini."
             />
           </label>
-          <button
-            type="submit"
+          <DecisionSubmitButton
+            revision={revision}
             className={`focus-ring min-h-11 w-full rounded-xl px-4 text-sm font-semibold ${
               revision
                 ? "bg-amber-500 text-brand-navy"
@@ -261,7 +267,7 @@ function DecisionForm({
             }`}
           >
             {revision ? "Kirim permintaan perbaikan" : "Tolak & kirim email"}
-          </button>
+          </DecisionSubmitButton>
         </form>
       </div>
     </details>
