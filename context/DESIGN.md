@@ -344,6 +344,8 @@ logo pemerintah/PDDIKTI atau visual KYC.
 - Judul panel menyebut keputusan dan target. Validasi yang mudah (alasan wajib) dicek di tombol dan
   pesannya muncul di dalam panel; server tetap memvalidasi ulang.
 - Setelah aksi, redirect membawa anchor ke pesan hasil supaya tidak tersembunyi di atas halaman.
+- Panel yang melayang harus bisa ditutup dengan klik di luar panel, tombol Escape, atau tombol "Batal".
+  Panel yang dibiarkan terbuka tidak boleh menghalangi tombol di baris lain.
 
 ### Staff shell
 

@@ -86,3 +86,19 @@ test("panel Tolak dan Minta perbaikan tidak bisa terbuka bersamaan dan alasan di
   assert.match(read("app/staff/early-access/actions.ts"), /#hasil-pemeriksaan/);
   assert.match(queue, /id="hasil-pemeriksaan"/);
 });
+
+test("panel yang terbuka bisa ditutup dan tidak menghalangi baris lain", () => {
+  const queue = read("components/staff/early-access-queue.tsx");
+  assert.match(queue, /<DecisionPanelCloser group="early-access-decision" \/>/);
+  assert.match(queue, /cancelLabel="Batal"/);
+  const closer = read("components/staff/decision-submit-button.tsx");
+  assert.match(closer, /addEventListener\("pointerdown"/);
+  assert.match(closer, /event\.key !== "Escape"/);
+  assert.match(closer, /!panel\.contains\(target\)/);
+});
+
+test("tanpa migration 202610210005, tombol pengingat kembali ke kirim ulang undangan", () => {
+  const queue = read("components/staff/early-access-queue.tsx");
+  assert.match(queue, /const remindersAvailable = summary !== null;/);
+  assert.match(queue, /!remindersAvailable \? \(\s*<DirectReviewAction[\s\S]{0,120}action="resend"/);
+});

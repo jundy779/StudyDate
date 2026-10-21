@@ -1,6 +1,39 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
+
+/**
+ * Panel keputusan (Tolak, Minta perbaikan) melayang di atas baris lain. Komponen ini
+ * menutup panel yang terbuka saat klik di luar panel atau tombol Escape, supaya
+ * panel tidak menghalangi tombol di baris lain.
+ */
+export function DecisionPanelCloser({ group }: { group: string }) {
+  useEffect(() => {
+    const openPanels = () =>
+      Array.from(document.querySelectorAll<HTMLDetailsElement>(`details[name="${group}"][open]`));
+
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target as Node | null;
+      for (const panel of openPanels()) {
+        if (target && !panel.contains(target)) panel.open = false;
+      }
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      for (const panel of openPanels()) {
+        panel.open = false;
+        panel.querySelector<HTMLElement>("summary")?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [group]);
+  return null;
+}
 
 /**
  * Tombol kirim untuk Tolak dan Minta perbaikan. Memeriksa alasan sebelum form
@@ -10,10 +43,12 @@ import { useState, type MouseEvent } from "react";
 export function DecisionSubmitButton({
   revision,
   className,
+  cancelLabel,
   children,
 }: {
   revision: boolean;
   className: string;
+  cancelLabel?: string;
   children: React.ReactNode;
 }) {
   const [problem, setProblem] = useState("");
@@ -35,12 +70,31 @@ export function DecisionSubmitButton({
     if (message) event.preventDefault();
   }
 
+  function close(event: MouseEvent<HTMLButtonElement>) {
+    const panel = event.currentTarget.closest("details");
+    if (panel) {
+      panel.open = false;
+      panel.querySelector<HTMLElement>("summary")?.focus();
+    }
+  }
+
   return (
     <>
-      <button type="submit" onClick={check} className={className}>
-        {children}
-      </button>
-      <p role="alert" className="min-h-0 text-sm font-semibold text-brand-error empty:hidden">
+      <div className="flex gap-2">
+        <button type="submit" onClick={check} className={`flex-1 ${className}`}>
+          {children}
+        </button>
+        {cancelLabel ? (
+          <button
+            type="button"
+            onClick={close}
+            className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy"
+          >
+            {cancelLabel}
+          </button>
+        ) : null}
+      </div>
+      <p role="alert" className="text-sm font-semibold text-brand-error empty:hidden">
         {problem}
       </p>
     </>

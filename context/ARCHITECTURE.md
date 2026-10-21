@@ -850,4 +850,7 @@ memakai `OnlineEventAttendanceMode`, `MixedEventAttendanceMode`, atau `OfflineEv
 `components/staff/early-access-queue.tsx` memanggil `list_early_access_waitlist_ops_v3` dengan fallback ke v2
 lalu v1 untuk deploy bertahap, dan `get_early_access_queue_summary` (disembunyikan bila belum ada). Aturan
 tampilan (jenis email, umur antrean, jeda pengingat) ada di `lib/early-access/queue-insights.ts` supaya bisa
-diuji tanpa server. Jeda 24 jam pengingat ditegakkan di database, bukan hanya di tombol.
+diuji tanpa server. Jeda 24 jam pengingat ditegakkan di database, bukan hanya di tombol. Tombol pengingat hanya
+muncul bila ringkasan antrean tersedia (tanda migration 202610210005 terpasang); tanpa itu tetap "Kirim ulang
+undangan". Komponen antrean menerima `data` opsional untuk pratinjau dan uji tampilan; halaman asli selalu
+memuat sendiri.

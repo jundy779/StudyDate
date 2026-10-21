@@ -1,5 +1,8 @@
 import { moderateEarlyAccess } from "@/app/staff/early-access/actions";
-import { DecisionSubmitButton } from "@/components/staff/decision-submit-button";
+import {
+  DecisionPanelCloser,
+  DecisionSubmitButton,
+} from "@/components/staff/decision-submit-button";
 import {
   EARLY_ACCESS_REVIEW_REASONS,
   getEarlyAccessReviewReasonLabel,
@@ -9,6 +12,8 @@ import { staffHasCapability } from "@/lib/staff/authorization";
 import {
   getEarlyAccessQueueSummary,
   listEarlyAccessWaitlistOps,
+  type EarlyAccessQueueSummary,
+  type EarlyAccessWaitlistRow,
 } from "@/lib/staff/service";
 import {
   EMAIL_KIND_COPY,
@@ -37,10 +42,20 @@ export type EarlyAccessQueueSearchParams = {
   state?: string;
 };
 
+/** Data siap pakai. Hanya untuk pratinjau dan uji tampilan; halaman asli memuat sendiri. */
+export type EarlyAccessQueueData = {
+  rows: EarlyAccessWaitlistRow[];
+  summary: EarlyAccessQueueSummary | null;
+  manualCardReady: boolean;
+  nowMs: number;
+  loadError?: string;
+};
+
 type Props = {
   access: StaffAccess;
   query: EarlyAccessQueueSearchParams;
   basePath: "/owner/early-access" | "/staff/early-access";
+  data?: EarlyAccessQueueData;
 };
 
 const dateFmt = new Intl.DateTimeFormat("id-ID", {
@@ -260,6 +275,7 @@ function DecisionForm({
           </label>
           <DecisionSubmitButton
             revision={revision}
+            cancelLabel="Batal"
             className={`focus-ring min-h-11 w-full rounded-xl px-4 text-sm font-semibold ${
               revision
                 ? "bg-amber-500 text-brand-navy"
@@ -274,7 +290,7 @@ function DecisionForm({
   );
 }
 
-export async function EarlyAccessQueue({ access, query, basePath }: Props) {
+export async function EarlyAccessQueue({ access, query, basePath, data }: Props) {
   const canReview = staffHasCapability(access, "early_access.review");
   const page = Math.max(1, Number(query.page ?? "1") || 1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -309,30 +325,43 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
       : null;
   const sort: EarlyAccessSort =
     query.sort === "oldest" || query.sort === "newest" ? query.sort : "priority";
-  const [summary, readiness] = await Promise.all([
-    getEarlyAccessQueueSummary(),
-    getVerificationReadiness().catch(() => null),
-  ]);
-  const personalNeedsCardPath = !readiness?.manualCardReady;
-  const nowMs = queueReferenceTime();
-
-  let rows: Awaited<ReturnType<typeof listEarlyAccessWaitlistOps>> = [];
+  let summary: EarlyAccessQueueSummary | null;
+  let personalNeedsCardPath: boolean;
+  let nowMs: number;
+  let rows: EarlyAccessWaitlistRow[] = [];
   let loadError = "";
-  try {
-    rows = await listEarlyAccessWaitlistOps({
-      email,
-      status,
-      campus,
-      interest,
-      source,
-      queue,
-      sort,
-      limit: PAGE_SIZE,
-      offset,
-    });
-  } catch {
-    loadError = "Antrean Akses Awal belum dapat dimuat.";
+  if (data) {
+    ({ summary, rows } = data);
+    personalNeedsCardPath = !data.manualCardReady;
+    nowMs = data.nowMs;
+    loadError = data.loadError ?? "";
+  } else {
+    const [loadedSummary, readiness] = await Promise.all([
+      getEarlyAccessQueueSummary(),
+      getVerificationReadiness().catch(() => null),
+    ]);
+    summary = loadedSummary;
+    personalNeedsCardPath = !readiness?.manualCardReady;
+    nowMs = queueReferenceTime();
+    try {
+      rows = await listEarlyAccessWaitlistOps({
+        email,
+        status,
+        campus,
+        interest,
+        source,
+        queue,
+        sort,
+        limit: PAGE_SIZE,
+        offset,
+      });
+    } catch {
+      loadError = "Antrean Akses Awal belum dapat dimuat.";
+    }
   }
+  // Pengingat butuh migration 202610210005. Ringkasan null berarti belum terpasang,
+  // jadi tombol kembali ke "Kirim ulang undangan" yang lama.
+  const remindersAvailable = summary !== null;
 
   const total = rows[0]?.total_count ?? 0;
   const totalPages = Math.max(1, Math.ceil(Number(total) / PAGE_SIZE));
@@ -353,6 +382,7 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
 
   return (
     <main className="min-h-svh bg-brand-surface">
+      {canReview ? <DecisionPanelCloser group="early-access-decision" /> : null}
       <div className="page-shell py-10 sm:py-14">
         <p className="section-label">
           {access.role === "owner" ? "Khusus Owner" : "Area Admin"}
@@ -680,6 +710,13 @@ export async function EarlyAccessQueue({ access, query, basePath }: Props) {
                             basePath={basePath}
                           />
                         ) : !row.invitation_sent_at ? (
+                          <DirectReviewAction
+                            email={row.email}
+                            action="resend"
+                            label="Kirim ulang undangan"
+                            basePath={basePath}
+                          />
+                        ) : !remindersAvailable ? (
                           <DirectReviewAction
                             email={row.email}
                             action="resend"
