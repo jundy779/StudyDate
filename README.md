@@ -106,6 +106,7 @@ Implemented:
   synchronized with the StudyDate project; controlled rollout has not started
   and automated/live audits did not call the real provider.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
+- Ruang Operasional redesign (Oct 22, 2026): grouped sidebar with live counts, task-list overviews for Owner and Admin, plain-language pages, and confirmation dialogs for destructive actions (shared kit in `components/staff/ui.tsx`)
 - Oktober 2026 (migrations applied to production on 21 October 2026; production feature checks still pending):
   - account-type access tiers and an Owner switch for mandatory verification (`202610200001`);
   - Owner-managed official contact and social links in the footer (`202610200002`);
@@ -248,7 +249,7 @@ not expose Supabase error details.
 
 Staff use the same Supabase Auth system through `/staff/login`, with account creation disabled. After PKCE callback,
 the server requires matching trusted `app_metadata` and an active `staff_members` row. Owner goes to `/owner`, active
-admin reviewer goes to `/admin/verifications`, and non-staff goes safely to `/app`. Staff should use dedicated accounts.
+admin goes to the capability-aware `/admin` overview, and non-staff goes safely to `/app`. Staff should use dedicated accounts.
 
 The first owner has no public registration flow. After the staff migration is explicitly approved and applied, a
 trusted operator may export the required server environment variables and run `npm run staff:bootstrap-owner`. The

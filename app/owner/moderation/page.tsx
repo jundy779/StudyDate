@@ -1,5 +1,14 @@
 import { StaffShell } from "@/components/staff/staff-shell";
 import {
+  EmptyState,
+  FilterChips,
+  Notice,
+  Panel,
+  StaffPage,
+  StatusChip,
+  staffButton,
+} from "@/components/staff/ui";
+import {
   MODERATION_COPY,
   MODERATION_STATUS_LABELS,
   MODERATION_STATUSES,
@@ -19,6 +28,13 @@ const date = new Intl.DateTimeFormat("id-ID", {
   dateStyle: "medium",
   timeStyle: "short",
 });
+
+const STATUS_TONE: Record<ModerationStatus, "stop" | "info" | "go" | "muted"> = {
+  submitted: "stop",
+  under_review: "info",
+  resolved: "go",
+  dismissed: "muted",
+};
 
 type Props = {
   searchParams: Promise<{ status?: string; state?: string }>;
@@ -52,95 +68,66 @@ async function ModerationInboxContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="moderation">
-      <main className="min-h-svh bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Khusus Owner</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">
-            {MODERATION_COPY.heading}
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-            {MODERATION_COPY.description}
-          </p>
-          <p className="mt-4 text-sm font-semibold text-brand-navy">
-            {MODERATION_COPY.unresolvedLabel}: {unresolved}
-          </p>
+      <StaffPage
+        kicker="Khusus Owner"
+        title={MODERATION_COPY.heading}
+        description={MODERATION_COPY.description}
+        mascot={unresolved > 0 ? "kaget" : "girang"}
+      >
+        {query.state === "invalid" ? (
+          <Notice tone="danger">Pilihan laporan belum sesuai. Muat ulang halaman dan coba lagi.</Notice>
+        ) : null}
+        {loadError ? <Notice tone="danger">{loadError}</Notice> : null}
+        {!loadError && unresolved > 0 ? (
+          <Notice tone="warn" title={`${MODERATION_COPY.unresolvedLabel}: ${unresolved}`}>
+            Laporan baru sebaiknya diperiksa di hari yang sama. Mulai dari yang paling lama.
+          </Notice>
+        ) : null}
 
-          {query.state === "invalid" && (
-            <p
-              role="status"
-              className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-brand-error"
-            >
-              Pilihan laporan belum sesuai. Muat ulang halaman dan coba lagi.
-            </p>
+        <Panel title="Daftar laporan" description={`${items.length} laporan pada pilihan ini.`} quiet>
+          <FilterChips
+            label="Pilih status laporan"
+            items={[
+              { href: "/owner/moderation", label: "Semua", active: !selected },
+              ...MODERATION_STATUSES.map((status) => ({
+                href: `/owner/moderation?status=${status}`,
+                label: MODERATION_STATUS_LABELS[status],
+                active: selected === status,
+              })),
+            ]}
+          />
+
+          {loadError ? null : items.length ? (
+            <ul className="divide-y divide-brand-border" aria-label="Daftar laporan">
+              {items.map((item) => (
+                <li key={item.report_id} className="grid gap-3 py-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-brand-navy">{reasonLabel(item.reason_code)}</h3>
+                      <StatusChip tone={STATUS_TONE[item.moderation_status]}>
+                        {MODERATION_STATUS_LABELS[item.moderation_status]}
+                      </StatusChip>
+                    </div>
+                    <p className="mt-1 text-sm text-brand-muted">
+                      Di {MODERATION_TARGET_LABELS[item.target_kind] ?? item.target_kind} · laporan ...
+                      {item.report_id.slice(-8)} · {date.format(new Date(item.created_at))}
+                    </p>
+                    <p className="mt-0.5 text-xs text-brand-muted">
+                      Akun yang dilaporkan ...{item.subject_suffix}
+                      {item.has_message_ref ? " · ada cuplikan pesan" : ""}
+                    </p>
+                  </div>
+                  <Link href={`/owner/moderation/${item.report_id}`} className={staffButton.primary}>
+                    Periksa
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState title={MODERATION_COPY.empty} expression="girang" />
           )}
-
-          <nav
-            aria-label="Pilih status laporan"
-            className="mt-7 flex gap-2 overflow-x-auto pb-2"
-          >
-            <Link
-              href="/owner/moderation"
-              className="focus-ring shrink-0 rounded-full border border-brand-border bg-white px-4 py-2 text-sm font-semibold"
-            >
-              Semua
-            </Link>
-            {MODERATION_STATUSES.map((status) => (
-              <Link
-                key={status}
-                href={`/owner/moderation?status=${status}`}
-                className="focus-ring shrink-0 rounded-full border border-brand-border bg-white px-4 py-2 text-sm font-semibold"
-              >
-                {MODERATION_STATUS_LABELS[status]}
-              </Link>
-            ))}
-          </nav>
-
-          <section
-            className="mt-6 overflow-hidden rounded-[22px] border border-brand-border bg-white"
-            aria-label="Daftar laporan"
-          >
-            {loadError ? (
-              <p className="p-7 text-brand-muted">{loadError}</p>
-            ) : (
-              <div className="divide-y divide-brand-border">
-                {items.length ? (
-                  items.map((item) => (
-                    <article
-                      key={item.report_id}
-                      className="grid gap-4 p-5 lg:grid-cols-[1fr_auto] lg:items-center"
-                    >
-                      <div>
-                        <p className="font-semibold text-brand-navy">
-                          Laporan …{item.report_id.slice(-8)}
-                        </p>
-                        <p className="mt-1 text-sm text-brand-muted">
-                          {MODERATION_STATUS_LABELS[item.moderation_status]} ·{" "}
-                          {MODERATION_TARGET_LABELS[item.target_kind] ??
-                            item.target_kind}{" "}
-                          · {reasonLabel(item.reason_code)}
-                        </p>
-                        <p className="mt-1 text-xs text-brand-muted">
-                          Subjek …{item.subject_suffix} ·{" "}
-                          {date.format(new Date(item.created_at))}
-                          {item.has_message_ref ? " · ada referensi pesan" : ""}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/owner/moderation/${item.report_id}`}
-                        className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white"
-                      >
-                        Periksa
-                      </Link>
-                    </article>
-                  ))
-                ) : (
-                  <p className="p-7 text-brand-muted">{MODERATION_COPY.empty}</p>
-                )}
-              </div>
-            )}
-          </section>
-        </div>
-      </main>
+        </Panel>
+      </StaffPage>
     </StaffShell>
   );
 }

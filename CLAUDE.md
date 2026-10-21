@@ -376,6 +376,8 @@ Organizer adalah pengguna biasa dengan kewenangan terbatas pada Event yang dikel
 
 Admin memakai akun staff khusus dan hanya mendapat capability eksplisit. Admin tidak otomatis menjadi Owner. UI staff menggunakan istilah **Ruang Operasional**.
 
+Tampilan Ruang Operasional dibangun dari `components/staff/ui.tsx` dan `components/staff/staff-frame.tsx` (renovasi 22 Oktober 2026, repository implemented). Halaman staff baru wajib memakai potongan ini: `StaffPage` untuk kepala halaman, `Panel` untuk isi, `StatusChip` untuk status berupa kata, `Notice` untuk pesan hasil, `EmptyState` untuk daftar kosong, `HelpTip` untuk istilah asing, dan dialog konfirmasi untuk tindakan yang menghapus atau mencabut. Tema selalu terang. Bahasa awam, tanpa angka contoh.
+
 Capability dapat meliputi:
 
 - membaca/review Early Access;

@@ -36,15 +36,13 @@ async function OwnerCampusesContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="campuses">
-      <main className="min-h-svh bg-brand-surface">
-        <CampusDirectory
-          items={items}
-          selectedStatus={selected}
-          basePath="/owner/campuses"
-          state={query.state}
-          loadError={loadError}
-        />
-      </main>
+      <CampusDirectory
+        items={items}
+        selectedStatus={selected}
+        basePath="/owner/campuses"
+        state={query.state}
+        loadError={loadError}
+      />
     </StaffShell>
   );
 }
@@ -55,7 +53,7 @@ export default function OwnerCampusesPage(props: Props) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan katalog kampus…
+            Menyiapkan katalog kampus...
           </p>
         </main>
       }

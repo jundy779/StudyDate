@@ -134,7 +134,7 @@ test("User ops projection excludes NIM legal name evidence and chat", () => {
   assert.doesNotMatch(opsMigration, /nim|legal_name|telegram|ciphertext/i);
   assert.match(usersPage, /requireStaffCapability\("users\.read"\)/);
   assert.match(usersPage, /users\.support/);
-  assert.match(usersPage, />\s*Akun mahasiswa\s*</);
+  assert.match(usersPage, /title="Akun mahasiswa"/);
   assert.match(
     usersPage,
     /NIM, kontak, percakapan, foto\s+identitas, dan bukti verifikasi tidak tersedia di sini/,
@@ -355,7 +355,8 @@ test("student support detail is opaque, audited, and privacy-scoped", () => {
 
 test("admin has a capability-aware operational landing page", () => {
   assert.match(adminOverview, /requireActiveStaff/);
-  assert.match(adminOverview, /Pilih pekerjaan yang perlu ditangani/);
+  assert.match(adminOverview, /Ini yang perlu ditangani/);
+  assert.match(adminOverview, /Daftar tugas/);
   assert.match(adminOverview, /access\.canUsersRead/);
   assert.match(adminOverview, /access\.verificationReviewer/);
   assert.match(authorization, /if \(access\?\.role === "admin"\) return "\/admin"/);

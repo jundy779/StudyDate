@@ -1,4 +1,5 @@
 import { StaffShell } from "@/components/staff/staff-shell";
+import { EmptyState, Panel, StaffPage } from "@/components/staff/ui";
 import { requireOwner } from "@/lib/staff/authorization";
 import {
   listStaffOpsAuditEvents,
@@ -57,49 +58,43 @@ async function AuditContent() {
 
   return (
     <StaffShell role={access.role} current="audit" access={access}>
-      <main className="min-h-svh bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Khusus Owner</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold">Riwayat tindakan tim</h1>
-          <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
-            Perubahan tim dan pembukaan data dukungan dicatat tanpa email lengkap,
-            isi profil privat, atau nomor internal akun.
-          </p>
-          <div className="mt-8 overflow-hidden rounded-[22px] border border-brand-border bg-white">
-            <div className="divide-y divide-brand-border">
-              {events.length ? (
-                events.map((event, index) => (
-                  <article
-                    key={`${event.createdAt}-${event.eventType}-${index}`}
-                    className="grid gap-2 p-5 sm:grid-cols-[1fr_auto]"
-                  >
-                    <div>
-                      <p className="font-semibold">
-                        {eventLabels[event.eventType] ?? "Aktivitas lain"}
-                      </p>
-                      <p className="mt-1 font-mono text-xs text-brand-muted">
-                        Petugas …{event.actorSuffix ?? "dihapus"}
-                        {event.subjectSuffix
-                          ? ` · referensi …${event.subjectSuffix}`
-                          : ""}
-                      </p>
-                    </div>
-                    <time className="text-sm text-brand-muted">
-                      {date.format(new Date(event.createdAt))}
-                    </time>
-                  </article>
-                ))
-              ) : (
-                <p className="p-6 text-brand-muted">Belum ada tindakan tim yang tercatat.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </main>
+      <StaffPage
+        kicker="Khusus Owner"
+        title="Riwayat akses"
+        description="Perubahan tim dan pembukaan data dukungan dicatat tanpa email lengkap, isi profil privat, atau nomor internal akun."
+        mascot="penasaran"
+      >
+        <Panel title="100 tindakan terakhir" description="Paling baru di atas." quiet>
+          {events.length ? (
+            <ol className="relative grid gap-0 border-l-2 border-dashed border-brand-navy/15 pl-5">
+              {events.map((event, index) => (
+                <li key={`${event.createdAt}-${event.eventType}-${index}`} className="relative py-3">
+                  <span
+                    className="absolute -left-[27px] top-[18px] h-3 w-3 rounded-full border-2 border-brand-navy bg-brand-blue"
+                    aria-hidden="true"
+                  />
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                    <p className="font-semibold text-brand-navy">
+                      {eventLabels[event.eventType] ?? "Aktivitas lain"}
+                    </p>
+                    <time className="shrink-0 text-sm text-brand-muted">{date.format(new Date(event.createdAt))}</time>
+                  </div>
+                  <p className="mt-0.5 font-mono text-xs text-brand-muted">
+                    Petugas ...{event.actorSuffix ?? "dihapus"}
+                    {event.subjectSuffix ? ` · referensi ...${event.subjectSuffix}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptyState title="Belum ada tindakan tim yang tercatat" expression="ngantuk" />
+          )}
+        </Panel>
+      </StaffPage>
     </StaffShell>
   );
 }
 
 export default function AuditPage() {
-  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan riwayat…</p></main>}><AuditContent /></Suspense>;
+  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan riwayat...</p></main>}><AuditContent /></Suspense>;
 }

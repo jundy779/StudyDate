@@ -1,19 +1,35 @@
+import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
+import {
+  EmptyState,
+  HelpTip,
+  Notice,
+  Panel,
+  StaffPage,
+  StatusChip,
+  staffButton,
+  staffField,
+} from "@/components/staff/ui";
+import Link from "next/link";
+
 const STATUS_LABEL = {
-  approved: "Disetujui",
-  pending: "Usulan",
+  approved: "Tampil di pilihan",
+  pending: "Usulan baru",
   rejected: "Ditolak",
+} as const;
+
+const STATUS_TONE = {
+  approved: "go",
+  pending: "wait",
+  rejected: "muted",
 } as const;
 
 const SOURCE_LABEL = {
   seed: "Data awal",
-  manual: "Usulan mahasiswa",
+  manual: "Diusulkan mahasiswa",
   staff: "Ditambahkan tim",
 } as const;
 
-const date = new Intl.DateTimeFormat("id-ID", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const date = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" });
 
 export type CatalogItemStatus = keyof typeof STATUS_LABEL;
 export type CatalogItemSource = keyof typeof SOURCE_LABEL;
@@ -54,202 +70,178 @@ export function OnboardingCatalogDirectory({
   action,
 }: OnboardingCatalogDirectoryProps) {
   const pendingCount = items.filter((item) => item.status === "pending").length;
-  const statuses = [
+  const filters = [
     { key: undefined, label: "Semua" },
-    { key: "pending" as const, label: "Usulan" },
-    { key: "approved" as const, label: "Disetujui" },
+    { key: "pending" as const, label: "Usulan baru" },
+    { key: "approved" as const, label: "Tampil di pilihan" },
     { key: "rejected" as const, label: "Ditolak" },
   ];
 
   return (
-    <div className="page-shell py-10 sm:py-14">
-      <p className="section-label">Owner &amp; Admin</p>
-      <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em] sm:text-5xl">
-        {title}
-      </h1>
-      <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-        {description}
-      </p>
-      <p className="mt-4 text-sm font-semibold text-brand-navy">
-        Usulan menunggu: {pendingCount}
-      </p>
+    <StaffPage
+      kicker="Pilihan saat mendaftar"
+      title={title}
+      description={description}
+      mascot="mikir"
+    >
+      {state === "saved" ? <Notice tone="success">Perubahan {entitySingular} tersimpan.</Notice> : null}
+      {state === "invalid" ? (
+        <Notice tone="danger">Nama {entitySingular} belum sesuai. Pakai 2 sampai 120 karakter.</Notice>
+      ) : null}
+      {state === "error" ? (
+        <Notice tone="danger">
+          Perubahan belum tersimpan. Coba lagi, atau periksa apakah namanya sudah ada.
+        </Notice>
+      ) : null}
+      {loadError ? <Notice tone="warn">{loadError}</Notice> : null}
 
-      {state === "saved" && (
-        <p
-          role="status"
-          className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"
-        >
-          Perubahan {entitySingular} tersimpan.
-        </p>
-      )}
-      {state === "invalid" && (
-        <p
-          role="status"
-          className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-brand-error"
-        >
-          Nama {entitySingular} belum sesuai. Gunakan 2–120 karakter.
-        </p>
-      )}
-      {state === "error" && (
-        <p
-          role="status"
-          className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-brand-error"
-        >
-          Perubahan belum tersimpan. Coba lagi atau periksa apakah namanya sudah ada.
-        </p>
-      )}
-      {loadError && (
-        <p
-          role="status"
-          className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900"
-        >
-          {loadError}
-        </p>
-      )}
+      {pendingCount > 0 && selectedStatus !== "pending" ? (
+        <Notice tone="warn" title={`${pendingCount} usulan baru menunggu`}>
+          Mahasiswa mengetik nama {entitySingular} yang belum ada di daftar.{" "}
+          <Link href={`${basePath}?status=pending`} className="font-semibold underline underline-offset-4">
+            Lihat usulan
+          </Link>
+        </Notice>
+      ) : null}
 
-      <section className="mt-8 rounded-[22px] border border-brand-border bg-white p-5 sm:p-6">
-        <h2 className="font-heading text-xl font-semibold">
-          Tambah {entitySingular}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-brand-muted">
-          Data yang ditambahkan langsung tersedia saat mahasiswa mengatur profil.
-        </p>
-        <form action={action} className="mt-4 flex flex-col gap-3 sm:flex-row">
+      <Panel
+        title={`Tambah ${entitySingular}`}
+        description="Nama yang ditambahkan langsung muncul di pilihan saat mahasiswa mengisi profil."
+      >
+        <form action={action} className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <input type="hidden" name="action" value="create" />
-          <input
-            name="name"
-            required
-            minLength={2}
-            maxLength={120}
-            placeholder={addPlaceholder}
-            className="focus-ring h-12 min-w-0 flex-1 rounded-xl border border-brand-border px-4"
-          />
-          <button
-            type="submit"
-            className="focus-ring min-h-12 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-          >
+          <label className="min-w-0 flex-1 text-sm font-semibold text-brand-navy">
+            Nama {entitySingular}
+            <input
+              name="name"
+              required
+              minLength={2}
+              maxLength={120}
+              placeholder={addPlaceholder}
+              className={staffField}
+            />
+          </label>
+          <button type="submit" className={staffButton.primary}>
             Tambah
           </button>
         </form>
-      </section>
+      </Panel>
 
-      <nav
-        aria-label={`Filter status ${entitySingular}`}
-        className="mt-7 flex gap-2 overflow-x-auto pb-2"
+      <Panel
+        title={`Daftar ${entitySingular}`}
+        description={`${items.length} ${entitySingular} pada pilihan ini.`}
+        quiet
       >
-        {statuses.map((item) => {
-          const href = item.key ? `${basePath}?status=${item.key}` : basePath;
-          const active = selectedStatus === item.key;
-          return (
-            <a
-              key={item.label}
-              href={href}
-              className={`focus-ring whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${
-                active
-                  ? "bg-brand-navy text-white"
-                  : "border border-brand-border bg-white text-brand-navy"
-              }`}
-            >
-              {item.label}
-            </a>
-          );
-        })}
-      </nav>
-
-      <ul className="mt-6 space-y-4">
-        {items.length === 0 && !loadError ? (
-          <li className="rounded-[22px] border border-dashed border-brand-border bg-white px-5 py-8 text-sm text-brand-muted">
-            Belum ada data untuk pilihan ini.
-          </li>
-        ) : null}
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className="rounded-[22px] border border-brand-border bg-white p-5 sm:p-6"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold text-brand-blue">
-                  {STATUS_LABEL[item.status]} · {SOURCE_LABEL[item.source]}
-                </p>
-                <h3 className="mt-2 font-heading text-xl font-semibold text-brand-navy">
-                  {item.name}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-brand-muted">
-                  Diusulkan {item.suggestionCount}× · terakhir{" "}
-                  {date.format(new Date(item.lastSuggestedAt))}
-                  {item.suggestedBySuffix
-                    ? ` · akun …${item.suggestedBySuffix}`
-                    : ""}
-                </p>
-              </div>
-            </div>
-
-            <form
-              action={action}
-              className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
-            >
-              <input type="hidden" name="id" value={item.id} />
-              <input type="hidden" name="action" value="update" />
-              <label className="min-w-0 flex-1 text-sm font-semibold">
-                Edit nama
-                <input
-                  name="name"
-                  defaultValue={item.name}
-                  minLength={2}
-                  maxLength={120}
-                  required
-                  className="focus-ring mt-2 h-11 w-full rounded-xl border border-brand-border px-3 font-normal"
-                />
-              </label>
-              <button
-                type="submit"
-                className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
+        <nav aria-label={`Saring daftar ${entitySingular}`} className="mb-5 flex flex-wrap gap-2">
+          {filters.map((item) => {
+            const href = item.key ? `${basePath}?status=${item.key}` : basePath;
+            const active = selectedStatus === item.key;
+            return (
+              <Link
+                key={item.label}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`focus-ring inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold ${
+                  active
+                    ? "border-2 border-brand-navy bg-brand-navy text-white"
+                    : "border border-brand-border bg-white text-brand-navy hover:border-brand-navy"
+                }`}
               >
-                Simpan
-              </button>
-            </form>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              {item.status !== "approved" ? (
-                <form action={action}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <input type="hidden" name="action" value="approve" />
-                  <input type="hidden" name="name" value={item.name} />
-                  <button
-                    type="submit"
-                    className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
-                  >
-                    Setujui dan tampilkan
-                  </button>
-                </form>
-              ) : null}
-              {item.status === "pending" ? (
-                <form action={action}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <input type="hidden" name="action" value="reject" />
-                  <button
-                    type="submit"
-                    className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
-                  >
-                    Tolak
-                  </button>
-                </form>
-              ) : null}
-              <form action={action}>
-                <input type="hidden" name="id" value={item.id} />
-                <input type="hidden" name="action" value="delete" />
-                <button
-                  type="submit"
-                  className="focus-ring min-h-11 rounded-xl border border-red-200 px-4 text-sm font-semibold text-brand-error"
-                >
-                  Hapus
-                </button>
-              </form>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+        {items.length === 0 && !loadError ? (
+          <EmptyState title="Belum ada data untuk pilihan ini" expression="ngantuk">
+            Coba pilih &ldquo;Semua&rdquo;, atau tambahkan {entitySingular} baru di atas.
+          </EmptyState>
+        ) : (
+          <ul className="divide-y divide-brand-border">
+            {items.map((item) => (
+              <li key={item.id} className="grid gap-3 py-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="break-words font-semibold text-brand-navy">{item.name}</h3>
+                    <StatusChip tone={STATUS_TONE[item.status]}>{STATUS_LABEL[item.status]}</StatusChip>
+                  </div>
+                  <p className="mt-1 text-sm text-brand-muted">
+                    {SOURCE_LABEL[item.source]}
+                    {item.source === "manual"
+                      ? ` · diusulkan ${item.suggestionCount} kali, terakhir ${date.format(new Date(item.lastSuggestedAt))}`
+                      : ""}
+                  </p>
+                  <details className="mt-2">
+                    <summary className="focus-ring inline-flex min-h-9 cursor-pointer list-none items-center rounded-lg text-sm font-semibold text-brand-blue">
+                      Ubah nama
+                    </summary>
+                    <form action={action} className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+                      <input type="hidden" name="id" value={item.id} />
+                      <input type="hidden" name="action" value="update" />
+                      <label className="min-w-0 flex-1 text-sm font-semibold text-brand-navy">
+                        Nama baru
+                        <input
+                          name="name"
+                          defaultValue={item.name}
+                          minLength={2}
+                          maxLength={120}
+                          required
+                          className={staffField}
+                        />
+                      </label>
+                      <button type="submit" className={staffButton.quiet}>
+                        Simpan nama
+                      </button>
+                    </form>
+                  </details>
+                </div>
+                <div className="flex flex-wrap gap-2 lg:justify-end">
+                  {item.status !== "approved" ? (
+                    <form action={action}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <input type="hidden" name="action" value="approve" />
+                      <input type="hidden" name="name" value={item.name} />
+                      <button type="submit" className={staffButton.primary}>
+                        Setujui dan tampilkan
+                      </button>
+                    </form>
+                  ) : null}
+                  {item.status === "pending" ? (
+                    <form action={action}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <input type="hidden" name="action" value="reject" />
+                      <button type="submit" className={staffButton.quiet}>
+                        Tolak
+                      </button>
+                    </form>
+                  ) : null}
+                  <form action={action}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <ConfirmSubmitButton
+                      name="action"
+                      value="delete"
+                      triggerLabel="Hapus"
+                      title={`Hapus ${item.name}?`}
+                      description={`Nama ini hilang dari pilihan saat mendaftar. Profil yang sudah memakainya tidak ikut berubah.`}
+                      confirmLabel="Ya, hapus"
+                      className={staffButton.dangerQuiet}
+                    />
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-4">
+          <HelpTip label="Dari mana usulan baru datang?">
+            Saat mendaftar, mahasiswa boleh mengetik nama {entitySingular} yang belum ada di daftar.
+            Nama itu masuk sebagai usulan. Setujui kalau namanya benar dan resmi, supaya mahasiswa lain
+            bisa memilihnya. Tolak kalau salah ketik atau tidak jelas.
+          </HelpTip>
+        </div>
+      </Panel>
+    </StaffPage>
   );
 }

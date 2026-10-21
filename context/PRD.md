@@ -138,7 +138,9 @@ Staff dianjurkan memakai akun khusus dan active staff tidak dapat ditemukan di P
 di-bootstrap melalui operasi service/admin manual setelah akun Auth existing ditemukan secara unik; tidak ada public
 owner registration.
 
-Owner dan Admin memakai satu istilah UI: **Ruang Operasional**. Admin masuk ke
+Owner dan Admin memakai satu istilah UI: **Ruang Operasional**. Halaman pertama
+Owner dan Admin berupa daftar tugas dengan angka asli dari sistem (pendaftar
+menunggu, laporan terbuka, verifikasi menunggu, undangan gagal). Admin masuk ke
 ringkasan capability-aware, bukan dipaksa ke Verification. Dukungan akun dapat
 melihat status, onboarding, profil belajar, membership, dan discoverability
 melalui referensi opaque yang diaudit. Email selalu tersamarkan pada daftar dan

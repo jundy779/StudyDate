@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Staff Login | StudyDate ID",
+  title: "Masuk Tim | StudyDate ID",
   robots: { index: false, follow: false, nocache: true },
 };
 
@@ -21,5 +21,5 @@ async function StaffLoginContent() {
 }
 
 export default function StaffLoginPage() {
-  return <Suspense fallback={<AuthShell><p className="text-sm text-brand-muted">Menyiapkan akses staff…</p></AuthShell>}><StaffLoginContent /></Suspense>;
+  return <Suspense fallback={<AuthShell><p className="text-sm text-brand-muted">Menyiapkan halaman masuk...</p></AuthShell>}><StaffLoginContent /></Suspense>;
 }

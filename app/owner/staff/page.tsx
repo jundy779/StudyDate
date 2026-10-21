@@ -2,7 +2,19 @@ import {
   assignStaffMemberByEmail,
   updateStaffMember,
 } from "@/app/owner/staff/actions";
+import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
 import { StaffShell } from "@/components/staff/staff-shell";
+import {
+  EmptyState,
+  HelpTip,
+  Notice,
+  Panel,
+  StaffPage,
+  StatusChip,
+  staffButton,
+  staffField,
+  staffLabel,
+} from "@/components/staff/ui";
 import { requireOwner } from "@/lib/staff/authorization";
 import { listStaffMembers } from "@/lib/staff/service";
 import { Suspense } from "react";
@@ -23,20 +35,68 @@ function CapabilityForm({
   userId,
   action,
   label,
+  tone = "quiet",
 }: {
   userId: string;
   action: string;
   label: string;
+  tone?: keyof typeof staffButton;
 }) {
   return (
     <form action={updateStaffMember}>
       <input type="hidden" name="targetUserId" value={userId} />
       <input type="hidden" name="action" value={action} />
-      <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold">
-        {label}
-      </button>
+      <button className={staffButton[tone]}>{label}</button>
     </form>
   );
+}
+
+type Member = Awaited<ReturnType<typeof listStaffMembers>>[number];
+
+/** Satu baris per tugas: nama tugas, penjelasan awam, status, dan tombol ubah. */
+function permissionRows(member: Member) {
+  return [
+    {
+      title: "Lihat Akses Awal",
+      help: "Melihat daftar pendaftar Akses Awal, tanpa bisa memutuskan.",
+      on: member.can_early_access_read || member.can_early_access_review,
+      grant: "grant_early_access",
+      remove: "remove_early_access",
+      lockedOn: member.can_early_access_review,
+    },
+    {
+      title: "Periksa dan undang Akses Awal",
+      help: "Menyetujui, menolak, minta perbaikan, dan mengirim undangan.",
+      on: member.can_early_access_review,
+      grant: "grant_early_access_review",
+      remove: "remove_early_access_review",
+      lockedOn: false,
+    },
+    {
+      title: "Lihat ringkasan akun",
+      help: "Membuka status akun mahasiswa untuk membantu kendala.",
+      on: member.can_users_read || member.can_users_support,
+      grant: "grant_users_read",
+      remove: "remove_users_read",
+      lockedOn: member.can_users_support,
+    },
+    {
+      title: "Cari akun dengan email",
+      help: "Mencari akun memakai email lengkap untuk dukungan.",
+      on: member.can_users_support,
+      grant: "grant_users_support",
+      remove: "remove_users_support",
+      lockedOn: false,
+    },
+    {
+      title: "Tinjau verifikasi",
+      help: "Memeriksa data kampus dan bukti kepemilikan akun mahasiswa.",
+      on: member.verification_reviewer,
+      grant: "grant_reviewer",
+      remove: "remove_reviewer",
+      lockedOn: false,
+    },
+  ];
 }
 
 async function StaffContent({ searchParams }: Props) {
@@ -51,216 +111,146 @@ async function StaffContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="staff" access={access}>
-      <main className="min-h-svh bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Khusus Owner</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Tim operasional
-          </h1>
-          <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Tambahkan Admin dengan email akun StudyDate yang sudah ada, lalu
-            pilih tugas yang boleh ditangani. Tugas lain tidak akan diberikan.
-          </p>
+      <StaffPage
+        kicker="Khusus Owner"
+        title="Tim dan hak akses"
+        description="Tambahkan Admin dengan email akun StudyDate yang sudah ada, lalu pilih tugas yang boleh ditangani. Tugas lain tidak akan diberikan."
+        mascot="kedip"
+      >
+        {message ? <Notice tone={isError ? "danger" : "success"}>{message}</Notice> : null}
 
-          {message ? (
-            <p
-              role="status"
-              className={`mt-6 rounded-xl px-4 py-3 text-sm font-semibold ${
-                isError
-                  ? "bg-red-50 text-brand-error"
-                  : "bg-green-50 text-brand-success"
-              }`}
-            >
-              {message}
-            </p>
-          ) : null}
-
-          <form
-            action={assignStaffMemberByEmail}
-            className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-6 sm:grid-cols-[1fr_auto_auto] sm:items-end"
-          >
-            <label className="text-sm font-semibold">
+        <Panel
+          title="Tambah Admin"
+          description="Orangnya harus sudah pernah masuk ke StudyDate memakai email ini."
+        >
+          <form action={assignStaffMemberByEmail} className="grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+            <label className={staffLabel}>
               Email akun StudyDate
               <input
                 name="email"
                 type="email"
                 required
                 maxLength={254}
-                className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                className={staffField}
                 placeholder="admin@contoh.com"
                 autoComplete="off"
               />
             </label>
-            <label className="text-sm font-semibold">
-              Tindakan awal
-              <select
-                name="action"
-                defaultValue="grant_admin"
-                className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
-              >
-                <option value="grant_admin">Tambah Admin tanpa akses tugas</option>
-                <option value="grant_early_access">Boleh melihat Akses Awal</option>
-                <option value="grant_early_access_review">Boleh periksa & kirim undangan Akses Awal</option>
-                <option value="grant_users_read">Boleh melihat ringkasan akun</option>
-                <option value="grant_users_support">Boleh mencari akun dengan email</option>
-                <option value="grant_reviewer">Boleh meninjau verifikasi</option>
+            <label className={staffLabel}>
+              Tugas pertama
+              <select name="action" defaultValue="grant_admin" className={staffField}>
+                <option value="grant_admin">Tambah Admin dulu, tugas diatur nanti</option>
+                <option value="grant_early_access">Lihat Akses Awal</option>
+                <option value="grant_early_access_review">Periksa dan undang Akses Awal</option>
+                <option value="grant_users_read">Lihat ringkasan akun</option>
+                <option value="grant_users_support">Cari akun dengan email</option>
+                <option value="grant_reviewer">Tinjau verifikasi</option>
               </select>
             </label>
-            <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-              Simpan Admin
-            </button>
+            <button className={staffButton.primary}>Simpan Admin</button>
           </form>
+          <div className="mt-4">
+            <HelpTip label="Kapan akses baru aktif?">
+              Setelah disimpan, Admin perlu keluar lalu masuk lagi supaya menu barunya muncul.
+            </HelpTip>
+          </div>
+        </Panel>
 
-          <section
-            className="mt-8 overflow-hidden rounded-[22px] border border-brand-border bg-white"
-            aria-labelledby="staff-list"
-          >
-            <div className="border-b border-brand-border p-5">
-              <h2 id="staff-list" className="font-heading text-xl font-semibold">
-                Anggota tim
-              </h2>
-            </div>
-            <div className="divide-y divide-brand-border">
+        <Panel title="Anggota tim" description={`${members.length} orang.`} quiet>
+          {members.length === 0 ? (
+            <EmptyState title="Belum ada anggota tim" expression="penasaran">
+              Tambahkan Admin pertama lewat formulir di atas.
+            </EmptyState>
+          ) : (
+            <ul className="grid gap-4">
               {members.map((member) => (
-                <article
-                  key={member.user_id}
-                  className="grid gap-4 p-5 lg:grid-cols-[1fr_auto] lg:items-start"
-                >
-                  <div>
-                    <p className="font-semibold capitalize">
-                      {member.role === "owner" ? "Owner" : "Admin"} ·{" "} 
-                      {member.status === "active" ? "Aktif" : "Nonaktif"}
-                    </p>
-                    <p className="mt-1 font-mono text-xs text-brand-muted">
-                      Nomor akun {member.user_id.slice(-8)} · dibuat{" "}
-                      {date.format(new Date(member.created_at))}
-                    </p>
-                    <ul className="mt-2 space-y-1 text-sm text-brand-muted">
-                      <li>
-                        Tinjau verifikasi:{" "}
-                        {member.verification_reviewer ? "Aktif" : "Nonaktif"}
-                      </li>
-                      <li>
-                        Lihat Akses Awal:{" "}
-                        {member.can_early_access_read || member.can_early_access_review
-                          ? "Aktif"
-                          : "Nonaktif"}
-                      </li>
-                      <li>
-                        Periksa & undang Akses Awal:{" "}
-                        {member.can_early_access_review ? "Aktif" : "Nonaktif"}
-                      </li>
-                      <li>
-                        Lihat ringkasan akun:{" "}
-                        {member.can_users_read ? "Aktif" : "Nonaktif"}
-                      </li>
-                      <li>
-                        Cari akun dengan email:{" "}
-                        {member.can_users_support ? "Aktif" : "Nonaktif"}
-                      </li>
-                    </ul>
-                  </div>
-                  {member.role === "admin" ? (
-                    <div className="flex max-w-xl flex-wrap gap-2">
-                      {member.status === "active" ? (
-                        <>
-                          <CapabilityForm
-                            userId={member.user_id}
-                            action={
-                              member.verification_reviewer
-                                ? "remove_reviewer"
-                                : "grant_reviewer"
-                            }
-                            label={
-                              member.verification_reviewer
-                                ? "Cabut akses pemeriksa"
-                                : "Aktifkan pemeriksa"
-                            }
+                <li key={member.user_id} className="rounded-2xl border border-brand-border p-4 sm:p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-heading text-lg font-semibold text-brand-navy">
+                          {member.role === "owner" ? "Owner" : "Admin"}
+                        </p>
+                        <StatusChip tone={member.status === "active" ? "go" : "muted"}>
+                          {member.status === "active" ? "Aktif" : "Nonaktif"}
+                        </StatusChip>
+                      </div>
+                      <p className="mt-1 font-mono text-xs text-brand-muted">
+                        Nomor akun ...{member.user_id.slice(-8)} · ditambahkan {date.format(new Date(member.created_at))}
+                      </p>
+                    </div>
+                    {member.role === "admin" ? (
+                      member.status === "active" ? (
+                        <form action={updateStaffMember}>
+                          <input type="hidden" name="targetUserId" value={member.user_id} />
+                          <ConfirmSubmitButton
+                            name="action"
+                            value="deactivate_admin"
+                            triggerLabel="Nonaktifkan"
+                            title="Nonaktifkan Admin ini?"
+                            description="Admin tidak bisa membuka Ruang Operasional sampai diaktifkan lagi. Riwayat tindakannya tetap tersimpan."
+                            confirmLabel="Ya, nonaktifkan"
+                            className={staffButton.dangerQuiet}
                           />
-                          <CapabilityForm
-                            userId={member.user_id}
-                            action={
-                              member.can_early_access_read
-                                ? "remove_early_access"
-                                : "grant_early_access"
-                            }
-                            label={
-                              member.can_early_access_read
-                                ? "Cabut Akses Awal"
-                                : "Aktifkan Akses Awal"
-                            }
-                          />
-                          <CapabilityForm
-                            userId={member.user_id}
-                            action={
-                              member.can_early_access_review
-                                ? "remove_early_access_review"
-                                : "grant_early_access_review"
-                            }
-                            label={
-                              member.can_early_access_review
-                                ? "Cabut akses pemeriksaan Akses Awal"
-                                : "Boleh periksa Akses Awal"
-                            }
-                          />
-                          <CapabilityForm
-                            userId={member.user_id}
-                            action={
-                              member.can_users_read
-                                ? "remove_users_read"
-                                : "grant_users_read"
-                            }
-                            label={
-                              member.can_users_read
-                                ? "Cabut ringkasan akun"
-                                : "Boleh lihat ringkasan akun"
-                            }
-                          />
-                          <CapabilityForm
-                            userId={member.user_id}
-                            action={
-                              member.can_users_support
-                                ? "remove_users_support"
-                                : "grant_users_support"
-                            }
-                            label={
-                              member.can_users_support
-                                ? "Cabut pencarian email"
-                                : "Boleh cari dengan email"
-                            }
-                          />
-                          <CapabilityForm
-                            userId={member.user_id}
-                            action="deactivate_admin"
-                            label="Nonaktifkan"
-                          />
-                        </>
+                        </form>
                       ) : (
                         <CapabilityForm
                           userId={member.user_id}
                           action="reactivate_admin"
                           label="Aktifkan kembali"
+                          tone="primary"
                         />
-                      )}
-                    </div>
-                  ) : null}
-                </article>
+                      )
+                    ) : null}
+                  </div>
+
+                  {member.role === "owner" ? (
+                    <p className="mt-3 text-sm text-brand-muted">Owner bisa membuka semua menu.</p>
+                  ) : (
+                    <ul className="mt-4 divide-y divide-brand-border rounded-xl border border-brand-border">
+                      {permissionRows(member).map((row) => (
+                        <li
+                          key={row.title}
+                          className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-semibold text-brand-navy">{row.title}</span>
+                              <StatusChip tone={row.on ? "go" : "muted"}>{row.on ? "Aktif" : "Nonaktif"}</StatusChip>
+                            </div>
+                            <p className="text-sm text-brand-muted">{row.help}</p>
+                          </div>
+                          {member.status !== "active" ? null : row.lockedOn ? (
+                            <span className="text-xs text-brand-muted">Ikut aktif karena tugas di bawahnya</span>
+                          ) : (
+                            <CapabilityForm
+                              userId={member.user_id}
+                              action={row.on ? row.remove : row.grant}
+                              label={row.on ? "Cabut" : "Aktifkan"}
+                              tone={row.on ? "dangerQuiet" : "secondary"}
+                            />
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
               ))}
-            </div>
-          </section>
-        </div>
-      </main>
+            </ul>
+          )}
+        </Panel>
+      </StaffPage>
     </StaffShell>
   );
 }
 
-export default function StaffPage(props: Props) {
+export default function OwnerStaffPage(props: Props) {
   return (
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan tim operasional…
+            Menyiapkan tim...
           </p>
         </main>
       }

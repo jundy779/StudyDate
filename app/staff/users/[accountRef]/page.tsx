@@ -1,9 +1,11 @@
 import { StaffShell } from "@/components/staff/staff-shell";
+import { Panel, StaffPage, StatusChip, staffButton } from "@/components/staff/ui";
 import { requireStaffCapability } from "@/lib/staff/authorization";
 import { getStudentAccountOpsDetail } from "@/lib/staff/service";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { z } from "zod";
 
 type Props = { params: Promise<{ accountRef: string }> };
@@ -41,6 +43,15 @@ function onboardingLabel(value: string) {
   return value.replace("Onboarding", "Penyiapan akun");
 }
 
+function Item({ label, children, wide = false }: { label: string; children: ReactNode; wide?: boolean }) {
+  return (
+    <div className={`rounded-xl bg-brand-surface px-4 py-3 ${wide ? "sm:col-span-2" : ""}`}>
+      <dt className="text-sm text-brand-muted">{label}</dt>
+      <dd className="mt-1 break-words font-semibold text-brand-navy">{children}</dd>
+    </div>
+  );
+}
+
 async function UserDetailContent({ params }: Props) {
   const access = await requireStaffCapability("users.read");
   const parsed = accountRefSchema.safeParse((await params).accountRef);
@@ -51,79 +62,77 @@ async function UserDetailContent({ params }: Props) {
 
   return (
     <StaffShell role={access.role} current="users" access={access}>
-      <main className="min-h-svh bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <Link
-            href="/staff/users"
-            className="focus-ring inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue"
-          >
-            ← Kembali ke akun mahasiswa
+      <StaffPage
+        kicker={`Ringkasan dukungan · ${account.account_ref}`}
+        title={account.alias}
+        description="Data yang relevan untuk membantu akun. Pembukaan halaman ini dicatat. NIM, email lengkap, kontak, percakapan, foto identitas, dan bukti verifikasi tetap tertutup."
+        actions={
+          <Link href="/staff/users" className={staffButton.quiet}>
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Kembali ke akun mahasiswa
           </Link>
-          <p className="section-label mt-5">Ringkasan dukungan · {account.account_ref}</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            {account.alias}
-          </h1>
-          <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
-            Data yang relevan untuk membantu akun. Pembukaan halaman ini dicatat.
-            NIM, email lengkap, kontak, percakapan, foto identitas, dan bukti verifikasi
-            tetap tertutup.
+        }
+      >
+        <Panel title="Status akun">
+          <div className="mb-4 flex flex-wrap gap-1.5">
+            <StatusChip tone="info">{account.account_status}</StatusChip>
+            <StatusChip tone={account.verification_summary === "Terverifikasi" ? "go" : "wait"}>
+              {account.verification_summary}
+            </StatusChip>
+            <StatusChip tone={account.is_discoverable ? "go" : "muted"}>
+              {account.is_discoverable ? "Tampil di pencarian teman" : "Tidak tampil di pencarian teman"}
+            </StatusChip>
+          </div>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <Item label="Email tersamarkan">{account.email_display}</Item>
+            <Item label="Penyiapan akun">{onboardingLabel(account.onboarding_status)}</Item>
+            <Item label="Verifikasi mahasiswa">{account.verification_summary}</Item>
+            <Item label="Akun dibuat">{dateFmt.format(new Date(account.created_at))}</Item>
+          </dl>
+        </Panel>
+
+        <Panel
+          title="Paket akun"
+          quiet
+          actions={
+            access.role === "owner" ? (
+              <Link href="/owner/memberships" className={staffButton.quiet}>
+                Kelola paket dengan email
+              </Link>
+            ) : null
+          }
+        >
+          <p className="text-brand-navy">
+            <span className="font-semibold">{account.membership_plan}</span>
+            {account.membership_ends_at
+              ? ` · berlaku sampai ${dateFmt.format(new Date(account.membership_ends_at))}`
+              : ""}
           </p>
+        </Panel>
 
-          <section className="mt-8 border-y border-brand-border py-7" aria-labelledby="account-state">
-            <h2 id="account-state" className="font-heading text-2xl font-semibold">
-              Status akun
-            </h2>
-            <dl className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
-              <div><dt className="text-sm text-brand-muted">Email tersamarkan</dt><dd className="mt-1 font-semibold">{account.email_display}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Status</dt><dd className="mt-1 font-semibold">{account.account_status}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Penyiapan akun</dt><dd className="mt-1 font-semibold">{onboardingLabel(account.onboarding_status)}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Tampil di pencarian teman</dt><dd className="mt-1 font-semibold">{account.is_discoverable ? "Ya" : "Tidak"}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Verifikasi mahasiswa</dt><dd className="mt-1 font-semibold">{account.verification_summary}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Akun dibuat</dt><dd className="mt-1 font-semibold">{dateFmt.format(new Date(account.created_at))}</dd></div>
-            </dl>
-          </section>
-
-          <section className="border-b border-brand-border py-7" aria-labelledby="membership-state">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <h2 id="membership-state" className="font-heading text-2xl font-semibold">
-                  Paket akun
-                </h2>
-                <p className="mt-2 text-brand-muted">
-                  {account.membership_plan}
-                  {account.membership_ends_at
-                    ? ` · berlaku sampai ${dateFmt.format(new Date(account.membership_ends_at))}`
-                    : ""}
-                </p>
-              </div>
-              {access.role === "owner" ? (
-                <Link
-                  href="/owner/memberships"
-                  className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-blue"
-                >
-                  Kelola paket dengan email
-                </Link>
-              ) : null}
-            </div>
-          </section>
-
-          <section className="py-7" aria-labelledby="profile-summary">
-            <h2 id="profile-summary" className="font-heading text-2xl font-semibold">
-              Profil belajar
-            </h2>
-            <dl className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
-              <div><dt className="text-sm text-brand-muted">Kampus</dt><dd className="mt-1 font-semibold">{account.campus}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Program studi</dt><dd className="mt-1 font-semibold">{account.study_program}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Jenjang</dt><dd className="mt-1 font-semibold">{account.degree_level}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Semester</dt><dd className="mt-1 font-semibold">{account.semester ?? "Belum diisi"}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Kota/Kabupaten</dt><dd className="mt-1 font-semibold">{account.city_region}</dd></div>
-              <div className="sm:col-span-2"><dt className="text-sm text-brand-muted">Bio singkat</dt><dd className="mt-1 max-w-3xl leading-7">{account.short_intro}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Minat</dt><dd className="mt-1">{account.interests.length ? account.interests.map((item) => interestLabels[item] ?? item).join(", ") : "Belum diisi"}</dd></div>
-              <div><dt className="text-sm text-brand-muted">Tujuan koneksi</dt><dd className="mt-1">{account.connection_goals.length ? account.connection_goals.map((item) => goalLabels[item] ?? item).join(", ") : "Belum diisi"}</dd></div>
-            </dl>
-          </section>
-        </div>
-      </main>
+        <Panel title="Profil belajar" quiet>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <Item label="Kampus">{account.campus}</Item>
+            <Item label="Program studi">{account.study_program}</Item>
+            <Item label="Jenjang">{account.degree_level}</Item>
+            <Item label="Semester">{account.semester ?? "Belum diisi"}</Item>
+            <Item label="Kota/Kabupaten">{account.city_region}</Item>
+            <Item label="Minat">
+              {account.interests.length
+                ? account.interests.map((item) => interestLabels[item] ?? item).join(", ")
+                : "Belum diisi"}
+            </Item>
+            <Item label="Tujuan koneksi">
+              {account.connection_goals.length
+                ? account.connection_goals.map((item) => goalLabels[item] ?? item).join(", ")
+                : "Belum diisi"}
+            </Item>
+            <Item label="Bio singkat" wide>
+              <span className="font-normal leading-7">{account.short_intro}</span>
+            </Item>
+          </dl>
+        </Panel>
+      </StaffPage>
     </StaffShell>
   );
 }
@@ -133,7 +142,7 @@ export default function StaffUserDetailPage(props: Props) {
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
-          <p className="page-shell py-10 text-brand-muted">Menyiapkan ringkasan akun…</p>
+          <p className="page-shell py-10 text-brand-muted">Menyiapkan ringkasan akun...</p>
         </main>
       }
     >

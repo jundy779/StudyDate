@@ -5,17 +5,28 @@ import { ownerGetVerificationRequirement } from "@/lib/staff/platform-settings";
 import { requireOwner } from "@/lib/staff/authorization";
 import { getVerificationReadiness } from "@/lib/verification/readiness";
 import {
-  BookOpen,
   CalendarDays,
-  CreditCard,
+  Gavel,
   GraduationCap,
+  Inbox,
+  MailWarning,
   MessageCircle,
-  ScrollText,
   ShieldCheck,
+  Sparkles,
   UserCog,
   Users,
-  Wrench,
 } from "lucide-react";
+import {
+  HelpTip,
+  Notice,
+  Panel,
+  StaffPage,
+  StatusChip,
+  TodoItem,
+  staffButton,
+} from "@/components/staff/ui";
+import { countUnresolvedModerationReports } from "@/lib/moderation/service";
+import { getEarlyAccessQueueSummary, listVerificationQueue } from "@/lib/staff/service";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -41,89 +52,179 @@ async function OwnerContent({
   const requirementState =
     typeof query.verifikasi === "string" ? requirementMessages[query.verifikasi] : undefined;
   const canRequire = readiness.enabled && readiness.manualCardReady;
+  const [earlyAccess, openReports, verificationRows] = await Promise.all([
+    getEarlyAccessQueueSummary().catch(() => null),
+    countUnresolvedModerationReports().catch(() => null),
+    listVerificationQueue().catch(() => null),
+  ]);
+  const openVerifications = verificationRows
+    ? verificationRows.filter((row) => ["pending", "under_review", "needs_action"].includes(row.status)).length
+    : null;
+  const totalTodo =
+    (earlyAccess?.waiting_count ?? 0) + (openReports ?? 0) + (openVerifications ?? 0) +
+    (earlyAccess?.unsent_invitation_count ?? 0);
+
   return (
     <StaffShell role={access.role} current="overview" access={access}>
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <div className="page-shell py-10 sm:py-14">
-        <p className="section-label">Area Owner</p>
-        <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">Kelola StudyDate dari satu tempat</h1>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-muted">Pilih pekerjaan yang perlu ditangani. Akses data mahasiswa tetap dibatasi dan setiap perubahan penting tetap tercatat.</p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          <Link href="/staff/users" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><Users className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akun mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Bantu kendala akun, pengaturan awal, profil, paket, dan apakah profil mereka bisa ditemukan.</p></Link>
-          <Link href="/owner/memberships" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CreditCard className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Paket & pembayaran</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur penawaran Plus serta kelola paket mahasiswa melalui email.</p></Link>
-          <Link href="/owner/events" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><CalendarDays className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Acara Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur izin penyelenggara, status acara, dan halaman yang dilihat pengguna.</p></Link>
-          <Link href="/owner/staff" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><UserCog className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Tim operasional</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tambahkan Admin dan pilih tugas yang boleh mereka tangani.</p></Link>
-          <Link href="/owner/contact" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><MessageCircle className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Media sosial & kontak</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Isi WhatsApp, Telegram, Instagram, dan kanal resmi lain yang tampil di footer situs.</p></Link>
-          <Link href="/owner/early-access" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ScrollText className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Akses Awal</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Periksa pendaftar, terima atau tolak, lalu kirim undangan Akses Awal.</p></Link>
+      <StaffPage
+        kicker="Halo, Owner"
+        title={totalTodo > 0 ? "Ini yang perlu ditangani" : "Semua beres untuk sekarang"}
+        description="Mulai dari daftar di bawah. Angka diambil langsung dari sistem, dan setiap keputusan tercatat di Riwayat akses."
+        mascot={totalTodo > 0 ? "mikir" : "girang"}
+      >
+        <Panel title="Daftar tugas" description="Yang merah sebaiknya ditangani hari ini.">
+          <ul className="grid gap-3 lg:grid-cols-2">
+            <TodoItem
+              href="/owner/early-access?status=waiting&sort=oldest"
+              icon={Inbox}
+              title="Pendaftar Akses Awal menunggu"
+              description={
+                earlyAccess && earlyAccess.stale_waiting_count > 0
+                  ? `${earlyAccess.stale_waiting_count} di antaranya sudah lebih dari 7 hari.`
+                  : "Periksa lalu setujui, minta perbaikan, atau tolak."
+              }
+              count={earlyAccess?.waiting_count ?? null}
+              urgent={(earlyAccess?.stale_waiting_count ?? 0) > 0}
+            />
+            <TodoItem
+              href="/owner/moderation"
+              icon={Gavel}
+              title="Laporan pengguna belum selesai"
+              description="Laporan pelecehan, spam, atau tempat tidak aman dari mahasiswa."
+              count={openReports}
+              urgent
+            />
+            <TodoItem
+              href="/admin/verifications"
+              icon={ShieldCheck}
+              title="Verifikasi mahasiswa menunggu"
+              description="Cocokkan data kampus dan bukti kepemilikan akun."
+              count={openVerifications}
+            />
+            <TodoItem
+              href="/owner/early-access?queue=unsent_invitation"
+              icon={MailWarning}
+              title="Undangan belum terkirim"
+              description="Sudah disetujui, tetapi emailnya gagal. Kirim ulang dari Akses Awal."
+              count={earlyAccess?.unsent_invitation_count ?? null}
+              urgent={(earlyAccess?.unsent_invitation_count ?? 0) > 0}
+            />
+          </ul>
+        </Panel>
+
+        <Panel title="Menu lain" description="Pengaturan yang jarang berubah." quiet>
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {[
+              { href: "/staff/users", icon: Users, title: "Akun mahasiswa", text: "Bantu masalah login, profil, paket, dan apakah profil mereka bisa ditemukan." },
+              { href: "/owner/events", icon: CalendarDays, title: "Acara Kampus", text: "Beri izin penyelenggara dan tandai acara resmi." },
+              { href: "/owner/memberships", icon: Sparkles, title: "StudyDate Plus", text: "Atur penawaran dan paket mahasiswa." },
+              { href: "/owner/contact", icon: MessageCircle, title: "Kontak dan media sosial", text: "Tautan resmi yang tampil di bagian bawah situs." },
+              { href: "/owner/staff", icon: UserCog, title: "Tim dan hak akses", text: "Tambah Admin dan pilih tugasnya." },
+              { href: "/owner/campuses", icon: GraduationCap, title: "Daftar kampus dan jurusan", text: "Pilihan yang muncul saat mahasiswa mendaftar." },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="focus-ring group flex h-full items-start gap-3 rounded-2xl border border-brand-border bg-white p-4 transition-colors hover:border-brand-navy"
+                >
+                  <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
+                  <span>
+                    <span className="block font-semibold text-brand-navy group-hover:text-brand-blue">{item.title}</span>
+                    <span className="mt-0.5 block text-sm leading-5 text-brand-muted">{item.text}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <Panel
+            id="system-readiness"
+            title="Kesiapan verifikasi mahasiswa"
+            description="Jalur yang bisa dipakai mahasiswa untuk membuktikan dirinya."
+            quiet
+          >
+            <ul className="grid gap-3 text-sm">
+              {[
+                ["Kartu mahasiswa", readiness.manualCardReady, "Mahasiswa unggah foto kartu, petugas memeriksa."],
+                ["Email kampus", readiness.manualEmailReady, "Mahasiswa menerima kode di email kampus."],
+                ["Pemeriksaan otomatis PDDikti", readiness.providerReady, "Dicocokkan otomatis ke data PDDikti."],
+              ].map(([label, ready, help]) => (
+                <li key={label as string} className="flex items-start justify-between gap-3 rounded-xl bg-brand-surface px-4 py-3">
+                  <span>
+                    <span className="block font-semibold text-brand-navy">{label as string}</span>
+                    <span className="block text-brand-muted">{help as string}</span>
+                  </span>
+                  <StatusChip tone={ready ? "go" : "muted"}>{ready ? "Siap" : "Belum siap"}</StatusChip>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel
+            id="verification-requirement"
+            title="Wajib verifikasi PDDikti"
+            description="Kalau dinyalakan, mahasiswa yang belum terverifikasi tidak bisa memakai Cari Teman, Perkenalan, Pesan, Circle, dan Acara."
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-semibold text-brand-navy">Sekarang:</span>
+              {requirement.required === null ? (
+                <StatusChip tone="muted">Belum tersedia</StatusChip>
+              ) : requirement.required ? (
+                <StatusChip tone="stop">Wajib</StatusChip>
+              ) : (
+                <StatusChip tone="go">Tidak diwajibkan</StatusChip>
+              )}
+            </div>
+            {requirementState ? (
+              <div className="mt-4">
+                <Notice tone={query.verifikasi === "failed" ? "danger" : "success"}>{requirementState}</Notice>
+              </div>
+            ) : null}
+            <div className="mt-4">
+              {requirement.required === null ? (
+                <p className="text-sm leading-6 text-brand-muted">Pengaturan ini belum terpasang di database.</p>
+              ) : requirement.required ? (
+                <form action={setVerificationRequirementAction}>
+                  <ConfirmSubmitButton
+                    name="required"
+                    value="off"
+                    triggerLabel="Matikan kewajiban verifikasi"
+                    title="Matikan kewajiban verifikasi?"
+                    description="Mahasiswa yang belum terverifikasi bisa kembali memakai fitur utama."
+                    confirmLabel="Matikan"
+                    className={staffButton.secondary}
+                  />
+                </form>
+              ) : canRequire ? (
+                <form action={setVerificationRequirementAction}>
+                  <ConfirmSubmitButton
+                    name="required"
+                    value="on"
+                    triggerLabel="Wajibkan verifikasi"
+                    title="Wajibkan verifikasi untuk semua mahasiswa?"
+                    description="Semua mahasiswa yang belum terverifikasi langsung kehilangan akses ke fitur utama sampai verifikasinya selesai."
+                    confirmLabel="Wajibkan sekarang"
+                    className={staffButton.primary}
+                  />
+                </form>
+              ) : (
+                <p className="text-sm leading-6 text-brand-muted">
+                  Tombolnya muncul setelah jalur kartu mahasiswa siap, supaya tidak ada mahasiswa yang
+                  terkunci tanpa bisa menyelesaikan verifikasi.
+                </p>
+              )}
+            </div>
+            <div className="mt-4">
+              <HelpTip>
+                Akun email sekolah (.sch.id) selalu hanya bisa ikut acara edukatif, apa pun pengaturan ini.
+                Akun email kampus (.ac.id) dan email pribadi ikut aturan ini.
+              </HelpTip>
+            </div>
+          </Panel>
         </div>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          <Link href="/admin/verifications" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Verifikasi mahasiswa</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tinjau data akademik dan bukti kepemilikan secara terpisah.</p></Link>
-          <section id="system-readiness" className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"><Wrench className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Kesiapan verifikasi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Kartu mahasiswa: <strong className="text-brand-navy">{readiness.manualCardReady ? "Siap" : "Belum siap"}</strong><br />Email kampus: <strong className="text-brand-navy">{readiness.manualEmailReady ? "Siap" : "Belum siap"}</strong><br />Pemeriksaan otomatis: <strong className="text-brand-navy">{readiness.providerReady ? "Siap" : "Tetap nonaktif"}</strong></p></section>
-          <Link href="/owner/moderation" className="focus-ring scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6" id="moderation"><h2 className="font-heading text-xl font-semibold">Laporan & moderasi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Tinjau laporan mahasiswa dan catat hasil penanganannya.</p></Link>
-          <Link href="/owner/campuses" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><GraduationCap className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Kampus</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur daftar kampus yang tersedia saat pendaftaran.</p></Link>
-          <Link href="/owner/study-programs" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><BookOpen className="h-6 w-6 text-brand-blue" aria-hidden="true" /><h2 className="mt-7 font-heading text-xl font-semibold">Program studi</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Atur daftar program studi yang tersedia saat pendaftaran.</p></Link>
-          <Link href="/owner/audit" className="focus-ring rounded-[22px] border border-brand-border bg-white p-6"><h2 className="font-heading text-xl font-semibold">Riwayat akses</h2><p className="mt-2 text-sm leading-6 text-brand-muted">Lihat perubahan tim dan akses operasional tanpa membuka data privat.</p></Link>
-        </div>
-        <section
-          id="verification-requirement"
-          className="mt-8 scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-6"
-          aria-labelledby="verification-requirement-title"
-        >
-          <ShieldCheck className="h-6 w-6 text-brand-blue" aria-hidden="true" />
-          <h2 id="verification-requirement-title" className="mt-7 font-heading text-xl font-semibold">
-            Wajib verifikasi PDDikti
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-            Kalau dinyalakan, mahasiswa yang belum terverifikasi tidak bisa memakai Cari Teman,
-            Perkenalan, Pesan, Circle, dan Acara sampai verifikasinya selesai. Akun email sekolah
-            (.sch.id) selalu hanya bisa mengikuti acara edukatif.
-          </p>
-          <p className="mt-4 text-sm font-semibold text-brand-navy">
-            Status sekarang:{" "}
-            {requirement.required === null
-              ? "belum tersedia (migration belum terpasang)"
-              : requirement.required
-                ? "wajib"
-                : "belum diwajibkan"}
-          </p>
-          {requirementState ? (
-            <p role="status" className="mt-3 rounded-xl bg-brand-surface px-4 py-3 text-sm text-brand-navy">
-              {requirementState}
-            </p>
-          ) : null}
-          {requirement.required === null ? null : requirement.required ? (
-            <form action={setVerificationRequirementAction} className="mt-5">
-              <ConfirmSubmitButton
-                name="required"
-                value="off"
-                triggerLabel="Matikan kewajiban verifikasi"
-                title="Matikan kewajiban verifikasi?"
-                description="Mahasiswa yang belum terverifikasi bisa kembali memakai fitur utama."
-                confirmLabel="Matikan"
-                className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy"
-              />
-            </form>
-          ) : canRequire ? (
-            <form action={setVerificationRequirementAction} className="mt-5">
-              <ConfirmSubmitButton
-                name="required"
-                value="on"
-                triggerLabel="Wajibkan verifikasi"
-                title="Wajibkan verifikasi untuk semua mahasiswa?"
-                description="Semua mahasiswa yang belum terverifikasi langsung kehilangan akses ke fitur utama sampai verifikasinya selesai."
-                confirmLabel="Wajibkan sekarang"
-                className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
-              />
-            </form>
-          ) : (
-            <p className="mt-4 text-sm leading-6 text-brand-muted">
-              Tombol akan muncul setelah verifikasi mahasiswa dibuka dan jalur kartu mahasiswa siap,
-              supaya tidak ada mahasiswa yang terkunci tanpa bisa menyelesaikan verifikasi.
-            </p>
-          )}
-        </section>
-      </div>
-      </main>
+      </StaffPage>
     </StaffShell>
   );
 }
@@ -133,5 +234,5 @@ export default function OwnerPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan halaman Owner…</p></main>}><OwnerContent searchParams={searchParams} /></Suspense>;
+  return <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan ringkasan...</p></main>}><OwnerContent searchParams={searchParams} /></Suspense>;
 }

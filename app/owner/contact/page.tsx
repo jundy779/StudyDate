@@ -1,5 +1,6 @@
 import { SocialIcon } from "@/components/brand/social-icon";
 import { StaffShell } from "@/components/staff/staff-shell";
+import { Notice, StaffPage, StatusChip, staffButton, staffField } from "@/components/staff/ui";
 import { saveContactLinkAction } from "@/app/owner/contact/actions";
 import { ownerListContactLinks } from "@/lib/marketing/contact-links";
 import {
@@ -30,47 +31,51 @@ async function ContactContent({ searchParams }: PageProps) {
   const byKind = new Map((links ?? []).map((link) => [link.kind, link]));
 
   return (
-    <StaffShell role={access.role} current="overview" access={access}>
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Area Owner</p>
-          <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
-            Media sosial dan kontak
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-muted">
-            Isi alamat akun resmi StudyDate. Hanya tautan yang diisi dan dicentang
-            &ldquo;Tampilkan&rdquo; yang muncul di footer situs.
-          </p>
-
+    <StaffShell role={access.role} current="contact" access={access}>
+      <StaffPage
+        kicker="Khusus Owner"
+        title="Kontak dan media sosial"
+        description={
+          <>
+            Isi alamat akun resmi StudyDate. Hanya tautan yang diisi dan dicentang &ldquo;Tampilkan di situs&rdquo;
+            yang muncul di bagian bawah situs.
+          </>
+        }
+        mascot="kedip"
+      >
           {links === null ? (
-            <p role="status" className="mt-8 rounded-2xl bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
-              Fitur ini belum aktif di database. Pasang migration
-              {" "}<code className="font-mono">202610200002_public_contact_links_v1.sql</code>{" "}
-              lalu muat ulang halaman ini.
-            </p>
+            <Notice tone="warn" title="Fitur ini belum aktif di database">
+              Pasang migration <code className="font-mono">202610200002_public_contact_links_v1.sql</code>, lalu muat
+              ulang halaman ini.
+            </Notice>
           ) : null}
 
-          {state && !stateKind ? (
-            <p role="status" className="mt-6 rounded-xl bg-white px-4 py-3 text-sm text-brand-navy">
-              {stateMessages[state]}
-            </p>
-          ) : null}
+          {state && !stateKind && stateMessages[state] ? <Notice tone="info">{stateMessages[state]}</Notice> : null}
 
-          <ul className="mt-10 grid gap-4 lg:grid-cols-2">
+          <ul className="grid gap-4 lg:grid-cols-2">
             {CONTACT_LINK_KINDS.map((kind: ContactLinkKind) => {
               const meta = CONTACT_LINK_META[kind];
               const current = byKind.get(kind);
               const message = stateKind === kind && state ? stateMessages[state] : null;
               return (
-                <li key={kind} id={kind} className="scroll-mt-8 rounded-[22px] border border-brand-border bg-white p-5 sm:p-6">
+                <li key={kind} id={kind} className="scroll-mt-24 rounded-[22px] border border-brand-border bg-white p-4 sm:p-6">
                   <form action={saveContactLinkAction}>
                     <input type="hidden" name="kind" value={kind} />
                     <div className="flex items-center gap-3">
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-navy text-white">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-navy text-white">
                         <SocialIcon kind={kind} />
                       </span>
                       <div className="min-w-0">
-                        <h2 className="font-heading text-lg font-semibold text-brand-navy">{meta.label}</h2>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="font-heading text-lg font-semibold text-brand-navy">{meta.label}</h2>
+                          {current?.url ? (
+                            <StatusChip tone={current.isVisible ? "go" : "muted"}>
+                              {current.isVisible ? "Tampil" : "Disimpan, belum tampil"}
+                            </StatusChip>
+                          ) : (
+                            <StatusChip tone="muted">Kosong</StatusChip>
+                          )}
+                        </div>
                         <p className="text-sm text-brand-muted">{meta.hint}</p>
                       </div>
                     </div>
@@ -85,7 +90,7 @@ async function ContactContent({ searchParams }: PageProps) {
                       defaultValue={current?.url ?? ""}
                       placeholder={meta.placeholder}
                       disabled={links === null}
-                      className="focus-ring mt-2 h-11 w-full rounded-xl border border-brand-border bg-white px-3 text-sm text-brand-navy placeholder:text-brand-muted/70"
+                      className={staffField}
                     />
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                       <label className="flex items-center gap-2 text-sm text-brand-navy">
@@ -101,7 +106,7 @@ async function ContactContent({ searchParams }: PageProps) {
                       <button
                         type="submit"
                         disabled={links === null}
-                        className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white disabled:opacity-50"
+                        className={staffButton.primary}
                       >
                         Simpan
                       </button>
@@ -119,15 +124,14 @@ async function ContactContent({ searchParams }: PageProps) {
               );
             })}
           </ul>
-        </div>
-      </main>
+      </StaffPage>
     </StaffShell>
   );
 }
 
 export default function OwnerContactPage(props: PageProps) {
   return (
-    <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan halaman…</p></main>}>
+    <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-brand-muted">Menyiapkan halaman...</p></main>}>
       <ContactContent {...props} />
     </Suspense>
   );

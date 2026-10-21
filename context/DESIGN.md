@@ -349,21 +349,41 @@ logo pemerintah/PDDIKTI atau visual KYC.
 - Tombol yang memicu email atau keputusan menampilkan "Mengirim..." dan terkunci selama proses, supaya tidak
   diklik dua kali. Setelah hasil keluar, panel tertutup dan pesan hasil digulir ke tengah layar.
 
-### Staff shell
+### Staff shell (renovasi 22 Oktober 2026)
 
-`/staff/login` memakai AuthShell StudyDate tetapi jelas sebagai restricted access tanpa self-registration. Owner dan
-Admin memakai navigasi terpisah dari student app, dengan role-derived initial render tanpa flash. Owner shell berisi
-Overview, Staff, Verification, Moderation placeholder, Audit, dan real System Readiness. Jangan menampilkan fake
-analytics, raw SQL, secrets, atau general database controls.
+Ruang Operasional memakai identitas StudyDate (Poppins/Inter, biru #014FE7, navy, maskot) dengan pola dashboard
+Fusionify UI, selalu tema terang. Semua halaman Owner dan Admin dibangun dari `components/staff/ui.tsx` dan
+`components/staff/staff-frame.tsx`:
 
-Gunakan istilah UI **Ruang Operasional**, **Tim operasional**, **Akun
-mahasiswa**, **Paket & pembayaran**, dan **Riwayat akses**. Admin landing hanya
-menampilkan pekerjaan yang diizinkan capability. Daftar akun selalu masked;
-detail support memakai safe profile summary dan tidak menyerupai database
+- **Kerangka**: sidebar 272px di desktop dengan menu dikelompokkan (Mulai di sini, Pendaftar dan akun, Keamanan,
+  Kegiatan, Paket, Data dan situs, Tim). Angka di menu diambil dari sistem; merah hanya untuk yang mendesak
+  (pendaftar lebih dari 7 hari, laporan). Di HP menu pindah ke tombol "Menu" yang membuka laci; Escape dan klik di
+  luar menutupnya. Kotak bantuan dengan maskot menjelaskan peran yang sedang dipakai.
+- **Kepala halaman** (`StaffPage`): celetukan tulisan tangan, judul, satu kalimat penjelasan, tombol aksi di kanan,
+  garis putus-putus seperti buku tulis.
+- **Panel**: panel utama bergaya stiker (garis navy 2px dan bayangan pejal), panel sekunder `quiet` dengan garis
+  tipis supaya halaman tidak ramai.
+- **Ringkasan** Owner dan Admin berbentuk "Daftar tugas": satu baris per hal yang perlu ditangani, dengan angka asli.
+  Kalau semuanya nol, judulnya "Semua beres untuk sekarang". Tidak ada grafik atau angka karangan.
+- **Status** selalu ditulis dengan kata di `StatusChip` (go, wait, warn, stop, info, muted); warna hanya pendukung.
+- **Pesan hasil** memakai `Notice`; keadaan kosong memakai `EmptyState` dengan maskot dan satu langkah berikutnya;
+  istilah yang mungkin asing dijelaskan lewat `HelpTip` ("Apa ini?") yang bisa dibuka.
+- **Saringan** memakai `FilterChips` dengan `aria-current`.
+- **Tindakan yang menghapus atau mencabut** (hapus nama kampus/jurusan, nonaktifkan Admin, nonaktifkan Plus, cabut
+  izin penyelenggara, hapus tanda resmi, batalkan verifikasi) selalu lewat dialog konfirmasi.
+- **Hak akses Admin** ditampilkan per tugas: nama tugas, penjelasan awam, status Aktif/Nonaktif, lalu satu tombol
+  Aktifkan atau Cabut. Tugas yang otomatis ikut aktif ditandai, bukan diberi tombol.
+
+`/staff/login` memakai AuthShell StudyDate dengan judul "Masuk ke Ruang Operasional", tanpa pendaftaran. Jangan
+menampilkan analitik palsu, SQL mentah, rahasia, atau kontrol database umum.
+
+Istilah UI: **Ruang Operasional**, **Tim dan hak akses**, **Akun mahasiswa**, **StudyDate Plus**, **Daftar kampus**,
+**Daftar jurusan**, dan **Riwayat akses**. Admin landing hanya menampilkan pekerjaan yang diizinkan capability.
+Daftar akun selalu masked; detail support memakai ringkasan profil yang aman dan tidak menyerupai database
 inspector.
 
-Verification admin memakai utility-first review layout, identifier suffix pada list, full sensitive claim hanya pada
-explicit reviewer detail, generic errors, dan evidence link lima menit. Owner-only staff UI menampilkan UUID suffix dan
+Verification admin memakai identifier suffix pada list, data sensitif penuh hanya di halaman pemeriksaan satu
+pengajuan, pesan error umum, dan tautan bukti lima menit. Owner-only staff UI menampilkan suffix nomor akun dan
 status. Penambahan staff memakai email Auth yang sudah ada; server meresolve pengguna, tanpa input UUID mentah.
 
 Early Access memakai **satu moderation queue** yang dirender di `/owner/early-access` dan `/staff/early-access`. Owner selalu dapat review; Staff tanpa `early_access.review` tampil read-only. Action utama: **Approve & kirim email**, **Kirim ulang undangan**, dan **Reject**. Status UI: Menunggu review, Disetujui, Tidak disetujui, Akses diklaim. Copy harus menjelaskan bahwa approval Akses Awal bukan Student/Alumni Verification. Jangan expose UUID, token invitation, atau status Auth internal pada queue.

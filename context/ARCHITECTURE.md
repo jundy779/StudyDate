@@ -854,3 +854,15 @@ diuji tanpa server. Jeda 24 jam pengingat ditegakkan di database, bukan hanya di
 muncul bila ringkasan antrean tersedia (tanda migration 202610210005 terpasang); tanpa itu tetap "Kirim ulang
 undangan". Komponen antrean menerima `data` opsional untuk pratinjau dan uji tampilan; halaman asli selalu
 memuat sendiri.
+
+### Tampilan Ruang Operasional (22 Oktober 2026, tanpa migration)
+- `components/staff/staff-shell.tsx` (server) menyusun grup menu sesuai peran dan capability, lalu mengambil
+  angka menu dengan aman: `get_early_access_queue_summary`, jumlah laporan terbuka, dan antrean verifikasi.
+  Kalau salah satu gagal, menu tetap tampil tanpa angka. `components/staff/staff-frame.tsx` (client) merender
+  sidebar desktop dan laci menu HP.
+- Semua halaman `/owner/*`, `/admin/*`, dan `/staff/*` memakai potongan bersama `components/staff/ui.tsx`
+  (`StaffPage`, `Panel`, `TodoItem`, `StatusChip`, `Notice`, `EmptyState`, `HelpTip`, `FilterChips`,
+  `staffButton`, `staffField`). Hanya tampilan yang berubah; server action, nama field form, dan pemeriksaan hak
+  akses tetap sama.
+- Ringkasan Owner dan Admin hanya menampilkan angka dari RPC yang sudah ada. Admin hanya melihat antrean yang
+  sesuai capability-nya.

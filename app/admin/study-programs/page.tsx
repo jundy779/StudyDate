@@ -40,15 +40,13 @@ async function AdminStudyProgramsContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="study-programs" access={access}>
-      <main className="min-h-svh bg-brand-surface">
-        <StudyProgramDirectory
-          items={items}
-          selectedStatus={selected}
-          basePath="/admin/study-programs"
-          state={query.state}
-          loadError={loadError}
-        />
-      </main>
+      <StudyProgramDirectory
+        items={items}
+        selectedStatus={selected}
+        basePath="/admin/study-programs"
+        state={query.state}
+        loadError={loadError}
+      />
     </StaffShell>
   );
 }
@@ -59,7 +57,7 @@ export default function AdminStudyProgramsPage(props: Props) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan katalog jurusan…
+            Menyiapkan katalog jurusan...
           </p>
         </main>
       }

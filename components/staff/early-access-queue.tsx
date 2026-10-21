@@ -29,6 +29,8 @@ import {
   type EarlyAccessSort,
 } from "@/lib/early-access/queue-insights";
 import { getVerificationReadiness } from "@/lib/verification/readiness";
+import { MascotHead } from "@/components/brand/mascot-head";
+import { HelpTip } from "@/components/staff/ui";
 import Link from "next/link";
 
 export type EarlyAccessQueueSearchParams = {
@@ -383,30 +385,38 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
   return (
     <main className="min-h-svh bg-brand-surface">
       {canReview ? <DecisionPanelCloser group="early-access-decision" /> : null}
-      <div className="page-shell py-10 sm:py-14">
-        <p className="section-label">
-          {access.role === "owner" ? "Khusus Owner" : "Area Admin"}
-        </p>
-        <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-          Pemeriksaan Akses Awal
-        </h1>
-        <p className="mt-4 max-w-3xl leading-7 text-brand-muted">
-          Satu antrean untuk pendaftar dari halaman utama. Owner selalu dapat
-          memeriksa. Admin hanya dapat melihat atau mengambil keputusan jika
-          sudah diberi izin untuk menangani Akses Awal.
-        </p>
-        <div className="mt-6 border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-          <p>
-            <strong className="text-brand-navy">Setujui:</strong> kirim undangan
-            login sekali pakai. <strong className="text-brand-navy">Minta perbaikan:</strong>{" "}
-            kirim alasan dan tautan perbaikan yang aman. <strong className="text-brand-navy">Tolak:</strong>{" "}
-            simpan penolakan dan kirim alasannya melalui email.
-          </p>
-          <p className="mt-1">
-            Catatan untuk tim tidak pernah dimasukkan ke email pendaftar.
-            Persetujuan Akses Awal tetap terpisah dari verifikasi mahasiswa.
-          </p>
-        </div>
+      <div className="page-shell py-8 sm:py-12">
+        <header className="flex items-start gap-4 border-b-2 border-dashed border-brand-navy/15 pb-7">
+          <span className="hidden w-14 shrink-0 sm:block" aria-hidden="true">
+            <MascotHead expression={summary && summary.waiting_count > 0 ? "mikir" : "girang"} />
+          </span>
+          <div className="min-w-0">
+            <p className="font-hand text-xl text-brand-blue">
+              {access.role === "owner" ? "Khusus Owner" : "Area Admin"}
+            </p>
+            <h1 className="mt-1 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
+              Pemeriksaan Akses Awal
+            </h1>
+            <p className="mt-3 max-w-3xl leading-7 text-brand-muted">
+              Semua pendaftar dari halaman utama masuk ke sini. Periksa datanya, lalu pilih satu dari tiga
+              keputusan di setiap baris.
+            </p>
+            <div className="mt-3">
+              <HelpTip label="Apa bedanya tiap keputusan?">
+                <p>
+                  <strong>Setujui:</strong> kirim undangan login sekali pakai.{" "}
+                  <strong>Minta perbaikan:</strong> kirim alasan dan tautan perbaikan yang aman.{" "}
+                  <strong>Tolak:</strong> simpan penolakan dan kirim alasannya melalui email.
+                </p>
+                <p className="mt-2">
+                  Catatan untuk tim tidak pernah dimasukkan ke email pendaftar. Persetujuan Akses Awal tetap
+                  terpisah dari verifikasi mahasiswa. Admin hanya bisa memutuskan kalau sudah diberi izin oleh
+                  Owner.
+                </p>
+              </HelpTip>
+            </div>
+          </div>
+        </header>
 
         <StatusNotice state={query.state} />
 

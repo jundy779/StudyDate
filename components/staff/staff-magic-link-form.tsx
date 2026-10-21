@@ -46,26 +46,26 @@ export function StaffMagicLinkForm() {
 
   return (
     <div>
-      <p className="section-label">Akses staff terbatas</p>
-      <h1 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
-        {sent ? "Periksa email staff" : "Masuk ke ruang staff"}
+      <p className="font-hand text-xl text-brand-blue">Khusus tim StudyDate</p>
+      <h1 className="mt-1 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
+        {sent ? "Cek email kamu" : "Masuk ke Ruang Operasional"}
       </h1>
       <p className="mt-4 leading-7 text-brand-muted">
         {sent
-          ? "Jika akun memenuhi syarat, tautan masuk telah dikirim. Akses tetap diperiksa kembali setelah autentikasi."
-          : "Gunakan akun staff khusus. Halaman ini tidak menyediakan pendaftaran atau pemberian role."}
+          ? "Kalau email ini terdaftar sebagai tim, tautan masuk sudah dikirim. Buka dari perangkat ini. Hak akses tetap diperiksa lagi setelah kamu masuk."
+          : "Masukkan email tim kamu, lalu buka tautan yang kami kirim. Tidak perlu kata sandi. Halaman ini tidak bisa dipakai untuk mendaftar."}
       </p>
       <form onSubmit={submit} className="mt-8 space-y-5" noValidate>
         <div>
-          <label htmlFor={emailId} className="mb-2 block text-sm font-semibold text-brand-navy">Email staff</label>
-          <input id={emailId} type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className="focus-ring h-12 w-full rounded-xl border border-brand-border px-4" />
+          <label htmlFor={emailId} className="mb-2 block text-sm font-semibold text-brand-navy">Email tim</label>
+          <input id={emailId} type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className="focus-ring h-12 w-full rounded-xl border border-brand-border bg-white px-4" />
         </div>
         {error && <p id={errorId} role="alert" className="text-sm leading-6 text-brand-error">{error}</p>}
-        <button type="submit" disabled={loading || cooldown > 0} className="focus-ring min-h-12 w-full rounded-xl bg-brand-navy px-5 font-semibold text-white disabled:opacity-60">
-          {loading ? "Mengirim…" : cooldown ? `Kirim ulang dalam ${cooldown} detik` : "Kirim tautan masuk staff"}
+        <button type="submit" disabled={loading || cooldown > 0} className="focus-ring min-h-12 w-full rounded-xl border-2 border-brand-navy bg-brand-blue px-5 font-semibold text-white shadow-[3px_3px_0_#0F1B33] disabled:opacity-60">
+          {loading ? "Mengirim..." : cooldown ? `Kirim ulang dalam ${cooldown} detik` : "Kirim tautan masuk"}
         </button>
       </form>
-      <p className="mt-5 text-sm leading-6 text-brand-muted">Akun non-staff diarahkan kembali ke ruang mahasiswa tanpa mengungkap status role.</p>
+      <p className="mt-5 text-sm leading-6 text-brand-muted">Bukan tim? Kamu akan diarahkan ke halaman mahasiswa seperti biasa.</p>
     </div>
   );
 }

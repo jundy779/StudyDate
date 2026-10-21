@@ -13,8 +13,8 @@ type StudyProgramDirectoryProps = {
 export function StudyProgramDirectory(props: StudyProgramDirectoryProps) {
   return (
     <OnboardingCatalogDirectory
-      title="Katalog jurusan"
-      description="Kelola pilihan program studi yang tersedia saat mahasiswa mengatur profil. Kamu dapat menambah, mengubah, menyetujui usulan mahasiswa, atau menghapus data."
+      title="Daftar jurusan"
+      description="Pilihan jurusan yang muncul saat mahasiswa mengisi profil. Tambah, ubah nama, setujui usulan, atau hapus dari sini."
       entitySingular="jurusan"
       addPlaceholder="Contoh: Teknik Informatika"
       items={props.items}

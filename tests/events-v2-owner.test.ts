@@ -28,7 +28,7 @@ test("EV2O-01 owner Events route is protected and linked", () => {
   assert.match(ownerPage, /await requireOwner\(\)/);
   assert.match(ownerActions, /await requireOwner\(\)/);
   assert.match(ownerPage, /current="events"/);
-  assert.match(ownerOverview, /href="\/owner\/events"/);
+  assert.match(ownerOverview, /href: "\/owner\/events"/);
   assert.match(navigation, /href: "\/owner\/events"/);
 });
 

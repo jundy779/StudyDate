@@ -1,9 +1,20 @@
 import { StaffShell } from "@/components/staff/staff-shell";
 import {
+  EmptyState,
+  Notice,
+  Panel,
+  StaffPage,
+  StatusChip,
+  staffButton,
+  staffField,
+  staffLabel,
+} from "@/components/staff/ui";
+import {
   requireStaffCapability,
   staffHasCapability,
 } from "@/lib/staff/authorization";
 import { listStudentAccountOps } from "@/lib/staff/service";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -41,11 +52,12 @@ async function UsersContent({ searchParams }: Props) {
       offset,
     });
   } catch {
-    loadError = "Daftar akun belum dapat dimuat.";
+    loadError = "Daftar akun belum dapat dimuat. Muat ulang halaman sebentar lagi.";
   }
 
   const total = rows[0]?.total_count ?? 0;
   const totalPages = Math.max(1, Math.ceil(Number(total) / PAGE_SIZE));
+  const searching = Boolean(alias || email);
 
   function pageHref(nextPage: number) {
     const params = new URLSearchParams();
@@ -58,130 +70,114 @@ async function UsersContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="users" access={access}>
-      <main className="min-h-svh bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Area Admin</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Akun mahasiswa
-          </h1>
-          <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Cari dan periksa status akun mahasiswa untuk membantu kendala masuk,
-            penyiapan akun, paket, atau tampilan profil. NIM, kontak, percakapan, foto
-            identitas, dan bukti verifikasi tidak tersedia di sini.
-          </p>
-
-          <form
-            method="get"
-            className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-5 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            <label className="text-sm font-semibold">
+      <StaffPage
+        kicker="Area Admin"
+        title="Akun mahasiswa"
+        description={
+          <>
+            Cari akun untuk membantu kendala masuk, penyiapan akun, paket, atau tampilan profil.{" "}
+            NIM, kontak, percakapan, foto identitas, dan bukti verifikasi tidak tersedia di sini.
+          </>
+        }
+        mascot="penasaran"
+      >
+        <Panel title="Cari akun">
+          <form method="get" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+            <label className={staffLabel}>
               Nama samaran
               <input
                 name="alias"
                 defaultValue={alias ?? ""}
-                className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                className={staffField}
                 placeholder="Partner #123456"
                 autoComplete="off"
               />
             </label>
             {canSupport ? (
-              <label className="text-sm font-semibold">
-                Cari email lengkap
+              <label className={staffLabel}>
+                Email lengkap
                 <input
                   name="email"
                   type="email"
                   defaultValue={email ?? ""}
-                  className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                  className={staffField}
                   placeholder="nama@email.com"
                   autoComplete="off"
                 />
               </label>
             ) : (
-              <p className="text-sm leading-6 text-brand-muted sm:col-span-1">
-                Pencarian dengan email lengkap hanya tersedia untuk petugas
-                dukungan akun.
+              <p className="text-sm leading-6 text-brand-muted">
+                Cari pakai email lengkap hanya bisa untuk petugas dukungan akun (izin users.support).
               </p>
             )}
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="focus-ring min-h-11 w-full rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-              >
+            <div className="flex gap-2">
+              <button type="submit" className={`${staffButton.primary} flex-1`}>
+                <Search className="h-4 w-4" aria-hidden="true" />
                 Cari
               </button>
+              {searching ? (
+                <Link href="/staff/users" className={staffButton.quiet}>
+                  Hapus
+                </Link>
+              ) : null}
             </div>
           </form>
+        </Panel>
 
-          {loadError ? (
-            <p role="alert" className="mt-6 text-sm font-semibold text-brand-error">
-              {loadError}
-            </p>
-          ) : null}
+        {loadError ? <Notice tone="danger">{loadError}</Notice> : null}
 
-          <section
-            className="mt-8 overflow-hidden rounded-[22px] border border-brand-border bg-white"
-            aria-labelledby="users-list"
-          >
-            <div className="border-b border-brand-border p-5">
-              <h2 id="users-list" className="font-heading text-xl font-semibold">
-                Hasil ({Number(total)})
-              </h2>
-            </div>
-            <div className="divide-y divide-brand-border">
-              {rows.length === 0 ? (
-                <p className="p-6 text-brand-muted">Tidak ada akun dengan pilihan ini.</p>
-              ) : (
-                rows.map((row) => (
-                  <article
-                    key={row.account_ref}
-                    className="grid gap-3 p-5 lg:grid-cols-[1.2fr_1fr_auto]"
-                  >
-                    <div>
-                      <p className="font-semibold">{row.alias}</p>
-                      <p className="mt-1 break-all text-sm text-brand-muted">
-                        {row.email_display}
-                      </p>
-                      <p className="mt-1 text-sm text-brand-muted">
-                        {row.campus} · {row.study_program}
-                        {row.semester != null ? ` · semester ${row.semester}` : ""}
-                      </p>
-                    </div>
-                    <div className="text-sm text-brand-muted">
-                      <p>{row.account_status}</p>
-                      <p>{onboardingLabel(row.onboarding_status)}</p>
-                      <p>Verifikasi: {row.verification_summary}</p>
-                      <p>Paket: {row.membership_plan}</p>
-                      <p>
-                        Tampil di pencarian teman: {row.is_discoverable ? "Ya" : "Tidak"}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-start gap-3">
-                      <time className="text-sm text-brand-muted">
-                        {dateFmt.format(new Date(row.created_at))}
-                      </time>
-                      <Link
-                        href={`/staff/users/${row.account_ref}`}
-                        className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-blue"
-                      >
-                        Lihat ringkasan
-                      </Link>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </section>
+        <Panel
+          title={searching ? `Hasil pencarian (${Number(total)})` : `Semua akun (${Number(total)})`}
+          description="Paling baru di atas."
+          quiet
+        >
+          {rows.length === 0 ? (
+            <EmptyState title="Tidak ada akun yang cocok" expression="kaget">
+              Periksa ejaan nama samaran, atau pakai email lengkap.
+            </EmptyState>
+          ) : (
+            <ul className="divide-y divide-brand-border">
+              {rows.map((row) => (
+                <li
+                  key={row.account_ref}
+                  className="grid gap-3 py-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] lg:items-center"
+                >
+                  <div className="min-w-0">
+                    <p className="font-semibold text-brand-navy">{row.alias}</p>
+                    <p className="mt-0.5 break-all text-sm text-brand-muted">{row.email_display}</p>
+                    <p className="mt-0.5 text-sm text-brand-muted">
+                      {row.campus} · {row.study_program}
+                      {row.semester != null ? ` · semester ${row.semester}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <StatusChip tone="info">{row.account_status}</StatusChip>
+                    <StatusChip tone="muted">{onboardingLabel(row.onboarding_status)}</StatusChip>
+                    <StatusChip tone={row.verification_summary === "Terverifikasi" ? "go" : "wait"}>
+                      {row.verification_summary}
+                    </StatusChip>
+                    <StatusChip tone="muted">Paket: {row.membership_plan}</StatusChip>
+                    <StatusChip tone={row.is_discoverable ? "go" : "muted"}>
+                      {row.is_discoverable ? "Tampil di pencarian teman" : "Tidak tampil di pencarian teman"}
+                    </StatusChip>
+                  </div>
+                  <div className="flex items-center gap-3 lg:flex-col lg:items-end">
+                    <span className="text-sm text-brand-muted">
+                      Daftar {dateFmt.format(new Date(row.created_at))}
+                    </span>
+                    <Link href={`/staff/users/${row.account_ref}`} className={staffButton.quiet}>
+                      Lihat ringkasan
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {totalPages > 1 ? (
-            <nav
-              className="mt-6 flex flex-wrap items-center gap-3"
-              aria-label="Paginasi akun"
-            >
+            <nav className="mt-5 flex flex-wrap items-center gap-3" aria-label="Paginasi akun">
               {page > 1 ? (
-                <Link
-                  href={pageHref(page - 1)}
-                  className="focus-ring rounded-xl border border-brand-border px-4 py-2 text-sm font-semibold"
-                >
+                <Link href={pageHref(page - 1)} className={staffButton.quiet}>
                   Sebelumnya
                 </Link>
               ) : null}
@@ -189,17 +185,14 @@ async function UsersContent({ searchParams }: Props) {
                 Halaman {page} dari {totalPages}
               </span>
               {page < totalPages ? (
-                <Link
-                  href={pageHref(page + 1)}
-                  className="focus-ring rounded-xl border border-brand-border px-4 py-2 text-sm font-semibold"
-                >
+                <Link href={pageHref(page + 1)} className={staffButton.quiet}>
                   Berikutnya
                 </Link>
               ) : null}
             </nav>
           ) : null}
-        </div>
-      </main>
+        </Panel>
+      </StaffPage>
     </StaffShell>
   );
 }
@@ -209,9 +202,7 @@ export default function StaffUsersPage(props: Props) {
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
-          <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan daftar akun…
-          </p>
+          <p className="page-shell py-10 text-brand-muted">Menyiapkan daftar akun...</p>
         </main>
       }
     >

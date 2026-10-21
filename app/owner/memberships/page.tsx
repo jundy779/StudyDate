@@ -4,7 +4,18 @@ import {
   revokePlusMembership,
   updateBillingOffer,
 } from "@/app/owner/memberships/actions";
+import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
 import { StaffShell } from "@/components/staff/staff-shell";
+import {
+  EmptyState,
+  Notice,
+  Panel,
+  StaffPage,
+  StatusChip,
+  staffButton,
+  staffField,
+  staffLabel,
+} from "@/components/staff/ui";
 import { getOwnerBillingOffers } from "@/lib/billing/service";
 import {
   MEMBERSHIP_GRANT_DAYS,
@@ -61,57 +72,31 @@ async function MembershipsContent({ searchParams }: Props) {
 
   return (
     <StaffShell role={access.role} current="memberships" access={access}>
-      <main className="min-h-svh bg-brand-surface">
-        <div className="page-shell py-10 sm:py-14">
-          <p className="section-label">Khusus Owner</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.03em]">
-            Paket & pembayaran
-          </h1>
-          <p className="mt-4 max-w-2xl leading-7 text-brand-muted">
-            Kelola tiga pilihan akses StudyDate Plus dan bantu akun mahasiswa
-            bila pembayaran perlu ditangani. Plus dibeli berdasarkan durasi,
-            bukan langganan yang memperpanjang otomatis.
-          </p>
+      <StaffPage
+        kicker="Khusus Owner"
+        title="StudyDate Plus"
+        description="Atur harga tiga pilihan Plus dan bantu akun mahasiswa kalau pembayarannya perlu ditangani. Plus dibeli berdasarkan durasi, bukan langganan yang memperpanjang otomatis."
+        mascot="girang"
+      >
+        {message ? <Notice tone={isError ? "danger" : "success"}>{message}</Notice> : null}
 
-          {message ? (
-            <p
-              role="status"
-              className={`mt-6 rounded-xl px-4 py-3 text-sm font-semibold ${
-                isError ? "bg-red-50 text-brand-error" : "bg-green-50 text-brand-success"
-              }`}
-            >
-              {message}
-            </p>
-          ) : null}
-
-          <section className="mt-8 border-y border-brand-border py-7">
-            <h2 className="font-heading text-2xl font-semibold text-brand-navy">
-              Paket yang dijual
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
-              Mahasiswa memilih 7, 30, atau 90 hari. Pembelian saat Plus masih
-              aktif menambah durasi dari tanggal berakhir sebelumnya.
-            </p>
-            <div className="mt-5 divide-y divide-brand-border border-y border-brand-border">
-              {PLUS_PACKAGES.map((preset) => {
-                const offer =
-                  offers.find((item) => item.packageCode === preset.code) ?? preset;
-                return (
-                  <form
-                    key={preset.code}
-                    action={updateBillingOffer}
-                    className="grid gap-4 py-5 sm:grid-cols-[minmax(9rem,0.7fr)_1fr_auto_auto] sm:items-end"
-                  >
+        <Panel
+          title="Paket yang dijual"
+          description="Mahasiswa memilih 7, 30, atau 90 hari. Kalau membeli saat Plus masih aktif, durasinya ditambahkan dari tanggal berakhir sebelumnya."
+        >
+          <ul className="grid gap-3 lg:grid-cols-3">
+            {PLUS_PACKAGES.map((preset) => {
+              const offer = offers.find((item) => item.packageCode === preset.code) ?? preset;
+              const active = "isActive" in offer && offer.isActive === true;
+              return (
+                <li key={preset.code} className="rounded-2xl border border-brand-border p-4">
+                  <form action={updateBillingOffer} className="grid gap-3">
                     <input type="hidden" name="packageCode" value={preset.code} />
-                    <div>
-                      <p className="font-semibold text-brand-navy">
-                        Plus {preset.durationDays} Hari
-                      </p>
-                      <p className="mt-1 text-sm text-brand-muted">
-                        Akses selama {preset.durationDays} hari
-                      </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-heading text-lg font-semibold text-brand-navy">Plus {preset.durationDays} Hari</p>
+                      <StatusChip tone={active ? "go" : "muted"}>{active ? "Dijual" : "Tidak dijual"}</StatusChip>
                     </div>
-                    <label className="text-sm font-semibold">
+                    <label className={staffLabel}>
                       Harga (rupiah)
                       <input
                         name="amountIdr"
@@ -120,37 +105,34 @@ async function MembershipsContent({ searchParams }: Props) {
                         max={10_000_000}
                         required
                         defaultValue={offer.amountIdr}
-                        className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                        className={staffField}
                       />
                     </label>
-                    <label className="flex min-h-11 items-center gap-3 text-sm font-semibold">
+                    <label className="flex min-h-11 items-center gap-3 text-sm font-semibold text-brand-navy">
                       <input
                         name="isActive"
                         type="checkbox"
                         value="true"
-                        defaultChecked={"isActive" in offer && offer.isActive === true}
-                        className="focus-ring h-5 w-5"
+                        defaultChecked={active}
+                        className="focus-ring h-5 w-5 accent-brand-blue"
                       />
-                      Tersedia
+                      Tersedia untuk dibeli
                     </label>
-                    <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-                      Simpan
-                    </button>
+                    <button className={staffButton.secondary}>Simpan</button>
                   </form>
-                );
-              })}
-            </div>
-            <p className="mt-4 text-sm leading-6 text-brand-muted">
-              Harga rencana: {PLUS_PACKAGES.map((item) => `${item.durationDays} hari ${currency.format(item.amountIdr)}`).join(" · ")}.
-              Pembayaran hanya tersedia saat layanan AutoGoPay sudah diaktifkan oleh sistem.
-            </p>
-          </section>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-4 text-sm leading-6 text-brand-muted">
+            Harga rencana: {PLUS_PACKAGES.map((item) => `${item.durationDays} hari ${currency.format(item.amountIdr)}`).join(" · ")}.
+            Pembayaran hanya tersedia saat layanan AutoGoPay sudah diaktifkan oleh sistem.
+          </p>
+        </Panel>
 
-          <form
-            action={lookupMembership}
-            className="mt-8 grid gap-4 rounded-[22px] border border-brand-border bg-white p-6 sm:grid-cols-[1fr_auto] sm:items-end"
-          >
-            <label className="text-sm font-semibold">
+        <Panel title="Bantu akun mahasiswa" description="Cari dengan email untuk melihat, menambah, atau mencabut Plus." quiet>
+          <form action={lookupMembership} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <label className={staffLabel}>
               Email akun StudyDate
               <input
                 name="email"
@@ -158,94 +140,92 @@ async function MembershipsContent({ searchParams }: Props) {
                 required
                 maxLength={254}
                 defaultValue={email}
-                className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
+                className={staffField}
                 autoComplete="off"
               />
             </label>
-            <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-              Cari akun
-            </button>
+            <button className={staffButton.primary}>Cari akun</button>
           </form>
 
           {email && !record ? (
-            <p className="mt-6 text-sm text-brand-muted">
-              Tidak ada akun yang cocok untuk email itu.
-            </p>
+            <div className="mt-5">
+              <EmptyState title="Akun tidak ditemukan" expression="kaget">
+                Tidak ada akun yang cocok untuk email itu.
+              </EmptyState>
+            </div>
           ) : null}
 
           {record ? (
-            <section className="mt-8 rounded-[22px] border border-brand-border bg-white p-6">
-              <p className="font-semibold text-brand-navy">{record.public_alias}</p>
-              <p className="mt-2 text-sm text-brand-muted">
-                Paket: {record.plan_code === "plus" ? "StudyDate Plus" : "StudyDate Free"}
-              </p>
-              {record.ends_at ? (
-                <p className="mt-1 text-sm text-brand-muted">
-                  Berlaku sampai {dateFmt.format(new Date(record.ends_at))}
-                </p>
-              ) : null}
-              {record.starts_at ? (
-                <p className="mt-1 text-sm text-brand-muted">
-                  Mulai {dateFmt.format(new Date(record.starts_at))}
-                </p>
-              ) : null}
-              {record.status ? (
-                <p className="mt-1 text-sm text-brand-muted">
-                  Status: {membershipStatusLabel[record.status] ?? "Belum diketahui"}
-                </p>
-              ) : null}
-              {record.source ? (
-                <p className="mt-1 text-sm text-brand-muted">
-                  Sumber:{" "}
-                  {record.source === "owner_grant"
-                    ? "Diberikan Owner"
-                    : record.source === "promo"
-                      ? "Promo"
-                      : record.source === "early_access_promo"
-                        ? "Promo Akses Awal"
-                        : record.source === "system"
-                          ? "Sistem"
-                          : record.source === "future_payment"
-                            ? "Pembayaran GoPay QRIS"
-                            : "Sumber lain"}
-                </p>
-              ) : null}
+            <div className="mt-6 rounded-2xl border border-brand-border p-4 sm:p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-heading text-lg font-semibold text-brand-navy">{record.public_alias}</p>
+                <StatusChip tone={record.plan_code === "plus" ? "go" : "muted"}>
+                  {record.plan_code === "plus" ? "StudyDate Plus" : "StudyDate Free"}
+                </StatusChip>
+              </div>
+              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  ["Status", record.status ? membershipStatusLabel[record.status] ?? "Belum diketahui" : null],
+                  ["Mulai", record.starts_at ? dateFmt.format(new Date(record.starts_at)) : null],
+                  ["Berlaku sampai", record.ends_at ? dateFmt.format(new Date(record.ends_at)) : null],
+                  [
+                    "Sumber",
+                    record.source
+                      ? record.source === "owner_grant"
+                        ? "Diberikan Owner"
+                        : record.source === "promo"
+                          ? "Promo"
+                          : record.source === "early_access_promo"
+                            ? "Promo Akses Awal"
+                            : record.source === "system"
+                              ? "Sistem"
+                              : record.source === "future_payment"
+                                ? "Pembayaran GoPay QRIS"
+                                : "Sumber lain"
+                      : null,
+                  ],
+                ]
+                  .filter(([, value]) => value)
+                  .map(([label, value]) => (
+                    <div key={label} className="rounded-xl bg-brand-surface px-4 py-3">
+                      <dt className="text-brand-muted">{label}</dt>
+                      <dd className="mt-1 font-semibold text-brand-navy">{value}</dd>
+                    </div>
+                  ))}
+              </dl>
 
-              <form
-                action={grantPlusMembership}
-                className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end"
-              >
-                <input type="hidden" name="email" value={email} />
-                <label className="text-sm font-semibold">
-                  Tambah durasi Plus
-                  <select
-                    name="durationDays"
-                    defaultValue="7"
-                    className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
-                  >
-                    {MEMBERSHIP_GRANT_DAYS.map((days) => (
-                      <option key={days} value={days}>
-                        {days} hari
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button className="focus-ring min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white">
-                  Tambahkan akses Plus
-                </button>
-              </form>
-              {record.plan_code === "plus" ? (
-                <form action={revokePlusMembership} className="mt-4">
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+                <form action={grantPlusMembership} className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-end">
                   <input type="hidden" name="email" value={email} />
-                  <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
-                    Nonaktifkan Plus
-                  </button>
+                  <label className={`${staffLabel} sm:w-56`}>
+                    Tambah durasi Plus
+                    <select name="durationDays" defaultValue="7" className={staffField}>
+                      {MEMBERSHIP_GRANT_DAYS.map((days) => (
+                        <option key={days} value={days}>
+                          {days} hari
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className={staffButton.primary}>Tambahkan akses Plus</button>
                 </form>
-              ) : null}
-            </section>
+                {record.plan_code === "plus" ? (
+                  <form action={revokePlusMembership}>
+                    <input type="hidden" name="email" value={email} />
+                    <ConfirmSubmitButton
+                      triggerLabel="Nonaktifkan Plus"
+                      title="Nonaktifkan Plus untuk akun ini?"
+                      description="Akun kembali ke StudyDate Free sekarang juga. Tindakan ini tercatat."
+                      confirmLabel="Ya, nonaktifkan"
+                      className={staffButton.dangerQuiet}
+                    />
+                  </form>
+                ) : null}
+              </div>
+            </div>
           ) : null}
-        </div>
-      </main>
+        </Panel>
+      </StaffPage>
     </StaffShell>
   );
 }
@@ -255,7 +235,7 @@ export default function OwnerMembershipsPage(props: Props) {
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
-          <p className="page-shell py-10 text-brand-muted">Menyiapkan paket & pembayaran…</p>
+          <p className="page-shell py-10 text-brand-muted">Menyiapkan StudyDate Plus...</p>
         </main>
       }
     >

@@ -1,77 +1,92 @@
 import { setCampusEventOfficial } from "@/app/owner/events/actions";
 import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
+import { EmptyState, Panel, StatusChip, staffButton } from "@/components/staff/ui";
 import { EVENT_CATEGORY_LABELS, formatEventDateTime } from "@/lib/events/presentation";
 import type { StaffCampusEvent } from "@/lib/events/staff-service";
 import { BadgeCheck, CalendarDays, ExternalLink, UsersRound } from "lucide-react";
 import Link from "next/link";
 
+const STATUS = {
+  scheduled: { label: "Akan datang", tone: "go" },
+  cancelled: { label: "Dibatalkan", tone: "stop" },
+} as const;
+
 export function OwnerEventDirectory({ events }: { events: StaffCampusEvent[] }) {
   return (
-    <section className="mt-10 border-y border-brand-border py-8" aria-labelledby="owner-event-directory-title">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 id="owner-event-directory-title" className="font-heading text-2xl font-semibold text-brand-navy">
-            Daftar acara terbaru
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-            Periksa judul, penyelenggara, waktu, dan jumlah peserta sebelum menandai acara sebagai resmi.
-          </p>
-        </div>
-        <span className="text-sm font-semibold text-brand-muted">{events.length} acara</span>
-      </div>
-
+    <Panel
+      id="owner-event-directory"
+      title="Daftar acara terbaru"
+      description="Periksa judul, penyelenggara, waktu, dan jumlah peserta sebelum menandai acara sebagai resmi."
+      actions={<StatusChip tone="muted">{events.length} acara</StatusChip>}
+      quiet
+    >
       {events.length ? (
-        <div className="mt-6 divide-y divide-brand-border rounded-[22px] border border-brand-border bg-white px-5 sm:px-7">
-          {events.map((event) => (
-            <article key={event.public_slug} className="grid gap-5 py-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-brand-blue">
-                  <span>{EVENT_CATEGORY_LABELS[event.category]}</span>
-                  <span>{event.status === "scheduled" ? "Akan datang" : event.status === "cancelled" ? "Dibatalkan" : "Diarsipkan"}</span>
-                  {event.is_official ? <span className="inline-flex items-center gap-1 text-brand-navy"><BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />Resmi</span> : null}
+        <ul className="divide-y divide-brand-border">
+          {events.map((event) => {
+            const status = STATUS[event.status as keyof typeof STATUS] ?? { label: "Diarsipkan", tone: "muted" as const };
+            return (
+              <li key={event.public_slug} className="grid gap-4 py-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <StatusChip tone="info">{EVENT_CATEGORY_LABELS[event.category]}</StatusChip>
+                    <StatusChip tone={status.tone}>{status.label}</StatusChip>
+                    {event.is_official ? (
+                      <StatusChip tone="go">
+                        <BadgeCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                        Resmi
+                      </StatusChip>
+                    ) : null}
+                  </div>
+                  <h3 className="mt-2 break-words font-heading text-lg font-semibold text-brand-navy">{event.title}</h3>
+                  <p className="mt-1 text-sm text-brand-muted">
+                    Oleh {event.organizer_alias}
+                    {event.organizer_is_verified ? " · penyelenggara terverifikasi" : ""}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-brand-muted">
+                    <span className="inline-flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4" aria-hidden="true" />
+                      {formatEventDateTime(event.starts_at, event.timezone_name)}
+                    </span>
+                    <span className="inline-flex items-center gap-2">
+                      <UsersRound className="h-4 w-4" aria-hidden="true" />
+                      {event.attendee_count}/{event.capacity} peserta
+                    </span>
+                  </div>
                 </div>
-                <h3 className="mt-2 break-words font-heading text-xl font-semibold text-brand-navy">{event.title}</h3>
-                <p className="mt-2 text-sm text-brand-muted">Oleh {event.organizer_alias}{event.organizer_is_verified ? " · penyelenggara terverifikasi" : ""}</p>
-                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-brand-muted">
-                  <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4" aria-hidden="true" />{formatEventDateTime(event.starts_at, event.timezone_name)}</span>
-                  <span className="inline-flex items-center gap-2"><UsersRound className="h-4 w-4" aria-hidden="true" />{event.attendee_count}/{event.capacity} peserta</span>
+                <div className="flex flex-wrap gap-2 xl:justify-end">
+                  {event.is_official && event.scope === "open" && event.status === "scheduled" ? (
+                    <Link href={`/events/${event.public_slug}`} className={staffButton.quiet}>
+                      Halaman publik <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  ) : null}
+                  <form action={setCampusEventOfficial}>
+                    <input type="hidden" name="publicSlug" value={event.public_slug} />
+                    {event.is_official ? (
+                      <ConfirmSubmitButton
+                        triggerLabel="Hapus tanda resmi"
+                        title="Hapus tanda resmi?"
+                        description="Acara ini tidak lagi ditampilkan sebagai acara resmi StudyDate."
+                        confirmLabel="Ya, hapus tanda"
+                        name="isOfficial"
+                        value="false"
+                        className={staffButton.dangerQuiet}
+                      />
+                    ) : (
+                      <button name="isOfficial" value="true" className={staffButton.primary}>
+                        Tandai resmi
+                      </button>
+                    )}
+                  </form>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2 xl:justify-end">
-                {event.is_official && event.scope === "open" && event.status === "scheduled" ? (
-                  <Link href={`/events/${event.public_slug}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy">
-                    Halaman publik <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                  </Link>
-                ) : null}
-                <form action={setCampusEventOfficial}>
-                  <input type="hidden" name="publicSlug" value={event.public_slug} />
-                  {event.is_official ? (
-                    <ConfirmSubmitButton
-                      triggerLabel="Hapus tanda resmi"
-                      title="Hapus tanda resmi?"
-                      description="Acara ini tidak lagi ditampilkan sebagai acara resmi StudyDate."
-                      confirmLabel="Ya, hapus tanda"
-                      name="isOfficial"
-                      value="false"
-                      className="focus-ring min-h-11 rounded-xl border border-brand-error bg-white px-4 text-sm font-semibold text-brand-error"
-                    />
-                  ) : (
-                    <button
-                      name="isOfficial"
-                      value="true"
-                      className="focus-ring min-h-11 rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white"
-                    >
-                      Tandai resmi
-                    </button>
-                  )}
-                </form>
-              </div>
-            </article>
-          ))}
-        </div>
+              </li>
+            );
+          })}
+        </ul>
       ) : (
-        <p className="mt-6 rounded-[22px] border border-brand-border bg-white p-7 text-brand-muted">Belum ada acara yang dapat dikelola.</p>
+        <EmptyState title="Belum ada acara yang dapat dikelola" expression="ngantuk">
+          Acara muncul di sini setelah mahasiswa yang punya izin penyelenggara membuatnya.
+        </EmptyState>
       )}
-    </section>
+    </Panel>
   );
 }

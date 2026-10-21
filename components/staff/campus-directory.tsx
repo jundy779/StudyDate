@@ -13,8 +13,8 @@ type CampusDirectoryProps = {
 export function CampusDirectory(props: CampusDirectoryProps) {
   return (
     <OnboardingCatalogDirectory
-      title="Katalog kampus"
-      description="Kelola pilihan kampus yang tersedia saat mahasiswa mengatur profil. Kamu dapat menambah, mengubah, menyetujui usulan mahasiswa, atau menghapus data."
+      title="Daftar kampus"
+      description="Pilihan kampus yang muncul saat mahasiswa mengisi profil. Tambah, ubah nama, setujui usulan, atau hapus dari sini."
       entitySingular="kampus"
       addPlaceholder="Contoh: Universitas Contoh"
       items={props.items}
