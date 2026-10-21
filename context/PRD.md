@@ -624,8 +624,8 @@ Pencarian seluruh riwayat, sematkan/arsipkan/bisukan percakapan, edit/hapus pesa
 
 ## Pembaruan 20 dan 21 Oktober 2026 (repository implemented)
 
-Semua di bawah ini sudah ada di repository dan teruji lokal, tetapi migration-nya belum dipasang di
-Supabase production. Jangan disebut aktif sebelum dipasang dan dicek.
+Semua di bawah ini sudah ada di repository dan teruji lokal. Migration-nya terpasang di Supabase production
+pada 21 Oktober 2026, tetapi fiturnya belum diuji di production. Jangan disebut aktif sebelum dicek.
 
 ### Akses per jenis akun
 - Akun `@gmail.com` dan `@vk.com` wajib lolos verifikasi PDDikti untuk fitur sosial dan acara bila saklar

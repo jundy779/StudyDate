@@ -12,8 +12,8 @@ Aturan umum:
 
 ## 0. Prasyarat untuk semua tahap
 
-- [ ] Migration acara sampai `202610210001_event_ticket_order_expiry_guard.sql` sudah
-      terpasang. Periksa dengan:
+- [x] Migration sampai `202610210004_event_after_v1.sql` sudah terpasang di production
+      (21 Oktober 2026, `supabase db push`). Periksa dengan:
       `select version from supabase_migrations.schema_migrations order by version desc limit 10;`
 - [ ] Ada satu akun penyelenggara uji (terverifikasi atau diberi izin Owner) dan dua
       akun peserta uji yang sudah selesai onboarding.

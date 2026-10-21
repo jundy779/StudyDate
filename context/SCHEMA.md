@@ -918,7 +918,7 @@ entitlement dan quota usage. Deactivation tidak menghapus entitlement.
 
 ## Akses mahasiswa per jenis akun (repository migration 202610200001)
 
-Status: **Repository implemented**. Belum dipasang ke Supabase production.
+Status: **Repository implemented**. Migration terpasang di Supabase production pada 21 Oktober 2026 (`supabase db push`); uji fungsi di production belum dilakukan.
 
 - `platform_settings`: tabel privat (RLS, tanpa grant langsung). Kunci `require_student_verification`, default `false`.
 - `is_student_verification_required()`, `is_school_email_account(uuid)` (domain email login `sch.id` atau `*.sch.id` dari `auth.users`), `passes_student_verification_gate(uuid)`, `is_educational_event_category(text)`, `is_base_student_account(uuid)`.
@@ -935,7 +935,7 @@ Saat saklar menyala, acara milik penyelenggara yang belum terverifikasi (misalny
 
 ## Tautan kontak dan media sosial resmi (repository migration 202610200002)
 
-Status: **Repository implemented**. Belum dipasang ke Supabase production.
+Status: **Repository implemented**. Migration terpasang di Supabase production pada 21 Oktober 2026 (`supabase db push`); uji fungsi di production belum dilakukan.
 
 - `public_contact_links`: tabel privat, satu baris per `kind` (`whatsapp`, `telegram`, `telegram_channel`,
   `telegram_group`, `telegram_bot`, `threads`, `instagram`, `facebook`, `x`, `youtube`, `email`). Kolom `url`,
@@ -953,7 +953,7 @@ Lihat `docs/operations/event-activation-plan.md`.
 
 ## Kalender Circle (repository migration 202610210002)
 
-Status: **Repository implemented**. Belum dipasang ke Supabase production.
+Status: **Repository implemented**. Migration terpasang di Supabase production pada 21 Oktober 2026 (`supabase db push`); uji fungsi di production belum dilakukan.
 
 - `study_circle_calendar_follows (circle_id, user_id, created_at)`: tabel privat. Pemilik Circle tidak bisa
   mengikuti kalendernya sendiri. Daftar pengikut tidak pernah diproyeksikan, hanya jumlahnya.
@@ -969,7 +969,7 @@ Status: **Repository implemented**. Belum dipasang ke Supabase production.
 
 ## Foto sampul dan acara online (repository migration 202610210003)
 
-Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji di Postgres lokal.
+Status: **Repository implemented**. Migration terpasang di Supabase production pada 21 Oktober 2026 (`supabase db push`); uji fungsi di production belum dilakukan. Diuji di Postgres lokal.
 
 - `campus_events.venue_category` menerima `online`. `create_campus_event` dan `update_campus_event` hanya
   mewajibkan empat konfirmasi tempat publik dan pemeriksaan lokasi pribadi bila kategori bukan `online`.
@@ -993,7 +993,7 @@ Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji
 
 ## Setelah acara: ulasan, rekap, sertifikat (repository migration 202610210004)
 
-Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji di Postgres lokal.
+Status: **Repository implemented**. Migration terpasang di Supabase production pada 21 Oktober 2026 (`supabase db push`); uji fungsi di production belum dilakukan. Diuji di Postgres lokal.
 
 - Batas frekuensi baru: `feedback_hour` (20 per jam), `recap_day` (10 per hari), `certificate_day` (10 per hari).
 - Jenis notifikasi baru: `EVENT_FEEDBACK_REQUEST` dan `EVENT_RECAP_PUBLISHED` (metadata `title` saja).

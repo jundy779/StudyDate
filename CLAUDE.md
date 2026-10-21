@@ -492,13 +492,13 @@ Tabel ini adalah snapshot dokumentasi dan repository. Untuk status remote terbar
 | Event enhancement 202608210003–010 | **SCHEMA mencatat deployed** | Kuota, reminder schema, preferences, Circle association, waitlist, chat, ticket/check-in. Cron reminder masih OFF. |
 | Event organizer registration/check-in v2 | **Repository implemented** | Migration 202608220002–003 perlu remote verification. |
 | Public Event pages | **Repository implemented** | Share, .ics, Google Calendar, tanpa membuka peserta. Gambar pratinjau per acara, JSON-LD mode kehadiran, dan sitemap acara ditambahkan 21 Oktober 2026. |
-| Akses per jenis akun (.sch.id edukatif saja, saklar wajib verifikasi) | **Repository implemented** | Migration 202610200001; saklar Owner default OFF. |
-| Kontak dan media sosial resmi di footer | **Repository implemented** | Migration 202610200002; diisi Owner di /owner/contact, kosong sampai diisi. |
+| Akses per jenis akun (.sch.id edukatif saja, saklar wajib verifikasi) | **Repository implemented** | Migration 202610200001 (terpasang di production 21 Okt, belum diuji fungsi); saklar Owner default OFF. |
+| Kontak dan media sosial resmi di footer | **Repository implemented** | Migration 202610200002 (terpasang di production 21 Okt, belum diuji fungsi); diisi Owner di /owner/contact, kosong sampai diisi. |
 | Event Blast (pengumuman ke peserta) | **Disabled** | Flag EVENT_BLAST_ENABLED; butuh migration 202610210002 karena versi lama selalu gagal. |
-| Kalender Circle dan ikuti kalender | **Repository implemented** | Migration 202610210002; notifikasi lewat trigger database. |
-| Foto sampul acara | **Repository implemented** | Migration 202610210003, bucket event-covers; unggah belum diuji ke Storage sungguhan. |
-| Acara online dan hybrid | **Repository implemented** | Migration 202610210003; link hanya untuk penyelenggara, tim, dan peserta terdaftar. |
-| Ulasan, rekap, dan sertifikat acara | **Repository implemented** | Migration 202610210004; halaman cek publik /certificates/[kode]; permintaan ulasan otomatis ikut penjadwal yang masih OFF. |
+| Kalender Circle dan ikuti kalender | **Repository implemented** | Migration 202610210002 (terpasang di production 21 Okt, belum diuji fungsi); notifikasi lewat trigger database. |
+| Foto sampul acara | **Repository implemented** | Migration 202610210003 (terpasang di production 21 Okt), bucket event-covers; unggah belum diuji ke Storage sungguhan. |
+| Acara online dan hybrid | **Repository implemented** | Migration 202610210003 (terpasang di production 21 Okt, belum diuji fungsi); link hanya untuk penyelenggara, tim, dan peserta terdaftar. |
+| Ulasan, rekap, dan sertifikat acara | **Repository implemented** | Migration 202610210004 (terpasang di production 21 Okt, belum diuji fungsi); halaman cek publik /certificates/[kode]; permintaan ulasan otomatis ikut penjadwal yang masih OFF. |
 | Email ke peserta acara | **Planned** | Notifikasi acara masih in-app. |
 | Simpan Acara publik | **Local/device only** | Bookmark tersimpan di localStorage perangkat; filter melalui /events?saved=1; belum sinkron akun/Supabase. |
 | Account & Privacy controls | **Remote rollout verified menurut PRD** | Profil, privasi, blokir, discoverability, deletion lifecycle. |

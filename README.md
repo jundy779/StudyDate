@@ -106,7 +106,7 @@ Implemented:
   synchronized with the StudyDate project; controlled rollout has not started
   and automated/live audits did not call the real provider.
 - Staff Roles and Admin Shell v1 with `/staff/login`, `/owner`, and `/admin/verifications`
-- Oktober 2026 (repository only, migrations not yet applied remotely):
+- Oktober 2026 (migrations applied to production on 21 October 2026; production feature checks still pending):
   - account-type access tiers and an Owner switch for mandatory verification (`202610200001`);
   - Owner-managed official contact and social links in the footer (`202610200002`);
   - Circle event calendars with follow notifications and Event Blast fixes (`202610210002`);
