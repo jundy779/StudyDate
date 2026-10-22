@@ -62,7 +62,7 @@ export default async function CheckInPage({
             </p>
           ) : null}
           <section aria-labelledby="checkin-title">
-            <p className="section-label">Kehadiran peserta</p>
+            <p className="app-kicker">Kehadiran peserta</p>
             <h2
               id="checkin-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

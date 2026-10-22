@@ -31,7 +31,7 @@ export default async function TicketPaymentPage({ params, searchParams }: PagePr
   return <AppShell current="events"><main className="min-h-svh bg-brand-surface px-4 py-8 sm:px-6"><div className="mx-auto max-w-2xl">
     <Link href={`/app/events/${publicSlug}/tickets`} className="text-sm font-semibold text-brand-blue">← Kembali ke tiket</Link>
     <section className="mt-5 rounded-3xl border border-brand-line bg-white p-6 sm:p-8">
-      <p className="section-label">Pembayaran tiket</p>
+      <p className="app-kicker">Pembayaran tiket</p>
       <h1 className="mt-2 text-2xl font-bold text-brand-navy">{event.title}</h1>
       <p className="mt-4 text-lg font-semibold text-brand-navy">{formatTicketPrice(payment.total_amount)}</p>
       {error ? <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}

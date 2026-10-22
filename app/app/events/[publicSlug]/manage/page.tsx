@@ -94,7 +94,7 @@ export default async function EventManagePage({
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <EventManagementShell active="overview" event={event} overview={overview}>
           <section aria-labelledby="manage-overview-title">
-            <p className="section-label">Ringkasan</p>
+            <p className="app-kicker">Ringkasan</p>
             <h2
               id="manage-overview-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -131,7 +131,7 @@ export default async function EventManagePage({
 
             {seriesSessions.length > 1 ? (
               <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-series-title">
-                <p className="section-label">Rangkaian acara</p>
+                <p className="app-kicker">Rangkaian acara</p>
                 <h2 id="event-series-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                   Semua pertemuan
                 </h2>
@@ -205,7 +205,7 @@ export default async function EventManagePage({
                 className="mt-10 border-t border-brand-border pt-9"
                 aria-labelledby="event-announcement-title"
               >
-                <p className="section-label">Pengumuman acara</p>
+                <p className="app-kicker">Pengumuman acara</p>
                 <h2
                   id="event-announcement-title"
                   className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

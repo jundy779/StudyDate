@@ -113,7 +113,7 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
     <AppShell current="messages" unreadMessages={unreadConversations}>
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <div className="page-shell py-8 sm:py-12 lg:py-16">
-          <p className="section-label">Percakapan anonim</p>
+          <p className="app-kicker">Percakapan anonim</p>
           <h1 className="mt-3 font-heading text-4xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-5xl">
             Pesan
           </h1>

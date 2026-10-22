@@ -100,7 +100,7 @@ export default async function RegistrationsPage({
             </p>
           ) : null}
           <section aria-labelledby="registration-list-title">
-            <p className="section-label">Pendaftaran</p>
+            <p className="app-kicker">Pendaftaran</p>
             <h2
               id="registration-list-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

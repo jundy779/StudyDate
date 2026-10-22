@@ -418,7 +418,7 @@ export default async function EventDetailPage({
 
           {registrationQuestions.length && event.can_rsvp ? (
             <section className="border-b border-brand-border py-9" aria-labelledby="registration-form-title">
-              <p className="section-label">Pendaftaran</p>
+              <p className="app-kicker">Pendaftaran</p>
               <h2 id="registration-form-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Lengkapi pendaftaran acara
               </h2>
@@ -563,7 +563,7 @@ export default async function EventDetailPage({
 
           {eventCircle ? (
             <section className="border-b border-brand-border py-8">
-              <p className="section-label">Circle terkait</p>
+              <p className="app-kicker">Circle terkait</p>
               <Link
                 href={`/app/circles/${eventCircle.circle_public_slug}`}
                 className="focus-ring mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue hover:underline"
@@ -575,7 +575,7 @@ export default async function EventDetailPage({
 
           <aside className="border-b border-brand-border py-8" aria-labelledby="event-safety-title">
             <div className="max-w-3xl">
-              <p className="section-label">Pertemuan di tempat publik</p>
+              <p className="app-kicker">Pertemuan di tempat publik</p>
               <h2 id="event-safety-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Periksa kembali lokasi sebelum berangkat
               </h2>
@@ -593,7 +593,7 @@ export default async function EventDetailPage({
               className="border-b border-brand-border py-10"
               aria-labelledby="event-announcements-title"
             >
-              <p className="section-label">Kabar dari penyelenggara</p>
+              <p className="app-kicker">Kabar dari penyelenggara</p>
               <h2
                 id="event-announcements-title"
                 className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -627,7 +627,7 @@ export default async function EventDetailPage({
 
           {canUseParticipantFeatures ? (
             <section className="border-t border-brand-border py-10" aria-labelledby="event-chat-title">
-              <p className="section-label">Diskusi acara</p>
+              <p className="app-kicker">Diskusi acara</p>
               <h2 id="event-chat-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Koordinasi peserta
               </h2>
@@ -740,7 +740,7 @@ export default async function EventDetailPage({
 
           {canManageEvent ? (
             <section className="border-t border-brand-border py-8" aria-labelledby="event-manage-link-title">
-              <p className="section-label">Organizer</p>
+              <p className="app-kicker">Organizer</p>
               <h2 id="event-manage-link-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Pendaftaran, kehadiran, tim, dan pengaturan
               </h2>

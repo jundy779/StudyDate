@@ -280,7 +280,7 @@ export default async function CircleDetailPage({
           ) : (
             <div className="grid gap-10 py-10 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
               <section id="diskusi" aria-labelledby="circle-discussion-title">
-                <p className="section-label">Diskusi anggota</p>
+                <p className="app-kicker">Diskusi anggota</p>
                 <h2
                   id="circle-discussion-title"
                   className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -388,7 +388,7 @@ export default async function CircleDetailPage({
               </section>
 
               <aside aria-labelledby="circle-members-title">
-                <p className="section-label">Anggota</p>
+                <p className="app-kicker">Anggota</p>
                 <h2
                   id="circle-members-title"
                   className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -485,7 +485,7 @@ export default async function CircleDetailPage({
           {circle.is_owner ? (
             <section className="border-t border-brand-border py-10" aria-labelledby="circle-owner-title">
               <div className="max-w-3xl">
-                <p className="section-label">Kontrol Circle</p>
+                <p className="app-kicker">Kontrol Circle</p>
                 <h2
                   id="circle-owner-title"
                   className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

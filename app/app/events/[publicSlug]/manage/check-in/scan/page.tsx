@@ -24,7 +24,7 @@ export default async function EventScanPage({ params }: EventScanPageProps) {
           </Link>
 
           <header className="mt-4 border-b border-brand-border pb-6">
-            <p className="section-label">Acara kampus · Pemindai cepat</p>
+            <p className="app-kicker">Acara kampus · Pemindai cepat</p>
             <h1 className="mt-2 break-words font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
               Pindai tiket peserta
             </h1>

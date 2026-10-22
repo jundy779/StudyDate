@@ -31,6 +31,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MascotHead } from "@/components/brand/mascot-head";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -326,9 +328,9 @@ function NavigationLinks({
   sectionLabel?: string;
 }) {
   return (
-    <nav aria-label={ariaLabel} className="space-y-1.5">
+    <nav aria-label={ariaLabel} className="space-y-1">
       {sectionLabel && !compact ? (
-        <p className="px-3.5 pb-1 text-[11px] font-semibold text-brand-muted">
+        <p className="px-3.5 pb-1 font-hand text-base text-brand-muted">
           {sectionLabel}
         </p>
       ) : null}
@@ -342,11 +344,11 @@ function NavigationLinks({
             title={compact ? item.label : undefined}
             aria-current={active ? "page" : undefined}
             onClick={onNavigate}
-            className={`focus-ring group flex min-h-12 items-center rounded-xl text-sm font-semibold transition-colors ${
+            className={`focus-ring group flex min-h-11 items-center rounded-xl text-sm font-semibold transition-colors ${
               compact ? "justify-center px-3" : "gap-3 px-3.5"
             } ${
               active
-                ? "bg-brand-blue text-white"
+                ? "border-2 border-brand-navy bg-brand-blue text-white shadow-[3px_3px_0_#0F1B33]"
                 : "text-brand-muted hover:bg-brand-surface hover:text-brand-navy"
             }`}
           >
@@ -382,6 +384,14 @@ function NavigationLinks({
   );
 }
 
+/** Kelompok menu mahasiswa. Urutan di sini menentukan urutan di sidebar dan laci HP. */
+const studentGroups: { label: string; keys: string[] }[] = [
+  { label: "Mulai di sini", keys: ["home"] },
+  { label: "Cari koneksi", keys: ["people", "introductions", "messages"] },
+  { label: "Belajar dan kegiatan", keys: ["circles", "events"] },
+  { label: "Akun kamu", keys: ["notifications", "verification", "membership", "privacy-safety", "settings", "help"] },
+];
+
 function StudentNavigation({
   current,
   items,
@@ -395,24 +405,117 @@ function StudentNavigation({
   compact?: boolean;
   onNavigate?: () => void;
 }) {
+  const all = [...items, ...accountItems];
   return (
-    <div className="space-y-6">
-      <NavigationLinks
-        current={current}
-        items={items}
-        compact={compact}
-        onNavigate={onNavigate}
-        ariaLabel="Navigasi utama"
-      />
-      <NavigationLinks
-        current={current}
-        items={accountItems}
-        compact={compact}
-        onNavigate={onNavigate}
-        ariaLabel="Akun"
-        sectionLabel="Akun"
-      />
+    <div className={compact ? "space-y-3" : "space-y-5"}>
+      {studentGroups.map((group) => {
+        const groupItems = group.keys
+          .map((key) => all.find((item) => item.key === key))
+          .filter((item): item is NavigationItem => Boolean(item));
+        if (!groupItems.length) return null;
+        return (
+          <NavigationLinks
+            key={group.label}
+            current={current}
+            items={groupItems}
+            compact={compact}
+            onNavigate={onNavigate}
+            ariaLabel={group.label}
+            sectionLabel={group.label}
+          />
+        );
+      })}
     </div>
+  );
+}
+
+function StudentHelpBox() {
+  return (
+    <div className="relative rounded-2xl bg-brand-surface p-4 pl-[4.5rem] text-sm leading-5 text-brand-muted">
+      <span className="absolute bottom-3 left-3 w-12" aria-hidden="true">
+        <MascotHead expression="kedip" />
+      </span>
+      <span className="block font-semibold text-brand-navy">Tetap anonim dulu</span>
+      Nama asli dan kontakmu hanya terbuka kalau kamu setuju.
+    </div>
+  );
+}
+
+const bottomBarKeys = ["home", "people", "messages", "events"] as const;
+
+/** Bilah bawah di HP: empat tujuan utama plus tombol Menu. */
+function StudentBottomBar({
+  current,
+  items,
+  onOpenMenu,
+  menuOpen,
+}: {
+  current: string;
+  items: NavigationItem[];
+  onOpenMenu: () => void;
+  menuOpen: boolean;
+}) {
+  const shown = bottomBarKeys
+    .map((key) => items.find((item) => item.key === key))
+    .filter((item): item is NavigationItem => Boolean(item));
+  const shortLabel: Record<string, string> = {
+    home: "Beranda",
+    people: "Cari Teman",
+    messages: "Pesan",
+    events: "Acara",
+  };
+  return (
+    <nav
+      aria-label="Menu cepat"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+    >
+      <ul className="mx-auto flex max-w-md items-stretch justify-around">
+        {shown.map((item) => {
+          const Icon = iconMap[item.icon];
+          const active = current === item.key;
+          return (
+            <li key={item.key} className="flex-1">
+              <Link
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`focus-ring relative flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+                  active ? "text-brand-blue" : "text-brand-muted"
+                }`}
+              >
+                <span
+                  className={`grid h-8 w-12 place-items-center rounded-full ${
+                    active ? "bg-[#EAF1FF]" : ""
+                  }`}
+                >
+                  <Icon aria-hidden="true" className="h-5 w-5" />
+                </span>
+                {shortLabel[item.key] ?? item.label}
+                {item.badge && item.badge > 0 ? (
+                  <span className="absolute right-[calc(50%-1.6rem)] top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-brand-error px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                    <span aria-hidden="true">{item.badge > 99 ? "99+" : item.badge}</span>
+                    <span className="sr-only">{item.badge} belum dibaca</span>
+                  </span>
+                ) : null}
+              </Link>
+            </li>
+          );
+        })}
+        <li className="flex-1">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-app-navigation"
+            className="focus-ring flex min-h-16 w-full flex-col items-center justify-center gap-1 text-[11px] font-semibold text-brand-muted"
+          >
+            <span className="grid h-8 w-12 place-items-center rounded-full">
+              <Menu aria-hidden="true" className="h-5 w-5" />
+            </span>
+            Lainnya
+          </button>
+        </li>
+      </ul>
+    </nav>
   );
 }
 
@@ -452,6 +555,10 @@ export function ResponsiveNavigation({
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
   const isStaff = variant === "staff" && Boolean(role);
+  const pathname = usePathname() ?? "";
+  // Ruang obrolan dan pemindai QR punya bilah bawah sendiri, jadi menu cepat disembunyikan di sana.
+  const immersive = /^\/app\/messages\/[^/]+/.test(pathname) || /\/check-in\/scan$/.test(pathname);
+  const showBottomBar = !isStaff && !immersive;
   const items = isStaff
     ? getStaffItems(role as StaffRole, staffCapabilities)
     : studentItems
@@ -546,7 +653,7 @@ export function ResponsiveNavigation({
 
         <div className="app-sidebar-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-5 lg:px-4">
           <div className="mb-5 hidden px-3 lg:block">
-            <p className="text-[11px] font-semibold text-brand-muted">
+            <p className="font-hand text-lg text-brand-blue">
               {areaLabel}
             </p>
           </div>
@@ -573,7 +680,12 @@ export function ResponsiveNavigation({
               />
             )}
           </div>
-          <div className="mt-auto pt-6">
+          <div className="mt-auto grid gap-3 pt-6">
+            {!isStaff ? (
+              <div className="hidden lg:block">
+                <StudentHelpBox />
+              </div>
+            ) : null}
             <div className="md:hidden lg:block">
               <SignOutButton variant={variant} />
             </div>
@@ -623,6 +735,7 @@ export function ResponsiveNavigation({
             <button
               ref={mobileTriggerRef}
               type="button"
+              hidden={showBottomBar}
               onClick={() => setMobileOpen(true)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-app-navigation"
@@ -643,8 +756,17 @@ export function ResponsiveNavigation({
           </div>
         ) : null}
 
-        {children}
+        <div className={showBottomBar ? "pb-20 md:pb-0" : undefined}>{children}</div>
       </div>
+
+      {showBottomBar ? (
+        <StudentBottomBar
+          current={current}
+          items={items}
+          onOpenMenu={() => setMobileOpen(true)}
+          menuOpen={mobileOpen}
+        />
+      ) : null}
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">

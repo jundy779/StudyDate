@@ -57,7 +57,7 @@ async function VerificationContent({
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <div className="max-w-3xl">
-          <p className="section-label">Pusat verifikasi mahasiswa</p>
+          <p className="app-kicker">Pusat verifikasi mahasiswa</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
             Verifikasi status mahasiswa
           </h1>

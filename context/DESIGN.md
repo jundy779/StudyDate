@@ -354,6 +354,21 @@ logo pemerintah/PDDIKTI atau visual KYC.
 - Tombol yang memicu email atau keputusan menampilkan "Mengirim..." dan terkunci selama proses, supaya tidak
   diklik dua kali. Setelah hasil keluar, panel tertutup dan pesan hasil digulir ke tengah layar.
 
+### Ruang mahasiswa (renovasi tahap 1, 22 Oktober 2026)
+
+- Satu bahasa visual dengan Ruang Operasional: `components/app/ui.tsx` mengekspor ulang potongan dari
+  `components/staff/ui.tsx` (`AppPage`, `Panel`, `TodoItem`, `StatusChip`, `Notice`, `EmptyState`, `HelpTip`,
+  `appButton`). Tema selalu terang.
+- Menu samping dikelompokkan: Mulai di sini, Cari koneksi (Cari Teman, Perkenalan, Pesan), Belajar dan kegiatan
+  (Circle, Acara), Akun kamu (Notifikasi, Verifikasi, StudyDate Plus, Privasi, Pengaturan, Bantuan). Menu aktif
+  bergaya stiker. Kotak "Tetap anonim dulu" bermaskot di bawah menu.
+- Di HP ada bilah menu bawah: Beranda, Cari Teman, Pesan, Acara, Lainnya (membuka laci menu). Bilah ini
+  disembunyikan di ruang obrolan dan pemindai QR karena keduanya punya bilah bawah sendiri. Akun sekolah tidak
+  melihat menu sosial yang memang tidak tersedia untuknya.
+- Beranda berisi "Yang menunggu kamu": ajakan kenalan, pesan baru, ulasan acara, notifikasi, dan ajakan
+  verifikasi, semuanya dari angka asli. Kalau kosong, judulnya "Semua beres" dengan ajakan cari teman atau acara.
+- Kepala halaman di `/app` memakai celetukan tulisan tangan (`.app-kicker`).
+
 ### Staff shell (renovasi 22 Oktober 2026)
 
 Ruang Operasional memakai identitas StudyDate (Poppins/Inter, biru #014FE7, navy, maskot) dengan pola dashboard

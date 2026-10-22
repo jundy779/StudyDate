@@ -32,7 +32,7 @@ export default async function TeamPage({
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <EventManagementShell active="team" event={event} overview={overview}>
           <section aria-labelledby="event-team-title">
-            <p className="section-label">Tim acara</p>
+            <p className="app-kicker">Tim acara</p>
             <h2
               id="event-team-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

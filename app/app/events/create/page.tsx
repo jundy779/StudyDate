@@ -56,7 +56,7 @@ export default async function CreateEventPage({
             Kembali ke acara kampus
           </Link>
           <header className="mt-7 max-w-2xl">
-            <p className="section-label">
+            <p className="app-kicker">
               {source ? "Acara berikutnya" : "Buat acara kampus"}
             </p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">

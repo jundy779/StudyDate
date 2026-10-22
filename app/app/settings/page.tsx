@@ -79,7 +79,7 @@ async function SettingsContent() {
     <AppShell current="settings">
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <div className="page-shell max-w-6xl py-8 sm:py-10 lg:py-12">
-          <p className="section-label">Akun mahasiswa</p>
+          <p className="app-kicker">Akun mahasiswa</p>
           <h1 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl lg:text-5xl">
             Pengaturan
           </h1>

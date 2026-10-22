@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage } from "@/components/app/ui";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import {
   countUnreadNotifications,
@@ -16,17 +17,13 @@ export default async function NotificationsPage() {
 
   return (
     <AppShell current="notifications" unreadNotifications={unreadCount}>
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell max-w-3xl py-8 sm:py-12 lg:py-16">
-          <p className="section-label">Aktivitas penting</p>
-          <h1 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
-            Notifikasi
-          </h1>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-brand-muted sm:text-base">
-            Update penting dari koneksi dan aktivitas StudyDate kamu.
-          </p>
-
-          <div className="mt-8">
+      <AppPage
+        kicker="Aktivitas penting"
+        title="Notifikasi"
+        description="Kabar penting dari perkenalan, Circle, dan acara kamu. Isi pesan tidak pernah ditampilkan di sini."
+        mascot={unreadCount > 0 ? "penasaran" : "girang"}
+      >
+        <div className="max-w-3xl">
             <NotificationCenter
               initialItems={items}
               initialUnreadCount={unreadCount}
@@ -39,9 +36,8 @@ export default async function NotificationsPage() {
                   : null
               }
             />
-          </div>
         </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }

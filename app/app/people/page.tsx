@@ -106,7 +106,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
       <div className="page-shell py-8 sm:py-12 lg:py-16">
         <section className="grid gap-7 lg:grid-cols-[1fr_360px] lg:items-end">
           <div className="max-w-3xl">
-            <p className="section-label">Cari yang nyambung</p>
+            <p className="app-kicker">Cari yang nyambung</p>
             <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
               Temukan orang yang punya kesamaan denganmu
             </h1>
@@ -180,7 +180,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
         <section className="mt-10" aria-labelledby="people-results-title">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="section-label">Profil yang dapat ditemukan</p>
+              <p className="app-kicker">Profil yang dapat ditemukan</p>
               <h2 id="people-results-title" className="mt-2 font-heading text-2xl font-semibold tracking-[-0.02em] text-brand-navy">Orang yang bisa kamu kenal</h2>
             </div>
             <nav

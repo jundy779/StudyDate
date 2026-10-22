@@ -75,7 +75,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
         <div className="page-shell py-8 sm:py-12 lg:py-16">
           <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="section-label">Acara Kampus</p>
+              <p className="app-kicker">Acara Kampus</p>
               <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
                 Kegiatan kampus, bertemu di tempat publik
               </h1>
@@ -121,7 +121,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               className="mt-9 border-y border-brand-border py-6"
               aria-labelledby="event-team-invitations-title"
             >
-              <p className="section-label">Undangan tim</p>
+              <p className="app-kicker">Undangan tim</p>
               <h2
                 id="event-team-invitations-title"
                 className="mt-2 font-heading text-xl font-semibold text-brand-navy"
@@ -180,7 +180,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               className="mt-9 border-y border-brand-border py-6"
               aria-labelledby="event-team-active-title"
             >
-              <p className="section-label">Acara yang kamu bantu</p>
+              <p className="app-kicker">Acara yang kamu bantu</p>
               <h2
                 id="event-team-active-title"
                 className="mt-2 font-heading text-xl font-semibold text-brand-navy"
@@ -242,7 +242,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
 
           <section className="mt-10" aria-labelledby="event-results-title">
             <div className="max-w-2xl">
-              <p className="section-label">Acara mendatang</p>
+              <p className="app-kicker">Acara mendatang</p>
               <h2
                 id="event-results-title"
                 className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

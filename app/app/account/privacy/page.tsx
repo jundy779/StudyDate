@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage } from "@/components/app/ui";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import { BookOpen, LifeBuoy, Scale, Shield } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -41,28 +41,13 @@ async function PrivacySafetyContent() {
 
   return (
     <AppShell current="privacy-safety">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell max-w-3xl py-8 sm:py-12">
-          <p className="section-label">Akun</p>
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
-            <div className="min-w-0 max-w-xl">
-              <h1 className="font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl">
-                Privasi & keamanan
-              </h1>
-              <p className="mt-3 text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
-                Dokumen publik StudyDate untuk memahami privasi, keamanan, dan
-                aturan komunitas.
-              </p>
-            </div>
-            <Image
-              src="/brand/mascot/avatar.png"
-              alt=""
-              width={96}
-              height={96}
-              className="h-20 w-20 rounded-2xl object-cover object-top shadow-[0_8px_18px_rgba(15,27,51,0.12)] sm:h-24 sm:w-24"
-            />
-          </div>
-          <ul className="mt-8 space-y-3">
+      <AppPage
+        kicker="Akun"
+        title="Privasi & keamanan"
+        description="Dokumen publik StudyDate untuk memahami privasi, keamanan, dan aturan komunitas."
+        mascot="kedip"
+      >
+          <ul className="grid max-w-3xl gap-3">
             {resources.map((item) => {
               const Icon = item.icon;
               return (
@@ -87,8 +72,7 @@ async function PrivacySafetyContent() {
               );
             })}
           </ul>
-        </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }

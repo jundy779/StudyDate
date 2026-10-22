@@ -102,7 +102,7 @@ export default async function SettingsPage({
             className="mb-10 rounded-[18px] border border-brand-border bg-white p-5 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"
           >
             <div className="min-w-0">
-              <p className="section-label">Acara berikutnya</p>
+              <p className="app-kicker">Acara berikutnya</p>
               <h2 id="duplicate-event-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Jadwalkan pertemuan berikutnya
               </h2>
@@ -130,7 +130,7 @@ export default async function SettingsPage({
           </section>
 
           <section aria-labelledby="registration-settings-title">
-            <p className="section-label">Pendaftaran</p>
+            <p className="app-kicker">Pendaftaran</p>
             <h2 id="registration-settings-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
               Pengaturan registrasi
             </h2>
@@ -167,7 +167,7 @@ export default async function SettingsPage({
           </section>
 
           <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="registration-questions-title">
-            <p className="section-label">Pertanyaan tambahan</p>
+            <p className="app-kicker">Pertanyaan tambahan</p>
             <h2 id="registration-questions-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
               Pertanyaan registrasi
             </h2>
@@ -253,7 +253,7 @@ export default async function SettingsPage({
           ) : null}
 
           <section className="mt-10 border-t border-brand-border pt-9" aria-labelledby="event-detail-settings-title">
-            <p className="section-label">Detail acara</p>
+            <p className="app-kicker">Detail acara</p>
             <h2 id="event-detail-settings-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
               Edit detail acara
             </h2>

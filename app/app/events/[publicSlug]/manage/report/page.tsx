@@ -80,7 +80,7 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <EventManagementShell active="report" event={event} overview={overview}>
           <section aria-labelledby="event-report-title">
-            <p className="section-label">Laporan acara</p>
+            <p className="app-kicker">Laporan acara</p>
             <h2
               id="event-report-title"
               className="mt-2 font-heading text-2xl font-semibold text-brand-navy"
@@ -116,7 +116,7 @@ export default async function EventReportPage({ params }: EventReportPageProps) 
 
           {seriesRows.length > 1 ? (
             <section className="mt-12 border-t border-brand-border pt-9" aria-labelledby="series-report-title">
-              <p className="section-label">Laporan rangkaian</p>
+              <p className="app-kicker">Laporan rangkaian</p>
               <h2 id="series-report-title" className="mt-2 font-heading text-2xl font-semibold text-brand-navy">
                 Ringkasan semua pertemuan
               </h2>

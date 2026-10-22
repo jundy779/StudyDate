@@ -48,7 +48,7 @@ async function CirclesContent({ searchParams }: CirclesPageProps) {
         <div className="page-shell py-8 sm:py-12 lg:py-16">
           <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="section-label">Circle Belajar</p>
+              <p className="app-kicker">Circle Belajar</p>
               <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
                 Belajar bareng lewat topik yang kamu suka
               </h1>
@@ -86,7 +86,7 @@ async function CirclesContent({ searchParams }: CirclesPageProps) {
 
           <section className="mt-10" aria-labelledby="circle-results-title">
             <div className="max-w-2xl">
-              <p className="section-label">Circle yang dapat ditemukan</p>
+              <p className="app-kicker">Circle yang dapat ditemukan</p>
               <h2
                 id="circle-results-title"
                 className="mt-2 font-heading text-2xl font-semibold text-brand-navy"

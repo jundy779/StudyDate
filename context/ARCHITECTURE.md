@@ -881,3 +881,11 @@ memuat sendiri.
   Function Vercel dipindah dari iad1 ke `sin1` lewat `"regions": ["sin1"]` di `vercel.json`, supaya setiap
   panggilan berurutan ke Supabase tidak lagi menyeberang Amerika ke Singapura. Jangan pindahkan region function
   tanpa memindahkan database juga.
+
+### Ruang mahasiswa tahap 1 (22 Oktober 2026)
+- `components/navigation/responsive-navigation.tsx` tetap menjadi satu-satunya kerangka `/app`; menu mahasiswa
+  dirender per kelompok (`studentGroups`) dan bilah bawah HP (`StudentBottomBar`) memakai item yang sama,
+  jadi aturan `hiddenItemKeys` akun sekolah ikut berlaku. Rute ruang obrolan dan pemindai QR tidak menampilkan
+  bilah bawah (dicek dari `usePathname`).
+- Beranda `/app` memuat angka sekali lalu meneruskannya ke `AppShell` lewat props, supaya tidak dihitung dua
+  kali dalam satu request.

@@ -376,7 +376,7 @@ Organizer adalah pengguna biasa dengan kewenangan terbatas pada Event yang dikel
 
 Admin memakai akun staff khusus dan hanya mendapat capability eksplisit. Admin tidak otomatis menjadi Owner. UI staff menggunakan istilah **Ruang Operasional**.
 
-Tampilan Ruang Operasional dibangun dari `components/staff/ui.tsx` dan `components/staff/staff-frame.tsx` (renovasi 22 Oktober 2026, repository implemented). Halaman staff baru wajib memakai potongan ini: `StaffPage` untuk kepala halaman, `Panel` untuk isi, `StatusChip` untuk status berupa kata, `Notice` untuk pesan hasil, `EmptyState` untuk daftar kosong, `HelpTip` untuk istilah asing, dan dialog konfirmasi untuk tindakan yang menghapus atau mencabut. Tema selalu terang. Bahasa awam, tanpa angka contoh. Antrean Akses Awal dibuka di tab Perlu dicek; yang sudah diputuskan pindah ke tab statusnya.
+Tampilan Ruang Operasional dibangun dari `components/staff/ui.tsx` dan `components/staff/staff-frame.tsx` (renovasi 22 Oktober 2026, repository implemented). Halaman staff baru wajib memakai potongan ini: `StaffPage` untuk kepala halaman, `Panel` untuk isi, `StatusChip` untuk status berupa kata, `Notice` untuk pesan hasil, `EmptyState` untuk daftar kosong, `HelpTip` untuk istilah asing, dan dialog konfirmasi untuk tindakan yang menghapus atau mencabut. Ruang mahasiswa memakai potongan yang sama lewat `components/app/ui.tsx` (`AppPage`, `appButton`, dan seterusnya). Tema selalu terang. Bahasa awam, tanpa angka contoh. Antrean Akses Awal dibuka di tab Perlu dicek; yang sudah diputuskan pindah ke tab statusnya.
 
 Capability dapat meliputi:
 
@@ -475,8 +475,9 @@ Tabel ini adalah snapshot dokumentasi dan repository. Untuk status remote terbar
 | Early Access dasar | **Repository implemented** | Insert waitlist, duplicate handling, consent, honeypot, dan rate limit. |
 | Early Access moderation/invitation/revision | **Repository implemented** | Migration 202608250002 dan 202608260001 perlu remote verification sebelum disebut aktif penuh. |
 | Antrean Akses Awal: ringkasan, urutan, lencana email, pengingat | **Remote rollout verified** | Migration 202610210005 terpasang; ringkasan antrean tampil di production (21 Okt 2026). Tab per status (22 Okt) repository implemented. |
-| Katalog kampus: Universitas Jember, Universitas Sebelas Maret, Universitas Diponegoro | **Repository implemented** | Migration 202610220001 (upsert approved, idempotent), belum dipasang di production. |
-| Kecepatan pindah menu | **Repository implemented** | Kerangka loading instan di /owner, /admin, /staff, /app; angka menu staff menyusul; user Auth dicache per request. Supabase di Singapore; function Vercel dipindah ke `sin1` lewat `vercel.json` (22 Okt 2026), cek `x-vercel-id` setelah deploy. |
+| Katalog kampus: Universitas Jember, Universitas Sebelas Maret, Universitas Diponegoro | **Remote rollout verified** | Migration 202610220001 terpasang di production 22 Okt 2026 (db push sukses). |
+| Tampilan ruang mahasiswa tahap 1 | **Repository implemented** | Menu samping berkelompok, bilah menu bawah di HP, Beranda berisi "Yang menunggu kamu" dari angka asli, kepala halaman bertulisan tangan (`.app-kicker`), Notifikasi dan Privasi memakai `AppPage`. Halaman lain menyusul. |
+| Kecepatan pindah menu | **Remote rollout verified** (region) | Kerangka loading instan di /owner, /admin, /staff, /app; angka menu staff menyusul; user Auth dicache per request. Supabase di Singapore; function Vercel dipindah ke `sin1` lewat `vercel.json` (22 Okt 2026), cek `x-vercel-id` setelah deploy. |
 | Email magic link + PKCE | **Repository implemented** | Delivery nyata dan callback perlu environment test. |
 | Onboarding empat langkah | **Repository implemented** | Atomic RPC dan privacy fields tersedia. |
 | People Discovery v1 | **Repository implemented** | Safe projection, filter, pagination, discoverability. |
