@@ -173,6 +173,8 @@ Deployment melaporkan region iad1, sementara target awal pengguna berada di Indo
 
 Tindakan: ukur latency aktual dari Indonesia ke Vercel function dan Supabase region sebelum memindahkan region. Jangan mengubah region hanya berdasarkan asumsi.
 
+Tindak lanjut 22 Oktober 2026: region Supabase dipastikan Southeast Asia (Singapore). `vercel.json` sekarang memakai `"regions": ["sin1"]` supaya function berada di region yang sama dengan database.
+
 ### MEDIUM — Supabase Data API behavior berubah 30 Oktober 2026
 
 Supabase mengumumkan bahwa table/function baru tidak otomatis terekspos ke Data API. Perubahan akan diberlakukan untuk seluruh project lama pada 30 Oktober 2026.

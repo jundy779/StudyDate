@@ -877,6 +877,7 @@ memuat sendiri.
   `use()` di dalam `Suspense`, jadi isi halaman tampil tanpa menunggu tiga RPC hitungan.
 - `loading.tsx` di `/owner`, `/admin`, `/staff/users`, `/staff/early-access` (`components/staff/staff-loading.tsx`)
   dan `/app` memberi kerangka seketika setelah klik.
-- Function Vercel berjalan di iad1 (audit 11 Okt 2026). Setiap halaman privat melakukan beberapa panggilan
-  berurutan ke Supabase, jadi jarak antara region function dan region database paling berpengaruh. Region
-  function dipindah hanya setelah region Supabase dipastikan (lihat `npx supabase projects list`).
+- Region Supabase dipastikan Southeast Asia (Singapore) lewat `npx supabase projects list` (22 Okt 2026).
+  Function Vercel dipindah dari iad1 ke `sin1` lewat `"regions": ["sin1"]` di `vercel.json`, supaya setiap
+  panggilan berurutan ke Supabase tidak lagi menyeberang Amerika ke Singapura. Jangan pindahkan region function
+  tanpa memindahkan database juga.
