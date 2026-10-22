@@ -474,7 +474,9 @@ Tabel ini adalah snapshot dokumentasi dan repository. Untuk status remote terbar
 | Landing dan halaman publik | **Repository implemented** dan digunakan pada domain production | Termasuk about, privacy, terms, guidelines, safety, help, insight, dan Acara publik. |
 | Early Access dasar | **Repository implemented** | Insert waitlist, duplicate handling, consent, honeypot, dan rate limit. |
 | Early Access moderation/invitation/revision | **Repository implemented** | Migration 202608250002 dan 202608260001 perlu remote verification sebelum disebut aktif penuh. |
-| Antrean Akses Awal: ringkasan, urutan, lencana email, pengingat | **Repository implemented** | Migration 202610210005, belum dipasang di production. |
+| Antrean Akses Awal: ringkasan, urutan, lencana email, pengingat | **Remote rollout verified** | Migration 202610210005 terpasang; ringkasan antrean tampil di production (21 Okt 2026). Tab per status (22 Okt) repository implemented. |
+| Katalog kampus: Universitas Jember, Universitas Sebelas Maret, Universitas Diponegoro | **Repository implemented** | Migration 202610220001 (upsert approved, idempotent), belum dipasang di production. |
+| Kecepatan pindah menu | **Repository implemented** | Kerangka loading instan di /owner, /admin, /staff, /app; angka menu staff menyusul; user Auth dicache per request. Region function Vercel masih iad1, perlu dicocokkan dengan region Supabase. |
 | Email magic link + PKCE | **Repository implemented** | Delivery nyata dan callback perlu environment test. |
 | Onboarding empat langkah | **Repository implemented** | Atomic RPC dan privacy fields tersedia. |
 | People Discovery v1 | **Repository implemented** | Safe projection, filter, pagination, discoverability. |

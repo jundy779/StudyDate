@@ -1,4 +1,9 @@
-import { StaffFrame, type StaffNavGroup, type StaffNavKey } from "@/components/staff/staff-frame";
+import {
+  StaffFrame,
+  type StaffNavCounts,
+  type StaffNavGroup,
+  type StaffNavKey,
+} from "@/components/staff/staff-frame";
 import { countUnresolvedModerationReports } from "@/lib/moderation/service";
 import type { StaffAccess, StaffRole } from "@/lib/staff/authorization";
 import { getEarlyAccessQueueSummary, listVerificationQueue } from "@/lib/staff/service";
@@ -25,14 +30,18 @@ async function safeCount<T>(load: () => Promise<T>, pick: (value: T) => number |
 
 const OPEN_VERIFICATION = new Set(["pending", "under_review", "needs_action"]);
 
-export async function StaffShell({ children, current, role, access }: StaffShellProps) {
+/**
+ * Menu langsung dirender; angka di menu menyusul lewat promise yang dibaca di client (Suspense),
+ * supaya pindah halaman tidak menunggu tiga panggilan ke database.
+ */
+export function StaffShell({ children, current, role, access }: StaffShellProps) {
   const isOwner = role === "owner";
   const canEarlyAccess =
     isOwner || access?.canEarlyAccessRead === true || access?.canEarlyAccessReview === true;
   const canUsers = isOwner || access?.canUsersRead === true || access?.canUsersSupport === true;
   const canVerification = isOwner || access?.verificationReviewer === true;
 
-  const [earlyAccess, reports, verifications] = await Promise.all([
+  const counts: Promise<StaffNavCounts> = Promise.all([
     canEarlyAccess ? getEarlyAccessQueueSummary().catch(() => null) : Promise.resolve(null),
     isOwner ? safeCount(countUnresolvedModerationReports, (value) => value) : Promise.resolve(null),
     canVerification
@@ -41,7 +50,14 @@ export async function StaffShell({ children, current, role, access }: StaffShell
           (rows) => rows.filter((row) => OPEN_VERIFICATION.has(row.status)).length,
         )
       : Promise.resolve(null),
-  ]);
+  ]).then(([earlyAccess, reports, verifications]) => ({
+    "early-access": {
+      count: earlyAccess?.waiting_count ?? null,
+      urgent: (earlyAccess?.stale_waiting_count ?? 0) > 0,
+    },
+    moderation: { count: reports, urgent: true },
+    verification: { count: verifications },
+  }));
 
   const base = isOwner ? "/owner" : "/admin";
   const earlyAccessHref = isOwner ? "/owner/early-access" : "/staff/early-access";
@@ -51,30 +67,17 @@ export async function StaffShell({ children, current, role, access }: StaffShell
   ];
 
   const people: StaffNavGroup = { label: "Pendaftar dan akun", items: [] };
-  if (canEarlyAccess) {
-    people.items.push({
-      key: "early-access",
-      href: earlyAccessHref,
-      label: "Akses Awal",
-      count: earlyAccess?.waiting_count ?? null,
-      urgent: (earlyAccess?.stale_waiting_count ?? 0) > 0,
-    });
-  }
+  if (canEarlyAccess) people.items.push({ key: "early-access", href: earlyAccessHref, label: "Akses Awal" });
   if (canUsers) people.items.push({ key: "users", href: "/staff/users", label: "Akun mahasiswa" });
   if (canVerification) {
-    people.items.push({
-      key: "verification",
-      href: "/admin/verifications",
-      label: "Verifikasi mahasiswa",
-      count: verifications,
-    });
+    people.items.push({ key: "verification", href: "/admin/verifications", label: "Verifikasi mahasiswa" });
   }
   if (people.items.length) groups.push(people);
 
   if (isOwner) {
     groups.push({
       label: "Keamanan",
-      items: [{ key: "moderation", href: "/owner/moderation", label: "Laporan", count: reports, urgent: true }],
+      items: [{ key: "moderation", href: "/owner/moderation", label: "Laporan" }],
     });
   }
 
@@ -111,7 +114,7 @@ export async function StaffShell({ children, current, role, access }: StaffShell
   }
 
   return (
-    <StaffFrame role={isOwner ? "owner" : "admin"} current={current} groups={groups}>
+    <StaffFrame role={isOwner ? "owner" : "admin"} current={current} groups={groups} counts={counts}>
       {children}
     </StaffFrame>
   );

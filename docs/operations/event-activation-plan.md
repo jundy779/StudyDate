@@ -132,6 +132,12 @@ Memeriksa: ringkasan angka muncul di /owner/early-access, "Terlama dulu" menguru
 bertanda merah, tombol "Kirim pengingat" hanya muncul untuk undangan lebih dari 24 jam, dan pengingat kedua
 dalam 24 jam ditolak.
 
+## 2f. Kampus tambahan (bukan fitur Acara)
+
+Kode: migration `202610220001_upsert_requested_campuses_v2.sql`. Hanya data. Memeriksa: Universitas Jember,
+Universitas Sebelas Maret, dan Universitas Diponegoro muncul berstatus "Tampil di pilihan" di /owner/campuses dan
+di pilihan kampus saat mengisi profil.
+
 ## 3. Acara berseri
 
 Kode: migration `202610170002`, `202610170003`, flag `EVENT_SERIES_ENABLED`.

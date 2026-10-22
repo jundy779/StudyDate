@@ -23,6 +23,7 @@ export const SEED_CAMPUS_LABELS = [
   "Universitas Indraprasta PGRI",
   "Universitas Islam Indonesia",
   "Universitas Islam Negeri Syarif Hidayatullah",
+  "Universitas Jember",
   "Universitas Mercu Buana",
   "Universitas Muhammadiyah Malang",
   "Universitas Multimedia Nusantara",

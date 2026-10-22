@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, use, useEffect, useRef, useState, type ReactNode } from "react";
 
 export type StaffNavKey =
   | "overview"
@@ -49,6 +49,29 @@ export type StaffNavItem = {
 
 export type StaffNavGroup = { label: string; items: StaffNavItem[] };
 
+/** Angka menu yang dimuat belakangan. Kunci yang tidak ada berarti tanpa angka. */
+export type StaffNavCounts = Partial<Record<StaffNavKey, { count: number | null; urgent?: boolean }>>;
+
+function CountBadge({ count, urgent, active }: { count: number; urgent?: boolean; active: boolean }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={`min-w-6 rounded-full px-2 py-0.5 text-center text-xs font-bold tabular-nums ${
+        active ? "bg-white text-brand-blue" : urgent ? "bg-brand-error text-white" : "bg-[#EAF1FF] text-brand-blue"
+      }`}
+    >
+      {count > 99 ? "99+" : count}
+      <span className="sr-only"> menunggu</span>
+    </span>
+  );
+}
+
+function LateBadge({ counts, itemKey, active }: { counts: Promise<StaffNavCounts>; itemKey: StaffNavKey; active: boolean }) {
+  const entry = use(counts)[itemKey];
+  if (!entry || entry.count === null) return null;
+  return <CountBadge count={entry.count} urgent={entry.urgent} active={active} />;
+}
+
 const icons: Record<StaffNavKey, LucideIcon> = {
   overview: LayoutDashboard,
   "early-access": Inbox,
@@ -67,10 +90,12 @@ const icons: Record<StaffNavKey, LucideIcon> = {
 function NavList({
   groups,
   current,
+  counts,
   onNavigate,
 }: {
   groups: StaffNavGroup[];
   current: string;
+  counts?: Promise<StaffNavCounts>;
   onNavigate?: () => void;
 }) {
   return (
@@ -98,18 +123,11 @@ function NavList({
                     <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
                     <span className="flex-1">{item.label}</span>
                     {count > 0 ? (
-                      <span
-                        className={`min-w-6 rounded-full px-2 py-0.5 text-center text-xs font-bold tabular-nums ${
-                          active
-                            ? "bg-white text-brand-blue"
-                            : item.urgent
-                              ? "bg-brand-error text-white"
-                              : "bg-[#EAF1FF] text-brand-blue"
-                        }`}
-                      >
-                        {count > 99 ? "99+" : count}
-                        <span className="sr-only"> menunggu</span>
-                      </span>
+                      <CountBadge count={count} urgent={item.urgent} active={active} />
+                    ) : counts ? (
+                      <Suspense fallback={null}>
+                        <LateBadge counts={counts} itemKey={item.key} active={active} />
+                      </Suspense>
                     ) : null}
                   </Link>
                 </li>
@@ -156,11 +174,13 @@ export function StaffFrame({
   role,
   current,
   groups,
+  counts,
   children,
 }: {
   role: "owner" | "admin";
   current: string;
   groups: StaffNavGroup[];
+  counts?: Promise<StaffNavCounts>;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -204,7 +224,7 @@ export function StaffFrame({
           </span>
         </div>
         <div className="app-sidebar-scroll flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-3 py-5">
-          <NavList groups={groups} current={current} />
+          <NavList groups={groups} current={current} counts={counts} />
           <div className="mt-auto grid gap-3">
             <HelpBox role={role} />
             <SignOut />
@@ -271,7 +291,7 @@ export function StaffFrame({
               </button>
             </div>
             <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-3 py-5">
-              <NavList groups={groups} current={current} onNavigate={() => setOpen(false)} />
+              <NavList groups={groups} current={current} counts={counts} onNavigate={() => setOpen(false)} />
               <div className="mt-auto grid gap-3">
                 <HelpBox role={role} />
                 <SignOut />

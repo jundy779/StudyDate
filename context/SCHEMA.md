@@ -1035,3 +1035,9 @@ Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji
 - `prepare_early_access_reminder(email)`: untuk status `approved`, menolak bila email terakhir dikirim kurang
   dari 24 jam lalu. Butuh `early_access.review`. Pengingat memakai tautan masuk baru yang sama dengan
   undangan, lalu `mark_early_access_invitation_sent` mencatatnya.
+
+## Kampus tambahan (repository migration 202610220001)
+
+Upsert `campus_options` untuk Universitas Jember, Universitas Sebelas Maret, dan Universitas Diponegoro dengan
+status `approved` dan sumber `seed`. Kalau sudah ada (termasuk yang pernah ditolak), nama dirapikan dan status
+dibuka lagi. Tidak ada perubahan struktur tabel.

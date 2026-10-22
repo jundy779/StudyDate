@@ -869,3 +869,14 @@ memuat sendiri.
 - Antrean Akses Awal: tanpa parameter `status`, `queue`, atau `email`, halaman memuat status `waiting` saja.
   `status=all` menampilkan semua. Redirect setelah keputusan kembali ke tampilan awal, jadi baris yang baru
   diputuskan langsung hilang dari daftar Perlu dicek.
+
+### Kecepatan pindah menu (22 Oktober 2026)
+- `getAuthenticatedUser` dibungkus `cache()` dari React, jadi layout, halaman, dan pemeriksaan akses dalam satu
+  request hanya sekali bertanya ke Supabase Auth.
+- `StaffShell` tidak lagi menunggu angka menu. Angka dikirim sebagai promise ke `StaffFrame` dan dibaca dengan
+  `use()` di dalam `Suspense`, jadi isi halaman tampil tanpa menunggu tiga RPC hitungan.
+- `loading.tsx` di `/owner`, `/admin`, `/staff/users`, `/staff/early-access` (`components/staff/staff-loading.tsx`)
+  dan `/app` memberi kerangka seketika setelah klik.
+- Function Vercel berjalan di iad1 (audit 11 Okt 2026). Setiap halaman privat melakukan beberapa panggilan
+  berurutan ke Supabase, jadi jarak antara region function dan region database paling berpengaruh. Region
+  function dipindah hanya setelah region Supabase dipastikan (lihat `npx supabase projects list`).
