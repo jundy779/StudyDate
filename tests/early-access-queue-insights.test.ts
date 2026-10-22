@@ -112,3 +112,14 @@ test("tombol keputusan menunjukkan sedang mengirim, panel tertutup setelah ada h
   const queue = read("components/staff/early-access-queue.tsx");
   assert.match(queue, /<PendingSubmitButton/);
 });
+
+test("decided applicants leave the default view and get their own tabs", () => {
+  const queue = read("components/staff/early-access-queue.tsx");
+  assert.match(queue, /const status = explicitStatus \?\? \(showAll \|\| queue \|\| email \? null : "waiting"\);/);
+  for (const label of ["Perlu dicek", "Menunggu perbaikan", "Disetujui, belum login", "Sudah login", "Ditolak"]) {
+    assert.match(queue, new RegExp(`label: "${label}"`));
+  }
+  assert.match(queue, /row\.status !== "approved" && row\.status !== "needs_revision"/);
+  assert.match(queue, /Permintaan perbaikan sudah dikirim/);
+  assert.match(queue, /pindah ke tab Menunggu perbaikan/);
+});

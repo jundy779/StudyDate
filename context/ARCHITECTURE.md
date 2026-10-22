@@ -866,3 +866,6 @@ memuat sendiri.
   akses tetap sama.
 - Ringkasan Owner dan Admin hanya menampilkan angka dari RPC yang sudah ada. Admin hanya melihat antrean yang
   sesuai capability-nya.
+- Antrean Akses Awal: tanpa parameter `status`, `queue`, atau `email`, halaman memuat status `waiting` saja.
+  `status=all` menampilkan semua. Redirect setelah keputusan kembali ke tampilan awal, jadi baris yang baru
+  diputuskan langsung hilang dari daftar Perlu dicek.

@@ -346,6 +346,11 @@ logo pemerintah/PDDIKTI atau visual KYC.
 - Setelah aksi, redirect membawa anchor ke pesan hasil supaya tidak tersembunyi di atas halaman.
 - Panel yang melayang harus bisa ditutup dengan klik di luar panel, tombol Escape, atau tombol "Batal".
   Panel yang dibiarkan terbuka tidak boleh menghalangi tombol di baris lain.
+- Antrean Akses Awal dibuka di tab **Perlu dicek** (hanya status menunggu). Pendaftar yang sudah diputuskan
+  pindah ke tab sendiri: Menunggu perbaikan, Disetujui belum login, Sudah login, Ditolak, plus tab Semua. Angka
+  tiap tab dari `get_early_access_queue_summary`. Baris Menunggu perbaikan menampilkan kapan email perbaikan
+  dikirim dan tidak lagi punya tombol "Minta perbaikan". Pendaftar yang sudah memperbaiki kembali ke Perlu dicek
+  dengan label "Sudah diperbaiki, cek lagi".
 - Tombol yang memicu email atau keputusan menampilkan "Mengirim..." dan terkunci selama proses, supaya tidak
   diklik dua kali. Setelah hasil keluar, panel tertutup dan pesan hasil digulir ke tengah layar.
 

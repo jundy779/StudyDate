@@ -71,9 +71,51 @@ const PAGE_SIZE = 25;
 const statusLabels: Record<string, string> = {
   waiting: "Menunggu pemeriksaan",
   approved: "Disetujui",
-  needs_revision: "Perlu diperbaiki",
+  needs_revision: "Menunggu perbaikan",
   rejected: "Tidak disetujui",
   claimed: "Akses diklaim",
+};
+
+const rowStatusTone: Record<string, string> = {
+  waiting: "bg-[#EAF1FF] text-brand-blue",
+  needs_revision: "bg-[#FFF2D8] text-[#8A5300]",
+  approved: "bg-[#E3F6E9] text-[#157F3B]",
+  claimed: "bg-[#E3F6E9] text-[#157F3B]",
+  rejected: "bg-brand-surface text-brand-muted",
+};
+
+type StatusTabKey = "waiting" | "needs_revision" | "approved" | "claimed" | "rejected" | "all";
+
+const statusTabs: {
+  key: StatusTabKey;
+  label: string;
+  countKey: keyof Pick<
+    EarlyAccessQueueSummary,
+    "waiting_count" | "needs_revision_count" | "approved_count" | "claimed_count" | "rejected_count"
+  > | null;
+}[] = [
+  { key: "waiting", label: "Perlu dicek", countKey: "waiting_count" },
+  { key: "needs_revision", label: "Menunggu perbaikan", countKey: "needs_revision_count" },
+  { key: "approved", label: "Disetujui, belum login", countKey: "approved_count" },
+  { key: "claimed", label: "Sudah login", countKey: "claimed_count" },
+  { key: "rejected", label: "Ditolak", countKey: "rejected_count" },
+  { key: "all", label: "Semua", countKey: null },
+];
+
+const statusTabTitles: Record<string, string> = {
+  waiting: "Perlu dicek",
+  needs_revision: "Menunggu perbaikan dari pendaftar",
+  approved: "Disetujui, belum login",
+  claimed: "Sudah login",
+  rejected: "Ditolak",
+};
+
+const statusTabHelp: Record<string, string> = {
+  waiting: "Belum ada keputusan. Begitu kamu memutuskan, pendaftar pindah ke tab yang sesuai.",
+  needs_revision: "Email perbaikan sudah terkirim. Tidak perlu dikirim lagi, tunggu pendaftar memperbaiki.",
+  approved: "Undangan sudah dikirim. Kirim pengingat kalau belum login setelah beberapa hari.",
+  claimed: "Sudah masuk ke StudyDate. Tidak ada yang perlu dilakukan.",
+  rejected: "Sudah ditolak dan diberi tahu lewat email.",
 };
 
 const sourceLabels: Record<string, string> = {
@@ -93,15 +135,15 @@ const stateMessages: Record<
   { text: string; tone: "success" | "error" | "warning" }
 > = {
   approved: {
-    text: "Akses disetujui dan undangan login sudah dikirim ke email pendaftar.",
+    text: "Akses disetujui dan undangan login sudah dikirim. Pendaftar ini pindah ke tab Disetujui, belum login.",
     tone: "success",
   },
   rejected: {
-    text: "Pendaftaran ditolak dan email pemberitahuan sudah dikirim.",
+    text: "Pendaftaran ditolak dan email pemberitahuan sudah dikirim. Pendaftar ini pindah ke tab Ditolak.",
     tone: "success",
   },
   revision_requested: {
-    text: "Permintaan perbaikan sudah disimpan dan email petunjuk dikirim ke pendaftar.",
+    text: "Permintaan perbaikan terkirim. Pendaftar ini pindah ke tab Menunggu perbaikan.",
     tone: "success",
   },
   resent: {
@@ -298,7 +340,7 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
   const offset = (page - 1) * PAGE_SIZE;
 
   const email = query.email?.trim() || null;
-  const status =
+  const explicitStatus =
     query.status === "waiting" ||
     query.status === "approved" ||
     query.status === "needs_revision" ||
@@ -325,6 +367,10 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
     query.queue === "unsent_invitation"
       ? query.queue
       : null;
+  // Tampilan awal hanya berisi yang perlu dicek. Pendaftar yang sudah diputuskan pindah ke tab
+  // masing-masing, supaya tidak tercampur dengan yang belum disentuh.
+  const showAll = query.status === "all";
+  const status = explicitStatus ?? (showAll || queue || email ? null : "waiting");
   const sort: EarlyAccessSort =
     query.sort === "oldest" || query.sort === "newest" ? query.sort : "priority";
   let summary: EarlyAccessQueueSummary | null;
@@ -371,7 +417,8 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
   function pageHref(nextPage: number) {
     const params = new URLSearchParams();
     if (email) params.set("email", email);
-    if (status) params.set("status", status);
+    if (explicitStatus) params.set("status", explicitStatus);
+    else if (showAll) params.set("status", "all");
     if (campus) params.set("campus", campus);
     if (interest) params.set("interest", interest);
     if (source) params.set("source", source);
@@ -511,13 +558,13 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
             Status
             <select
               name="status"
-              defaultValue={status ?? ""}
+              defaultValue={explicitStatus === "waiting" ? "" : explicitStatus ?? (showAll ? "all" : "")}
               className="focus-ring mt-2 min-h-11 w-full rounded-xl border border-brand-border px-4 text-sm"
             >
-              <option value="">Semua</option>
-              <option value="waiting">Menunggu pemeriksaan</option>
+              <option value="">Perlu dicek</option>
+              <option value="all">Semua status</option>
               <option value="approved">Disetujui</option>
-              <option value="needs_revision">Perlu diperbaiki</option>
+              <option value="needs_revision">Menunggu perbaikan</option>
               <option value="rejected">Tidak disetujui</option>
               <option value="claimed">Akses diklaim</option>
             </select>
@@ -603,12 +650,48 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
         >
           <div className="border-b border-brand-border p-5">
             <h2 id="early-access-list" className="font-heading text-xl font-semibold">
-              Pendaftar Akses Awal ({Number(total)})
+              {status ? statusTabTitles[status] : "Pendaftar Akses Awal"} ({Number(total)})
             </h2>
+            {status ? <p className="mt-1 text-sm text-brand-muted">{statusTabHelp[status]}</p> : null}
+            <nav aria-label="Pilih kelompok pendaftar" className="mt-4 flex flex-wrap gap-2">
+              {statusTabs.map((tab) => {
+                const active = tab.key === "all" ? showAll && !explicitStatus && !queue : status === tab.key && !queue;
+                const count = summary && tab.countKey ? summary[tab.countKey] : null;
+                const href =
+                  tab.key === "waiting" ? basePath : `${basePath}?status=${tab.key}`;
+                return (
+                  <Link
+                    key={tab.key}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold ${
+                      active
+                        ? "border-2 border-brand-navy bg-brand-navy text-white"
+                        : "border border-brand-border bg-white text-brand-navy hover:border-brand-navy"
+                    }`}
+                  >
+                    {tab.label}
+                    {typeof count === "number" ? (
+                      <span
+                        className={`rounded-full px-1.5 text-xs tabular-nums ${
+                          active ? "bg-white text-brand-navy" : "bg-[#EAF1FF] text-brand-blue"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
           <div className="divide-y divide-brand-border">
             {rows.length === 0 ? (
-              <p className="p-6 text-brand-muted">Tidak ada pendaftar untuk pilihan ini.</p>
+              <p className="p-6 text-brand-muted">
+                {status === "waiting" && !email && !campus && !interest && !source
+                  ? "Semua pendaftar sudah dicek. Yang sudah diputuskan ada di tab lain."
+                  : "Tidak ada pendaftar untuk pilihan ini."}
+              </p>
             ) : (
               rows.map((row) => (
                 <article
@@ -616,7 +699,25 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
                   className="grid gap-4 p-5 lg:grid-cols-[1.35fr_1fr_auto]"
                 >
                   <div>
-                    <p className="break-all font-semibold">{row.email}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="break-all font-semibold">{row.email}</p>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          rowStatusTone[row.status] ?? "bg-brand-surface text-brand-muted"
+                        }`}
+                      >
+                        {row.status === "waiting" && row.resubmitted_at
+                          ? "Sudah diperbaiki, cek lagi"
+                          : statusLabels[row.status] ?? row.status}
+                      </span>
+                    </div>
+                    {row.status === "needs_revision" ? (
+                      <p className="mt-2 rounded-xl bg-[#FFF4CC] px-3 py-2 text-xs leading-5 text-amber-900">
+                        Permintaan perbaikan sudah dikirim
+                        {row.reviewed_at ? ` ${dateFmt.format(new Date(row.reviewed_at))}` : ""}. Tunggu pendaftar
+                        memperbaiki datanya. Setelah diperbaiki, pendaftar otomatis kembali ke tab Perlu dicek.
+                      </p>
+                    ) : null}
                     {(() => {
                       const kind = classifyEmailDomain(row.email);
                       const waitingSince = row.resubmitted_at ?? row.created_at;
@@ -745,7 +846,7 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
                             Undangan baru dikirim. Pengingat bisa dikirim 24 jam setelahnya.
                           </p>
                         )}
-                        {row.status !== "approved" ? (
+                        {row.status !== "approved" && row.status !== "needs_revision" ? (
                           <DecisionForm
                             email={row.email}
                             action="needs_revision"
