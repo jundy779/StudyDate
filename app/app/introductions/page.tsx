@@ -1,5 +1,6 @@
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Notice, Panel, appButton } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { IntroductionCard } from "@/components/introductions/introduction-card";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
@@ -50,31 +51,28 @@ export default async function IntroductionsPage({
 
   return (
     <AppShell current="introductions" pendingIntroductions={pendingCount}>
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell py-8 sm:py-12 lg:py-16">
-          <p className="app-kicker">Koneksi perlahan</p>
-          <h1 className="mt-3 font-heading text-4xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-5xl">
-            Perkenalan
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-brand-muted">
-            Kirim dan kelola perkenalan privat. Identitas lengkap dan kontak
-            tetap tertutup sampai tahap berikutnya.
-          </p>
-
+      <AppPage
+        kicker="Koneksi perlahan"
+        title="Perkenalan"
+        description="Ajakan kenalan yang masuk dan yang kamu kirim. Menerima ajakan hanya membuka obrolan anonim, nama asli dan kontak tetap tertutup."
+        mascot={pendingCount > 0 ? "penasaran" : "senang"}
+        actions={
+          <Link href="/app/people" className={appButton.secondary}>
+            Cari teman
+          </Link>
+        }
+      >
           {stateMessage ? (
-            <p
-              role="status"
-              aria-live="polite"
-              className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-navy"
-            >
+            <Notice tone={params.state === "error" || params.state === "invalid" ? "danger" : "success"}>
               {stateMessage}
-            </p>
+            </Notice>
           ) : null}
 
+          <Panel quiet>
           <div
             role="tablist"
             aria-label="Daftar perkenalan"
-            className="mt-8 flex flex-wrap gap-2"
+            className="flex flex-wrap gap-2"
           >
             <Link
               href="/app/introductions?tab=masuk"
@@ -83,15 +81,15 @@ export default async function IntroductionsPage({
               aria-controls="intro-panel-masuk"
               aria-selected={tab === "masuk"}
               tabIndex={tab === "masuk" ? 0 : -1}
-              className={`focus-ring inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold ${
+              className={`focus-ring inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold ${
                 tab === "masuk"
-                  ? "bg-brand-navy text-white"
-                  : "border border-brand-border bg-white text-brand-navy"
+                  ? "border-2 border-brand-navy bg-brand-navy text-white"
+                  : "border border-brand-border bg-white text-brand-navy hover:border-brand-navy"
               }`}
             >
               Masuk
               {pendingCount > 0 ? (
-                <span className="ml-2 rounded-full bg-brand-blue px-2 py-0.5 text-xs text-white">
+                <span className="ml-2 rounded-full bg-brand-error px-2 py-0.5 text-xs text-white">
                   {pendingCount}
                 </span>
               ) : null}
@@ -103,10 +101,10 @@ export default async function IntroductionsPage({
               aria-controls="intro-panel-terkirim"
               aria-selected={tab === "terkirim"}
               tabIndex={tab === "terkirim" ? 0 : -1}
-              className={`focus-ring inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold ${
+              className={`focus-ring inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold ${
                 tab === "terkirim"
-                  ? "bg-brand-navy text-white"
-                  : "border border-brand-border bg-white text-brand-navy"
+                  ? "border-2 border-brand-navy bg-brand-navy text-white"
+                  : "border border-brand-border bg-white text-brand-navy hover:border-brand-navy"
               }`}
             >
               Terkirim
@@ -117,7 +115,7 @@ export default async function IntroductionsPage({
             id={panelId}
             role="tabpanel"
             aria-labelledby={tab === "masuk" ? "intro-tab-masuk" : "intro-tab-terkirim"}
-            className="mt-8 space-y-4"
+            className="mt-5 space-y-4"
           >
             {items.length === 0 ? (
               tab === "masuk" ? (
@@ -144,8 +142,8 @@ export default async function IntroductionsPage({
               ))
             )}
           </section>
-        </div>
-      </main>
+          </Panel>
+      </AppPage>
     </AppShell>
   );
 }

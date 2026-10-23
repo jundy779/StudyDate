@@ -1,6 +1,7 @@
 import { signOut } from "@/app/app/actions";
 import { updateNotificationPreference } from "@/app/app/settings/notification-actions";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Panel, StatusChip, appButton } from "@/components/app/ui";
 import { AccountDangerZone } from "@/components/profile/account-danger-zone";
 import { ProfileEditForm } from "@/components/profile/profile-edit-form";
 import { BlockedStudentsList } from "@/components/settings/blocked-students-list";
@@ -36,20 +37,9 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-6 border-t border-brand-border py-8 first:border-t-0 first:pt-0 sm:py-10">
-      <div className="max-w-3xl">
-        <h2
-          id={`${id}-title`}
-          className="font-heading text-2xl font-semibold tracking-[-0.025em] text-brand-navy"
-        >
-          {title}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-brand-muted sm:text-base sm:leading-7">
-          {description}
-        </p>
-      </div>
-      <div className="mt-6">{children}</div>
-    </section>
+    <Panel id={id} title={title} description={description} quiet>
+      {children}
+    </Panel>
   );
 }
 
@@ -77,48 +67,41 @@ async function SettingsContent() {
 
   return (
     <AppShell current="settings">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell max-w-6xl py-8 sm:py-10 lg:py-12">
-          <p className="app-kicker">Akun mahasiswa</p>
-          <h1 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-4xl lg:text-5xl">
-            Pengaturan
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-brand-muted sm:text-lg sm:leading-8">
-            Kelola profil belajar, visibilitas, blokir, dan status akun tanpa
-            mengubah alur koneksi privat StudyDate.
-          </p>
-
+      <AppPage
+        kicker="Akun mahasiswa"
+        title="Pengaturan"
+        description="Atur profil belajar, siapa yang bisa menemukanmu, akun yang kamu blokir, dan notifikasi."
+        mascot="kedip"
+      >
           <nav
             aria-label="Bagian pengaturan"
-            className="mt-7 flex gap-x-5 gap-y-2 overflow-x-auto border-b border-brand-border pb-3 text-sm font-semibold"
+            className="sticky top-16 z-20 -mx-1 flex gap-2 overflow-x-auto bg-brand-surface/95 px-1 py-2 backdrop-blur md:top-0"
           >
-            <a className="focus-ring shrink-0 text-brand-blue" href="#profil">
-              Profil
-            </a>
-            <a className="focus-ring shrink-0 text-brand-blue" href="#privasi">
-              Privasi
-            </a>
-            <a className="focus-ring shrink-0 text-brand-blue" href="#blokir">
-              Blokir
-            </a>
-            <a className="focus-ring shrink-0 text-brand-blue" href="#notifikasi">
-              Notifikasi
-            </a>
-            <a className="focus-ring shrink-0 text-brand-blue" href="#akun">
-              Akun
-            </a>
-            <a className="focus-ring shrink-0 text-brand-blue" href="/app/membership">
-              StudyDate Plus
-            </a>
+            {[
+              ["#profil", "Profil"],
+              ["#privasi", "Privasi"],
+              ["#blokir", "Blokir"],
+              ["#notifikasi", "Notifikasi"],
+              ["#akun", "Akun"],
+              ["/app/membership", "StudyDate Plus"],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                className="focus-ring inline-flex min-h-10 shrink-0 items-center rounded-full border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy hover:border-brand-navy"
+                href={href}
+              >
+                {label}
+              </a>
+            ))}
           </nav>
 
-          <div className="mt-8">
+          <div className="grid gap-6">
             <SettingsSection
               id="profil"
               title="Profil"
               description="Kelola informasi yang membantu kamu ditemukan oleh teman belajar."
             >
-              <div className="rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted sm:px-5">
+              <div className="rounded-xl bg-brand-surface px-4 py-3 text-sm leading-6 text-brand-muted sm:px-5">
                 <strong className="text-brand-navy">{profile.publicAlias}</strong>{" "}
                 tidak dapat diubah. Alias anonim dibuat untuk menjaga
                 konsistensi koneksi kamu.
@@ -201,15 +184,20 @@ async function SettingsContent() {
                     className="flex items-center justify-between gap-4 px-4 py-3"
                   >
                     <input type="hidden" name="type" value={preference.type} />
-                    <span className="break-words text-sm font-semibold text-brand-navy">
-                      {NOTIFICATION_PREFERENCE_LABELS[preference.type]}
+                    <span className="flex min-w-0 flex-wrap items-center gap-2">
+                      <span className="break-words text-sm font-semibold text-brand-navy">
+                        {NOTIFICATION_PREFERENCE_LABELS[preference.type]}
+                      </span>
+                      <StatusChip tone={preference.inAppEnabled ? "go" : "muted"}>
+                        {preference.inAppEnabled ? "Aktif" : "Mati"}
+                      </StatusChip>
                     </span>
                     <button
                       name="enabled"
                       value={preference.inAppEnabled ? "false" : "true"}
-                      className="focus-ring min-h-10 shrink-0 rounded-lg border border-brand-border px-3 text-xs font-semibold"
+                      className={appButton.quiet}
                     >
-                      {preference.inAppEnabled ? "Aktif" : "Nonaktif"}
+                      {preference.inAppEnabled ? "Matikan" : "Nyalakan"}
                     </button>
                   </form>
                 ))}
@@ -223,7 +211,7 @@ async function SettingsContent() {
             >
               <Link
                 href="/app/membership"
-                className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy hover:border-brand-blue"
+                className={appButton.secondary}
               >
                 Lihat paket
               </Link>
@@ -246,24 +234,22 @@ async function SettingsContent() {
                 <form action={signOut}>
                   <button
                     type="submit"
-                    className="focus-ring min-h-11 rounded-xl border border-brand-border bg-white px-5 text-sm font-semibold text-brand-navy hover:border-brand-blue hover:text-brand-blue"
+                    className={appButton.quiet}
                   >
                     Keluar
                   </button>
                 </form>
               </div>
               <p className="mt-4 text-sm leading-6 text-brand-muted">
-                Keluar dari semua perangkat ditunda. Supabase mendukung global
-                sign-out, tetapi token akses yang sudah terbit tetap dapat
-                berlaku sampai kedaluwarsa; StudyDate tidak membuat revocation
-                buatan sendiri.
+                Tombol ini mengeluarkanmu dari perangkat ini saja. Pilihan keluar dari semua
+                perangkat sekaligus belum tersedia, jadi kalau kamu masuk di perangkat lain,
+                buka StudyDate di perangkat itu lalu tekan Keluar.
               </p>
               <TelegramCompanionSetting initialState={telegramCompanion} />
               <AccountDangerZone />
             </SettingsSection>
           </div>
-        </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }
@@ -274,7 +260,7 @@ export default function SettingsPage() {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-brand-muted">
-            Menyiapkan pengaturan…
+            Menyiapkan pengaturan...
           </p>
         </main>
       }

@@ -1,5 +1,6 @@
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Notice, Panel, appButton } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { ConversationListItem } from "@/components/messages/conversation-list-item";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
@@ -111,32 +112,20 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
 
   return (
     <AppShell current="messages" unreadMessages={unreadConversations}>
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell py-8 sm:py-12 lg:py-16">
-          <p className="app-kicker">Percakapan anonim</p>
-          <h1 className="mt-3 font-heading text-4xl font-semibold tracking-[-0.03em] text-brand-navy sm:text-5xl">
-            Pesan
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-brand-muted">
-            Lanjutkan perkenalan yang sudah diterima. Identitas dan kontak tetap
-            tertutup.
-          </p>
+      <AppPage
+        kicker="Percakapan anonim"
+        title="Pesan"
+        description="Lanjutkan perkenalan yang sudah diterima. Identitas dan kontak tetap tertutup sampai kalian sama-sama setuju."
+        mascot={unreadConversations > 0 ? "penasaran" : "senang"}
+      >
+          {stateMessage ? <Notice tone="info">{stateMessage}</Notice> : null}
 
-          {stateMessage ? (
-            <p
-              role="status"
-              aria-live="polite"
-              className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-navy"
-            >
-              {stateMessage}
-            </p>
-          ) : null}
-
+          <Panel quiet>
           <form
             action="/app/messages"
             method="get"
             role="search"
-            className="mt-8 flex max-w-3xl flex-col gap-2 sm:flex-row"
+            className="flex max-w-3xl flex-col gap-2 sm:flex-row"
           >
             {selectedView !== "all" ? (
               <input type="hidden" name="view" value={selectedView} />
@@ -162,7 +151,7 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
             </div>
             <button
               type="submit"
-              className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-navy px-5 text-sm font-semibold text-white hover:bg-brand-blue"
+              className={appButton.primary}
             >
               Cari
             </button>
@@ -191,7 +180,7 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
                     className={`focus-ring inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg px-3 text-center text-sm font-semibold sm:px-3.5 ${
                       active
                         ? "bg-brand-navy text-white"
-                        : "text-brand-muted hover:text-brand-navy"
+                        : "text-brand-muted hover:bg-brand-surface hover:text-brand-navy"
                     }`}
                   >
                     {view.label}
@@ -226,8 +215,8 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
               ))
             )}
           </section>
-        </div>
-      </main>
+          </Panel>
+      </AppPage>
     </AppShell>
   );
 }

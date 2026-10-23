@@ -39,8 +39,8 @@ export default async function CreateCirclePage({
               Mulai dari tujuan belajar yang jelas
             </h1>
             <p className="mt-5 text-lg leading-8 text-brand-muted">
-              Circle langsung dapat diikuti mahasiswa yang eligible. Kamu menjadi
-              owner Circle, bukan moderator platform.
+              Circle langsung bisa diikuti mahasiswa yang memenuhi syarat. Kamu jadi
+              pengelola Circle ini, bukan moderator StudyDate.
             </p>
           </header>
 

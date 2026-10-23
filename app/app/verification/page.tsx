@@ -6,6 +6,7 @@ import {
   unlinkLinkedInVerification,
 } from "./actions";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, StatusChip, appButton } from "@/components/app/ui";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   VERIFICATION_STATUS_LABELS,
@@ -54,35 +55,36 @@ async function VerificationContent({
 
   return (
     <AppShell current="verification">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <div className="page-shell py-8 sm:py-12 lg:py-16">
-        <div className="max-w-3xl">
-          <p className="app-kicker">Pusat verifikasi mahasiswa</p>
-          <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
-            Verifikasi status mahasiswa
-          </h1>
-          <p className="mt-5 text-lg leading-8 text-brand-muted">
-            Kami mencocokkan data akademik dengan PDDikti dan memastikan akun ini
-            benar-benar milikmu.{" "}
+      <AppPage
+        kicker="Pusat verifikasi mahasiswa"
+        title="Verifikasi status mahasiswa"
+        description={
+          <>
+            Kami mencocokkan data akademik dengan PDDikti dan memastikan akun ini benar-benar milikmu.{" "}
             {access?.verificationRequired
               ? "Verifikasi wajib sebelum kamu bisa memakai Cari Teman, Circle, Pesan, dan Acara."
               : "Verifikasi akan diwajibkan untuk semua mahasiswa sebelum memakai fitur utama."}
-          </p>
-        </div>
+          </>
+        }
+        mascot={request?.status === "verified" ? "girang" : "mikir"}
+      >
         {request ? (
-          <section className="my-8 flex items-start gap-4 rounded-[20px] border border-brand-border bg-white p-5 sm:my-10 sm:p-6" aria-label="Status verifikasi saat ini">
+          <section className="flex items-start gap-4 rounded-[22px] border-2 border-brand-navy bg-white p-4 shadow-[4px_4px_0_#0F1B33] sm:p-6" aria-label="Status verifikasi saat ini">
             <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-brand-blue" aria-hidden="true" />
             <div>
-              <p className="font-semibold">
-                {VERIFICATION_STATUS_LABELS[request.status]}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-brand-muted">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-brand-muted">Status sekarang</span>
+                <StatusChip tone={request.status === "verified" ? "go" : request.status === "needs_action" ? "warn" : request.status === "rejected" ? "stop" : "info"}>
+                  {VERIFICATION_STATUS_LABELS[request.status]}
+                </StatusChip>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-brand-muted">
                 Tanda verifikasi diberikan setelah data akademik cocok dan bukti
                 kepemilikan akun disetujui.
               </p>
             </div>
           </section>
-        ) : <div className="h-8 sm:h-10" />}
+        ) : null}
         {isSchool ? (
           <section
             className="rounded-[20px] border border-brand-border bg-white p-6 sm:p-8"
@@ -121,7 +123,7 @@ async function VerificationContent({
             </p>
             <form action={cancelVerificationRequest} className="mt-5">
               <input type="hidden" name="requestId" value={request.id} />
-              <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-navy">
+              <button className={appButton.quiet}>
                 Batalkan permintaan
               </button>
             </form>
@@ -138,8 +140,7 @@ async function VerificationContent({
           status={linkedInStatus}
           unlinkAction={unlinkLinkedInVerification}
         />
-      </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }
@@ -150,7 +151,7 @@ export default function VerificationPage({
   searchParams: Promise<{ linkedin?: string | string[] }>;
 }) {
   return (
-    <Suspense fallback={<main className="min-h-svh bg-brand-surface p-8"><p className="page-shell text-sm text-brand-muted">Menyiapkan pusat verifikasi…</p></main>}>
+    <Suspense fallback={<main className="min-h-svh bg-brand-surface p-8"><p className="page-shell text-sm text-brand-muted">Menyiapkan pusat verifikasi...</p></main>}>
       <VerificationContent searchParams={searchParams} />
     </Suspense>
   );

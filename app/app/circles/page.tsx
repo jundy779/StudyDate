@@ -1,5 +1,6 @@
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Notice, Panel, appButton } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { CircleFilterForm } from "@/components/circles/circle-filter-form";
 import { CircleListItem } from "@/components/circles/circle-list-item";
@@ -44,47 +45,32 @@ async function CirclesContent({ searchParams }: CirclesPageProps) {
 
   return (
     <AppShell current="circles">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell py-8 sm:py-12 lg:py-16">
-          <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="max-w-3xl">
-              <p className="app-kicker">Circle Belajar</p>
-              <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-                Belajar bareng lewat topik yang kamu suka
-              </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan kelompok belajar kecil, ikut berdiskusi, dan kenalan lewat kegiatan
-                yang sama. Nama asli dan kontakmu tetap privat.
-              </p>
-            </div>
-            <Link
-              href="/app/circles/create"
-              className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Buat Circle
-            </Link>
-          </header>
-
-          <section
-            aria-labelledby="circle-filter-title"
-            className="mt-10 border-y border-brand-border py-7"
+      <AppPage
+        kicker="Circle Belajar"
+        title="Belajar bareng lewat topik yang kamu suka"
+        description="Temukan kelompok belajar kecil, ikut berdiskusi, dan kenalan lewat kegiatan yang sama. Nama asli dan kontakmu tetap privat."
+        mascot="girang"
+        actions={
+          <Link href="/app/circles/create" className={appButton.primary}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Buat Circle
+          </Link>
+        }
+      >
+          <Panel
+            id="circle-filter"
+            title="Cari berdasarkan konteks"
+            description="Gunakan nama, topik, atau cakupan. Tidak ada peringkat popularitas."
           >
-            <h2 id="circle-filter-title" className="font-heading text-xl font-semibold text-brand-navy">
-              Cari berdasarkan konteks
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-brand-muted">
-              Gunakan nama, topik, atau cakupan. Tidak ada peringkat popularitas.
-            </p>
             <CircleFilterForm filters={filters} />
             {!parsed.success ? (
-              <p role="alert" className="mt-4 text-sm font-medium text-brand-error">
-                Filter tidak valid. Hapus filter lalu coba lagi.
-              </p>
+              <div className="mt-4">
+                <Notice tone="danger">Filter tidak valid. Hapus filter lalu coba lagi.</Notice>
+              </div>
             ) : null}
-          </section>
+          </Panel>
 
-          <section className="mt-10" aria-labelledby="circle-results-title">
+          <section aria-labelledby="circle-results-title">
             <div className="max-w-2xl">
               <p className="app-kicker">Circle yang dapat ditemukan</p>
               <h2
@@ -118,15 +104,14 @@ async function CirclesContent({ searchParams }: CirclesPageProps) {
               <div className="mt-8 flex justify-center">
                 <Link
                   href={paginationHref(filters, result.nextCursor)}
-                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border bg-white px-6 text-sm font-semibold text-brand-navy"
+                  className={appButton.secondary}
                 >
                   Muat lebih banyak
                 </Link>
               </div>
             ) : null}
           </section>
-        </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }

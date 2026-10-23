@@ -4,6 +4,7 @@ import {
   updateStudyStatus,
 } from "@/app/app/people/actions";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Notice, Panel, StatusChip, appButton, appField } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { PeopleFilterForm } from "@/components/people/people-filter-form";
 import { PeopleProfileCard } from "@/components/people/people-profile-card";
@@ -71,9 +72,12 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
 
   const rawSearchParams = await searchParams;
   const parsed = parsePeopleFilters(rawSearchParams);
-  const isDiscoverable = await getOwnDiscoveryVisibility(user.id);
-  const ownStudyStatus = await getOwnStudyStatus();
-  const membership = await getMyMembership();
+  // Tiga data ini tidak saling bergantung, jadi diambil bersamaan.
+  const [isDiscoverable, ownStudyStatus, membership] = await Promise.all([
+    getOwnDiscoveryVisibility(user.id),
+    getOwnStudyStatus(),
+    getMyMembership(),
+  ]);
   const limits = getMembershipLimits(membership.plan);
   const visibilityNotice = firstSearchValue(rawSearchParams.visibility);
   const studyStatusNotice = firstSearchValue(rawSearchParams.studyStatus);
@@ -102,38 +106,41 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
 
   return (
     <AppShell current="people">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-      <div className="page-shell py-8 sm:py-12 lg:py-16">
-        <section className="grid gap-7 lg:grid-cols-[1fr_360px] lg:items-end">
-          <div className="max-w-3xl">
-            <p className="app-kicker">Cari yang nyambung</p>
-            <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-              Temukan orang yang punya kesamaan denganmu
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-              Jelajahi profil mahasiswa berdasarkan kampus, minat, dan tujuan koneksi tanpa menampilkan nama asli.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <form action={updatePeopleVisibility} className="rounded-[20px] border border-brand-border bg-white p-5 shadow-[0_12px_32px_rgba(15,27,51,0.05)]">
+      <AppPage
+        kicker="Cari yang nyambung"
+        title="Temukan orang yang punya kesamaan denganmu"
+        description="Jelajahi profil mahasiswa berdasarkan kampus, minat, dan tujuan koneksi tanpa menampilkan nama asli."
+        mascot="penasaran"
+      >
+        <div className="grid gap-4 lg:grid-cols-2">
+            <Panel quiet>
+            <form action={updatePeopleVisibility}>
               <div className="flex items-start gap-3">
                 {isDiscoverable ? <Eye className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" /> : <EyeOff className="mt-0.5 h-5 w-5 shrink-0 text-brand-muted" aria-hidden="true" />}
-                <div>
-                  <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di pencarian</label>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label htmlFor="people-visibility" className="font-semibold text-brand-navy">Tampilkan profil saya di pencarian</label>
+                    <StatusChip tone={isDiscoverable ? "go" : "muted"}>{isDiscoverable ? "Tampil" : "Tersembunyi"}</StatusChip>
+                  </div>
                   <p className="mt-1 text-sm leading-6 text-brand-muted">Hanya profil tanpa nama asli yang memilih untuk ditemukan yang akan ditampilkan.</p>
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4">
-                <input id="people-visibility" name="isDiscoverable" type="checkbox" defaultChecked={isDiscoverable} className="focus-ring h-5 w-5 rounded border-brand-border accent-brand-blue" />
-                <button type="submit" className="focus-ring min-h-11 rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white">Simpan</button>
+                <label className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                  <input id="people-visibility" name="isDiscoverable" type="checkbox" defaultChecked={isDiscoverable} className="focus-ring h-5 w-5 rounded border-brand-border accent-brand-blue" />
+                  Tampilkan
+                </label>
+                <button type="submit" className={appButton.secondary}>Simpan</button>
               </div>
               {(visibilityNotice === "on" || visibilityNotice === "off") && (
-                <p role="status" className="mt-3 text-sm font-medium text-brand-success">Pengaturan visibilitas tersimpan.</p>
+                <div className="mt-3"><Notice tone="success">Pengaturan visibilitas tersimpan.</Notice></div>
               )}
             </form>
+            </Panel>
 
             {ownStudyStatus.supported ? (
-              <form action={updateStudyStatus} className="rounded-[20px] border border-brand-border bg-white p-5 shadow-[0_12px_32px_rgba(15,27,51,0.05)]">
+              <Panel quiet>
+              <form action={updateStudyStatus}>
                 <div className="flex items-start gap-3">
                   <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
                   <div>
@@ -141,43 +148,41 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
                     <p className="mt-1 text-sm leading-6 text-brand-muted">Status ini tampil selama 24 jam, lalu hilang sendiri.</p>
                   </div>
                 </div>
-                <select
-                  id="study-status"
-                  name="studyStatus"
-                  defaultValue={ownStudyStatus.study_status ?? ""}
-                  className="focus-ring mt-4 min-h-11 w-full rounded-xl border border-brand-border bg-white px-3 text-sm text-brand-navy"
-                >
-                  <option value="">Tidak pasang status</option>
-                  {STUDY_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <button type="submit" className="focus-ring mt-3 min-h-11 w-full rounded-xl bg-brand-blue px-4 text-sm font-semibold text-white">Simpan status</button>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <select
+                    id="study-status"
+                    name="studyStatus"
+                    defaultValue={ownStudyStatus.study_status ?? ""}
+                    className={`${appField} mt-0 flex-1`}
+                  >
+                    <option value="">Tidak pasang status</option>
+                    {STUDY_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <button type="submit" className={appButton.primary}>Simpan status</button>
+                </div>
                 {(studyStatusNotice === "saved" || studyStatusNotice === "cleared") ? (
-                  <p role="status" className="mt-3 text-sm font-medium text-brand-success">Status belajarmu sudah diperbarui.</p>
+                  <div className="mt-3"><Notice tone="success">Status belajarmu sudah diperbarui.</Notice></div>
                 ) : (studyStatusNotice === "error" || studyStatusNotice === "invalid") ? (
-                  <p role="alert" className="mt-3 text-sm font-medium text-brand-error">Status belum dapat disimpan. Coba lagi.</p>
+                  <div className="mt-3"><Notice tone="danger">Status belum dapat disimpan. Coba lagi.</Notice></div>
                 ) : null}
               </form>
+              </Panel>
             ) : null}
-          </div>
-        </section>
+        </div>
 
-        <section className="mt-10 rounded-[22px] border border-brand-border bg-white p-5 sm:p-7" aria-labelledby="people-filter-title">
-          <div>
-            <h2 id="people-filter-title" className="font-heading text-xl font-semibold text-brand-navy">Pilih yang kamu cari</h2>
-            <p className="mt-2 text-sm leading-6 text-brand-muted">Semua pilihan bersifat opsional. Pilih yang paling penting buatmu.</p>
-          </div>
+        <Panel id="people-filter" title="Pilih yang kamu cari" description="Semua pilihan bersifat opsional. Pilih yang paling penting buatmu.">
           <PeopleFilterForm
             filters={filters}
             advancedEnabled={limits.advancedDiscoveryFilters}
           />
           {!parsed.success && (
-            <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-brand-error">Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.</p>
+            <div className="mt-4"><Notice tone="danger">Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.</Notice></div>
           )}
-        </section>
+        </Panel>
 
-        <section className="mt-10" aria-labelledby="people-results-title">
+        <section aria-labelledby="people-results-title">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="app-kicker">Profil yang dapat ditemukan</p>
@@ -220,13 +225,15 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
           ) : null}
 
           {quotaReached ? (
-            <p role="status" className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
-              Batas pencarian harian paketmu sudah terpakai.{" "}
-              <Link href="/app/membership" className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline">
-                Lihat StudyDate Plus
-              </Link>
-              .
-            </p>
+            <div className="mt-6">
+              <Notice tone="warn" title="Batas pencarian hari ini sudah terpakai">
+                Coba lagi besok, atau{" "}
+                <Link href="/app/membership" className="focus-ring font-semibold underline underline-offset-2">
+                  lihat StudyDate Plus
+                </Link>{" "}
+                untuk batas yang lebih besar.
+              </Notice>
+            </div>
           ) : visibleProfiles.length ? (
             <>
               <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -240,7 +247,7 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
               </div>
               {result.nextCursor && (
                 <div className="mt-8 flex justify-center">
-                  <Link href={paginationHref(filters, result.nextCursor)} className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border bg-white px-6 text-sm font-semibold text-brand-navy hover:border-brand-blue">Muat lebih banyak</Link>
+                  <Link href={paginationHref(filters, result.nextCursor)} className={appButton.secondary}>Muat lebih banyak</Link>
                 </div>
               )}
             </>
@@ -254,15 +261,14 @@ async function PeopleContent({ searchParams }: PeoplePageProps) {
             </div>
           ) : null}
         </section>
-      </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }
 
 export default function PeoplePage(props: PeoplePageProps) {
   return (
-    <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-sm text-brand-muted">Menyiapkan pencarian…</p></main>}>
+    <Suspense fallback={<main className="min-h-svh bg-brand-surface"><p className="page-shell py-10 text-sm text-brand-muted">Menyiapkan pencarian...</p></main>}>
       <PeopleContent {...props} />
     </Suspense>
   );

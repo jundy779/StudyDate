@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Notice, Panel, StatusChip, appButton } from "@/components/app/ui";
 import {
   cancelMembershipPayment,
   refreshMembershipPayment,
@@ -71,7 +72,7 @@ function ComparisonTable() {
   ];
 
   return (
-    <div className="mt-8 overflow-x-auto rounded-[22px] border border-brand-border bg-white">
+    <div className="overflow-x-auto rounded-2xl border border-brand-border bg-white">
       <table className="w-full min-w-[32rem] text-left text-sm">
         <caption className="sr-only">Perbandingan StudyDate Free dan Plus</caption>
         <thead>
@@ -134,150 +135,129 @@ async function MembershipContent({ searchParams }: MembershipPageProps) {
 
   return (
     <AppShell current="membership">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell py-8 sm:py-12 lg:py-16">
-          <p className="app-kicker">Akun</p>
-          <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-            Lebih banyak ruang untuk belajar, berkenalan, dan membangun koneksi.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-            StudyDate Free tetap utuh. StudyDate Plus menambah kapasitas, bukan
-            memotong privasi, persetujuan, atau perlindungan keamanan.
-          </p>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
-            Plus dibeli berdasarkan durasi dan tidak diperpanjang otomatis.
-            Jika kamu membeli lagi saat Plus masih aktif, durasi baru ditambahkan
-            setelah masa aktif saat ini.
-          </p>
-
-          <section className="mt-10 rounded-[22px] border border-brand-border bg-white p-6 sm:p-8">
-            <p className="text-sm font-semibold text-brand-muted">Paket kamu</p>
+      <AppPage
+        kicker="StudyDate Plus"
+        title="Lebih banyak ruang untuk belajar dan berkenalan"
+        description="StudyDate Free tetap utuh. StudyDate Plus menambah kapasitas, bukan memotong privasi, persetujuan, atau perlindungan keamanan."
+        mascot="girang"
+      >
+          <Panel>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-brand-muted">Paket kamu</span>
+              <StatusChip tone={isPlus ? "go" : "muted"}>{MEMBERSHIP_DISPLAY_NAME[membership.plan]}</StatusChip>
+            </div>
             <h2 className="mt-2 font-heading text-3xl font-semibold tracking-[-0.03em] text-brand-navy">
               {MEMBERSHIP_DISPLAY_NAME[membership.plan]}
             </h2>
             {isPlus ? (
-              <p className="mt-3 leading-7 text-brand-muted">
+              <p className="mt-2 leading-7 text-brand-muted">
                 Aktif
                 {endsLabel ? ` sampai ${endsLabel}` : " tanpa batas waktu pada grant ini"}.
               </p>
             ) : membership.plusExpired ? (
-              <p className="mt-3 leading-7 text-brand-muted">
+              <p className="mt-2 leading-7 text-brand-muted">
                 Paket Plus kamu telah berakhir. Saat ini akun kembali memakai
                 StudyDate Free. Data yang sudah ada tetap aman.
               </p>
             ) : (
-              <p className="mt-3 leading-7 text-brand-muted">
+              <p className="mt-2 leading-7 text-brand-muted">
                 Kamu memakai kapasitas Free. Circle, perkenalan, dan percakapan
                 yang sudah ada tetap aman jika paket berubah.
               </p>
             )}
             {query.state === "payment_unavailable" ? (
-              <p role="alert" className="mt-5 text-sm font-semibold text-brand-error">
-                Pembayaran sedang tidak tersedia. Coba lagi nanti.
-              </p>
+              <div className="mt-4">
+                <Notice tone="danger">Pembayaran sedang tidak tersedia. Coba lagi nanti.</Notice>
+              </div>
             ) : null}
             {order ? (
-              <div className="mt-6 border-t border-brand-border pt-5">
-                <p className="font-semibold text-brand-navy">
-                  Pembayaran Plus {order.durationDays} Hari · {currency.format(order.amountIdr)}
-                </p>
-                <p className="mt-1 text-sm text-brand-muted">
-                  Status: {order.status === "paid" ? "Berhasil" : order.status === "pending" ? "Menunggu pembayaran" : order.status}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {order.status === "pending" ? (
-                    <>
-                      {order.checkoutUrl ? (
-                        <a
-                          href={order.checkoutUrl}
-                          rel="noopener noreferrer"
-                          className="focus-ring inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-                        >
-                          Buka QRIS
-                        </a>
-                      ) : null}
-                      <form action={refreshMembershipPayment}>
-                        <input type="hidden" name="order" value={order.publicId} />
-                        <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
-                          Periksa status
-                        </button>
-                      </form>
-                      <form action={cancelMembershipPayment}>
-                        <input type="hidden" name="order" value={order.publicId} />
-                        <button className="focus-ring min-h-11 rounded-xl border border-brand-border px-5 text-sm font-semibold">
-                          Batalkan QRIS
-                        </button>
-                      </form>
-                    </>
-                  ) : null}
+              <div className="mt-5 rounded-2xl border border-brand-border p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-brand-navy">
+                    Pembayaran Plus {order.durationDays} Hari · {currency.format(order.amountIdr)}
+                  </p>
+                  <StatusChip tone={order.status === "paid" ? "go" : order.status === "pending" ? "wait" : "muted"}>
+                    {order.status === "paid" ? "Berhasil" : order.status === "pending" ? "Menunggu pembayaran" : order.status}
+                  </StatusChip>
                 </div>
+                {order.status === "pending" ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {order.checkoutUrl ? (
+                      <a href={order.checkoutUrl} rel="noopener noreferrer" className={appButton.primary}>
+                        Buka QRIS
+                      </a>
+                    ) : null}
+                    <form action={refreshMembershipPayment}>
+                      <input type="hidden" name="order" value={order.publicId} />
+                      <button className={appButton.secondary}>Periksa status</button>
+                    </form>
+                    <form action={cancelMembershipPayment}>
+                      <input type="hidden" name="order" value={order.publicId} />
+                      <button className={appButton.quiet}>Batalkan QRIS</button>
+                    </form>
+                  </div>
+                ) : null}
               </div>
             ) : null}
-          </section>
+          </Panel>
 
-          <section className="mt-10 border-y border-brand-border py-8" aria-labelledby="plus-options">
-            <h2 id="plus-options" className="font-heading text-2xl font-semibold text-brand-navy">
-              Pilih durasi Plus
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
-              Pembayaran diproses melalui GoPay QRIS. Tidak ada auto-renew dan
-              tidak ada tingkatan Basic, Pro, atau Premium.
-            </p>
+          <Panel
+            id="plus-options"
+            title="Pilih durasi Plus"
+            description="Pembayaran diproses melalui GoPay QRIS. Plus dibeli berdasarkan durasi dan tidak diperpanjang otomatis, dan tidak ada tingkatan Basic, Pro, atau Premium."
+            quiet
+          >
             {offers.length > 0 && order?.status !== "pending" ? (
-              <div className="mt-5 divide-y divide-brand-border border-y border-brand-border">
+              <ul className="grid gap-3 md:grid-cols-3">
                 {offers.map((offer) => (
-                  <form
-                    key={offer.packageCode}
-                    action={startMembershipCheckout}
-                    className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <input type="hidden" name="packageCode" value={offer.packageCode} />
-                    <div>
-                      <h3 className="font-semibold text-brand-navy">
-                        Plus {offer.durationDays} Hari
-                      </h3>
-                      <p className="mt-1 text-sm text-brand-muted">
-                        {currency.format(offer.amountIdr)} untuk {offer.durationDays} hari
-                      </p>
-                    </div>
-                    <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
-                      {isPlus ? "Tambah durasi" : "Pilih paket"}
-                    </button>
-                  </form>
+                  <li key={offer.packageCode} className="rounded-2xl border border-brand-border p-4">
+                    <form action={startMembershipCheckout} className="flex h-full flex-col gap-3">
+                      <input type="hidden" name="packageCode" value={offer.packageCode} />
+                      <div>
+                        <h3 className="font-heading text-lg font-semibold text-brand-navy">
+                          Plus {offer.durationDays} Hari
+                        </h3>
+                        <p className="mt-1 font-heading text-2xl font-semibold text-brand-blue">
+                          {currency.format(offer.amountIdr)}
+                        </p>
+                        <p className="text-sm text-brand-muted">untuk {offer.durationDays} hari</p>
+                      </div>
+                      <button className={`${appButton.primary} mt-auto`}>
+                        {isPlus ? "Tambah durasi" : "Pilih paket"}
+                      </button>
+                    </form>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : order?.status === "pending" ? (
-              <p className="mt-5 text-sm font-semibold text-brand-muted">
+              <Notice tone="warn">
                 Selesaikan atau batalkan pembayaran yang sedang menunggu sebelum memilih paket lain.
-              </p>
+              </Notice>
             ) : (
-              <p className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-muted">
-                Pembelian StudyDate Plus sedang tidak tersedia
-              </p>
+              <Notice tone="info">Pembelian StudyDate Plus sedang tidak tersedia.</Notice>
             )}
             <p className="mt-4 text-sm leading-6 text-brand-muted">
-              Paket aktif setelah pembayaran terverifikasi. Masa aktif baru
-              dihitung dari hari ini atau dari tanggal berakhir Plus saat ini,
-              mana yang lebih akhir.
+              Paket aktif setelah pembayaran terverifikasi. Kalau kamu membeli lagi saat Plus masih aktif,
+              durasi baru ditambahkan setelah masa aktif saat ini.
             </p>
-          </section>
+          </Panel>
 
-          <ComparisonTable />
-
-          <p className="mt-8 max-w-2xl text-sm leading-6 text-brand-muted">
-            Blokir, laporkan, pusat keamanan, privasi, berbagi nama dan foto,
-            berbagi kontak, serta penghapusan akun tetap tersedia untuk semua
-            paket.{" "}
-            <Link
-              href="/app/settings"
-              className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline"
-            >
-              Buka pengaturan
-            </Link>
-            .
-          </p>
-        </div>
-      </main>
+          <Panel title="Bedanya Free dan Plus" quiet>
+            <ComparisonTable />
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-brand-muted">
+              Blokir, laporkan, pusat keamanan, privasi, berbagi nama dan foto,
+              berbagi kontak, serta penghapusan akun tetap tersedia untuk semua
+              paket.{" "}
+              <Link
+                href="/app/settings"
+                className="focus-ring font-semibold text-brand-blue underline-offset-2 hover:underline"
+              >
+                Buka pengaturan
+              </Link>
+              .
+            </p>
+          </Panel>
+      </AppPage>
     </AppShell>
   );
 }
@@ -287,7 +267,7 @@ export default function MembershipPage(props: MembershipPageProps) {
     <Suspense
       fallback={
         <main className="min-h-svh bg-brand-surface">
-          <p className="page-shell py-10 text-brand-muted">Menyiapkan paket…</p>
+          <p className="page-shell py-10 text-brand-muted">Menyiapkan paket...</p>
         </main>
       }
     >

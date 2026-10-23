@@ -368,6 +368,10 @@ logo pemerintah/PDDIKTI atau visual KYC.
 - Beranda berisi "Yang menunggu kamu": ajakan kenalan, pesan baru, ulasan acara, notifikasi, dan ajakan
   verifikasi, semuanya dari angka asli. Kalau kosong, judulnya "Semua beres" dengan ajakan cari teman atau acara.
 - Kepala halaman di `/app` memakai celetukan tulisan tangan (`.app-kicker`).
+- Tahap 2: Cari Teman, Perkenalan, Pesan, Circle, Pengaturan, Verifikasi, dan StudyDate Plus memakai `AppPage`
+  dan `Panel`. Pesan hasil memakai `Notice`, status memakai `StatusChip` (misalnya profil Tampil/Tersembunyi,
+  notifikasi Aktif/Mati dengan tombol Nyalakan/Matikan). Pengaturan punya navigasi kapsul yang menempel di atas
+  saat digulir. Pilihan durasi Plus tampil sebagai tiga kartu harga asli dari penawaran Owner.
 
 ### Staff shell (renovasi 22 Oktober 2026)
 
