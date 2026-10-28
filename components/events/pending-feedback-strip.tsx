@@ -5,7 +5,7 @@ type PendingFeedback = { public_slug: string; title: string; ends_at: string; ti
 
 export function PendingFeedbackStrip({ events }: { events: PendingFeedback[] }) {
   return (
-    <section className="mt-9" aria-labelledby="pending-feedback-title">
+    <section aria-labelledby="pending-feedback-title">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <p id="pending-feedback-title" className="font-hand text-xl text-brand-blue">
           {events.length ? "Gimana acaranya kemarin?" : "Setelah acara"}

@@ -735,12 +735,13 @@ export function ResponsiveNavigation({
             <button
               ref={mobileTriggerRef}
               type="button"
-              hidden={showBottomBar}
               onClick={() => setMobileOpen(true)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-app-navigation"
               aria-label="Buka menu navigasi"
-              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand-border text-brand-navy"
+              className={`focus-ring h-11 w-11 items-center justify-center rounded-xl border border-brand-border text-brand-navy ${
+                showBottomBar ? "hidden" : "inline-flex"
+              }`}
             >
               <Menu aria-hidden="true" className="h-5 w-5" />
             </button>

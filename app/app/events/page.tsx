@@ -8,6 +8,7 @@ import {
   requireEventFeatureAccess,
 } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, HelpTip, Notice, Panel, appButton } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
 import { EventFilterForm } from "@/components/events/event-filter-form";
 import { EventListItem } from "@/components/events/event-list-item";
@@ -71,64 +72,40 @@ async function EventsContent({ searchParams }: EventsPageProps) {
 
   return (
     <AppShell current="events">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell py-8 sm:py-12 lg:py-16">
-          <header className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="max-w-3xl">
-              <p className="app-kicker">Acara Kampus</p>
-              <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-                Kegiatan kampus, bertemu di tempat publik
-              </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
-                Temukan seminar, workshop, meetup, hackathon, dan kegiatan kampus lainnya.
-                Kamu tetap memakai nama samaran saat mendaftar.
-              </p>
-            </div>
-            {isSchool ? (
-              <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-                <p className="font-semibold text-brand-navy">Akun sekolah</p>
-                <p className="mt-1">
-                  Akun dengan email sekolah bisa mengikuti acara edukatif seperti belajar
-                  bareng, workshop, seminar, dan persiapan ujian. Cari Teman, Circle, dan
-                  Pesan terbuka setelah kamu masuk dengan email kampus dan lolos verifikasi.
-                </p>
-              </aside>
-            ) : eligibility?.eligible ? (
-              <Link
-                href="/app/events/create"
-                className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-              >
-                <Plus className="h-4 w-4" aria-hidden="true" />
-                Buat acara
-              </Link>
-            ) : (
-              <aside className="max-w-sm border-l-2 border-brand-blue pl-4 text-sm leading-6 text-brand-muted">
-                <p className="font-semibold text-brand-navy">Pembuatan acara terbatas</p>
-                <p className="mt-1">
-                  Kamu perlu menyelesaikan verifikasi mahasiswa atau mendapat izin dari
-                  tim StudyDate sebelum membuat acara. StudyDate Plus menambah kapasitas, bukan kepercayaan penyelenggara.
-                </p>
-              </aside>
-            )}
-          </header>
+      <AppPage
+        kicker="Acara Kampus"
+        title="Kegiatan kampus, bertemu di tempat publik"
+        description="Temukan seminar, workshop, meetup, hackathon, dan kegiatan kampus lainnya. Kamu tetap memakai nama samaran saat mendaftar."
+        mascot="girang"
+        actions={
+          !isSchool && eligibility?.eligible ? (
+            <Link href="/app/events/create" className={appButton.primary}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Buat acara
+            </Link>
+          ) : undefined
+        }
+      >
+          {isSchool ? (
+            <Notice tone="info" title="Akun sekolah">
+              Akun dengan email sekolah bisa mengikuti acara edukatif seperti belajar bareng, workshop, seminar,
+              dan persiapan ujian. Cari Teman, Circle, dan Pesan terbuka setelah kamu masuk dengan email kampus dan
+              lolos verifikasi.
+            </Notice>
+          ) : !eligibility?.eligible ? (
+            <HelpTip label="Kenapa aku belum bisa membuat acara?">
+              Kamu perlu menyelesaikan verifikasi mahasiswa atau mendapat izin dari tim StudyDate sebelum membuat
+              acara. StudyDate Plus menambah kapasitas, bukan kepercayaan penyelenggara.
+            </HelpTip>
+          ) : null}
 
           <PendingFeedbackStrip events={pendingFeedback} />
 
           <FollowedCalendarStrip events={followedEvents} />
 
           {pendingInvitations.length ? (
-            <section
-              className="mt-9 border-y border-brand-border py-6"
-              aria-labelledby="event-team-invitations-title"
-            >
-              <p className="app-kicker">Undangan tim</p>
-              <h2
-                id="event-team-invitations-title"
-                className="mt-2 font-heading text-xl font-semibold text-brand-navy"
-              >
-                Undangan untuk membantu acara
-              </h2>
-              <div className="mt-4 divide-y divide-brand-border">
+            <Panel id="event-team-invitations" title="Undangan untuk membantu acara" description="Penyelenggara mengajakmu jadi bagian tim. Terima kalau kamu bisa membantu.">
+              <div className="divide-y divide-brand-border">
                 {pendingInvitations.map((invitation) => (
                   <article
                     key={`${invitation.event_public_slug}-${invitation.team_role}`}
@@ -158,11 +135,7 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                           <button
                             name="response"
                             value={response}
-                            className={`focus-ring min-h-11 rounded-xl px-4 text-sm font-semibold ${
-                              response === "accept"
-                                ? "bg-brand-blue text-white"
-                                : "border border-brand-border bg-white text-brand-navy"
-                            }`}
+                            className={response === "accept" ? appButton.primary : appButton.quiet}
                           >
                             {response === "accept" ? "Terima" : "Tolak"}
                           </button>
@@ -172,22 +145,12 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                   </article>
                 ))}
               </div>
-            </section>
+            </Panel>
           ) : null}
 
           {activeAssignments.length ? (
-            <section
-              className="mt-9 border-y border-brand-border py-6"
-              aria-labelledby="event-team-active-title"
-            >
-              <p className="app-kicker">Acara yang kamu bantu</p>
-              <h2
-                id="event-team-active-title"
-                className="mt-2 font-heading text-xl font-semibold text-brand-navy"
-              >
-                Acara yang kamu kelola
-              </h2>
-              <div className="mt-4 divide-y divide-brand-border">
+            <Panel id="event-team-active" title="Acara yang kamu kelola" quiet>
+              <div className="divide-y divide-brand-border">
                 {activeAssignments.map((assignment) => (
                   <article
                     key={`${assignment.event_public_slug}-${assignment.team_role}`}
@@ -209,38 +172,33 @@ async function EventsContent({ searchParams }: EventsPageProps) {
                           ? `/app/events/${assignment.event_public_slug}/manage/check-in`
                           : `/app/events/${assignment.event_public_slug}/manage`
                       }
-                      className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-blue px-4 text-sm font-semibold text-brand-blue"
+                      className={appButton.secondary}
                     >
                       Buka pengelolaan acara
                     </Link>
                   </article>
                 ))}
               </div>
-            </section>
+            </Panel>
           ) : null}
 
-          <section
-            aria-labelledby="event-filter-title"
-            className="mt-10 border-y border-brand-border py-7"
+          <Panel
+            id="event-filter"
+            title="Cari acara mendatang"
+            description="Cari berdasarkan nama atau jenis acara, lalu pilih siapa yang boleh melihatnya."
           >
-            <h2 id="event-filter-title" className="font-heading text-xl font-semibold text-brand-navy">
-              Cari acara mendatang
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-brand-muted">
-              Cari berdasarkan nama atau jenis acara, lalu pilih siapa yang boleh melihatnya.
-            </p>
             <EventFilterForm
               filters={filters}
               allowedCategories={isSchool ? EDUCATIONAL_EVENT_CATEGORIES : undefined}
             />
             {!parsed.success ? (
-              <p role="alert" className="mt-4 text-sm font-medium text-brand-error">
-                Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.
-              </p>
+              <div className="mt-4">
+                <Notice tone="danger">Pilihan pencarian tidak valid. Hapus pilihan lalu coba lagi.</Notice>
+              </div>
             ) : null}
-          </section>
+          </Panel>
 
-          <section className="mt-10" aria-labelledby="event-results-title">
+          <section aria-labelledby="event-results-title">
             <div className="max-w-2xl">
               <p className="app-kicker">Acara mendatang</p>
               <h2
@@ -278,15 +236,14 @@ async function EventsContent({ searchParams }: EventsPageProps) {
               <div className="mt-8 flex justify-center">
                 <Link
                   href={paginationHref(filters, result.nextCursor)}
-                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-border bg-white px-6 text-sm font-semibold text-brand-navy"
+                  className={appButton.secondary}
                 >
                   Muat lebih banyak
                 </Link>
               </div>
             ) : null}
           </section>
-        </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }
@@ -297,7 +254,7 @@ export default function EventsPage(props: EventsPageProps) {
       fallback={
         <main className="min-h-svh bg-brand-surface">
           <p className="page-shell py-10 text-sm text-brand-muted">
-            Menyiapkan acara kampus…
+            Menyiapkan acara kampus...
           </p>
         </main>
       }

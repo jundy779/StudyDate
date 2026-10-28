@@ -1,5 +1,7 @@
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
 import { AppShell } from "@/components/app/app-shell";
+import { Notice, appButton } from "@/components/app/ui";
+import { ArrowLeft } from "lucide-react";
 import {
   PrivacyFieldGrid,
   type PrivacyField,
@@ -130,20 +132,18 @@ export default async function PeopleDetailPage({
         <div className="page-shell py-8 sm:py-12 lg:py-16">
           <Link
             href="/app/people"
-            className="focus-ring inline-flex min-h-11 items-center rounded-xl text-sm font-semibold text-brand-blue"
+            className={appButton.quiet}
           >
-            ← Kembali ke Cari Teman
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Kembali ke Cari Teman
           </Link>
           {notice ? (
-            <p
-              role="alert"
-              className="mt-4 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm text-brand-navy"
-            >
-              {notice}
-            </p>
+            <div className="mt-4">
+              <Notice tone="info">{notice}</Notice>
+            </div>
           ) : null}
 
-          <article className="mt-5 overflow-hidden rounded-[22px] border border-brand-border bg-white shadow-[0_14px_36px_rgba(15,27,51,0.055)] md:rounded-[26px]">
+          <article className="mt-5 overflow-hidden rounded-[22px] border-2 border-brand-navy bg-white shadow-[4px_4px_0_#0F1B33] md:rounded-[26px]">
             <div className="grid md:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)]">
               <div className="relative flex min-h-[240px] items-end justify-center overflow-hidden bg-[radial-gradient(circle_at_30%_25%,#ffffff_0%,#edf4ff_50%,#dfeaff_100%)] px-6 pb-6 pt-14 sm:min-h-[300px] sm:px-8 sm:pb-8 md:min-h-full md:pt-16">
                 <p className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-brand-blue sm:left-7 sm:top-7">

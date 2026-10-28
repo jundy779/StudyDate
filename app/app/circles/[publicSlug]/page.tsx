@@ -10,6 +10,7 @@ import {
   updateCircleAction,
 } from "@/app/app/circles/actions";
 import { AppShell } from "@/components/app/app-shell";
+import { Notice, appButton } from "@/components/app/ui";
 import { CircleForm } from "@/components/circles/circle-form";
 import { CircleMessageForm } from "@/components/circles/circle-message-form";
 import { SendIntroductionDialog } from "@/components/introductions/send-introduction-dialog";
@@ -27,6 +28,7 @@ import { circleSlugSchema } from "@/lib/circles/validation";
 import { getIntroductionSendEligibility } from "@/lib/introductions/service";
 import { getMascotForAlias } from "@/lib/people/constants";
 import {
+  ArrowLeft,
   Archive,
   BadgeCheck,
   BookOpenText,
@@ -151,36 +153,28 @@ export default async function CircleDetailPage({
         <div className="page-shell py-8 sm:py-12 lg:py-16">
           <Link
             href="/app/circles"
-            className="focus-ring inline-flex min-h-11 items-center rounded-lg text-sm font-semibold text-brand-muted hover:text-brand-blue"
+            className={appButton.quiet}
           >
-            ← Kembali ke Study Circle
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Kembali ke Circle Belajar
           </Link>
 
           {state && successCopy[state] ? (
-            <p
-              role="status"
-              className="mt-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-brand-blue"
-            >
-              {successCopy[state]}
-            </p>
+            <div className="mt-5">
+              <Notice tone="success">{successCopy[state]}</Notice>
+            </div>
           ) : null}
           {notice ? (
-            <p
-              role="alert"
-              className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-brand-error"
-            >
-              {notice}
-            </p>
+            <div className="mt-5">
+              <Notice tone="danger">{notice}</Notice>
+            </div>
           ) : state === "error" || state === "invalid" ? (
-            <p
-              role="alert"
-              className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-brand-error"
-            >
-              Tindakan belum dapat diproses. Coba lagi sebentar.
-            </p>
+            <div className="mt-5">
+              <Notice tone="danger">Tindakan belum dapat diproses. Coba lagi sebentar.</Notice>
+            </div>
           ) : null}
 
-          <header className="mt-7 grid gap-8 border-b border-brand-border pb-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
+          <header className="mt-7 grid gap-8 border-b-2 border-dashed border-brand-navy/15 pb-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
             <div className="min-w-0">
               <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs font-semibold text-brand-blue">
                 <span>{circleTopicLabels.get(circle.topic) ?? circle.topic}</span>

@@ -17,7 +17,7 @@ export function FollowedCalendarStrip({ events }: { events: FollowedCalendarEven
   if (!events.length) return null;
 
   return (
-    <section className="mt-9" aria-labelledby="followed-calendar-title">
+    <section aria-labelledby="followed-calendar-title">
       <p className="font-hand text-xl text-brand-blue">Dari kalender yang kamu ikuti</p>
       <h2 id="followed-calendar-title" className="sr-only">
         Acara dari kalender Circle yang kamu ikuti

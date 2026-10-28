@@ -1,6 +1,7 @@
 import { requireEventFeatureAccess } from "@/lib/account/student-access";
 import { createCampusEventAction } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
+import { AppPage, Notice, Panel, appButton } from "@/components/app/ui";
 import { EventForm } from "@/components/events/event-form";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
@@ -46,30 +47,21 @@ export default async function CreateEventPage({
 
   return (
     <AppShell current="events">
-      <main className="min-h-svh overflow-x-clip bg-brand-surface">
-        <div className="page-shell max-w-4xl py-8 sm:py-12 lg:py-16">
-          <Link
-            href="/app/events"
-            className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-brand-muted hover:text-brand-blue"
-          >
+      <AppPage
+        kicker={source ? "Acara berikutnya" : "Buat acara kampus"}
+        title={source ? "Periksa jadwal sebelum diterbitkan" : "Mulai kegiatan di tempat publik"}
+        description="Kamu menjadi penyelenggara acara ini, bukan bagian dari tim internal StudyDate. Penyelenggara tidak mendapat akses ke identitas atau kontak privat peserta."
+        mascot="girang"
+        actions={
+          <Link href="/app/events" className={appButton.quiet}>
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Kembali ke acara kampus
           </Link>
-          <header className="mt-7 max-w-2xl">
-            <p className="app-kicker">
-              {source ? "Acara berikutnya" : "Buat acara kampus"}
-            </p>
-            <h1 className="mt-4 font-heading text-4xl font-semibold tracking-[-0.035em] text-brand-navy sm:text-5xl">
-              {source ? "Periksa jadwal sebelum diterbitkan" : "Mulai kegiatan di tempat publik"}
-            </h1>
-            <p className="mt-5 text-lg leading-8 text-brand-muted">
-              Kamu menjadi penyelenggara acara ini, bukan bagian dari tim internal StudyDate. Penyelenggara tidak
-              mendapat akses ke identitas atau kontak privat peserta.
-            </p>
-          </header>
-
+        }
+      >
+        <div className="grid max-w-4xl gap-6">
           {source ? (
-            <aside className="mt-7 flex items-start gap-3 rounded-[18px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-950">
+            <aside className="flex items-start gap-3 rounded-[18px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-950">
               <CopyPlus className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
               <div>
                 <p className="font-semibold">Detail dasar sudah disiapkan.</p>
@@ -82,7 +74,7 @@ export default async function CreateEventPage({
             </aside>
           ) : null}
 
-          <aside className="mt-7 flex items-start gap-3 rounded-[18px] border border-blue-100 bg-blue-50 px-5 py-4 text-sm leading-6 text-brand-navy">
+          <aside className="flex items-start gap-3 rounded-[18px] border border-blue-100 bg-blue-50 px-5 py-4 text-sm leading-6 text-brand-navy">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
             <p>
               Pertemuan StudyDate dilakukan di tempat publik. Pastikan lokasi ramai,
@@ -91,28 +83,15 @@ export default async function CreateEventPage({
           </aside>
 
           {notice ? (
-            <p
-              role="alert"
-              className="mt-7 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-brand-error"
-            >
-              {notice}
-            </p>
+            <Notice tone="danger">{notice}</Notice>
           ) : null}
 
-          <section
-            aria-labelledby="event-create-form-title"
-            className="mt-8 rounded-[22px] border border-brand-border bg-white p-5 sm:p-8"
+          <Panel
+            id="event-create-form"
+            title="Detail acara"
+            description="Semua informasi di bawah dapat terlihat oleh mahasiswa yang memenuhi syarat."
           >
-            <h2
-              id="event-create-form-title"
-              className="font-heading text-2xl font-semibold text-brand-navy"
-            >
-              Detail acara
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-brand-muted">
-              Semua informasi di bawah dapat terlihat oleh mahasiswa yang memenuhi syarat.
-            </p>
-            <div className="mt-7">
+            <div>
               <EventForm
                 action={createCampusEventAction}
                 template={template}
@@ -121,9 +100,9 @@ export default async function CreateEventPage({
                 submitLabel={source ? "Buat acara baru" : "Buat acara"}
               />
             </div>
-          </section>
+          </Panel>
         </div>
-      </main>
+      </AppPage>
     </AppShell>
   );
 }

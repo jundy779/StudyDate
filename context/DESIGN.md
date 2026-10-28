@@ -372,6 +372,10 @@ logo pemerintah/PDDIKTI atau visual KYC.
   dan `Panel`. Pesan hasil memakai `Notice`, status memakai `StatusChip` (misalnya profil Tampil/Tersembunyi,
   notifikasi Aktif/Mati dengan tombol Nyalakan/Matikan). Pengaturan punya navigasi kapsul yang menempel di atas
   saat digulir. Pilihan durasi Plus tampil sebagai tiga kartu harga asli dari penawaran Owner.
+- Tahap 3: Daftar Acara dan Buat acara memakai `AppPage`; alasan belum bisa membuat acara disimpan di `HelpTip`.
+  Ruang penyelenggara (`EventManagementShell`) memakai celetukan tulisan tangan, empat kartu angka bergaya stiker
+  (Terkonfirmasi, Menunggu, Daftar tunggu, Sudah hadir), dan menu kapsul yang membungkus di HP. Detail acara
+  tetap memakai tata letak gaya Luma yang sudah ada.
 
 ### Staff shell (renovasi 22 Oktober 2026)
 
