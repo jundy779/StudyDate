@@ -108,7 +108,8 @@ export function EventCover({
   category: EventCategory;
   title: string;
   city?: string;
-  variant?: "card" | "hero";
+  /** card: kartu daftar 16:10. hero: lebar penuh. poster: persegi untuk kolom kiri halaman detail. */
+  variant?: "card" | "hero" | "poster";
   className?: string;
   /** Foto sampul dari penyelenggara. Bila kosong, pakai sampul kategori. */
   coverUrl?: string | null;
@@ -116,12 +117,13 @@ export function EventCover({
   const style = coverStyles[category];
   const Icon = style.icon;
   const hero = variant === "hero";
+  const poster = variant === "poster";
 
   return (
     <div
       aria-hidden="true"
       className={`relative isolate overflow-hidden rounded-[22px] ${coverUrl ? "bg-[#0F1B33]" : `bg-gradient-to-br ${style.background}`} text-white shadow-[0_18px_50px_rgba(15,27,51,0.16)] ${
-        hero ? "min-h-[260px] sm:min-h-[340px]" : "aspect-[16/10] min-h-[180px]"
+        hero ? "min-h-[260px] sm:min-h-[340px]" : poster ? "aspect-square" : "aspect-[16/10] min-h-[180px]"
       } ${className}`}
     >
       {coverUrl ? (
@@ -131,7 +133,7 @@ export function EventCover({
           <img
             src={coverUrl}
             alt=""
-            loading={hero ? "eager" : "lazy"}
+            loading={hero || poster ? "eager" : "lazy"}
             decoding="async"
             className="absolute inset-0 -z-10 h-full w-full object-cover"
           />
@@ -147,7 +149,7 @@ export function EventCover({
 
       <div
         className={`relative flex h-full min-h-[inherit] flex-col justify-between ${
-          hero ? "p-6 sm:p-9 lg:p-11" : "p-5 sm:p-6"
+          hero ? "p-6 sm:p-9 lg:p-11" : poster ? "p-6 sm:p-7" : "p-5 sm:p-6"
         }`}
       >
         <div className="flex items-center justify-between gap-4">
@@ -160,18 +162,21 @@ export function EventCover({
         </div>
 
         <div className={hero ? "max-w-3xl" : "max-w-xl"}>
+          {/* Poster: judul sudah tampil besar di samping, jadi tidak diulang di gambar. */}
           {coverUrl ? null : (
             <span className={`inline-flex items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20 ${
-              hero ? "h-14 w-14 sm:h-16 sm:w-16" : "h-11 w-11"
+              hero || poster ? "h-14 w-14 sm:h-16 sm:w-16" : "h-11 w-11"
             }`}>
-              <Icon className={hero ? "h-7 w-7 sm:h-8 sm:w-8" : "h-5 w-5"} />
+              <Icon className={hero || poster ? "h-7 w-7 sm:h-8 sm:w-8" : "h-5 w-5"} />
             </span>
           )}
-          <p className={`mt-4 line-clamp-2 break-words font-heading font-semibold leading-tight tracking-[-0.03em] ${
-            hero ? "text-3xl sm:text-4xl lg:text-5xl" : "text-xl sm:text-2xl"
-          }`}>
-            {title}
-          </p>
+          {poster ? null : (
+            <p className={`mt-4 line-clamp-2 break-words font-heading font-semibold leading-tight tracking-[-0.03em] ${
+              hero ? "text-3xl sm:text-4xl lg:text-5xl" : "text-xl sm:text-2xl"
+            }`}>
+              {title}
+            </p>
+          )}
           {city ? (
             <p className={`mt-3 font-medium text-white/75 ${hero ? "text-sm sm:text-base" : "text-xs"}`}>
               {city}

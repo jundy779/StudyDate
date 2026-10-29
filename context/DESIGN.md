@@ -376,6 +376,13 @@ logo pemerintah/PDDIKTI atau visual KYC.
   Ruang penyelenggara (`EventManagementShell`) memakai celetukan tulisan tangan, empat kartu angka bergaya stiker
   (Terkonfirmasi, Menunggu, Daftar tunggu, Sudah hadir), dan menu kapsul yang membungkus di HP. Detail acara
   tetap memakai tata letak gaya Luma yang sudah ada.
+- Halaman detail acara (mahasiswa dan publik) memakai dua kolom seperti halaman acara pada umumnya: kolom kiri
+  berisi poster persegi (`EventCover variant="poster"`, judul tidak diulang di gambar), penyelenggara dengan
+  maskot, jumlah peserta dengan bilah isi, Circle terkait, dan tautan laporan/blokir; kolom kanan berisi label
+  status, judul besar, ikon kalender (bulan dan tanggal), ikon tempat, kartu Pendaftaran bergaya stiker yang
+  memuat semua tombol daftar/batal/kelola/tiket, lalu Tentang acara, rekap, pengumuman, diskusi peserta, dan
+  pengingat tempat publik. Di bawah layar lebar urutannya poster, detail, lalu info pendukung; poster dibatasi
+  lebar `max-w-md` supaya tidak memenuhi layar tablet.
 
 ### Staff shell (renovasi 22 Oktober 2026)
 

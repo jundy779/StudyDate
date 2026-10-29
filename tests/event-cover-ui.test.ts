@@ -50,8 +50,9 @@ test("ECUI-03 student and public event surfaces share the same cover", () => {
   for (const surface of [studentCard, publicCard, studentDetail, publicDetail]) {
     assert.match(surface, /EventCover/);
   }
-  assert.match(studentDetail, /variant="hero"/);
-  assert.match(publicDetail, /variant="hero"/);
+  // Halaman detail mahasiswa memakai poster persegi di kolom kiri (gaya halaman acara dua kolom).
+  assert.match(studentDetail, /variant="poster"/);
+  assert.match(publicDetail, /variant="poster"/);
 });
 
 test("ECUI-04 card layouts remain bounded on mobile", () => {

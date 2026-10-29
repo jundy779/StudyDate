@@ -15,8 +15,6 @@ import { getPublicSiteUrl } from "@/lib/marketing/site-origin";
 import {
   ArrowLeft,
   BadgeCheck,
-  CalendarDays,
-  Clock3,
   Globe2,
   LockKeyhole,
   MapPin,
@@ -27,6 +25,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
+/** Bulan singkat dan tanggal untuk ikon kalender, mengikuti zona waktu acara. */
+function calendarMonth(value: string, timezone: string) {
+  return new Intl.DateTimeFormat("id-ID", { month: "short", timeZone: timezone }).format(new Date(value)).replace(".", "");
+}
+
+function calendarDay(value: string, timezone: string) {
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", timeZone: timezone }).format(new Date(value));
+}
 
 type EventDetailProps = {
   params: Promise<{ publicSlug: string }>;
@@ -95,11 +102,6 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
   // URL VirtualLocation sengaja halaman acara, bukan link rapat.
   const virtualPlace = { "@type": "VirtualLocation", url: publicUrl };
   const isOnline = event.attendance_mode === "online";
-  const placeValue = isOnline
-    ? `Online lewat ${event.venue_name}`
-    : `${event.venue_name}, ${event.venue_area}, ${event.city}${
-        event.attendance_mode === "hybrid" ? ". Bisa juga ikut online." : ""
-      }`;
 
   return (
     <article>
@@ -131,131 +133,191 @@ async function PublicEventDetailContent({ params }: EventDetailProps) {
         }}
       />
 
-      <section className="border-b border-brand-border bg-brand-surface py-12 sm:py-16">
+      <section className="bg-brand-surface py-8 sm:py-12">
         <div className="page-shell">
           <Link
             href="/events"
-            className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-brand-muted hover:text-brand-blue"
+            className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-border bg-white px-4 text-sm font-semibold text-brand-navy hover:border-brand-navy"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Kembali ke semua acara
           </Link>
 
-          <EventCover
-            category={event.category}
-            title={event.title}
-            city={isOnline ? "Online" : event.city}
-            variant="hero"
-            className="mt-7 w-full"
-            coverUrl={coverUrl}
-          />
+          {/* Dua kolom: poster dan info pendukung di kiri, judul, waktu, tempat, dan pendaftaran di kanan. */}
+          <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-x-12">
+            <div className="mx-auto w-full max-w-md lg:col-start-1 lg:row-start-1 lg:max-w-none">
+              <EventCover
+                category={event.category}
+                title={event.title}
+                city={isOnline ? "Online" : event.city}
+                variant="poster"
+                className="w-full"
+                coverUrl={coverUrl}
+              />
+            </div>
 
-          <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-            <div>
-              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-brand-blue">
-                <span>{EVENT_CATEGORY_LABELS[event.category]}</span>
-                <span className="inline-flex items-center gap-1 text-brand-navy">
-                  <BadgeCheck className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+            <div className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                <span className="rounded-full bg-[#EAF1FF] px-2.5 py-0.5 text-brand-blue">
+                  {EVENT_CATEGORY_LABELS[event.category]}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#E3F6E9] px-2.5 py-0.5 text-[#157F3B]">
+                  <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
                   Acara resmi StudyDate
                 </span>
               </div>
-              <h1 className="mt-4 max-w-4xl break-words font-heading text-4xl font-semibold leading-tight tracking-[-0.035em] text-brand-navy sm:text-5xl">
+              <h1 className="mt-4 break-words font-heading text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-brand-navy sm:text-5xl">
                 {event.title}
               </h1>
-              <p className="mt-6 max-w-3xl whitespace-pre-wrap break-words text-lg leading-8 text-brand-muted">
-                {event.description}
-              </p>
-              <p className="mt-5 text-sm text-brand-muted">
-                Diselenggarakan oleh <strong className="font-semibold text-brand-navy">{event.organizer_alias}</strong>
-                {event.organizer_is_verified ? " · mahasiswa terverifikasi" : ""}
-              </p>
-            </div>
 
-            <aside className="rounded-[22px] border border-brand-border bg-white p-6 sm:p-7">
-              <p className="font-heading text-xl font-semibold text-brand-navy">
-                {registrationLabel}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-brand-muted">
-                Masuk ke akun StudyDate untuk mendaftar. Identitas dan daftar peserta
-                tidak ditampilkan pada halaman publik.
-              </p>
-              {!registrationClosed && (!full || event.waitlist_enabled) ? (
-                <Link
-                  href="/login"
-                  className="focus-ring mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white"
-                >
-                  Masuk untuk mendaftar
-                </Link>
-              ) : null}
-              <Link
-                href={`/app/events/${event.public_slug}`}
-                className="focus-ring mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-navy"
+              <dl className="mt-6 grid gap-4">
+                <div className="flex items-center gap-4">
+                  <dt className="sr-only">Tanggal dan waktu</dt>
+                  <span
+                    className="grid h-14 w-14 shrink-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border-2 border-brand-navy bg-white text-center shadow-[2px_2px_0_#0F1B33]"
+                    aria-hidden="true"
+                  >
+                    <span className="bg-brand-navy py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      {calendarMonth(event.starts_at, event.timezone_name)}
+                    </span>
+                    <span className="grid place-items-center font-heading text-xl font-semibold text-brand-navy">
+                      {calendarDay(event.starts_at, event.timezone_name)}
+                    </span>
+                  </span>
+                  <dd className="min-w-0">
+                    <p className="font-semibold text-brand-navy">
+                      <time dateTime={event.starts_at}>{formatEventDateTime(event.starts_at, event.timezone_name)}</time>
+                    </p>
+                    <p className="text-sm text-brand-muted">
+                      Sampai <time dateTime={event.ends_at}>{formatEventDateTime(event.ends_at, event.timezone_name)}</time>{" "}
+                      {eventTimezoneLabel(event.timezone_name)}
+                    </p>
+                  </dd>
+                </div>
+                <div className="flex items-center gap-4">
+                  <dt className="sr-only">{isOnline ? "Acara online" : EVENT_VENUE_LABELS[event.venue_category]}</dt>
+                  <span
+                    className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border-2 border-brand-navy bg-white text-brand-blue shadow-[2px_2px_0_#0F1B33]"
+                    aria-hidden="true"
+                  >
+                    {isOnline ? <Globe2 className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
+                  </span>
+                  <dd className="min-w-0">
+                    <p className="break-words font-semibold text-brand-navy">
+                      {isOnline ? `Online lewat ${event.venue_name}` : event.venue_name}
+                    </p>
+                    <p className="break-words text-sm text-brand-muted">
+                      {isOnline
+                        ? "Link dibagikan ke peserta yang sudah terdaftar."
+                        : `${event.venue_area}, ${event.city}${event.attendance_mode === "hybrid" ? " · Bisa juga ikut online" : ""}`}
+                    </p>
+                  </dd>
+                </div>
+              </dl>
+
+              <section
+                aria-labelledby="public-registration-title"
+                className="mt-8 rounded-[22px] border-2 border-brand-navy bg-white p-5 shadow-[4px_4px_0_#0F1B33] sm:p-6"
               >
-                Buka di ruang mahasiswa
-              </Link>
-              <PublicEventActions
-                calendarDownloadHref={`/events/${event.public_slug}/calendar.ics`}
-                eventSlug={event.public_slug}
-                googleCalendarHref={buildGoogleCalendarUrl(calendarEvent)}
-                shareUrl={publicUrl}
-                title={event.title}
-              />
+                <h2 id="public-registration-title" className="font-heading text-lg font-semibold text-brand-navy">
+                  {registrationLabel}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-brand-muted">
+                  Masuk ke akun StudyDate untuk mendaftar. Identitas dan daftar peserta
+                  tidak ditampilkan pada halaman publik.
+                </p>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  {!registrationClosed && (!full || event.waitlist_enabled) ? (
+                    <Link
+                      href="/login"
+                      className="focus-ring inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border-2 border-brand-navy bg-brand-blue px-5 text-sm font-semibold text-white shadow-[3px_3px_0_#0F1B33]"
+                    >
+                      Masuk untuk mendaftar
+                    </Link>
+                  ) : null}
+                  <Link
+                    href={`/app/events/${event.public_slug}`}
+                    className="focus-ring inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-navy hover:border-brand-navy"
+                  >
+                    Buka di ruang mahasiswa
+                  </Link>
+                </div>
+                <PublicEventActions
+                  calendarDownloadHref={`/events/${event.public_slug}/calendar.ics`}
+                  eventSlug={event.public_slug}
+                  googleCalendarHref={buildGoogleCalendarUrl(calendarEvent)}
+                  shareUrl={publicUrl}
+                  title={event.title}
+                />
+              </section>
+
+              <section className="mt-10" aria-labelledby="public-about-title">
+                <h2 id="public-about-title" className="border-b border-brand-border pb-2 text-sm font-semibold text-brand-muted">
+                  Tentang acara
+                </h2>
+                <p className="mt-4 whitespace-pre-wrap break-words text-base leading-8 text-brand-navy">
+                  {event.description}
+                </p>
+              </section>
+            </div>
+
+            <aside className="grid min-w-0 content-start gap-6 lg:col-start-1 lg:row-start-2" aria-label="Penyelenggara dan keamanan">
+              <section aria-labelledby="public-host-title">
+                <h2 id="public-host-title" className="border-b border-brand-border pb-2 text-sm font-semibold text-brand-muted">
+                  Diselenggarakan oleh
+                </h2>
+                <p className="mt-3 inline-flex items-center gap-1.5 break-words font-semibold text-brand-navy">
+                  {event.organizer_alias}
+                  {event.organizer_is_verified ? (
+                    <BadgeCheck className="h-4 w-4 shrink-0 text-brand-blue" aria-label="Mahasiswa terverifikasi" />
+                  ) : null}
+                </p>
+              </section>
+
+              <section aria-labelledby="public-capacity-title">
+                <h2 id="public-capacity-title" className="border-b border-brand-border pb-2 text-sm font-semibold text-brand-muted">
+                  Peserta
+                </h2>
+                <p className="mt-3 inline-flex items-center gap-1.5 font-semibold text-brand-navy">
+                  <UsersRound className="h-4 w-4 text-brand-blue" aria-hidden="true" />
+                  {event.attendee_count} terdaftar dari {event.capacity} peserta
+                </p>
+              </section>
+
+              <section className="flex gap-3" aria-labelledby="public-safety-title">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
+                <div>
+                  {isOnline ? (
+                    <>
+                      <h2 id="public-safety-title" className="font-semibold text-brand-navy">Link hanya untuk peserta</h2>
+                      <p className="mt-1 text-sm leading-6 text-brand-muted">
+                        Link acara online tidak ditampilkan di halaman publik. Peserta
+                        terdaftar melihatnya di halaman acara setelah masuk ke StudyDate.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 id="public-safety-title" className="font-semibold text-brand-navy">Bertemu di tempat umum</h2>
+                      <p className="mt-1 text-sm leading-6 text-brand-muted">
+                        Lokasi acara harus berupa tempat publik. Tetap beri tahu orang
+                        terpercaya dan pertahankan kendali atas transportasimu sendiri.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </section>
+
+              <section className="flex gap-3" aria-labelledby="public-private-title">
+                <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" aria-hidden="true" />
+                <div>
+                  <h2 id="public-private-title" className="font-semibold text-brand-navy">Daftar peserta tetap privat</h2>
+                  <p className="mt-1 text-sm leading-6 text-brand-muted">
+                    Halaman ini tidak membuka nama asli, kontak, atau daftar peserta.
+                    Interaksi lanjutan tetap mengikuti persetujuan di dalam StudyDate.
+                  </p>
+                </div>
+              </section>
             </aside>
-          </div>
-        </div>
-      </section>
-
-      <section className="page-shell py-12 sm:py-16">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            [CalendarDays, "Mulai", formatEventDateTime(event.starts_at, event.timezone_name)],
-            [Clock3, "Selesai", `${formatEventDateTime(event.ends_at, event.timezone_name)} ${eventTimezoneLabel(event.timezone_name)}`],
-            [isOnline ? Globe2 : MapPin, isOnline ? "Acara online" : EVENT_VENUE_LABELS[event.venue_category], placeValue],
-            [UsersRound, "Kapasitas", `${event.attendee_count} terdaftar dari ${event.capacity} peserta`],
-          ].map(([Icon, label, value]) => {
-            const DetailIcon = Icon as typeof CalendarDays;
-            return (
-              <div key={label as string} className="border-t-2 border-brand-navy pt-5">
-                <DetailIcon className="h-5 w-5 text-brand-blue" aria-hidden="true" />
-                <p className="mt-4 text-xs font-semibold text-brand-muted">{label as string}</p>
-                <p className="mt-2 text-sm font-semibold leading-6 text-brand-navy">{value as string}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-12 grid gap-6 border-y border-brand-border py-8 lg:grid-cols-2">
-          <div className="flex gap-4">
-            <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-brand-blue" aria-hidden="true" />
-            <div>
-              {isOnline ? (
-                <>
-                  <h2 className="font-heading text-xl font-semibold text-brand-navy">Link hanya untuk peserta</h2>
-                  <p className="mt-2 leading-7 text-brand-muted">
-                    Link acara online tidak ditampilkan di halaman publik. Peserta
-                    terdaftar melihatnya di halaman acara setelah masuk ke StudyDate.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="font-heading text-xl font-semibold text-brand-navy">Bertemu di tempat umum</h2>
-                  <p className="mt-2 leading-7 text-brand-muted">
-                    Lokasi acara harus berupa tempat publik. Tetap beri tahu orang
-                    terpercaya dan pertahankan kendali atas transportasimu sendiri.
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <LockKeyhole className="mt-1 h-6 w-6 shrink-0 text-brand-blue" aria-hidden="true" />
-            <div>
-              <h2 className="font-heading text-xl font-semibold text-brand-navy">Daftar peserta tetap privat</h2>
-              <p className="mt-2 leading-7 text-brand-muted">
-                Halaman ini tidak membuka nama asli, kontak, atau daftar peserta.
-                Interaksi lanjutan tetap mengikuti persetujuan di dalam StudyDate.
-              </p>
-            </div>
           </div>
         </div>
       </section>
