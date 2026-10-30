@@ -52,21 +52,26 @@ diizinkan oleh pembatas frekuensi, target notifikasi `#event-announcements` dito
 batasan database, dan kolom `recipient_count` ambigu di fungsi pengirim.
 Pengumuman tampil di halaman acara dan notifikasi, maksimal 5 per hari per penyelenggara.
 
-Menyalakan: set `EVENT_BLAST_ENABLED=true` di Vercel (Production), lalu redeploy.
+Menyalakan: set `EVENT_BLAST_ENABLED=true` di Vercel (Production), redeploy, pasang migration
+`202610300002_owner_event_feature_switches_v1.sql`, lalu Owner menekan Nyalakan di /owner/events, bagian Fitur
+pengumuman acara.
 
 Memeriksa:
 - [ ] Penyelenggara uji bisa mengirim pengumuman dari halaman kelola acara.
 - [ ] Hanya peserta berstatus terdaftar yang menerima, akun lain tidak.
 - [ ] Pengumuman keenam di hari yang sama ditolak.
 
-Mematikan: set `EVENT_BLAST_ENABLED=false`, redeploy.
+Mematikan: Owner menekan Matikan di /owner/events (langsung berlaku, tercatat di Riwayat). Darurat: set
+`EVENT_BLAST_ENABLED=false` lalu redeploy.
 
 ## 2a. Email pengumuman ke peserta
 
 Kode: migration `202610300001_early_access_duplicates_event_email_v1.sql`, flag `EVENT_EMAIL_ENABLED`.
 Butuh Event Blast menyala, `SUPABASE_SERVICE_ROLE_KEY`, dan layanan email StudyDate (Resend atau SMTP).
 
-Menyalakan: pasang migration, set `EVENT_EMAIL_ENABLED=true` di Vercel (Production), redeploy.
+Menyalakan: pasang migration 202610300001 dan 202610300002, set `EVENT_EMAIL_ENABLED=true` di Vercel
+(Production), redeploy, lalu Owner menekan Nyalakan pada Email pengumuman di /owner/events. Tombol terkunci
+sampai semua syarat tercentang.
 
 Memeriksa (pakai akun uji sendiri sebagai peserta):
 - [ ] Kotak "Kirim juga lewat email" muncul di form pengumuman.
@@ -75,7 +80,8 @@ Memeriksa (pakai akun uji sendiri sebagai peserta):
 - [ ] Mengirim email ketiga di hari yang sama ditolak.
 - [ ] Angka terkirim/gagal tampil di daftar pengumuman, tanpa alamat email.
 
-Mematikan: set `EVENT_EMAIL_ENABLED=false`, redeploy. Pengumuman di aplikasi tetap jalan.
+Mematikan: Owner menekan Matikan di /owner/events. Darurat: set `EVENT_EMAIL_ENABLED=false`, redeploy.
+Pengumuman di aplikasi tetap jalan.
 
 ## 2b. Kalender Circle dan fitur ikuti
 

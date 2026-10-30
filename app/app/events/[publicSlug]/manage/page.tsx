@@ -6,10 +6,10 @@ import {
 import { AppShell } from "@/components/app/app-shell";
 import { EventManagementShell } from "@/components/events/event-management-shell";
 import {
-  isEventEmailEnabled,
   listAnnouncementEmailCounts,
   type AnnouncementEmailCounts,
 } from "@/lib/events/announcement-email";
+import { isEventBlastEnabled, isEventEmailEnabled } from "@/lib/events/feature-switches";
 import { getCampusEventManagement } from "@/lib/events/management";
 import {
   listCampusEventAnnouncements,
@@ -78,10 +78,10 @@ export default async function EventManagePage({
     getCampusEventManagement(publicSlug),
     searchParams,
   ]);
-  const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
+  const blastEnabled = await isEventBlastEnabled();
   const seriesEnabled = process.env.EVENT_SERIES_ENABLED === "true";
   const canAnnounce = blastEnabled && event.can_manage_registrations;
-  const emailEnabled = canAnnounce && isEventEmailEnabled();
+  const emailEnabled = canAnnounce && (await isEventEmailEnabled());
   const noCounts = new Map<string, AnnouncementEmailCounts>();
   const [announcements, emailCounts] = canAnnounce
     ? await Promise.all([

@@ -45,4 +45,5 @@ Keep Supabase built-in auth emails unused by never calling `signInWithOtp`.
 Organizers can tick "Kirim juga lewat email" when posting an event announcement. Recipient addresses are read only
 server-side with the service role (`claim_campus_event_email_batch`), never shown to organizers. Each email carries
 an unsubscribe link to `/email/berhenti` (confirm button, no action on GET) and a `List-Unsubscribe` header.
-Limits: once per announcement, 2 per organizer per day. Requires migration 202610300001.
+Limits: once per announcement, 2 per organizer per day. Requires migration 202610300001. Owner switches it on at
+`/owner/events` (migration 202610300002) once every requirement shows a green check.

@@ -1063,3 +1063,13 @@ Belum dipasang di production.
 - RPC service role saja: `claim_campus_event_email_batch` (`for update skip locked`, alamat dari `auth.users`),
   `complete_campus_event_email_deliveries`, `unsubscribe_event_announcement_email`.
 - RPC pengguna: `get_my_event_email_preference`, `set_my_event_email_preference`.
+
+## Saklar Owner fitur acara (repository migration 202610300002)
+
+Belum dipasang di production.
+
+- `platform_settings` menerima kunci `event_blast_enabled` dan `event_email_enabled`, keduanya mulai `false`.
+- `get_event_feature_switches()` (authenticated, bukan anon): dua nilai ya/tidak untuk halaman acara.
+- `owner_set_event_feature_switch(p_key, p_enabled)`: hanya Owner aktif, hanya dua kunci itu, mengembalikan
+  false kalau nilainya sudah sama, dan mencatat `event_blast_enabled/disabled` atau
+  `event_email_enabled/disabled` di `staff_ops_audit_events`.

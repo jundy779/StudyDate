@@ -6,7 +6,8 @@ import { join } from "node:path";
 import { getConfiguredSiteOrigin } from "@/lib/auth/site-url";
 import { buildEventAnnouncementEmail } from "@/lib/email/event-announcement-template";
 import { STUDYDATE_EMAIL_LOGO_CID } from "@/lib/email/magic-link-template";
-import { isStudyDateEmailConfigured, sendStudyDateEmail } from "@/lib/email/mailer";
+import { sendStudyDateEmail } from "@/lib/email/mailer";
+import { isEventEmailEnabled } from "@/lib/events/feature-switches";
 import { createServerAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,18 +16,6 @@ const BATCH_SIZE = 50;
 const MAX_BATCHES = 5;
 const EMAIL_LOGO_PATH = join(process.cwd(), "public/brand/logo-horizontal-color.png");
 
-/**
- * Email pengumuman hanya aktif kalau saklar server menyala, layanan email siap,
- * dan kunci service role tersedia untuk membaca alamat penerima.
- */
-export function isEventEmailEnabled() {
-  return (
-    process.env.EVENT_EMAIL_ENABLED === "true" &&
-    isStudyDateEmailConfigured() &&
-    Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
-  );
-}
-
 function mapEmailError(message: string) {
   if (message.includes("already requested")) return "Email untuk pengumuman ini sudah pernah dikirim.";
   if (message.includes("window closed")) return "Email hanya bisa dikirim untuk pengumuman yang dibuat kurang dari sehari.";
@@ -34,6 +23,8 @@ function mapEmailError(message: string) {
   if (message.includes("management required")) return "Kamu tidak punya izin mengirim email untuk acara ini.";
   return "Email pengumuman belum dapat dikirim.";
 }
+
+export { isEventEmailEnabled };
 
 export async function queueAnnouncementEmail(announcementPublicId: string) {
   const supabase = await createClient();
@@ -112,7 +103,7 @@ type ClaimedDelivery = {
  */
 export async function deliverAnnouncementEmails(announcementPublicId: string) {
   const result = { sent: 0, failed: 0 };
-  if (!isEventEmailEnabled()) return result;
+  if (!(await isEventEmailEnabled())) return result;
   const admin = createServerAdminClient();
   if (!admin) return result;
 

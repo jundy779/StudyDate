@@ -875,6 +875,15 @@ memuat sendiri.
   tautan email tidak ikut memberhentikan. `/email` masuk daftar disallow robots.
 - Penyelenggara hanya melihat angka terkirim/diproses/gagal dan tombol kirim ulang.
 
+### Saklar fitur acara dua lapis (migration 202610300002)
+- `lib/events/feature-switches.ts` (server-only): `isEventBlastEnabled()` = env `EVENT_BLAST_ENABLED` dan saklar
+  Owner; `isEventEmailEnabled()` = pengumuman aktif, env `EVENT_EMAIL_ENABLED`, layanan email, service role, dan
+  saklar Owner. Saklar dibaca sekali per request lewat `cache()`. RPC belum ada berarti mati (fail-closed).
+- Env tetap izin teknis dan pemutus darurat; saklar Owner untuk on/off harian. Halaman detail, halaman kelola,
+  server action pengumuman, dan Pengaturan semuanya memakai helper ini, bukan membaca env langsung.
+- `/owner/events` menampilkan `OwnerEventFeatureSwitches` dengan daftar syarat. `setEventFeatureSwitchAction`
+  menolak menyalakan kalau syarat belum lengkap, dan mematikan pengumuman ikut mematikan email.
+
 ### Tampilan Ruang Operasional (22 Oktober 2026, tanpa migration)
 - `components/staff/staff-shell.tsx` (server) menyusun grup menu sesuai peran dan capability, lalu mengambil
   angka menu dengan aman: `get_early_access_queue_summary`, jumlah laporan terbuka, dan antrean verifikasi.

@@ -68,11 +68,11 @@ test("recipient addresses stay server-side and service-role only", () => {
 });
 
 test("event email is fail-closed behind a server flag and opt-out aware", () => {
-  assert.match(runner, /process\.env\.EVENT_EMAIL_ENABLED === "true"/);
+  assert.match(read("lib/events/feature-switches.ts"), /process\.env\.EVENT_EMAIL_ENABLED === "true"/);
   assert.match(envExample, /EVENT_EMAIL_ENABLED=false/);
   assert.doesNotMatch(manage, /NEXT_PUBLIC_EVENT_EMAIL/);
   assert.match(actions, /formData\.get\("sendEmail"\) === "on"/);
-  assert.match(actions, /isEventEmailEnabled\(\)/);
+  assert.match(actions, /await isEventEmailEnabled\(\)/);
   assert.match(manage, /Kirim juga lewat email/);
   assert.match(settings, /Email pengumuman acara/);
   assert.match(migration, /event_announcements_enabled/);

@@ -1,3 +1,4 @@
+import { isEventBlastEnabled } from "@/lib/events/feature-switches";
 import {
   getMyStudentAccess,
   isEducationalEventCategory,
@@ -182,7 +183,7 @@ export default async function EventDetailPage({
     event.can_check_in && !event.can_manage_registrations
       ? `/app/events/${event.public_slug}/manage/check-in`
       : `/app/events/${event.public_slug}/manage`;
-  const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
+  const blastEnabled = await isEventBlastEnabled();
   const attendanceMode = event.attendance_mode ?? "offline";
   const [
     eventCircle,

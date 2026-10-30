@@ -41,8 +41,11 @@ test("event blast input is validated again on the server", () => {
 });
 
 test("event blast UI is fail-closed behind a server flag", () => {
-  assert.match(manage, /process\.env\.EVENT_BLAST_ENABLED === "true"/);
-  assert.match(detail, /process\.env\.EVENT_BLAST_ENABLED === "true"/);
+  const switches = read("lib/events/feature-switches.ts");
+  assert.match(switches, /process\.env\.EVENT_BLAST_ENABLED === "true"/);
+  assert.match(manage, /await isEventBlastEnabled\(\)/);
+  assert.match(detail, /await isEventBlastEnabled\(\)/);
+  assert.match(actions, /if \(!\(await isEventBlastEnabled\(\)\)\)/);
   assert.match(manage, /Kirim kabar ke peserta/);
   assert.match(detail, /Kabar dari penyelenggara/);
   assert.match(notifications, /EVENT_ANNOUNCEMENT/);

@@ -31,6 +31,10 @@ const eventLabels: Record<string, string> = {
   student_account_viewed: "Ringkasan akun mahasiswa dibuka",
   staff_capability_changed: "Akses tugas Admin diubah",
   staff_assigned_by_email: "Admin ditambahkan melalui email",
+  event_blast_enabled: "Pengumuman acara dinyalakan",
+  event_blast_disabled: "Pengumuman acara dimatikan",
+  event_email_enabled: "Email pengumuman acara dinyalakan",
+  event_email_disabled: "Email pengumuman acara dimatikan",
 };
 
 async function AuditContent() {

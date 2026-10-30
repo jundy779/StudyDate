@@ -16,7 +16,8 @@ import { getEditableStudentProfile } from "@/lib/profile/service";
 import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
 import { getMyTelegramCompanionState } from "@/lib/telegram/service";
 import { listNotificationPreferences } from "@/lib/notifications/preferences";
-import { getMyEventEmailPreference, isEventEmailEnabled } from "@/lib/events/announcement-email";
+import { getMyEventEmailPreference } from "@/lib/events/announcement-email";
+import { isEventEmailEnabled } from "@/lib/events/feature-switches";
 import { NOTIFICATION_PREFERENCE_LABELS } from "@/lib/notifications/constants";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -68,7 +69,7 @@ async function SettingsContent() {
       getMyTelegramCompanionState(),
       listNotificationPreferences(),
       // null kalau fitur email acara belum aktif atau migration belum terpasang.
-      isEventEmailEnabled() ? getMyEventEmailPreference() : Promise.resolve(null),
+      isEventEmailEnabled().then((on) => (on ? getMyEventEmailPreference() : null)),
     ]);
   if (!profile) redirect("/onboarding");
 

@@ -356,6 +356,9 @@ logo pemerintah/PDDIKTI atau visual KYC.
   menyebut jumlah disetujui, undangan gagal, dan yang dilewati.
 - Kotak kuning "Mungkin pendaftar ganda" menampilkan email mirip beserta statusnya, dengan kalimat bahwa ini
   hanya petunjuk. Bukan alasan otomatis untuk menolak.
+- Saklar fitur acara di /owner/events: tiap fitur punya status (Aktif, Mati, atau "Menyala, tapi belum siap"),
+  daftar syarat bercentang hijau atau silang merah, dan tombol Nyalakan yang terkunci sampai semua syarat siap.
+  Mematikan selalu lewat dialog konfirmasi.
 - Email pengumuman acara: kotak centang "Kirim juga lewat email" di bawah form pengumuman, angka email di tiap
   pengumuman, dan baris "Email pengumuman acara" di Pengaturan, Notifikasi. Halaman berhenti memakai satu
   tombol konfirmasi, tanpa menghentikan apa pun saat tautan dibuka.

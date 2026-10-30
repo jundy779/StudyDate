@@ -2,10 +2,10 @@
 
 import {
   deliverAnnouncementEmails,
-  isEventEmailEnabled,
   queueAnnouncementEmail,
   retryAnnouncementEmail,
 } from "@/lib/events/announcement-email";
+import { isEventBlastEnabled, isEventEmailEnabled } from "@/lib/events/feature-switches";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   addCampusEventRegistrationQuestion,
@@ -529,6 +529,14 @@ export const leaveCampusEventWaitlistAction = cancelCampusEventRsvpAction;
 
 export async function sendCampusEventAnnouncementAction(formData: FormData) {
   await requireEventStudent();
+  if (!(await isEventBlastEnabled())) {
+    const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+    redirect(
+      slug.success
+        ? managePath(slug.data, "", "?state=announcement-error&notice=" + encodeURIComponent("Pengumuman sedang dimatikan oleh tim StudyDate."))
+        : "/app/events?state=error",
+    );
+  }
   const parsed = eventAnnouncementSchema.safeParse({
     publicSlug: formData.get("publicSlug"),
     title: formData.get("title"),
@@ -569,7 +577,7 @@ export async function sendCampusEventAnnouncementAction(formData: FormData) {
 
   // Email bersifat tambahan. Pengumuman di aplikasi sudah tersimpan apa pun hasil email.
   const wantsEmail = formData.get("sendEmail") === "on";
-  if (wantsEmail && created && isEventEmailEnabled()) {
+  if (wantsEmail && created && (await isEventEmailEnabled())) {
     let emailState = "announcement-email-sent";
     try {
       const queued = await queueAnnouncementEmail(created.announcement_public_id);
@@ -600,7 +608,7 @@ export async function retryCampusEventAnnouncementEmailAction(formData: FormData
   const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
   if (!slug.success) redirect("/app/events?state=error");
   const announcementId = String(formData.get("announcementPublicId") ?? "");
-  if (!/^[A-Za-z0-9_-]{6,64}$/.test(announcementId) || !isEventEmailEnabled()) {
+  if (!/^[A-Za-z0-9_-]{6,64}$/.test(announcementId) || !(await isEventEmailEnabled())) {
     redirect(managePath(slug.data, "", "?state=announcement-email-error"));
   }
   let state = "announcement-email-sent";

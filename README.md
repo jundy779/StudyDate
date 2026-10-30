@@ -118,7 +118,9 @@ Implemented:
   See `docs/operations/event-activation-plan.md` for the order and checks.
 - Late October 2026 (repository only, migration `202610300001` not applied yet): bulk approve (up to 20) and
   "possible duplicate" hints in the Early Access queue, plus opt-in event announcement email behind
-  `EVENT_EMAIL_ENABLED` (off by default) with a confirm-to-unsubscribe page
+  `EVENT_EMAIL_ENABLED` (off by default) with a confirm-to-unsubscribe page; Owner on/off switches for event
+  announcements and announcement email at `/owner/events` (`202610300002`), with env flags kept as technical
+  permission
 - Server-side sign-out
 
 Not implemented yet:

@@ -4,6 +4,7 @@ import {
   setCampusEventOfficial,
 } from "@/app/owner/events/actions";
 import { OwnerEventDirectory } from "@/components/events/owner-event-directory";
+import { OwnerEventFeatureSwitches } from "@/components/events/owner-event-feature-switches";
 import { ConfirmSubmitButton } from "@/components/forms/confirm-submit-button";
 import { StaffShell } from "@/components/staff/staff-shell";
 import {
@@ -17,6 +18,7 @@ import {
   staffLabel,
 } from "@/components/staff/ui";
 import { ownerLookupEventOrganizerEligibility } from "@/lib/events/service";
+import { getEventFeatureReadiness } from "@/lib/events/feature-switches";
 import { listStaffCampusEvents } from "@/lib/events/staff-service";
 import { eventOrganizerEligibilityLookupSchema } from "@/lib/events/validation";
 import { requireOwner } from "@/lib/staff/authorization";
@@ -36,6 +38,10 @@ const stateMessage: Record<string, string> = {
   official_error: "Status resmi acara belum dapat diperbarui.",
   invalid_alias: "Nama samaran mahasiswa tidak valid.",
   invalid_slug: "Alamat acara tidak valid.",
+  feature_saved: "Saklar fitur acara tersimpan dan tercatat di Riwayat.",
+  feature_unchanged: "Saklar sudah dalam posisi itu.",
+  feature_not_ready: "Belum bisa dinyalakan. Lengkapi dulu syarat yang masih bertanda silang.",
+  feature_error: "Saklar fitur acara belum dapat disimpan.",
 };
 
 const errorStates = new Set([
@@ -43,6 +49,8 @@ const errorStates = new Set([
   "official_error",
   "invalid_alias",
   "invalid_slug",
+  "feature_not_ready",
+  "feature_error",
 ]);
 
 async function OwnerEventsContent({ searchParams }: Props) {
@@ -52,11 +60,12 @@ async function OwnerEventsContent({ searchParams }: Props) {
   const alias = eventOrganizerEligibilityLookupSchema.safeParse({
     publicAlias: aliasInput,
   });
-  const [organizer, events] = await Promise.all([
+  const [organizer, events, featureReadiness] = await Promise.all([
     alias.success
       ? ownerLookupEventOrganizerEligibility(alias.data.publicAlias)
       : Promise.resolve(null),
     listStaffCampusEvents("all").catch(() => []),
+    getEventFeatureReadiness(),
   ]);
   const message = query.state ? stateMessage[query.state] : null;
 
@@ -65,12 +74,14 @@ async function OwnerEventsContent({ searchParams }: Props) {
       <StaffPage
         kicker="Khusus Owner"
         title="Acara Kampus"
-        description="Atur siapa yang boleh membuat acara dan tandai acara resmi tanpa membuka data pribadi mahasiswa. Setiap perubahan penting tetap tercatat."
+        description="Nyalakan fitur pengumuman, atur siapa yang boleh membuat acara, dan tandai acara resmi tanpa membuka data pribadi mahasiswa. Setiap perubahan penting tetap tercatat."
         mascot="girang"
       >
         {message ? (
           <Notice tone={query.state && errorStates.has(query.state) ? "danger" : "success"}>{message}</Notice>
         ) : null}
+
+        <OwnerEventFeatureSwitches readiness={featureReadiness} />
 
         <OwnerEventDirectory events={events} />
 
