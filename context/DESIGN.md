@@ -351,6 +351,14 @@ logo pemerintah/PDDIKTI atau visual KYC.
   tiap tab dari `get_early_access_queue_summary`. Baris Menunggu perbaikan menampilkan kapan email perbaikan
   dikirim dan tidak lagi punya tombol "Minta perbaikan". Pendaftar yang sudah memperbaiki kembali ke Perlu dicek
   dengan label "Sudah diperbaiki, cek lagi".
+- Tab Perlu dicek punya bilah "Pilih semua di halaman ini" dan tombol "Setujui yang dicentang". Kotak centang
+  hanya untuk baris menunggu, maksimal 20, dan selalu lewat dialog konfirmasi berisi jumlahnya. Pesan hasil
+  menyebut jumlah disetujui, undangan gagal, dan yang dilewati.
+- Kotak kuning "Mungkin pendaftar ganda" menampilkan email mirip beserta statusnya, dengan kalimat bahwa ini
+  hanya petunjuk. Bukan alasan otomatis untuk menolak.
+- Email pengumuman acara: kotak centang "Kirim juga lewat email" di bawah form pengumuman, angka email di tiap
+  pengumuman, dan baris "Email pengumuman acara" di Pengaturan, Notifikasi. Halaman berhenti memakai satu
+  tombol konfirmasi, tanpa menghentikan apa pun saat tautan dibuka.
 - Tombol yang memicu email atau keputusan menampilkan "Mengirim..." dan terkunci selama proses, supaya tidak
   diklik dua kali. Setelah hasil keluar, panel tertutup dan pesan hasil digulir ke tengah layar.
 

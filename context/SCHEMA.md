@@ -1041,3 +1041,25 @@ Status: **Repository implemented**. Belum dipasang ke Supabase production. Diuji
 Upsert `campus_options` untuk Universitas Jember, Universitas Sebelas Maret, dan Universitas Diponegoro dengan
 status `approved` dan sumber `seed`. Kalau sudah ada (termasuk yang pernah ditolak), nama dirapikan dan status
 dibuka lagi. Tidak ada perubahan struktur tabel.
+
+## Pendaftar ganda Akses Awal dan email pengumuman acara (repository migration 202610300001)
+
+Belum dipasang di production.
+
+- `early_access_identity_key(email)` (immutable): huruf kecil, tanpa `+tag`, titik dihapus untuk Gmail, salah
+  ketik domain umum dirapikan (gmial, gamil, gmail.co, yaho, hotmial, outlok, dan sejenisnya). Indeks
+  `early_access_waitlist_identity_key_idx`.
+- `get_early_access_duplicate_hints(p_emails text[])`: maksimal 100 email, butuh `early_access.read`,
+  mengembalikan `(email, similar_email, similar_status)`. Hanya petunjuk tampilan.
+- Tabel `user_email_preferences` (RLS aktif, tanpa grant): `event_announcements_enabled` default true dan
+  `unsubscribe_token` 64 karakter hex untuk tautan berhenti tanpa login.
+- Kolom `campus_event_announcements.email_requested_at`.
+- Tabel `campus_event_email_deliveries` (RLS aktif, tanpa grant): satu baris per penerima per pengumuman, status
+  pending/processing/sent/failed/skipped, `attempt_count` maksimal 3, sewa 5 menit.
+- Audit `announcement_email_queued`; bucket pembatas `announcement_email_day` (2 per hari).
+- RPC penyelenggara (authenticated, butuh `event_can_manage_registrations`): `queue_campus_event_announcement_email`
+  (sekali per pengumuman, pengumuman kurang dari sehari, peserta `going` selain pengirim yang tidak mematikan
+  email), `retry_campus_event_announcement_email`, `list_campus_event_announcement_email_counts` (angka saja).
+- RPC service role saja: `claim_campus_event_email_batch` (`for update skip locked`, alamat dari `auth.users`),
+  `complete_campus_event_email_deliveries`, `unsubscribe_event_announcement_email`.
+- RPC pengguna: `get_my_event_email_preference`, `set_my_event_email_preference`.

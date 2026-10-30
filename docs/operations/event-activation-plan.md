@@ -61,6 +61,22 @@ Memeriksa:
 
 Mematikan: set `EVENT_BLAST_ENABLED=false`, redeploy.
 
+## 2a. Email pengumuman ke peserta
+
+Kode: migration `202610300001_early_access_duplicates_event_email_v1.sql`, flag `EVENT_EMAIL_ENABLED`.
+Butuh Event Blast menyala, `SUPABASE_SERVICE_ROLE_KEY`, dan layanan email StudyDate (Resend atau SMTP).
+
+Menyalakan: pasang migration, set `EVENT_EMAIL_ENABLED=true` di Vercel (Production), redeploy.
+
+Memeriksa (pakai akun uji sendiri sebagai peserta):
+- [ ] Kotak "Kirim juga lewat email" muncul di form pengumuman.
+- [ ] Email masuk ke akun uji, tautan Buka acara benar, tautan berhenti membuka halaman konfirmasi.
+- [ ] Setelah menekan "Ya, berhenti", pengumuman berikutnya tidak dikirim ke email itu.
+- [ ] Mengirim email ketiga di hari yang sama ditolak.
+- [ ] Angka terkirim/gagal tampil di daftar pengumuman, tanpa alamat email.
+
+Mematikan: set `EVENT_EMAIL_ENABLED=false`, redeploy. Pengumuman di aplikasi tetap jalan.
+
 ## 2b. Kalender Circle dan fitur ikuti
 
 Kode: migration `202610210002_circle_calendar_v1.sql`. Tidak ada flag; fitur muncul
@@ -137,6 +153,13 @@ dalam 24 jam ditolak.
 Kode: migration `202610220001_upsert_requested_campuses_v2.sql`. Hanya data. Memeriksa: Universitas Jember,
 Universitas Sebelas Maret, dan Universitas Diponegoro muncul berstatus "Tampil di pilihan" di /owner/campuses dan
 di pilihan kampus saat mengisi profil.
+
+## 2g. Setujui banyak dan pendaftar ganda Akses Awal (bukan fitur Acara)
+
+Setujui banyak tidak butuh migration. Tanda "Mungkin pendaftar ganda" butuh migration
+`202610300001_early_access_duplicates_event_email_v1.sql`; sebelum terpasang tanda tidak muncul dan halaman tetap
+jalan. Memeriksa: centang dua pendaftar uji, setujui, pesan hasil menyebut jumlahnya, keduanya pindah ke tab
+Disetujui.
 
 ## 3. Acara berseri
 

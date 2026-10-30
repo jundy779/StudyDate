@@ -614,6 +614,12 @@ Jangan menampilkan angka target publik yang belum disetujui.
   email pribadi Gmail/VK (wajib PDDikti saat saklar dinyalakan), domain lain. Hanya bantuan tampilan.
 - "Kirim pengingat" untuk yang belum login 3 hari, paling sering sekali per 24 jam per pendaftar.
 
+### Akses Awal: setujui banyak dan pendaftar ganda (30 Oktober 2026, repository implemented)
+- Owner atau Admin berizin bisa mencentang sampai 20 pendaftar di tab Perlu dicek dan menyetujui bersamaan
+  setelah konfirmasi. Setiap pendaftar tetap mendapat undangan sendiri.
+- Tanda "Mungkin pendaftar ganda" untuk email yang sama setelah dirapikan (huruf besar kecil, +tag, titik Gmail,
+  salah ketik domain umum). Hanya petunjuk; keputusan tetap di tangan pemeriksa.
+
 ### Early Access review outcomes
 
 Owner or explicitly authorized Early Access staff may Approve, Minta Perbaikan, or Reject. Minta Perbaikan must carry at least one structured reason and sends a private one-time correction link. Reject also requires a reason and sends a notification email. Internal reviewer notes are never sent to applicants. Corrected applications return to the moderation queue and require a fresh approval before onboarding.
@@ -680,6 +686,8 @@ publik masuk sitemap.
 - Permintaan ulasan otomatis ikut penjadwal produk, yang masih mati sampai dinyalakan.
 
 ### Yang masih kurang dibanding Luma
-Email ke peserta, alur refund tiket berbayar, visibilitas
+Email ke peserta sudah ada di repository (30 Oktober 2026) tetapi masih mati (`EVENT_EMAIL_ENABLED`): penyelenggara
+memilih "Kirim juga lewat email" untuk pengumuman penting, maksimal 2 per hari, alamat peserta tidak pernah
+terlihat penyelenggara, dan peserta bisa berhenti kapan saja. Yang masih kurang: alur refund tiket berbayar, visibilitas
 unlisted dan undangan, filter peta atau kota, simpan acara tersinkron akun, analitik penyelenggara, dan
 acara beberapa hari.

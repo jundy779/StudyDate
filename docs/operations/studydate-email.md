@@ -39,3 +39,10 @@ Keep Supabase built-in auth emails unused by never calling `signInWithOtp`.
 ## Local port
 
 `npm run dev` / `npm start` listen on **3010** so they match `NEXT_PUBLIC_SITE_URL`.
+
+## Event announcement email (flag `EVENT_EMAIL_ENABLED`)
+
+Organizers can tick "Kirim juga lewat email" when posting an event announcement. Recipient addresses are read only
+server-side with the service role (`claim_campus_event_email_batch`), never shown to organizers. Each email carries
+an unsubscribe link to `/email/berhenti` (confirm button, no action on GET) and a `List-Unsubscribe` header.
+Limits: once per announcement, 2 per organizer per day. Requires migration 202610300001.

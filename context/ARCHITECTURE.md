@@ -855,6 +855,26 @@ muncul bila ringkasan antrean tersedia (tanda migration 202610210005 terpasang);
 undangan". Komponen antrean menerima `data` opsional untuk pratinjau dan uji tampilan; halaman asli selalu
 memuat sendiri.
 
+### Akses Awal: setujui banyak dan tanda pendaftar ganda (migration 202610300001)
+- `bulkApproveEarlyAccess` di `app/staff/early-access/actions.ts`: butuh `early_access.review`, maksimal 20 email
+  (`earlyAccessBulkApproveSchema`), diproses berurutan lewat `review_early_access_entry_v2` lalu undangan. Hasil
+  yang sudah punya `invitation_sent_at` (sudah diundang sebelumnya) dilewati tanpa kirim ulang. Redirect membawa
+  angka ok/gagal email/dilewati yang dibatasi lagi saat ditampilkan.
+- `components/staff/early-access-bulk-bar.tsx` (client) memegang form; kotak centang tiap baris terhubung lewat
+  atribut `form`, jadi tidak ada form bertumpuk dengan tombol per baris.
+- `getEarlyAccessDuplicateHints` memanggil `get_early_access_duplicate_hints` untuk email di halaman; gagal atau
+  belum terpasang berarti peta kosong.
+
+### Email pengumuman acara (migration 202610300001, flag EVENT_EMAIL_ENABLED)
+- `lib/events/announcement-email.ts` (server-only). `isEventEmailEnabled()` butuh flag, layanan email, dan service
+  role. Server action pengumuman mengantre lewat RPC pengguna, lalu `deliverAnnouncementEmails` mengklaim 50
+  baris per batch (maksimal 5 batch) dengan service role, mengirim satu per satu, dan menandai sent/failed.
+- Templat murni di `lib/email/event-announcement-template.ts` (isi di-escape, subjek satu baris). Email membawa
+  header `List-Unsubscribe`; `StudyDateOutboundEmail` kini menerima `headers`.
+- `/email/berhenti?token=` tidak mengubah apa pun saat dibuka; berhenti hanya lewat tombol POST, supaya pemindai
+  tautan email tidak ikut memberhentikan. `/email` masuk daftar disallow robots.
+- Penyelenggara hanya melihat angka terkirim/diproses/gagal dan tombol kirim ulang.
+
 ### Tampilan Ruang Operasional (22 Oktober 2026, tanpa migration)
 - `components/staff/staff-shell.tsx` (server) menyusun grup menu sesuai peran dan capability, lalu mengambil
   angka menu dengan aman: `get_early_access_queue_summary`, jumlah laporan terbuka, dan antrean verifikasi.

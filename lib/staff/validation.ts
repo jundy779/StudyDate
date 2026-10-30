@@ -110,3 +110,13 @@ export const earlyAccessReviewActionSchema = z
       });
     }
   });
+
+export const EARLY_ACCESS_BULK_APPROVE_LIMIT = 20;
+
+export const earlyAccessBulkApproveSchema = z.object({
+  emails: z
+    .array(z.string().trim().toLowerCase().min(3).max(254).email())
+    .min(1)
+    .max(EARLY_ACCESS_BULK_APPROVE_LIMIT)
+    .transform((emails) => Array.from(new Set(emails))),
+});

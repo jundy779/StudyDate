@@ -1,5 +1,11 @@
 "use server";
 
+import {
+  deliverAnnouncementEmails,
+  isEventEmailEnabled,
+  queueAnnouncementEmail,
+  retryAnnouncementEmail,
+} from "@/lib/events/announcement-email";
 import { getAuthenticatedUser, getPrivateProfile } from "@/lib/auth/session";
 import {
   addCampusEventRegistrationQuestion,
@@ -542,8 +548,9 @@ export async function sendCampusEventAnnouncementAction(formData: FormData) {
       ),
     );
   }
+  let created: Awaited<ReturnType<typeof createCampusEventAnnouncement>> = null;
   try {
-    await createCampusEventAnnouncement(parsed.data);
+    created = await createCampusEventAnnouncement(parsed.data);
   } catch (error) {
     redirect(
       managePath(
@@ -559,7 +566,65 @@ export async function sendCampusEventAnnouncementAction(formData: FormData) {
   }
   revalidatePath(detailPath(parsed.data.publicSlug));
   revalidatePath(managePath(parsed.data.publicSlug));
+
+  // Email bersifat tambahan. Pengumuman di aplikasi sudah tersimpan apa pun hasil email.
+  const wantsEmail = formData.get("sendEmail") === "on";
+  if (wantsEmail && created && isEventEmailEnabled()) {
+    let emailState = "announcement-email-sent";
+    try {
+      const queued = await queueAnnouncementEmail(created.announcement_public_id);
+      if (queued > 0) {
+        const result = await deliverAnnouncementEmails(created.announcement_public_id);
+        if (result.failed > 0) emailState = "announcement-email-partial";
+      } else {
+        emailState = "announcement-email-none";
+      }
+    } catch (error) {
+      redirect(
+        managePath(
+          parsed.data.publicSlug,
+          "",
+          `?state=announcement-email-error&notice=${encodeURIComponent(
+            error instanceof Error ? error.message : "Email pengumuman belum dapat dikirim.",
+          )}`,
+        ),
+      );
+    }
+    redirect(managePath(parsed.data.publicSlug, "", `?state=${emailState}`));
+  }
   redirect(managePath(parsed.data.publicSlug, "", "?state=announcement-sent"));
+}
+
+export async function retryCampusEventAnnouncementEmailAction(formData: FormData) {
+  await requireEventStudent();
+  const slug = eventSlugSchema.safeParse(formData.get("publicSlug"));
+  if (!slug.success) redirect("/app/events?state=error");
+  const announcementId = String(formData.get("announcementPublicId") ?? "");
+  if (!/^[A-Za-z0-9_-]{6,64}$/.test(announcementId) || !isEventEmailEnabled()) {
+    redirect(managePath(slug.data, "", "?state=announcement-email-error"));
+  }
+  let state = "announcement-email-sent";
+  try {
+    const reset = await retryAnnouncementEmail(announcementId);
+    if (reset > 0) {
+      const result = await deliverAnnouncementEmails(announcementId);
+      if (result.failed > 0) state = "announcement-email-partial";
+    } else {
+      state = "announcement-email-none";
+    }
+  } catch (error) {
+    redirect(
+      managePath(
+        slug.data,
+        "",
+        `?state=announcement-email-error&notice=${encodeURIComponent(
+          error instanceof Error ? error.message : "Email pengumuman belum dapat dikirim.",
+        )}`,
+      ),
+    );
+  }
+  revalidatePath(managePath(slug.data));
+  redirect(managePath(slug.data, "", `?state=${state}`));
 }
 
 export async function sendCampusEventMessageAction(formData: FormData) {

@@ -359,6 +359,36 @@ export async function listEarlyAccessWaitlistOps(input: {
   }));
 }
 
+export type EarlyAccessDuplicateHint = {
+  similarEmail: string;
+  similarStatus: string;
+};
+
+/**
+ * Petunjuk pendaftar ganda: email lain yang setelah dinormalkan (huruf kecil, tanpa +tag,
+ * tanpa titik Gmail, salah ketik domain umum) sama dengan email di halaman ini.
+ * Hanya petunjuk. Mengembalikan peta kosong kalau fungsi database belum terpasang.
+ */
+export async function getEarlyAccessDuplicateHints(emails: string[]) {
+  const hints = new Map<string, EarlyAccessDuplicateHint[]>();
+  const unique = Array.from(new Set(emails.map((email) => email.trim().toLowerCase()).filter(Boolean))).slice(0, 100);
+  if (unique.length === 0) return hints;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_early_access_duplicate_hints", {
+    p_emails: unique,
+  });
+  if (error) return hints;
+
+  for (const row of (data ?? []) as Array<{ email: string; similar_email: string; similar_status: string }>) {
+    const key = row.email.toLowerCase();
+    const list = hints.get(key) ?? [];
+    list.push({ similarEmail: row.similar_email, similarStatus: row.similar_status });
+    hints.set(key, list);
+  }
+  return hints;
+}
+
 export async function listStudentAccountOps(input: {
   alias?: string | null;
   email?: string | null;

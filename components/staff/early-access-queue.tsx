@@ -11,8 +11,10 @@ import {
 import type { StaffAccess } from "@/lib/staff/authorization";
 import { staffHasCapability } from "@/lib/staff/authorization";
 import {
+  getEarlyAccessDuplicateHints,
   getEarlyAccessQueueSummary,
   listEarlyAccessWaitlistOps,
+  type EarlyAccessDuplicateHint,
   type EarlyAccessQueueSummary,
   type EarlyAccessWaitlistRow,
 } from "@/lib/staff/service";
@@ -31,6 +33,7 @@ import {
 import { getVerificationReadiness } from "@/lib/verification/readiness";
 import { MascotHead } from "@/components/brand/mascot-head";
 import { HelpTip } from "@/components/staff/ui";
+import { EARLY_ACCESS_BULK_FORM_ID, EarlyAccessBulkBar } from "@/components/staff/early-access-bulk-bar";
 import Link from "next/link";
 
 export type EarlyAccessQueueSearchParams = {
@@ -43,6 +46,10 @@ export type EarlyAccessQueueSearchParams = {
   sort?: string;
   page?: string;
   state?: string;
+  /** Hasil setujui banyak: jumlah disetujui, email gagal, dan dilewati. */
+  ok?: string;
+  mailfail?: string;
+  skip?: string;
 };
 
 /** Data siap pakai. Hanya untuk pratinjau dan uji tampilan; halaman asli memuat sendiri. */
@@ -52,6 +59,8 @@ export type EarlyAccessQueueData = {
   manualCardReady: boolean;
   nowMs: number;
   loadError?: string;
+  /** Petunjuk email mirip, dikunci dengan email huruf kecil. */
+  duplicates?: Record<string, EarlyAccessDuplicateHint[]>;
 };
 
 type Props = {
@@ -182,11 +191,37 @@ const stateMessages: Record<
     text: "Permintaan pemeriksaan tidak valid. Untuk Tolak atau Minta perbaikan, pilih minimal satu alasan.",
     tone: "error",
   },
+  bulk_invalid: {
+    text: "Pilih 1 sampai 20 pendaftar dulu sebelum menyetujui bersamaan.",
+    tone: "error",
+  },
 };
 
-function StatusNotice({ state }: { state?: string }) {
+function boundedCount(value: string | undefined) {
+  const parsed = Number(value ?? "0");
+  return Number.isFinite(parsed) && parsed > 0 ? Math.min(Math.floor(parsed), 20) : 0;
+}
+
+/** Pesan hasil setujui banyak. Angka dari URL dibatasi supaya tidak bisa diisi sembarangan. */
+export function bulkApproveMessage(query: Pick<EarlyAccessQueueSearchParams, "ok" | "mailfail" | "skip">) {
+  const ok = boundedCount(query.ok);
+  const mailFail = Math.min(boundedCount(query.mailfail), ok);
+  const skip = boundedCount(query.skip);
+  const parts: string[] = [];
+  parts.push(ok > 0 ? `${ok} pendaftar disetujui.` : "Belum ada pendaftar yang disetujui.");
+  if (ok - mailFail > 0) parts.push(`Undangan terkirim ke ${ok - mailFail}.`);
+  if (mailFail > 0) {
+    parts.push(`${mailFail} undangan belum terkirim, kirim ulang dari antrean Undangan belum terkirim.`);
+  }
+  if (skip > 0) parts.push(`${skip} dilewati karena sudah diputuskan atau tidak bisa diproses.`);
+  const tone: "success" | "warning" = mailFail > 0 || skip > 0 || ok === 0 ? "warning" : "success";
+  return { text: parts.join(" "), tone };
+}
+
+function StatusNotice({ query }: { query: EarlyAccessQueueSearchParams }) {
+  const state = query.state;
   if (!state) return null;
-  const notice = stateMessages[state];
+  const notice = state === "bulk_approved" ? bulkApproveMessage(query) : stateMessages[state];
   if (!notice) return null;
 
   const toneClass =
@@ -378,8 +413,10 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
   let nowMs: number;
   let rows: EarlyAccessWaitlistRow[] = [];
   let loadError = "";
+  let duplicates = new Map<string, EarlyAccessDuplicateHint[]>();
   if (data) {
     ({ summary, rows } = data);
+    duplicates = new Map(Object.entries(data.duplicates ?? {}));
     personalNeedsCardPath = !data.manualCardReady;
     nowMs = data.nowMs;
     loadError = data.loadError ?? "";
@@ -406,7 +443,14 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
     } catch {
       loadError = "Antrean Akses Awal belum dapat dimuat.";
     }
+    if (rows.length > 0) {
+      duplicates = await getEarlyAccessDuplicateHints(rows.map((row) => row.email)).catch(
+        () => new Map<string, EarlyAccessDuplicateHint[]>(),
+      );
+    }
   }
+  // Setujui banyak hanya di tab Perlu dicek, untuk baris yang belum pernah diputuskan.
+  const bulkEnabled = canReview && status === "waiting" && rows.some((row) => row.status === "waiting");
   // Pengingat butuh migration 202610210005. Ringkasan null berarti belum terpasang,
   // jadi tombol kembali ke "Kirim ulang undangan" yang lama.
   const remindersAvailable = summary !== null;
@@ -465,7 +509,7 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
           </div>
         </header>
 
-        <StatusNotice state={query.state} />
+        <StatusNotice query={query} />
 
         {!canReview ? (
           <p className="mt-6 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6 text-brand-muted">
@@ -685,6 +729,7 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
               })}
             </nav>
           </div>
+          {bulkEnabled ? <EarlyAccessBulkBar returnTo={basePath} /> : null}
           <div className="divide-y divide-brand-border">
             {rows.length === 0 ? (
               <p className="p-6 text-brand-muted">
@@ -700,6 +745,16 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
                 >
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
+                      {bulkEnabled && row.status === "waiting" ? (
+                        <input
+                          type="checkbox"
+                          name="emails"
+                          value={row.email}
+                          form={EARLY_ACCESS_BULK_FORM_ID}
+                          aria-label={`Pilih ${row.email} untuk disetujui bersamaan`}
+                          className="size-5 shrink-0 accent-brand-blue"
+                        />
+                      ) : null}
                       <p className="break-all font-semibold">{row.email}</p>
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
@@ -711,6 +766,22 @@ export async function EarlyAccessQueue({ access, query, basePath, data }: Props)
                           : statusLabels[row.status] ?? row.status}
                       </span>
                     </div>
+                    {(duplicates.get(row.email.toLowerCase()) ?? []).length > 0 ? (
+                      <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
+                        <p className="font-semibold">Mungkin pendaftar ganda</p>
+                        <ul className="mt-1 space-y-0.5">
+                          {(duplicates.get(row.email.toLowerCase()) ?? []).slice(0, 3).map((hint) => (
+                            <li key={hint.similarEmail} className="break-words">
+                              Mirip dengan <span className="break-all font-semibold">{hint.similarEmail}</span>{" "}
+                              ({statusLabels[hint.similarStatus] ?? hint.similarStatus})
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="mt-1">
+                          Bisa jadi orang yang sama dengan email beda tulisan atau salah ketik. Ini hanya petunjuk, cek dulu sebelum memutuskan.
+                        </p>
+                      </div>
+                    ) : null}
                     {row.status === "needs_revision" ? (
                       <p className="mt-2 rounded-xl bg-[#FFF4CC] px-3 py-2 text-xs leading-5 text-amber-900">
                         Permintaan perbaikan sudah dikirim

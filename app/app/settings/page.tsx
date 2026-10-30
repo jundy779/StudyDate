@@ -1,5 +1,8 @@
 import { signOut } from "@/app/app/actions";
-import { updateNotificationPreference } from "@/app/app/settings/notification-actions";
+import {
+  updateEventEmailPreference,
+  updateNotificationPreference,
+} from "@/app/app/settings/notification-actions";
 import { AppShell } from "@/components/app/app-shell";
 import { AppPage, Panel, StatusChip, appButton } from "@/components/app/ui";
 import { AccountDangerZone } from "@/components/profile/account-danger-zone";
@@ -13,6 +16,7 @@ import { getEditableStudentProfile } from "@/lib/profile/service";
 import { loadApprovedStudyProgramOptions } from "@/lib/study-program/service";
 import { getMyTelegramCompanionState } from "@/lib/telegram/service";
 import { listNotificationPreferences } from "@/lib/notifications/preferences";
+import { getMyEventEmailPreference, isEventEmailEnabled } from "@/lib/events/announcement-email";
 import { NOTIFICATION_PREFERENCE_LABELS } from "@/lib/notifications/constants";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -54,6 +58,7 @@ async function SettingsContent() {
     studyProgramOptions,
     telegramCompanion,
     notificationPreferences,
+    eventEmailEnabled,
   ] =
     await Promise.all([
       getEditableStudentProfile(user.id),
@@ -62,6 +67,8 @@ async function SettingsContent() {
       loadApprovedStudyProgramOptions(),
       getMyTelegramCompanionState(),
       listNotificationPreferences(),
+      // null kalau fitur email acara belum aktif atau migration belum terpasang.
+      isEventEmailEnabled() ? getMyEventEmailPreference() : Promise.resolve(null),
     ]);
   if (!profile) redirect("/onboarding");
 
@@ -202,6 +209,31 @@ async function SettingsContent() {
                   </form>
                 ))}
               </div>
+              {eventEmailEnabled !== null ? (
+                <form
+                  action={updateEventEmailPreference}
+                  className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-brand-border bg-white px-4 py-3"
+                >
+                  <span className="min-w-0">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-brand-navy">Email pengumuman acara</span>
+                      <StatusChip tone={eventEmailEnabled ? "go" : "muted"}>
+                        {eventEmailEnabled ? "Aktif" : "Mati"}
+                      </StatusChip>
+                    </span>
+                    <span className="mt-1 block text-sm leading-6 text-brand-muted">
+                      Kabar penting dari penyelenggara acara yang kamu ikuti. Penyelenggara tidak melihat alamat emailmu.
+                    </span>
+                  </span>
+                  <button
+                    name="enabled"
+                    value={eventEmailEnabled ? "false" : "true"}
+                    className={appButton.quiet}
+                  >
+                    {eventEmailEnabled ? "Matikan" : "Nyalakan"}
+                  </button>
+                </form>
+              ) : null}
             </SettingsSection>
 
             <SettingsSection

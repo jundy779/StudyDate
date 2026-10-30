@@ -13,6 +13,7 @@ Do not commit secret values. Fill hosting env (Vercel/etc.) and keep `.env.local
 | StudyDate email (`STUDYDATE_*`) | Required to test login mail | Required |
 | `STUDENT_VERIFICATION_ENABLED` | `false` | Enable only after controlled audit |
 | `AUTOGOPAY_ENABLED` | `false` | Enable only after rotated-key payment audit |
+| `EVENT_EMAIL_ENABLED` | `false` | Enable only after migration 202610300001 and a test send to an own account |
 
 ## Required production variables
 

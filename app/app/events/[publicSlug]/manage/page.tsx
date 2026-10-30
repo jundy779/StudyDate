@@ -1,9 +1,15 @@
 import {
   cancelCampusEventSeriesAction,
+  retryCampusEventAnnouncementEmailAction,
   sendCampusEventAnnouncementAction,
 } from "@/app/app/events/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { EventManagementShell } from "@/components/events/event-management-shell";
+import {
+  isEventEmailEnabled,
+  listAnnouncementEmailCounts,
+  type AnnouncementEmailCounts,
+} from "@/lib/events/announcement-email";
 import { getCampusEventManagement } from "@/lib/events/management";
 import {
   listCampusEventAnnouncements,
@@ -74,10 +80,15 @@ export default async function EventManagePage({
   ]);
   const blastEnabled = process.env.EVENT_BLAST_ENABLED === "true";
   const seriesEnabled = process.env.EVENT_SERIES_ENABLED === "true";
-  const announcements =
-    blastEnabled && event.can_manage_registrations
-      ? await listCampusEventAnnouncements(event.public_slug)
-      : [];
+  const canAnnounce = blastEnabled && event.can_manage_registrations;
+  const emailEnabled = canAnnounce && isEventEmailEnabled();
+  const noCounts = new Map<string, AnnouncementEmailCounts>();
+  const [announcements, emailCounts] = canAnnounce
+    ? await Promise.all([
+        listCampusEventAnnouncements(event.public_slug),
+        emailEnabled ? listAnnouncementEmailCounts(event.public_slug) : Promise.resolve(noCounts),
+      ])
+    : [[], noCounts];
   const seriesSessions = seriesEnabled
     ? await listCampusEventSeriesSessions(event.public_slug)
     : [];
@@ -199,7 +210,7 @@ export default async function EventManagePage({
               </section>
             ) : null}
 
-            {blastEnabled && event.can_manage_registrations ? (
+            {canAnnounce ? (
               <section
                 id="event-announcements"
                 className="mt-10 border-t border-brand-border pt-9"
@@ -215,10 +226,34 @@ export default async function EventManagePage({
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
                   Pengumuman dikirim sebagai notifikasi dalam aplikasi kepada peserta
                   yang sudah diterima. Maksimal lima pengumuman per hari.
+                  {emailEnabled
+                    ? " Kamu juga bisa mengirimnya lewat email, maksimal dua kali sehari. Alamat email peserta tidak pernah ditampilkan ke penyelenggara."
+                    : ""}
                 </p>
                 {query.state === "announcement-sent" ? (
                   <p role="status" className="mt-5 border-l-2 border-emerald-600 pl-4 text-sm font-semibold text-emerald-700">
                     Pengumuman berhasil dikirim.
+                  </p>
+                ) : null}
+                {query.state === "announcement-email-sent" ? (
+                  <p role="status" className="mt-5 border-l-2 border-emerald-600 pl-4 text-sm font-semibold text-emerald-700">
+                    Pengumuman terkirim di aplikasi dan lewat email.
+                  </p>
+                ) : null}
+                {query.state === "announcement-email-none" ? (
+                  <p role="status" className="mt-5 border-l-2 border-amber-500 pl-4 text-sm font-semibold text-amber-900">
+                    Pengumuman terkirim di aplikasi. Tidak ada peserta yang bisa menerima email, misalnya karena
+                    semuanya mematikan email acara.
+                  </p>
+                ) : null}
+                {query.state === "announcement-email-partial" ? (
+                  <p role="status" className="mt-5 border-l-2 border-amber-500 pl-4 text-sm font-semibold text-amber-900">
+                    Pengumuman terkirim, tetapi sebagian email gagal. Pakai tombol Coba kirim ulang email di bawah.
+                  </p>
+                ) : null}
+                {query.state === "announcement-email-error" ? (
+                  <p role="alert" className="mt-5 border-l-2 border-brand-error pl-4 text-sm font-semibold text-brand-error">
+                    Pengumuman di aplikasi tetap tersimpan. {query.notice ?? "Email pengumuman belum dapat dikirim."}
                   </p>
                 ) : null}
                 {query.state === "announcement-error" ? (
@@ -252,6 +287,18 @@ export default async function EventManagePage({
                       className="focus-ring mt-2 w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm leading-6"
                     />
                   </label>
+                  {emailEnabled ? (
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-white px-4 py-3 text-sm">
+                      <input type="checkbox" name="sendEmail" className="mt-0.5 size-5 accent-brand-blue" />
+                      <span>
+                        <span className="font-semibold text-brand-navy">Kirim juga lewat email</span>
+                        <span className="mt-0.5 block leading-6 text-brand-muted">
+                          Untuk kabar penting seperti pindah ruang atau jadwal berubah. Peserta yang mematikan
+                          email acara tidak ikut dikirimi.
+                        </span>
+                      </span>
+                    </label>
+                  ) : null}
                   <button className="focus-ring min-h-11 rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
                     Kirim pengumuman
                   </button>
@@ -270,6 +317,32 @@ export default async function EventManagePage({
                       <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-brand-muted">
                         {announcement.body}
                       </p>
+                      {(() => {
+                        const email = emailCounts.get(announcement.announcement_public_id);
+                        if (!email?.emailRequested) return null;
+                        return (
+                          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-brand-muted">
+                            <span>Email terkirim: {email.sent}</span>
+                            {email.pending > 0 ? <span>Masih diproses: {email.pending}</span> : null}
+                            {email.failed > 0 ? (
+                              <>
+                                <span className="text-brand-error">Gagal: {email.failed}</span>
+                                <form action={retryCampusEventAnnouncementEmailAction}>
+                                  <input type="hidden" name="publicSlug" value={event.public_slug} />
+                                  <input
+                                    type="hidden"
+                                    name="announcementPublicId"
+                                    value={announcement.announcement_public_id}
+                                  />
+                                  <button className="focus-ring min-h-9 rounded-lg border border-brand-border bg-white px-3 text-xs font-semibold text-brand-blue">
+                                    Coba kirim ulang email
+                                  </button>
+                                </form>
+                              </>
+                            ) : null}
+                          </div>
+                        );
+                      })()}
                     </article>
                   )) : (
                     <p className="py-5 text-sm text-brand-muted">

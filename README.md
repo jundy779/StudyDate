@@ -116,6 +116,9 @@ Implemented:
   - post-event feedback, organizer recaps, and verifiable attendance certificates with a public check page
     and PNG download (`202610210004`).
   See `docs/operations/event-activation-plan.md` for the order and checks.
+- Late October 2026 (repository only, migration `202610300001` not applied yet): bulk approve (up to 20) and
+  "possible duplicate" hints in the Early Access queue, plus opt-in event announcement email behind
+  `EVENT_EMAIL_ENABLED` (off by default) with a confirm-to-unsubscribe page
 - Server-side sign-out
 
 Not implemented yet:
@@ -123,7 +126,7 @@ Not implemented yet:
 - WhatsApp, phone, email, X/Twitter, Discord, Facebook contact reveal
 - Production Telegram webhook configuration and controlled real-bot audit
 - Full moderation dashboard
-- Push, browser Web Push, email, SMS, WhatsApp, Telegram bot, or native notifications
+- Push, browser Web Push, SMS, WhatsApp, Telegram bot, or native notifications (email exists only for event announcements, flag OFF)
 - Supabase Realtime chat delivery (v1 uses authenticated RPC polling)
 
 Student Verification Center code exists but remains globally disabled unless explicitly enabled for controlled testing.

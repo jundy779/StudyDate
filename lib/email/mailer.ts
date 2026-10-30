@@ -16,6 +16,8 @@ export type StudyDateOutboundEmail = {
   text: string;
   html: string;
   inlineAttachments?: StudyDateEmailInlineAttachment[];
+  /** Header tambahan, misalnya List-Unsubscribe untuk email pengumuman. */
+  headers?: Record<string, string>;
 };
 
 export function isStudyDateEmailConfigured() {
@@ -56,6 +58,7 @@ async function sendViaResend(message: StudyDateOutboundEmail) {
       subject: message.subject,
       html: message.html,
       text: message.text,
+      headers: message.headers,
       attachments: message.inlineAttachments?.map((attachment) => ({
         filename: attachment.filename,
         content: attachment.content.toString("base64"),
@@ -96,6 +99,7 @@ async function sendViaSmtp(message: StudyDateOutboundEmail) {
     subject: message.subject,
     text: message.text,
     html: message.html,
+    headers: message.headers,
     attachments: message.inlineAttachments?.map((attachment) => ({
       filename: attachment.filename,
       content: attachment.content,

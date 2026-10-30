@@ -12,7 +12,7 @@ import {
   prepareEarlyAccessReminder,
   reviewEarlyAccessEntry,
 } from "@/lib/staff/service";
-import { earlyAccessReviewActionSchema } from "@/lib/staff/validation";
+import { earlyAccessBulkApproveSchema, earlyAccessReviewActionSchema } from "@/lib/staff/validation";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -198,4 +198,60 @@ export async function moderateEarlyAccess(formData: FormData) {
   }
 
   redirect(destination("approved"));
+}
+
+/**
+ * Setujui beberapa pendaftar sekaligus (maksimal 20). Diproses satu per satu supaya
+ * satu kegagalan tidak membatalkan yang lain, dan email undangan tidak dikirim
+ * serentak ke layanan email. Pendaftar yang sudah diputuskan orang lain dilewati.
+ */
+export async function bulkApproveEarlyAccess(formData: FormData) {
+  await requireStaffCapability("early_access.review");
+
+  const requestedReturnTo = String(formData.get("returnTo") ?? "");
+  const returnTo =
+    requestedReturnTo === "/owner/early-access" ? "/owner/early-access" : "/staff/early-access";
+
+  const parsed = earlyAccessBulkApproveSchema.safeParse({
+    emails: formData.getAll("emails").map((value) => String(value)),
+  });
+  if (!parsed.success) {
+    redirect(`${returnTo}?state=bulk_invalid#hasil-pemeriksaan`);
+  }
+
+  let approved = 0;
+  let emailFailed = 0;
+  let skipped = 0;
+
+  for (const email of parsed.data.emails) {
+    let approvedEmail: string;
+    try {
+      const reviewed = await reviewEarlyAccessEntry({ email, decision: "approve" });
+      if (reviewed.invitation_sent_at) {
+        // Sudah disetujui dan diundang sebelumnya (misalnya oleh Admin lain). Jangan kirim ulang.
+        skipped += 1;
+        continue;
+      }
+      approvedEmail = reviewed.email;
+    } catch {
+      skipped += 1;
+      continue;
+    }
+    approved += 1;
+    try {
+      await sendInvitation(approvedEmail);
+    } catch {
+      // Persetujuan tetap berlaku. Baris muncul di antrean "Undangan belum terkirim".
+      emailFailed += 1;
+    }
+  }
+
+  refreshEarlyAccessViews();
+  const params = new URLSearchParams({
+    state: "bulk_approved",
+    ok: String(approved),
+    mailfail: String(emailFailed),
+    skip: String(skipped),
+  });
+  redirect(`${returnTo}?${params.toString()}#hasil-pemeriksaan`);
 }
