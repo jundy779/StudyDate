@@ -121,6 +121,8 @@ Implemented:
   `EVENT_EMAIL_ENABLED` (off by default) with a confirm-to-unsubscribe page; Owner on/off switches for event
   announcements and announcement email at `/owner/events` (`202610300002`), with env flags kept as technical
   permission
+- Realtime notifications and organizer live counts over private Broadcast channels (`202611020001`, not applied yet),
+  with polling kept as a slower fallback
 - Server-side sign-out
 
 Not implemented yet:

@@ -1,4 +1,5 @@
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
+import { SignalRefresh } from "@/components/realtime/signal-refresh";
 import { AppShell } from "@/components/app/app-shell";
 import { AppPage, Notice, Panel, appButton } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
@@ -51,6 +52,7 @@ export default async function IntroductionsPage({
 
   return (
     <AppShell current="introductions" pendingIntroductions={pendingCount}>
+      <SignalRefresh types={["INTRODUCTION_RECEIVED", "INTRODUCTION_ACCEPTED"]} />
       <AppPage
         kicker="Koneksi perlahan"
         title="Perkenalan"

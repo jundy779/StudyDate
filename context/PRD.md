@@ -617,6 +617,9 @@ Jangan menampilkan angka target publik yang belum disetujui.
 ### Akses Awal: setujui banyak dan pendaftar ganda (30 Oktober 2026, repository implemented)
 - Owner atau Admin berizin bisa mencentang sampai 20 pendaftar di tab Perlu dicek dan menyetujui bersamaan
   setelah konfirmasi. Setiap pendaftar tetap mendapat undangan sendiri.
+- Notifikasi muncul langsung tanpa memuat ulang halaman. Halaman acara, Pesan, dan Perkenalan ikut diperbarui saat ada
+  kabar baru. Penyelenggara melihat angka pendaftaran dan kehadiran bergerak sendiri saat acara berlangsung. Kalau
+  koneksi langsung gagal, semuanya tetap jalan lewat pemeriksaan berkala.
 - Owner menyalakan atau mematikan pengumuman acara dan email pengumuman dari /owner/events, tanpa redeploy.
   Izin teknis di Vercel tetap jadi syarat dan pemutus darurat.
 - Tanda "Mungkin pendaftar ganda" untuk email yang sama setelah dirapikan (huruf besar kecil, +tag, titik Gmail,

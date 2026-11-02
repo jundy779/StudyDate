@@ -875,6 +875,19 @@ memuat sendiri.
   tautan email tidak ikut memberhentikan. `/email` masuk daftar disallow robots.
 - Penyelenggara hanya melihat angka terkirim/diproses/gagal dan tombol kirim ulang.
 
+### Realtime notifikasi dan acara (migration 202611020001)
+- Pola sama dengan chat: Broadcast privat, izin di RLS `realtime.messages`, sinyal tanpa data pribadi, lalu data
+  diambil lewat jalur biasa. Realtime hanya mempercepat; polling tetap cadangan.
+- `components/realtime/private-channel.ts`: `subscribePrivateChannel` dan `getMyRealtimeTopic` (topik disimpan per
+  tab; gagal berarti fitur belum terpasang). Klien Supabase browser tunggal, jadi semua channel berbagi satu
+  koneksi websocket.
+- `useUserSignals` hanya dipasang di `NotificationBell` (satu koneksi pribadi per tab). Setiap sinyal diteruskan
+  sebagai event jendela `studydate:signal`; `SignalRefresh` di halaman detail acara, Pesan, dan Perkenalan memanggil
+  `router.refresh()` dengan jeda 1,2 detik dan menunda saat tab tersembunyi.
+- `EventStaffLive` di `EventManagementShell` (Ringkasan, Pendaftaran, Laporan, Kehadiran) berlangganan
+  `event-staff:<slug>` dan memuat ulang angka; label "Angka diperbarui otomatis" hanya muncul saat tersambung.
+- Lonceng notifikasi: polling 45 detik tanpa realtime, 3 menit saat tersambung.
+
 ### Saklar fitur acara dua lapis (migration 202610300002)
 - `lib/events/feature-switches.ts` (server-only): `isEventBlastEnabled()` = env `EVENT_BLAST_ENABLED` dan saklar
   Owner; `isEventEmailEnabled()` = pengumuman aktif, env `EVENT_EMAIL_ENABLED`, layanan email, service role, dan

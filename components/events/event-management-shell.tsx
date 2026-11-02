@@ -3,9 +3,13 @@ import type {
   CampusEventRegistrationOverview,
 } from "@/lib/events/service";
 import { appButton } from "@/components/app/ui";
+import { EventStaffLive } from "@/components/realtime/event-staff-live";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+
+// Halaman yang menampilkan angka pendaftaran atau kehadiran dan ikut diperbarui otomatis.
+const LIVE_SECTIONS = new Set(["overview", "registrations", "check-in", "report"]);
 
 const sections = [
   ["overview", "Ringkasan", ""],
@@ -88,6 +92,11 @@ export function EventManagementShell({
               </div>
             ))}
           </dl>
+        ) : null}
+        {LIVE_SECTIONS.has(active) && (event.can_manage_registrations || event.can_check_in) ? (
+          <div className="mt-3">
+            <EventStaffLive publicSlug={event.public_slug} />
+          </div>
         ) : null}
       </header>
 

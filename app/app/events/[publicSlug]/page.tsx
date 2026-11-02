@@ -1,3 +1,4 @@
+import { SignalRefresh } from "@/components/realtime/signal-refresh";
 import { isEventBlastEnabled } from "@/lib/events/feature-switches";
 import {
   getMyStudentAccess,
@@ -47,6 +48,16 @@ import {
 import { randomBytes } from "node:crypto";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+
+const EVENT_DETAIL_SIGNAL_TYPES = [
+  "EVENT_ANNOUNCEMENT",
+  "EVENT_SCHEDULE_CHANGED",
+  "EVENT_LOCATION_CHANGED",
+  "EVENT_CANCELLED",
+  "EVENT_REGISTRATION_APPROVED",
+  "EVENT_REGISTRATION_DECLINED",
+  "EVENT_WAITLIST_PROMOTED",
+];
 
 type EventDetailPageProps = {
   params: Promise<{ publicSlug: string }>;
@@ -281,6 +292,8 @@ export default async function EventDetailPage({
 
   return (
     <AppShell current="events">
+      {/* Kabar acara (pengumuman, jadwal, status pendaftaran) tampil tanpa memuat ulang halaman. */}
+      <SignalRefresh types={EVENT_DETAIL_SIGNAL_TYPES} />
       <main className="min-h-svh overflow-x-clip bg-brand-surface">
         <div className="page-shell py-6 sm:py-10 lg:py-12">
           <Link href="/app/events" className={appButton.quiet}>

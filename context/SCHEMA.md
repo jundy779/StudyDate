@@ -1064,6 +1064,21 @@ Belum dipasang di production.
   `complete_campus_event_email_deliveries`, `unsubscribe_event_announcement_email`.
 - RPC pengguna: `get_my_event_email_preference`, `set_my_event_email_preference`.
 
+## Sinyal realtime pengguna dan acara (repository migration 202611020001)
+
+Belum dipasang di production.
+
+- Tabel `user_realtime_topics` (RLS aktif, tanpa grant): `topic_key` 32 hex acak per pengguna.
+- `get_my_realtime_topic()` (authenticated): membuat kunci bila belum ada, mengembalikan `user:<kunci>`.
+- Policy select di `realtime.messages`: topik `user:<kunci>` hanya untuk pemiliknya
+  (`private.can_access_user_realtime_topic`), topik `event-staff:<slug>` hanya untuk yang lolos
+  `event_can_check_in` atau `event_can_manage_registrations`. Tidak ada policy insert baru.
+- Trigger `user_notifications_broadcast_realtime_v1`: setelah notifikasi tersimpan, kirim `notification`
+  berisi `{type}` saja. Pengguna tanpa topik dilewati.
+- Trigger `campus_event_rsvps_broadcast_realtime_v1`: insert, atau update yang mengubah `status`/`checked_in_at`,
+  mengirim `registration_changed` berisi `{change: registration|attendance}`.
+- Kegagalan `realtime.send` selalu ditelan supaya tidak menggagalkan tulisan utama.
+
 ## Saklar Owner fitur acara (repository migration 202610300002)
 
 Belum dipasang di production.

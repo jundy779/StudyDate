@@ -1,12 +1,15 @@
 "use client";
 
 import { NotificationItem } from "@/components/notifications/notification-item";
+import { useUserSignals } from "@/components/realtime/use-user-signals";
 import type { NotificationItem as NotificationItemData } from "@/lib/notifications/constants";
 import { Bell, LoaderCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const POLL_INTERVAL_MS = 45_000;
+// Saat sinyal langsung tersambung, polling hanya cadangan yang jarang.
+const LIVE_POLL_INTERVAL_MS = 180_000;
 
 export function NotificationBell({
   initialUnreadCount,
@@ -65,10 +68,20 @@ export function NotificationBell({
     setUnreadCount(initialUnreadCount);
   }, [initialUnreadCount]);
 
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+  const live = useUserSignals(
+    useCallback(() => {
+      void fetchNotifications(openRef.current);
+    }, [fetchNotifications]),
+  );
+
   useEffect(() => {
     const timer = window.setInterval(() => {
       void fetchNotifications(false);
-    }, POLL_INTERVAL_MS);
+    }, live ? LIVE_POLL_INTERVAL_MS : POLL_INTERVAL_MS);
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         void fetchNotifications(false);
@@ -79,7 +92,7 @@ export function NotificationBell({
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [fetchNotifications]);
+  }, [fetchNotifications, live]);
 
   useEffect(() => {
     if (!open) {

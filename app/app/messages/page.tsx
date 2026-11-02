@@ -1,4 +1,5 @@
 import { requireSocialFeatureAccess } from "@/lib/account/student-access";
+import { SignalRefresh } from "@/components/realtime/signal-refresh";
 import { AppShell } from "@/components/app/app-shell";
 import { AppPage, Notice, Panel, appButton } from "@/components/app/ui";
 import { MascotEmptyState } from "@/components/brand/mascot-empty-state";
@@ -112,6 +113,7 @@ async function MessagesContent({ searchParams }: MessagesPageProps) {
 
   return (
     <AppShell current="messages" unreadMessages={unreadConversations}>
+      <SignalRefresh types={["MESSAGE_RECEIVED", "INTRODUCTION_ACCEPTED"]} />
       <AppPage
         kicker="Percakapan anonim"
         title="Pesan"

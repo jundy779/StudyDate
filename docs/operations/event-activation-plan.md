@@ -167,6 +167,21 @@ Setujui banyak tidak butuh migration. Tanda "Mungkin pendaftar ganda" butuh migr
 jalan. Memeriksa: centang dua pendaftar uji, setujui, pesan hasil menyebut jumlahnya, keduanya pindah ke tab
 Disetujui.
 
+## 2h. Realtime notifikasi dan angka penyelenggara
+
+Kode: migration `202611020001_realtime_user_event_signals_v1.sql`. Tanpa flag; begitu terpasang, browser mulai
+memakai sinyal langsung, dan sebelum terpasang tetap polling seperti biasa.
+
+Memeriksa (dua akun uji di dua browser):
+- [ ] Akun A mengirim pesan, lonceng akun B bertambah dalam beberapa detik tanpa memuat ulang.
+- [ ] Penyelenggara membuka Kehadiran, petugas lain mencatat check-in, angka "Sudah hadir" berubah sendiri dan label
+  "Angka diperbarui otomatis" tampil.
+- [ ] Akun yang bukan tim acara tidak menerima sinyal acara (cek di tab Network: channel ditolak).
+- [ ] Pantau jumlah koneksi bersamaan di dashboard Supabase, bandingkan dengan batas paket.
+
+Mematikan darurat: buat migration baru yang menghapus dua trigger `*_broadcast_realtime_v1`. Aplikasi otomatis
+kembali ke polling.
+
 ## 3. Acara berseri
 
 Kode: migration `202610170002`, `202610170003`, flag `EVENT_SERIES_ENABLED`.
